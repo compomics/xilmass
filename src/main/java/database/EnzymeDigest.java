@@ -175,6 +175,7 @@ public class EnzymeDigest {
         String lowMass = clp.getOptionParameter("lowMass");
         String highMass = clp.getOptionParameter("highMass");
         String filterParam = clp.getOptionParameter("filterParam");
+        String crossLinked_protein_types = clp.getOptionParameter("crossLinkedProteinTypes");
         int minLen = Integer.parseInt(clp.getOptionParameter("minLen")),
                 maxLen = Integer.parseInt(clp.getOptionParameter("maxLen"));
 
@@ -372,9 +373,7 @@ public class EnzymeDigest {
                 }
 
                 ProcessThread pt = ProcessThread.getSubsetTask(loader, output, null, f, enzyme, massLimits, minMass, maxMass, (ProteinFilter) null);
-//                System.out.println("\nWriting enzymatic digest from entries in '" + inputFile + "'.");
-//                System.out.println("\n\tParameters for this digest are:");
-//                System.out.println("\t\t - Output file is: '" + outputFile + "'.");
+
                 StringBuffer filterSettings = new StringBuffer();
                 if (f == null) {
                     filterSettings.append("no filter specified.");
@@ -386,15 +385,11 @@ public class EnzymeDigest {
                         filterSettings.append(" without parameters.");
                     }
                 }
-//                System.out.println("\t\t - Filter settings: " + filterSettings.toString());
-//                System.out.println("\t\t - Masslimits: " + (massLimits ? minMass + " Da to " + maxMass + " Da." : "no mass limits set."));
-//                System.out.println("\t\t - Enzyme: " + ((enzyme != null) ? "\n" + enzyme.toString("\t\t\t") : "no enzyme specified."));
-//                System.out.println("\n\n");
+
                 long start = System.currentTimeMillis();
                 pt.run();
                 long end = System.currentTimeMillis();
-//                System.out.println("Finished after " + ((end - start) / 1000) + " seconds.");
-
+                System.out.println("Finished after " + ((end - start) / 1000) + " seconds.");
                 // read output file and modify it.
                 create_crossLinkedPeptides(output, crossLinker, minLen, maxLen);
             }
