@@ -14,7 +14,6 @@ public class DSS extends CrossLinker {
     public DSS() {
         this.name = CrossLinkerName.DSS;
         this.massDift = 138.0681;
-//        this.massDift = 156.0786;
         this.type = CrossLinkerType.homobifunctional;
     }
 
