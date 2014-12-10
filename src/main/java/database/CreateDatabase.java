@@ -31,7 +31,7 @@ import java.util.StringTokenizer;
 
 /**
  *
- * @author Lennart from DBToolKit
+ * @author Lennart adapted from DBToolKit
  * @author Sule to integrate for crossLinkedPeptides
  *
  */
@@ -543,14 +543,14 @@ public class CreateDatabase {
         CrossLinkerName linker = CrossLinkerName.DSS;
         crossLinkedDB = new File(output.getName() + ".fastacp");
         BufferedWriter bw = new BufferedWriter(new FileWriter(crossLinkedDB));
-        System.out.println("Cross Linked DB" + crossLinkedDB.getAbsolutePath());
         if (crossLinker.equals("EDC")) {
             linker = CrossLinkerName.EDC;
         }
         while ((start_protein = loader.nextProtein()) != null) {
             String startCoreHeader = start_protein.getHeader().getCoreHeader(),
                     startHeader = start_protein.getHeader().getAccession(),
-                    startSequence = start_protein.getSequence().getSequence();
+                    startSequence = start_protein.getSequence().getSequence(),
+                    startProteinDescription = start_protein.getHeader().getDescription();
             // check the first condition
             if (startSequence.length() >= minLen) {
                 // find if there is a possible linker locations.
@@ -559,22 +559,18 @@ public class CreateDatabase {
                     ArrayList<Integer> indices = possible_indices.get(possible_linked_aa);
                     for (int index : indices) {
                         String mod_startSeq = startSequence.substring(0, index + 1) + "*" + startSequence.substring(index + 1);
-
                         // find for each possible match on the other part
                         loader_next = DBLoaderLoader.loadDB(output);
                         while ((next_protein = loader_next.nextProtein()) != null) {
-
-                            String nextCoreHeader = next_protein.getHeader().getCoreHeader(),
-                                    nextHeader = next_protein.getHeader().getAccession(),
-                                    nextSequence = next_protein.getSequence().getSequence();
+                            String nextHeader = next_protein.getHeader().getAccession();
                             if (nextHeader.equals(startHeader)) {
                                 // put a control to find either inter or intra proteins
                                 if (crossLinked_protein_types.equals("Inter") || crossLinked_protein_types.equals("Both")) {
-                                    generate_peptide_combinations(next_protein, linker, startCoreHeader, mod_startSeq, bw, possible_linked_aa, index);
+                                    generate_peptide_combinations(next_protein, linker, startProteinDescription, startCoreHeader, mod_startSeq, bw, possible_linked_aa, index);
                                 }
                             } else {
                                 if (crossLinked_protein_types.equals("Intra") || crossLinked_protein_types.equals("Both")) {
-                                    generate_peptide_combinations(next_protein, linker, startCoreHeader, mod_startSeq, bw, possible_linked_aa, index);
+                                    generate_peptide_combinations(next_protein, linker, startProteinDescription, startCoreHeader, mod_startSeq, bw, possible_linked_aa, index);
                                 }
                             }
                         }
@@ -582,16 +578,18 @@ public class CreateDatabase {
                 }
             }
         }
+        System.out.println("A database with cross linked peptide combinations is constructed! The file name is " + outputFileName);
         bw.close();
     }
 
-    public HashMap<String, String> generate_peptide_combinations(Protein next_protein, CrossLinkerName linker, String startCoreHeader, String mod_startSeq,
+    public HashMap<String, String> generate_peptide_combinations(Protein next_protein, CrossLinkerName linker, String startProteinDescriptionName, String startCoreHeader, String mod_startSeq,
             BufferedWriter bw, String possible_linked_aa, int index_linked) throws IOException {
         HashMap<String, String> newHeader_newSequence = new HashMap<String, String>();
 
         String nextCoreHeader = next_protein.getHeader().getCoreHeader(),
                 nextSequence = next_protein.getSequence().getSequence(),
-                info_for_inversion = "";
+                info_for_inversion = "",
+                nextProteinName = next_protein.getHeader().getDescription();
         if (is_inverted) {
             nextSequence = new StringBuilder(nextSequence).reverse().toString();
             info_for_inversion = "_inverted";
@@ -606,9 +604,11 @@ public class CreateDatabase {
                         String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
                         String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + (index_linked + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1) + "_" + (next_index + 1) + info_for_inversion;
                         newHeader = newHeader.replace(" ", "");
+                        newHeader += "|" + startProteinDescriptionName + "_" + nextProteinName;
                         String newSequence = mod_startSeq + "|" + mod_nextSeq;
                         if (newSequence.length() < maxLen_for_combined + 3) {
                             bw.write(newHeader + "\n" + newSequence + "\n");
+//                            System.out.println(newHeader + "\n" + newSequence + "\n");
                             newHeader_newSequence.put(newHeader.substring(1), newSequence);
                         }
                     }
@@ -623,15 +623,16 @@ public class CreateDatabase {
                                 String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
                                 String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + (index_linked + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1) + "_" + (next_index + 1) + info_for_inversion;
                                 newHeader = newHeader.replace(" ", "");
+                                newHeader += "|" + startProteinDescriptionName + "_" + nextProteinName;
                                 String newSequence = mod_startSeq + "|" + mod_nextSeq;
                                 if (newSequence.length() < maxLen_for_combined + 3) {
+//                                    System.out.println(newHeader + "\n" + newSequence + "\n");
                                     bw.write(newHeader + "\n" + newSequence + "\n");
                                     newHeader_newSequence.put(newHeader.substring(1), newSequence);
                                 }
                             }
                         }
                     }
-
                 } else {
                     // the rest should be K
                     for (String next_possible_linker : next_possible_indices.keySet()) {
@@ -641,8 +642,10 @@ public class CreateDatabase {
                                 String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
                                 String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + (index_linked + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1) + "_" + (next_index + 1) + info_for_inversion;
                                 newHeader = newHeader.replace(" ", "");
+                                newHeader += "|" + startProteinDescriptionName + "_" + nextProteinName;
                                 String newSequence = mod_startSeq + "|" + mod_nextSeq;
                                 if (newSequence.length() < maxLen_for_combined + 3) {
+//                                    System.out.println(newHeader + "\n" + newSequence + "\n");
                                     bw.write(newHeader + "\n" + newSequence + "\n");
                                     newHeader_newSequence.put(newHeader.substring(1), newSequence);
                                 }
