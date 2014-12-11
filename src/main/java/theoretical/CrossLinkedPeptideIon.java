@@ -5,28 +5,43 @@
  */
 package theoretical;
 
+import com.compomics.util.experiment.biology.ions.ElementaryIon;
+
 /**
- *
+ * 
  * @author Sule
  */
 public class CrossLinkedPeptideIon {
 
     private double intensity,
-            mz;
-    private double charge;
+            mass;
+    private int charge;
     private CrossLinkedPeptideIonType type = CrossLinkedPeptideIonType.PeptideFragmentIon;
 
-    public CrossLinkedPeptideIon(double intensity, double mz, double charge, CrossLinkedPeptideIonType type) {
+    public CrossLinkedPeptideIon(double intensity, double mass) {
         this.intensity = intensity;
-        this.mz = mz;
-        this.charge = charge;
-        this.type = type;
+        this.mass = mass;
     }
 
-    public CrossLinkedPeptideIon(double intensity, double mz, double charge) {
+    public CrossLinkedPeptideIon(double intensity, int charge, double mass) {
         this.intensity = intensity;
-        this.mz = mz;
         this.charge = charge;
+        this.mass = mass;
+    }
+
+    public CrossLinkedPeptideIon(double intensity, int charge, double mass, CrossLinkedPeptideIonType type) {
+        this.intensity = intensity;
+        this.charge = charge;
+        this.type = type;
+        this.mass = mass;
+    }
+
+    public double getMass() {
+        return mass;
+    }
+
+    public void setMass(double mass) {
+        this.mass = mass;
     }
 
     public double getIntensity() {
@@ -37,19 +52,11 @@ public class CrossLinkedPeptideIon {
         this.intensity = intensity;
     }
 
-    public double getMz() {
-        return mz;
-    }
-
-    public void setMz(double mz) {
-        this.mz = mz;
-    }
-
     public double getCharge() {
         return charge;
     }
 
-    public void setCharge(double charge) {
+    public void setCharge(int charge) {
         this.charge = charge;
     }
 
@@ -60,7 +67,25 @@ public class CrossLinkedPeptideIon {
     public void setType(CrossLinkedPeptideIonType type) {
         this.type = type;
     }
-    
-    
+
+    /**
+     * This method returns a theoretical mz happens with given chargeValue
+     *
+     * @param chargeValue ion charge
+     * @return a theoretical m/z
+     */
+    public double get_theoretical_mz(int chargeValue) {
+        return (mass + chargeValue * ElementaryIon.proton.getTheoreticMass()) / chargeValue;
+    }
+
+    /**
+     * This method returns a theoretical mz happens with a chargeValue given
+     * during construction
+     *
+     * @return a theoretical m/z
+     */
+    public double get_theoretical_mz() {
+        return (mass + charge * ElementaryIon.proton.getTheoreticMass()) / charge;
+    }
 
 }
