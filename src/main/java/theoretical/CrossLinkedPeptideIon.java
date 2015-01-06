@@ -8,7 +8,7 @@ package theoretical;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
 
 /**
- * 
+ *
  * @author Sule
  */
 public class CrossLinkedPeptideIon {
@@ -23,13 +23,13 @@ public class CrossLinkedPeptideIon {
         this.mass = mass;
     }
 
-    public CrossLinkedPeptideIon(double intensity, int charge, double mass) {
+    public CrossLinkedPeptideIon(double intensity, double mass, int charge) {
         this.intensity = intensity;
         this.charge = charge;
         this.mass = mass;
     }
 
-    public CrossLinkedPeptideIon(double intensity, int charge, double mass, CrossLinkedPeptideIonType type) {
+    public CrossLinkedPeptideIon(double intensity, double mass, int charge, CrossLinkedPeptideIonType type) {
         this.intensity = intensity;
         this.charge = charge;
         this.type = type;
