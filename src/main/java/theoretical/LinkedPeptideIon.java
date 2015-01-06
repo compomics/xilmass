@@ -10,50 +10,55 @@ import com.compomics.util.experiment.biology.Atom;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  *
  * @author Sule
  */
 public class LinkedPeptideIon {
-
+    
     private Peptide linkedPeptide;
     private int index_linkedPeptide;
     private ArrayList<ArrayList<Character>> aaLinkedPeptideStrs;
     private ArrayList<Double> cTerminiMasses = new ArrayList<Double>(),
             nTerminiMasses = new ArrayList<Double>();
-
+    
     public LinkedPeptideIon(Peptide linkedPeptide, int index_linkedPeptide) {
         this.linkedPeptide = linkedPeptide;
         this.index_linkedPeptide = index_linkedPeptide;
         getAALinkedPeptide();
     }
-
+    
     public ArrayList<ArrayList<Character>> getAaLinkedPeptideStrs() {
         return aaLinkedPeptideStrs;
     }
-
+    
     public void setAaLinkedPeptideStrs(ArrayList<ArrayList<Character>> aaLinkedPeptideStrs) {
         this.aaLinkedPeptideStrs = aaLinkedPeptideStrs;
     }
-
-    public ArrayList<Double> getcTerminiMasses() {
+    
+    public ArrayList<Double> getcTerminiMasses(int type) {
+        if (cTerminiMasses.isEmpty()) {
+            calculateCTerminiMasses(type);
+        }
         return cTerminiMasses;
     }
-
+    
     public void setcTerminiMasses(ArrayList<Double> cTerminiMasses) {
         this.cTerminiMasses = cTerminiMasses;
     }
-
-    public ArrayList<Double> getnTerminiMasses() {
+    
+    public ArrayList<Double> getnTerminiMasses(int type) {
+        if (nTerminiMasses.isEmpty()) {
+            calculateNTerminiMasses(type);
+        }
         return nTerminiMasses;
     }
-
+    
     public void setnTerminiMasses(ArrayList<Double> nTerminiMasses) {
         this.nTerminiMasses = nTerminiMasses;
     }
-
+    
     public ArrayList<ArrayList<Character>> getAALinkedPeptide() {
         ArrayList<ArrayList<Character>> characters = new ArrayList<ArrayList<Character>>();
         int startIndex = index_linkedPeptide,
@@ -73,7 +78,7 @@ public class LinkedPeptideIon {
         aaLinkedPeptideStrs = characters;
         return characters;
     }
-
+    
     public void calculateNTerminiMasses(int type) {
         int startIndex = index_linkedPeptide,
                 endIndex = linkedPeptide.getSequence().length();
@@ -100,7 +105,7 @@ public class LinkedPeptideIon {
             }
         }
     }
-
+    
     public void calculateCTerminiMasses(int type) {
         int startIndex = index_linkedPeptide,
                 endIndex = linkedPeptide.getSequence().length();
@@ -124,7 +129,7 @@ public class LinkedPeptideIon {
             }
         }
     }
-
+    
     private double getMassDiff(int type) {
         double mass = Atom.H.getMonoisotopicMass();
         switch (type) {
