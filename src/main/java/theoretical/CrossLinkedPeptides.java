@@ -32,7 +32,7 @@ public class CrossLinkedPeptides {
             ions_beta_peptide;
     private HashMap<Integer, ArrayList<Ion>> fragment_ions_alpha,
             fragment_ions_beta;
-    private boolean is_monoisotopic_mass = false;
+    private boolean is_monoisotopic_mass = true;
     private double intensity = 100;
 
     public CrossLinkedPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge) {
@@ -121,7 +121,7 @@ public class CrossLinkedPeptides {
     }
 
     public ArrayList<CrossLinkedPeptideIon> getTheoterical_ions() {
-        if(theoterical_ions.isEmpty()){
+        if (theoterical_ions.isEmpty()) {
             prepare_theoretical_spectrum();
             // TODO: Make sure sorting!
         }
@@ -188,8 +188,6 @@ public class CrossLinkedPeptides {
         this.intensity = intensity;
     }
 
-   
-
     public void prepare_theoretical_spectrum() {
         prepare_only_peptide(fragment_ions_alpha);
         prepare_only_peptide(fragment_ions_beta);
@@ -197,6 +195,7 @@ public class CrossLinkedPeptides {
         ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions_beta = prepare_linked_peptide(fragment_ions_beta, fragment_ions_alpha, linker_position_on_beta);
         theoterical_ions.addAll(all_linked_peptide_ions_alpha);
         theoterical_ions.addAll(all_linked_peptide_ions_beta);
+        // sort them all 
 
     }
 
@@ -210,7 +209,8 @@ public class CrossLinkedPeptides {
                     // ? b1 is not observed much, so removed it or keep it?
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     for (Ion ion : tmp_ions) {
-                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMz(fragment_ion_charge), fragment_ion_charge);
+                        
+                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
                     }
                 }
@@ -219,7 +219,7 @@ public class CrossLinkedPeptides {
                 if (ion_type == 2 || ion_type == 5) {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     for (Ion ion : tmp_ions) {
-                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMz(fragment_ion_charge), fragment_ion_charge);
+                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
                     }
                 }
@@ -228,14 +228,12 @@ public class CrossLinkedPeptides {
                 if (ion_type == 0 || ion_type == 3) {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     for (Ion ion : tmp_ions) {
-                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMz(fragment_ion_charge), fragment_ion_charge);
+                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
                     }
                 }
             }
         }
-
-        // TODO: Consider also neutral losses - Water and ammonia loss
     }
 
     /**
@@ -269,18 +267,22 @@ public class CrossLinkedPeptides {
         ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions = new ArrayList<CrossLinkedPeptideIon>();
         // get a start ion
         ArrayList<Ion> n_termini_ions = get_ions(fragment_ions, true),
-                c_termini_ions = get_ions(fragment_ions, false);
+                c_termini_ions = get_ions(fragment_ions, false),
+                n_termini_fragment_ions_linked = get_ions(fragment_ions_linked, true),
+                c_termini_fragment_ions_linked = get_ions(fragment_ions_linked, false);
+        double massShiftType0 = linker.getMassShift_Type0(),
+                massShiftType2 = linker.getMassShift_Type2();
+
         // Now only b ions (or a or c ions)/N-termini
         for (int i = linker_position; i < n_termini_ions.size(); i++) {
             Ion ion = n_termini_ions.get(i);
             // now add all fragment ions to 
-            // first add a mass to this one
-            double mz_shift_due_to_linker = linker.get_theoretical_mz(fragment_ion_charge);
-            double ion_with_only_linker_mz = ion.getTheoreticMz(fragment_ion_charge) + mz_shift_due_to_linker;
+            // first add a mass to this one            
+            double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
             // now add all linked fragment ions to each ions from now on.
-            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mz, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
-
-            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ions(crossLinkedPeptideOnlywithLinker, fragment_ions_linked, 0);
+            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
+            all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
+            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ions(ion, massShiftType2, n_termini_fragment_ions_linked);
             all_linked_peptide_ions.addAll(linked_peptide_ions);
         }
         // For c-termini
@@ -288,41 +290,24 @@ public class CrossLinkedPeptides {
             Ion ion = c_termini_ions.get(i);
             // now add all fragment ions to 
             // first add a mass to this one
-            double mz_shift_due_to_linker = linker.get_theoretical_mz(fragment_ion_charge);
-            double ion_with_only_linker_mz = ion.getTheoreticMz(fragment_ion_charge) + mz_shift_due_to_linker;
+            double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
             // now add all linked fragment ions to each ions from now on.
-            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mz, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
-
-            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ions(crossLinkedPeptideOnlywithLinker, fragment_ions_linked, 1);
+            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
+            all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
+            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ions(ion, massShiftType2, c_termini_fragment_ions_linked);
             all_linked_peptide_ions.addAll(linked_peptide_ions);
         }
         return all_linked_peptide_ions;
     }
 
-    // situation:0-N termini, 1-C termini
-    private ArrayList<CrossLinkedPeptideIon> get_linked_peptide_ions(CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker,
-            HashMap<Integer, ArrayList<Ion>> fragment_ions_linked, int situation) {
-
+    private ArrayList<CrossLinkedPeptideIon> get_linked_peptide_ions(Ion ion, double mass, ArrayList<Ion> linked_ions) {
         ArrayList<CrossLinkedPeptideIon> crossLinkedPeptideIons = new ArrayList<CrossLinkedPeptideIon>();
-        ArrayList<Ion> n_termini_ions = get_ions(fragment_ions_linked, true),
-                c_termini_ions = get_ions(fragment_ions_linked, false);
-        if (situation == 0) {
-            for (Ion ion : n_termini_ions) {
-                double mz = ion.getTheoreticMz(fragment_ion_charge);
-                double shifted_mz = mz + crossLinkedPeptideOnlywithLinker.getMz();
-                CrossLinkedPeptideIon crossLinkedPeptideIon = new CrossLinkedPeptideIon(intensity, shifted_mz, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinkedPeptideFragmentIon);
-                crossLinkedPeptideIons.add(crossLinkedPeptideIon);
-            }
-        } else {
-            for (Ion ion : c_termini_ions) {
-                double mz = ion.getTheoreticMz(fragment_ion_charge);
-                double shifted_mz = mz + crossLinkedPeptideOnlywithLinker.getMz();
-                CrossLinkedPeptideIon crossLinkedPeptideIon = new CrossLinkedPeptideIon(intensity, shifted_mz, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinkedPeptideFragmentIon);
-                crossLinkedPeptideIons.add(crossLinkedPeptideIon);
-            }
+        for (Ion linked_ion : linked_ions) {
+            double shifted_mass = ion.getTheoreticMass() + mass + linked_ion.getTheoreticMass();
+            CrossLinkedPeptideIon crossLinkedPeptideIon = new CrossLinkedPeptideIon(intensity, shifted_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinkedPeptideFragmentIon);
+            crossLinkedPeptideIons.add(crossLinkedPeptideIon);
         }
         return crossLinkedPeptideIons;
-
     }
 
     private ArrayList<Ion> get_ions(HashMap<Integer, ArrayList<Ion>> fragment_ions, boolean is_n_termini) {
