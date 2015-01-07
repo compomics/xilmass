@@ -20,7 +20,7 @@ import java.util.ArrayList;
  *
  * @author Sule
  */
-public class LinkedPeptideIon {
+public class LinkedPeptideFragmentIon {
 
     private Peptide linkedPeptide;
     private int index_linkedPeptide;
@@ -28,7 +28,7 @@ public class LinkedPeptideIon {
     private ArrayList<Double> cTerminiMasses = new ArrayList<Double>(),
             nTerminiMasses = new ArrayList<Double>();
 
-    public LinkedPeptideIon(Peptide linkedPeptide, int index_linkedPeptide) {
+    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int index_linkedPeptide) {
         this.linkedPeptide = linkedPeptide;
         this.index_linkedPeptide = index_linkedPeptide;
         getAALinkedPeptide();
