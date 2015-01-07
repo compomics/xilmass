@@ -7,13 +7,18 @@
 package theoretical;
 
 /**
- *
+ * It shows which ion type is on a crossLinkedPeptide
+ * 
+ * Example: RLGK*PGS|AI*KN
+ * 
+ * PeptideFragmentIons - RLGKPGS and RGWAKAM 
+ * CrossLinkerIon - DSS/EDC orBS3..
+ * LinkedPeptideFragmentIon - AI*KN would yield ions of cK, IK, AIK, KN, IKN, AIKN
+ * 
  * @author Sule
  */
-public enum IonType {
-    
+public enum IonType {    
     PeptideFragmentIon,
     CrossLinkerIon,
-    CrossLinkedPeptideFragmentIon
-    
+    LinkedPeptideFragmentIon    
 }
