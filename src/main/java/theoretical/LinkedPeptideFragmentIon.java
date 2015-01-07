@@ -103,7 +103,7 @@ public class LinkedPeptideFragmentIon {
         int startIndex = index_linkedPeptide,
                 lpeptideLength = linkedPeptide.getSequence().length();
         double startMass = 0;
-        double nTerminiMassAddition = getMassDiff(type);
+        double nTerminiMassAddition = getMassDiff(type);    
         for (int i = startIndex; i < lpeptideLength; i++) {
             char start = linkedPeptide.getSequence().charAt(i);
             // here is the first one with N termini 
