@@ -7,10 +7,13 @@
 package crossLinker;
 
 /**
- *
+ * This enum class hold names for each implemented cross linker agents
+ * 
  * @author Sule
  */
 public enum CrossLinkerName {
     DSS,
-    EDC   
+    EDC,
+    BS3,
+    GA
 }
