@@ -14,10 +14,11 @@ import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import java.util.HashMap;
 
 /**
- *
+ * This class generates theoretical spectra for a crosslinked peptide.
+ * 
  * @author Sule
  */
-public class CrossLinkedPeptides {
+public class CPeptides {
 
     private Peptide peptide_alpha,// longer peptide
             peptide_beta;// shorter peptide
@@ -28,7 +29,7 @@ public class CrossLinkedPeptides {
     private int fragment_ion_charge,
             c_termini_type = PeptideFragmentIon.Y_ION,
             n_termini_type = PeptideFragmentIon.B_ION;
-    private ArrayList<CrossLinkedPeptideIon> theoterical_ions = new ArrayList<CrossLinkedPeptideIon>();
+    private ArrayList<CPeptideIon> theoterical_ions = new ArrayList<CPeptideIon>();
     private IonFactory fragmentFactory = IonFactory.getInstance();
     private HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> ions_alpha_peptide,
             ions_beta_peptide;
@@ -37,7 +38,8 @@ public class CrossLinkedPeptides {
     private boolean is_monoisotopic_mass = true;
     private double intensity = 100;
 
-    public CrossLinkedPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge) {
+    /* Constructor */
+    public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge) {
         this.peptide_alpha = peptide_alpha;
         this.peptide_beta = peptide_beta;
         this.linker = linker;
@@ -51,7 +53,7 @@ public class CrossLinkedPeptides {
         fragment_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
     }
 
-    public CrossLinkedPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge, boolean is_monoisotopic_mass) {
+    public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge, boolean is_monoisotopic_mass) {
         this.peptide_alpha = peptide_alpha;
         this.peptide_beta = peptide_beta;
         this.linker = linker;
@@ -66,7 +68,7 @@ public class CrossLinkedPeptides {
         fragment_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
     }
 
-    public CrossLinkedPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode,
+    public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode,
             int fragment_ion_charge, int n_termini_ion_type, int c_termini_ion_type) {
         this.peptide_alpha = peptide_alpha;
         this.peptide_beta = peptide_beta;
@@ -83,7 +85,7 @@ public class CrossLinkedPeptides {
         this.c_termini_type = c_termini_ion_type;
     }
 
-    public CrossLinkedPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, 
+    public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode,
             int fragment_ion_charge, boolean is_monoisotopic_mass, int n_termini_ion_type, int c_termini_ion_type) {
         this.peptide_alpha = peptide_alpha;
         this.peptide_beta = peptide_beta;
@@ -101,6 +103,7 @@ public class CrossLinkedPeptides {
         this.c_termini_type = c_termini_ion_type;
     }
 
+    /* getters and setters */
     public Peptide getPeptide_alpha() {
         return peptide_alpha;
     }
@@ -157,15 +160,20 @@ public class CrossLinkedPeptides {
         this.fragment_ion_charge = fragment_ion_charge;
     }
 
-    public ArrayList<CrossLinkedPeptideIon> getTheoterical_ions() {
+    /**
+     * This method generates theoretical spectrum with 4 steps via calling prepare_theoretical_spectrum method.
+     * 
+     * @return 
+     */
+    public ArrayList<CPeptideIon> getTheoterical_ions() {
         if (theoterical_ions.isEmpty()) {
-            prepare_theoretical_spectrumAlt();
+            prepare_theoretical_spectrum();
             // TODO: Make sure sorting!
         }
         return theoterical_ions;
     }
 
-    public void setTheoterical_ions(ArrayList<CrossLinkedPeptideIon> theoterical_ions) {
+    public void setTheoterical_ions(ArrayList<CPeptideIon> theoterical_ions) {
         this.theoterical_ions = theoterical_ions;
     }
 
@@ -225,21 +233,11 @@ public class CrossLinkedPeptides {
         this.intensity = intensity;
     }
 
-//    public void prepare_theoretical_spectrum() {
-//        prepare_only_peptide(fragment_ions_alpha);
-//        prepare_only_peptide(fragment_ions_beta);
-//        ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions_alpha = prepare_linked_peptide(fragment_ions_alpha, fragment_ions_beta, linker_position_on_alpha);
-//        ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions_beta = prepare_linked_peptide(fragment_ions_beta, fragment_ions_alpha, linker_position_on_beta);
-//        theoterical_ions.addAll(all_linked_peptide_ions_alpha);
-//        theoterical_ions.addAll(all_linked_peptide_ions_beta);
-//        // sort them all 
-//    }
-
-    public void prepare_theoretical_spectrumAlt() {
+    public void prepare_theoretical_spectrum() {
         prepare_only_peptide(fragment_ions_alpha);
         prepare_only_peptide(fragment_ions_beta);
-        ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions_alpha = prepare_linked_peptideAlt(fragment_ions_alpha, peptide_alpha, linker_position_on_alpha);
-        ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions_beta = prepare_linked_peptideAlt(fragment_ions_beta, peptide_beta, linker_position_on_beta);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_alpha = prepare_linked_peptide(fragment_ions_alpha, linker_position_on_alpha, peptide_beta, linker_position_on_beta);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_beta = prepare_linked_peptide(fragment_ions_beta, linker_position_on_beta, peptide_alpha, linker_position_on_alpha);
         theoterical_ions.addAll(all_linked_peptide_ions_alpha);
         theoterical_ions.addAll(all_linked_peptide_ions_beta);
         // sort them all 
@@ -256,7 +254,7 @@ public class CrossLinkedPeptides {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     for (Ion ion : tmp_ions) {
 
-                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
+                        CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
                     }
                 }
@@ -265,7 +263,7 @@ public class CrossLinkedPeptides {
                 if (ion_type == 2 || ion_type == 5) {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     for (Ion ion : tmp_ions) {
-                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
+                        CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
                     }
                 }
@@ -274,7 +272,7 @@ public class CrossLinkedPeptides {
                 if (ion_type == 0 || ion_type == 3) {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     for (Ion ion : tmp_ions) {
-                        CrossLinkedPeptideIon cIon = new CrossLinkedPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
+                        CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
                     }
                 }
@@ -307,108 +305,98 @@ public class CrossLinkedPeptides {
      *
      * @param peptide is
      */
-//    private ArrayList<CrossLinkedPeptideIon> prepare_linked_peptide(HashMap<Integer, ArrayList<Ion>> fragment_ions,
-//            HashMap<Integer, ArrayList<Ion>> fragment_ions_linked,
-//            int linker_position) {
-//        ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions = new ArrayList<CrossLinkedPeptideIon>();
-//        // get a start ion
-//        ArrayList<Ion> n_termini_ions = get_ions(fragment_ions, true),
-//                c_termini_ions = get_ions(fragment_ions, false),
-//                n_termini_fragment_ions_linked = get_ions(fragment_ions_linked, true),
-//                c_termini_fragment_ions_linked = get_ions(fragment_ions_linked, false);
-//        double massShiftType0 = linker.getMassShift_Type0(),
-//                massShiftType2 = linker.getMassShift_Type2();
-//
-//        // Now only b ions (or a or c ions)/N-termini
-//        for (int i = linker_position; i < n_termini_ions.size(); i++) {
-//            Ion ion = n_termini_ions.get(i);
-//            // now add all fragment ions to 
-//            // first add a mass to this one            
-//            double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
-//            // now add all linked fragment ions to each ions from now on.
-//            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
-//            all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
-//            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ions(ion, massShiftType2, n_termini_fragment_ions_linked);
-//            all_linked_peptide_ions.addAll(linked_peptide_ions);
-//        }
-//        // For c-termini
-//        for (int i = linker_position; i > 0; i--) {
-//            Ion ion = c_termini_ions.get(i);
-//            // now add all fragment ions to 
-//            // first add a mass to this one
-//            double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
-//            // now add all linked fragment ions to each ions from now on.
-//            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
-//            all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
-//            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ions(ion, massShiftType2, c_termini_fragment_ions_linked);
-//            all_linked_peptide_ions.addAll(linked_peptide_ions);
-//        }
-//        return all_linked_peptide_ions;
-//    }
-//       private ArrayList<CrossLinkedPeptideIon> get_linked_peptide_ions(Ion ion, double mass, ArrayList<Ion> linked_ions) {
-//        ArrayList<CrossLinkedPeptideIon> crossLinkedPeptideIons = new ArrayList<CrossLinkedPeptideIon>();
-//        for (Ion linked_ion : linked_ions) {
-//            double shifted_mass = ion.getTheoreticMass() + mass + linked_ion.getTheoreticMass();
-//            CrossLinkedPeptideIon crossLinkedPeptideIon = new CrossLinkedPeptideIon(intensity, shifted_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinkedPeptideFragmentIon);
-//            crossLinkedPeptideIons.add(crossLinkedPeptideIon);
-//        }
-//        return crossLinkedPeptideIons;
-//    }
 
-    private ArrayList<CrossLinkedPeptideIon> prepare_linked_peptideAlt(HashMap<Integer, ArrayList<Ion>> fragment_ions,
+    private ArrayList<CPeptideIon> prepare_linked_peptide(HashMap<Integer, ArrayList<Ion>> fragment_ions,
+            int linker_location_on_fragment_ions,
             Peptide linkedPeptide,
-            int linker_position) {
-        ArrayList<CrossLinkedPeptideIon> all_linked_peptide_ions = new ArrayList<CrossLinkedPeptideIon>();
-        // get a start ion
-        ArrayList<Ion> n_termini_ions = get_ions(fragment_ions, true),
-                c_termini_ions = get_ions(fragment_ions, false);
+            int linker_position_on_linkedPeptide) {
 
-        LinkedPeptideIon obj = new LinkedPeptideIon(linkedPeptide, linker_position);
-        // here temini information necessary 
-        ArrayList<Double> cTerminiMasses = obj.getcTerminiMasses(c_termini_type),
-                nTerminiMasses = obj.getnTerminiMasses(n_termini_type);
+        ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
+        ArrayList<CPeptideIon> all_linked_peptide_ions_ntermini = prepare_linked_peptide_for_n_termini(fragment_ions, linker_location_on_fragment_ions, linkedPeptide, linker_position_on_linkedPeptide);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_ctermini = prepare_linked_peptide_for_c_termini(fragment_ions, linker_location_on_fragment_ions, linkedPeptide, linker_position_on_linkedPeptide);
+        all_linked_peptide_ions.addAll(all_linked_peptide_ions_ntermini);
+        all_linked_peptide_ions.addAll(all_linked_peptide_ions_ctermini);
+        return all_linked_peptide_ions;
+    }
 
+    private ArrayList<CPeptideIon> prepare_linked_peptide_for_n_termini(HashMap<Integer, ArrayList<Ion>> fragment_ions,
+            int linker_location_on_fragment_ions,
+            Peptide linkedPeptide,
+            int linker_position_on_linkedPeptide) {
+        ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
+        ArrayList<Ion> n_termini_fragment_ions = get_ions(fragment_ions, true);
+        LinkedPeptideFragmentIon obj = new LinkedPeptideFragmentIon(linkedPeptide, linker_position_on_linkedPeptide);
+        ArrayList<Double> nTerminiMasses = obj.getnTerminiMasses(n_termini_type);
         double massShiftType0 = linker.getMassShift_Type0(),
                 massShiftType2 = linker.getMassShift_Type2();
         // Now only b ions (or a or c ions)/N-termini
-        for (int i = linker_position; i < n_termini_ions.size(); i++) {
-            Ion ion = n_termini_ions.get(i);
+        for (int i = linker_location_on_fragment_ions; i < n_termini_fragment_ions.size(); i++) {
+            // linked peptides are attached to this ion
+            Ion ion = n_termini_fragment_ions.get(i);
             // now add all fragment ions to 
             // first add a mass to this one            
             double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
             // now add all linked fragment ions to each ions from now on.
-            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
+            CPeptideIon crossLinkedPeptideOnlywithLinker = new CPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, IonType.CrossLinkerIon);
             all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
 
-            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ionsAlt(ion, massShiftType2, nTerminiMasses);
-            all_linked_peptide_ions.addAll(linked_peptide_ions);
-        }
-        // For c-termini
-        for (int i = linker_position; i > 0; i--) {
-            Ion ion = c_termini_ions.get(i);
-            // now add all fragment ions to 
-            // first add a mass to this one
-            double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
-            // now add all linked fragment ions to each ions from now on.
-            CrossLinkedPeptideIon crossLinkedPeptideOnlywithLinker = new CrossLinkedPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinker);
-            all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
-
-            ArrayList<CrossLinkedPeptideIon> linked_peptide_ions = get_linked_peptide_ionsAlt(ion, massShiftType2, cTerminiMasses);
+            ArrayList<CPeptideIon> linked_peptide_ions = get_linked_peptide_ionsAlt(ion, massShiftType2, nTerminiMasses);
             all_linked_peptide_ions.addAll(linked_peptide_ions);
         }
         return all_linked_peptide_ions;
     }
 
-    private ArrayList<CrossLinkedPeptideIon> get_linked_peptide_ionsAlt(Ion ion, double mass, ArrayList<Double> linked_ions_masses) {
-        ArrayList<CrossLinkedPeptideIon> crossLinkedPeptideIons = new ArrayList<CrossLinkedPeptideIon>();
+    private ArrayList<CPeptideIon> prepare_linked_peptide_for_c_termini(
+            HashMap<Integer, ArrayList<Ion>> fragment_ions,
+            int linker_location_on_fragment_ions,
+            Peptide linkedPeptide,
+            int linker_position_on_linkedPeptide) {
+        
+        ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
+        ArrayList<Ion> c_termini_fragment_ions = get_ions(fragment_ions, false);
+        LinkedPeptideFragmentIon obj = new LinkedPeptideFragmentIon(linkedPeptide, linker_position_on_linkedPeptide);
+        ArrayList<Double> cTerminiMasses = obj.getcTerminiMasses(c_termini_type);
+        double massShiftType0 = linker.getMassShift_Type0(),
+                massShiftType2 = linker.getMassShift_Type2();
+        // Now only b ions (or a or c ions)/N-termini
+        for (int i = linker_location_on_fragment_ions; i > 0; i--) {
+            // linked peptides are attached to this ion
+            Ion ion = c_termini_fragment_ions.get(i);
+            // now add all fragment ions to 
+            // first add a mass to this one            
+            double ion_with_only_linker_mass = ion.getTheoreticMass() + massShiftType0;
+            // now add all linked fragment ions to each ions from now on.
+            CPeptideIon crossLinkedPeptideOnlywithLinker = new CPeptideIon(intensity, ion_with_only_linker_mass, fragment_ion_charge, IonType.CrossLinkerIon);
+            all_linked_peptide_ions.add(crossLinkedPeptideOnlywithLinker);
+
+            ArrayList<CPeptideIon> linked_peptide_ions = get_linked_peptide_ionsAlt(ion, massShiftType2, cTerminiMasses);
+            all_linked_peptide_ions.addAll(linked_peptide_ions);
+        }
+        return all_linked_peptide_ions;
+    }
+
+    private ArrayList<CPeptideIon> get_linked_peptide_ionsAlt(Ion ion, double mass, ArrayList<Double> linked_ions_masses) {
+        ArrayList<CPeptideIon> crossLinkedPeptideIons = new ArrayList<CPeptideIon>();
         for (Double linked_mass : linked_ions_masses) {
             double shifted_mass = ion.getTheoreticMass() + mass + linked_mass;
-            CrossLinkedPeptideIon crossLinkedPeptideIon = new CrossLinkedPeptideIon(intensity, shifted_mass, fragment_ion_charge, CrossLinkedPeptideIonType.CrossLinkedPeptideFragmentIon);
+            CPeptideIon crossLinkedPeptideIon = new CPeptideIon(intensity, shifted_mass, fragment_ion_charge, IonType.LinkedPeptideFragmentIon);
             crossLinkedPeptideIons.add(crossLinkedPeptideIon);
         }
         return crossLinkedPeptideIons;
     }
 
+    /**
+     * This method select product ions based on fragmentation mode for including
+     * either n-termini or c-termini. 
+     * CID: b and y ions 
+     * ETD: c and z ions 
+     * HCD: a and x ions
+     *
+     * @param fragment_ions All possible product ions already generated from a Peptide
+     * @param is_n_termini either includes n-termini (a/b/c ions) or c-termini (x/y/z ions)
+     * 
+     * @return an arraylist of ions for selected product ions
+     */
     private ArrayList<Ion> get_ions(HashMap<Integer, ArrayList<Ion>> fragment_ions, boolean is_n_termini) {
         ArrayList<Ion> ions = new ArrayList<Ion>();
         for (Integer ion_type : fragment_ions.keySet()) {
