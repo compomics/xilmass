@@ -13,6 +13,7 @@ import crossLinker.CrossLinker;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * This class generates theoretical spectra for a crosslinked peptide.
@@ -266,6 +267,9 @@ public class CPeptides {
         prepare_only_peptide(product_ions_beta);
         prepare_linked_peptide(product_ions_alpha, linker_position_on_alpha, peptide_beta, linker_position_on_beta);
         prepare_linked_peptide(product_ions_beta, linker_position_on_beta, peptide_alpha, linker_position_on_alpha);
+        // here remove duplicated stuff
+        HashSet<CPeptideIon> set = new HashSet<CPeptideIon>(theoterical_ions);
+        theoterical_ions = new ArrayList<CPeptideIon>(set);
         // sort them all theoterical_ions
         Collections.sort(theoterical_ions, CPeptideIon.Ion_ASC_mass_order);
     }
@@ -364,7 +368,7 @@ public class CPeptides {
             int linker_location_on_product_ions,
             Peptide linkedPeptide,
             int linker_position_on_linkedPeptide) {
-        
+
         ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
         ArrayList<Ion> n_termini_product_ions = get_ions(product_ions, true);
         LinkedPeptideFragmentIon obj = new LinkedPeptideFragmentIon(linkedPeptide, linker_position_on_linkedPeptide);
