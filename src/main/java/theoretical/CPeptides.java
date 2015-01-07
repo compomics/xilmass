@@ -33,8 +33,8 @@ public class CPeptides {
     private IonFactory fragmentFactory = IonFactory.getInstance();
     private HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> ions_alpha_peptide,
             ions_beta_peptide;
-    private HashMap<Integer, ArrayList<Ion>> fragment_ions_alpha,
-            fragment_ions_beta;
+    private HashMap<Integer, ArrayList<Ion>> product_ions_alpha,
+            product_ions_beta;
     private boolean is_monoisotopic_mass = true;
     private double intensity = 100;
 
@@ -48,9 +48,9 @@ public class CPeptides {
         this.fragmentation_mode = fragmentation_mode;
         this.fragment_ion_charge = fragment_ion_charge;
         ions_alpha_peptide = fragmentFactory.getFragmentIons(peptide_alpha);
-        fragment_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
+        product_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
         ions_beta_peptide = fragmentFactory.getFragmentIons(peptide_beta);
-        fragment_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
+        product_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
     }
 
     public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge, boolean is_monoisotopic_mass) {
@@ -63,9 +63,9 @@ public class CPeptides {
         this.fragment_ion_charge = fragment_ion_charge;
         this.is_monoisotopic_mass = is_monoisotopic_mass;
         ions_alpha_peptide = fragmentFactory.getFragmentIons(peptide_alpha);
-        fragment_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
+        product_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
         ions_beta_peptide = fragmentFactory.getFragmentIons(peptide_beta);
-        fragment_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
+        product_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
     }
 
     public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode,
@@ -78,9 +78,9 @@ public class CPeptides {
         this.fragmentation_mode = fragmentation_mode;
         this.fragment_ion_charge = fragment_ion_charge;
         ions_alpha_peptide = fragmentFactory.getFragmentIons(peptide_alpha);
-        fragment_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
+        product_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
         ions_beta_peptide = fragmentFactory.getFragmentIons(peptide_beta);
-        fragment_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
+        product_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
         this.n_termini_type = n_termini_ion_type;
         this.c_termini_type = c_termini_ion_type;
     }
@@ -96,9 +96,9 @@ public class CPeptides {
         this.fragment_ion_charge = fragment_ion_charge;
         this.is_monoisotopic_mass = is_monoisotopic_mass;
         ions_alpha_peptide = fragmentFactory.getFragmentIons(peptide_alpha);
-        fragment_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
+        product_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
         ions_beta_peptide = fragmentFactory.getFragmentIons(peptide_beta);
-        fragment_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
+        product_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
         this.n_termini_type = n_termini_ion_type;
         this.c_termini_type = c_termini_ion_type;
     }
@@ -201,20 +201,36 @@ public class CPeptides {
         this.ions_beta_peptide = ions_beta_peptide;
     }
 
-    public HashMap<Integer, ArrayList<Ion>> getFragment_ions_alpha() {
-        return fragment_ions_alpha;
+    public int getC_termini_type() {
+        return c_termini_type;
     }
 
-    public void setFragment_ions_alpha(HashMap<Integer, ArrayList<Ion>> fragment_ions_alpha) {
-        this.fragment_ions_alpha = fragment_ions_alpha;
+    public void setC_termini_type(int c_termini_type) {
+        this.c_termini_type = c_termini_type;
     }
 
-    public HashMap<Integer, ArrayList<Ion>> getFragment_ions_beta() {
-        return fragment_ions_beta;
+    public int getN_termini_type() {
+        return n_termini_type;
     }
 
-    public void setFragment_ions_beta(HashMap<Integer, ArrayList<Ion>> fragment_ions_beta) {
-        this.fragment_ions_beta = fragment_ions_beta;
+    public void setN_termini_type(int n_termini_type) {
+        this.n_termini_type = n_termini_type;
+    }
+
+    public HashMap<Integer, ArrayList<Ion>> getProduct_ions_alpha() {
+        return product_ions_alpha;
+    }
+
+    public void setProduct_ions_alpha(HashMap<Integer, ArrayList<Ion>> product_ions_alpha) {
+        this.product_ions_alpha = product_ions_alpha;
+    }
+
+    public HashMap<Integer, ArrayList<Ion>> getProduct_ions_beta() {
+        return product_ions_beta;
+    }
+
+    public void setProduct_ions_beta(HashMap<Integer, ArrayList<Ion>> product_ions_beta) {
+        this.product_ions_beta = product_ions_beta;
     }
 
     public boolean isIs_monoisotopic_mass() {
@@ -233,11 +249,17 @@ public class CPeptides {
         this.intensity = intensity;
     }
 
+    /**
+     * This method generates a theoretical spectrum.
+     * 
+     * This, first, generates product ions for alpha and beta peptides
+     * 
+     */
     public void prepare_theoretical_spectrum() {
-        prepare_only_peptide(fragment_ions_alpha);
-        prepare_only_peptide(fragment_ions_beta);
-        ArrayList<CPeptideIon> all_linked_peptide_ions_alpha = prepare_linked_peptide(fragment_ions_alpha, linker_position_on_alpha, peptide_beta, linker_position_on_beta);
-        ArrayList<CPeptideIon> all_linked_peptide_ions_beta = prepare_linked_peptide(fragment_ions_beta, linker_position_on_beta, peptide_alpha, linker_position_on_alpha);
+        prepare_only_peptide(product_ions_alpha);
+        prepare_only_peptide(product_ions_beta);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_alpha = prepare_linked_peptide(product_ions_alpha, linker_position_on_alpha, peptide_beta, linker_position_on_beta);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_beta = prepare_linked_peptide(product_ions_beta, linker_position_on_beta, peptide_alpha, linker_position_on_alpha);
         theoterical_ions.addAll(all_linked_peptide_ions_alpha);
         theoterical_ions.addAll(all_linked_peptide_ions_beta);
         // sort them all 
