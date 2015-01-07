@@ -8,29 +8,29 @@ package theoretical;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
 
 /**
- * This class holds information about cross linked peptide without considering any linking
+ * This class holds information about all cross linked peptide ions!
  * 
  * @author Sule
  */
-public class PeptideIon {
+public class CPeptideIon {
 
     private double intensity,
             monoisotopic_mass;
     private int charge;
     private IonType type = IonType.PeptideFragmentIon;
 
-    public PeptideIon(double intensity, double mass) {
+    public CPeptideIon(double intensity, double mass) {
         this.intensity = intensity;
         this.monoisotopic_mass = mass;
     }
 
-    public PeptideIon(double intensity, double mass, int charge) {
+    public CPeptideIon(double intensity, double mass, int charge) {
         this.intensity = intensity;
         this.charge = charge;
         this.monoisotopic_mass = mass;
     }
 
-    public PeptideIon(double intensity, double mass, int charge, IonType type) {
+    public CPeptideIon(double intensity, double mass, int charge, IonType type) {
         this.intensity = intensity;
         this.charge = charge;
         this.type = type;
