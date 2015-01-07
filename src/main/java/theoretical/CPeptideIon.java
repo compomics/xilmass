@@ -6,10 +6,11 @@
 package theoretical;
 
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
+import java.util.Comparator;
 
 /**
  * This class holds information about all cross linked peptide ions!
- * 
+ *
  * @author Sule
  */
 public class CPeptideIon {
@@ -88,5 +89,50 @@ public class CPeptideIon {
     public double get_theoretical_mz() {
         return (monoisotopic_mass + charge * ElementaryIon.proton.getTheoreticMass()) / charge;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (int) (Double.doubleToLongBits(this.intensity) ^ (Double.doubleToLongBits(this.intensity) >>> 32));
+        hash = 89 * hash + (int) (Double.doubleToLongBits(this.monoisotopic_mass) ^ (Double.doubleToLongBits(this.monoisotopic_mass) >>> 32));
+        hash = 89 * hash + this.charge;
+        hash = 89 * hash + (this.type != null ? this.type.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CPeptideIon other = (CPeptideIon) obj;
+        if (Double.doubleToLongBits(this.intensity) != Double.doubleToLongBits(other.intensity)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.monoisotopic_mass) != Double.doubleToLongBits(other.monoisotopic_mass)) {
+            return false;
+        }
+        if (this.charge != other.charge) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * To sort CPeptideIon in a ascending mass order
+     */
+    static final Comparator<CPeptideIon> Ion_ASC_mass_order
+            = new Comparator<CPeptideIon>() {
+                @Override
+                public int compare(CPeptideIon o1, CPeptideIon o2) {
+                    return o1.getMass() < o2.getMass() ? -1 : o1.getMass() == o2.getMass() ? 0 : 1;
+                }
+            };
 
 }
