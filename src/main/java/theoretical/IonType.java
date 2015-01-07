@@ -10,10 +10,10 @@ package theoretical;
  *
  * @author Sule
  */
-public enum CrossLinkedPeptideIonType {
+public enum IonType {
     
     PeptideFragmentIon,
-    CrossLinker,
+    CrossLinkerIon,
     CrossLinkedPeptideFragmentIon
     
 }

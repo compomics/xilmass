@@ -8,40 +8,41 @@ package theoretical;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
 
 /**
- *
+ * This class holds information about cross linked peptide without considering any linking
+ * 
  * @author Sule
  */
-public class CrossLinkedPeptideIon {
+public class PeptideIon {
 
     private double intensity,
-            mass;
+            monoisotopic_mass;
     private int charge;
-    private CrossLinkedPeptideIonType type = CrossLinkedPeptideIonType.PeptideFragmentIon;
+    private IonType type = IonType.PeptideFragmentIon;
 
-    public CrossLinkedPeptideIon(double intensity, double mass) {
+    public PeptideIon(double intensity, double mass) {
         this.intensity = intensity;
-        this.mass = mass;
+        this.monoisotopic_mass = mass;
     }
 
-    public CrossLinkedPeptideIon(double intensity, double mass, int charge) {
+    public PeptideIon(double intensity, double mass, int charge) {
         this.intensity = intensity;
         this.charge = charge;
-        this.mass = mass;
+        this.monoisotopic_mass = mass;
     }
 
-    public CrossLinkedPeptideIon(double intensity, double mass, int charge, CrossLinkedPeptideIonType type) {
+    public PeptideIon(double intensity, double mass, int charge, IonType type) {
         this.intensity = intensity;
         this.charge = charge;
         this.type = type;
-        this.mass = mass;
+        this.monoisotopic_mass = mass;
     }
 
     public double getMass() {
-        return mass;
+        return monoisotopic_mass;
     }
 
     public void setMass(double mass) {
-        this.mass = mass;
+        this.monoisotopic_mass = mass;
     }
 
     public double getIntensity() {
@@ -60,11 +61,11 @@ public class CrossLinkedPeptideIon {
         this.charge = charge;
     }
 
-    public CrossLinkedPeptideIonType getType() {
+    public IonType getType() {
         return type;
     }
 
-    public void setType(CrossLinkedPeptideIonType type) {
+    public void setType(IonType type) {
         this.type = type;
     }
 
@@ -75,7 +76,7 @@ public class CrossLinkedPeptideIon {
      * @return a theoretical m/z
      */
     public double get_theoretical_mz(int chargeValue) {
-        return (mass + chargeValue * ElementaryIon.proton.getTheoreticMass()) / chargeValue;
+        return (monoisotopic_mass + chargeValue * ElementaryIon.proton.getTheoreticMass()) / chargeValue;
     }
 
     /**
@@ -85,7 +86,7 @@ public class CrossLinkedPeptideIon {
      * @return a theoretical m/z
      */
     public double get_theoretical_mz() {
-        return (mass + charge * ElementaryIon.proton.getTheoreticMass()) / charge;
+        return (monoisotopic_mass + charge * ElementaryIon.proton.getTheoreticMass()) / charge;
     }
 
 }
