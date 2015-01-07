@@ -220,8 +220,7 @@ public class CPeptidesTest extends TestCase {
      */
     public void testGetTheoterical_ions() throws FileNotFoundException, IOException {
         System.out.println("getTheoterical_ions");
-        CPeptides instance = null;
-
+        
         String peptide_alpha_str = "MLSDA",
                 peptide_beta_str = "AIKN";
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
@@ -233,15 +232,7 @@ public class CPeptidesTest extends TestCase {
 
         CPeptides o = new CPeptides(peptide_alpha, peptide_beta, linker, 3, 2, FragmentationMode.CID, 1);
         ArrayList<CPeptideIon> result = o.getTheoterical_ions();
-        
-        System.out.println("Start");
-        for(CPeptideIon i : result){
-            System.out.println(i.getMass());
-        }
-
-        System.out.println("End");
-        
-        ArrayList<CPeptideIon> expResult = null;
+              
         assertEquals(59, result.size());
 
         File test_theoSpec = new File("Data/Test/theoretical/test_MassTheoSpec.txt");
@@ -251,8 +242,7 @@ public class CPeptidesTest extends TestCase {
         while ((line = br.readLine()) != null) {
             if (!line.startsWith("Mass")) {
                 double tmp_mass = Double.parseDouble(line.split("\t")[0]);
-                assertEquals(tmp_mass, result.get(count).getMass(), 0.05);
-                
+                assertEquals(tmp_mass, result.get(count).getMass(), 0.05);                
                 count++;
             }
         }
