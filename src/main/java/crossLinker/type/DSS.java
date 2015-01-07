@@ -5,6 +5,7 @@
  */
 package crossLinker.type;
 
+import com.compomics.util.experiment.biology.Atom;
 import crossLinker.CrossLinker;
 import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
@@ -22,8 +23,12 @@ public class DSS extends CrossLinker {
     public DSS() {
         this.name = CrossLinkerName.DSS;
         this.type = CrossLinkerType.homobifunctional;
-        super.massShift_Type0 = 253;
-        super.massShift_Type2 = 138.0681;
+        double moleculeMass = (8*Atom.C.getMonoisotopicMass())+ (2*Atom.O.getMonoisotopicMass())+(12*Atom.H.getMonoisotopicMass());
+        super.massShift_Type0 = moleculeMass - (Atom.O.getMonoisotopicMass());
+        super.massShift_Type2 = moleculeMass - (2*Atom.H.getMonoisotopicMass());
+        
+        super.massShift_Type0 = 253.0000; // TODO: ask about this Type0 shift! This must be accurate!!!!!
+       // super.massShift_Type2 = 138.0681000;
     }
 
 }
