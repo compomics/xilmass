@@ -7,7 +7,9 @@
 package theoretical;
 
 /**
- *
+ * The enum class for a fragmentation mode.
+ * Based on this only selected ion types are retrieved
+ * 
  * @author Sule
  */
 public enum FragmentationMode {
