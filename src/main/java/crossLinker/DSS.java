@@ -6,15 +6,18 @@
 package crossLinker;
 
 /**
- *
+ * Disuccinimidylsuberate
+ * C16H20N2O8
+ * 
  * @author Sule
  */
 public class DSS extends CrossLinker {
 
     public DSS() {
         this.name = CrossLinkerName.DSS;
-        this.massDift = 138.0681;
         this.type = CrossLinkerType.homobifunctional;
+        super.massShift_Type0 = 253;
+        super.massShift_Type2 = 138.0681;
     }
 
 }
