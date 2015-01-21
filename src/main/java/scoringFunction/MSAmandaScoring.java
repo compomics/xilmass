@@ -17,7 +17,7 @@ import util.CMathUtil;
  *
  * @author Sule
  */
-public class MSAmandaScoring extends BionominalProbabilityBasedScoring {
+public class MSAmandaScoring extends CumulativeBionominalProbabilityBasedScoring {
 
     private double intensity, // sum of all intensities from every picked peak
             explainedIntensity; // sum of all intensities from matched picked peak
