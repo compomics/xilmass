@@ -5,6 +5,7 @@
  */
 package database;
 
+import com.compomics.util.protein.Protein;
 import crossLinker.CrossLinker;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +16,8 @@ import java.util.HashMap;
  */
 public class Find_LinkerPosition {
 
-    public static HashMap<String, ArrayList<Integer>> find_possibly_linker_locations(String startSequence, CrossLinker crossLinker) {
+    public static HashMap<String, ArrayList<Integer>> find_possibly_linker_locations(Protein startProtein, CrossLinker crossLinker) {
+        String startSequence = startProtein.getSequence().getSequence();
         HashMap<String, ArrayList<Integer>> crossLinker_and_indices = new HashMap<String, ArrayList<Integer>>();
         switch (crossLinker.getName()) {
             case BS3:
@@ -49,8 +51,8 @@ public class Find_LinkerPosition {
             }
         }
         crossLinker_and_indices.put("K", indices_K);
-        crossLinker_and_indices.put("D", indices_D);
         crossLinker_and_indices.put("E", indices_E);
+        crossLinker_and_indices.put("D", indices_D);
     }
 
     private static void link_homobifunctional(String startSequence, HashMap<String, ArrayList<Integer>> crossLinker_and_indices) {
@@ -59,8 +61,8 @@ public class Find_LinkerPosition {
         for (int i = 0; i < startSequence.length(); i++) {
             char charAt = startSequence.charAt(i);
             if (charAt == 'K' && i != startSequence.length() - 1) {
-                indices.add(i);
-            }
+                        indices.add(i);
+                    }
             crossLinker_and_indices.put("K", indices);
         }
     }
