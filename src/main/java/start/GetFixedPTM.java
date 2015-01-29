@@ -9,10 +9,8 @@ import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -22,7 +20,7 @@ import org.xmlpull.v1.XmlPullParserException;
 public class GetFixedPTM {
 
     
-    public static ArrayList<ModificationMatch> getPTM(PTMFactory ptmFactory, boolean isUserDefinedMods, String ptmName, String peptideSequence) throws XmlPullParserException, IOException {
+    public static ArrayList<ModificationMatch> getPTM(PTMFactory ptmFactory, String ptmName, String peptideSequence) throws XmlPullParserException, IOException {
         ArrayList<ModificationMatch> modifications = new ArrayList<ModificationMatch>();
         // Getting one fixed PTMs
         PTM testPTM = ptmFactory.getPTM(ptmName);
