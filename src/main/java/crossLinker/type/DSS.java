@@ -24,7 +24,7 @@ public class DSS extends CrossLinker {
         this.name = CrossLinkerName.DSS;
         this.type = CrossLinkerType.homobifunctional;
         double moleculeMass = (8*Atom.C.getMonoisotopicMass())+ (2*Atom.O.getMonoisotopicMass())+(12*Atom.H.getMonoisotopicMass());
-        super.massShift_Type0 = moleculeMass - (Atom.O.getMonoisotopicMass());
+        super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
         super.massShift_Type2 = moleculeMass - (2*Atom.H.getMonoisotopicMass());
         
         super.massShift_Type0 = 253.0000; // TODO: ask about this Type0 shift! This must be accurate!!!!!
