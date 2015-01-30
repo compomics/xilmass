@@ -20,7 +20,7 @@ public class BS3 extends CrossLinker {
         this.name = CrossLinkerName.BS3;
         this.type = CrossLinkerType.homobifunctional; // K-K     
         double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * Atom.H.getMonoisotopicMass());
-        super.massShift_Type0 = moleculeMass - (Atom.O.getMonoisotopicMass());
+        super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
         super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass());
     }
 
@@ -33,11 +33,11 @@ public class BS3 extends CrossLinker {
                 deuterium_mass = Atom.H.getIsotopeMass(1);
         if (isLabeled) {
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * deuterium_mass);
-            super.massShift_Type0 = moleculeMass - (Atom.O.getMonoisotopicMass());
+            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * deuterium_mass);
         } else {
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
-            super.massShift_Type0 = moleculeMass - (Atom.O.getMonoisotopicMass());
+            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
         }
     }
