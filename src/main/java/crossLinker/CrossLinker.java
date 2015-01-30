@@ -17,8 +17,8 @@ import com.compomics.util.experiment.biology.ions.ElementaryIon;
 public abstract class CrossLinker {
 
     protected CrossLinkerName name; // name
-    protected double massShift_Type2, // when a linker connected to both peptides
-            massShift_Type0; // when a linker only connected to one peptide
+    protected double massShift_Type2, // when a linker connected to both peptides - intra protein
+            massShift_Type0; // when a linker only connected to one peptide - monolink/dead end
     protected CrossLinkerType type; // either homobifunctional or heterobifunctional
     protected boolean isLabeled; // TODO: For the future, if we also consider labelled cross linker
 
