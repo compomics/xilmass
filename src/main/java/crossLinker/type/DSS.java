@@ -11,7 +11,7 @@ import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
 
 /**
- * Disuccinimidylsuberate
+ * Disuccinimidyl suberate
  * C16H20N2O8
  * TODO: Ask about these Type0 and Type2 reactions!
 
@@ -27,8 +27,27 @@ public class DSS extends CrossLinker {
         super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
         super.massShift_Type2 = moleculeMass - (2*Atom.H.getMonoisotopicMass());
         
-        super.massShift_Type0 = 253.0000; // TODO: ask about this Type0 shift! This must be accurate!!!!!
+//        super.massShift_Type0 = 253.0000; // TODO: ask about this Type0 shift! This must be accurate!!!!!
        // super.massShift_Type2 = 138.0681000;
+    }
+
+    
+    // To introduce heavy options, otherwise it is "light only"
+    // Here deteurium is used instead of hydrogen atom
+    public DSS(boolean isLabeled) {
+        this.name = CrossLinkerName.BS3;
+        this.type = CrossLinkerType.homobifunctional; // K-K     
+        double hydrogen_mass = Atom.H.getMonoisotopicMass(),
+                deuterium_mass = Atom.H.getIsotopeMass(1);
+        if (isLabeled) {
+            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * deuterium_mass);
+            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
+            super.massShift_Type2 = moleculeMass - (2 * deuterium_mass);
+        } else {
+            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
+            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
+            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
+        }
     }
 
 }
