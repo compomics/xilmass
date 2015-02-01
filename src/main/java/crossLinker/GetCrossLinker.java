@@ -16,16 +16,22 @@ import crossLinker.type.GA;
  */
 public class GetCrossLinker {
 
-    public static CrossLinker getCrossLinker(String crossLinkerName) throws Exception { 
+    public static CrossLinker getCrossLinker(String crossLinkerName, boolean isLabeled) throws Exception {
         CrossLinker linker = null;
         if (crossLinkerName.equals("EDC")) {
             linker = new EDC();
+            if (isLabeled) {
+                throw (new Exception("Using leabeled EDC is not supported, yet!"));
+            }
         } else if (crossLinkerName.equals("BS3")) {
-            linker = new BS3();
+            linker = new BS3(isLabeled);
         } else if (crossLinkerName.equals("GA")) {
             linker = new GA();
+            if (isLabeled) {
+                throw (new Exception("Using leabeled EDC is not supported, yet!"));
+            }
         } else if (crossLinkerName.equals("DSS")) {
-            linker = new DSS();
+            linker = new DSS(isLabeled);
         } else if (!crossLinkerName.equals("DSS")) {
             throw new Exception("Not supported cross linker! Choose between DSS/EDC/BS3 or GA! ");
         }
