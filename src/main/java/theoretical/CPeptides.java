@@ -8,12 +8,14 @@ package theoretical;
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
 import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import crossLinker.CrossLinker;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * This class generates theoretical spectra for a crosslinked peptide.
@@ -38,9 +40,20 @@ public class CPeptides {
     private HashMap<Integer, ArrayList<Ion>> product_ions_alpha,
             product_ions_beta;
     private boolean is_monoisotopic_mass = true;
-    private double intensity = 100;
+    private double intensity = 100,
+            theoretical_mass = 0;
 
     /* Constructor */
+    public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode) {
+        this.peptide_alpha = peptide_alpha;
+        this.peptide_beta = peptide_beta;
+        this.linker = linker;
+        this.linker_position_on_alpha = linker_position_on_alpha;
+        this.linker_position_on_beta = linker_position_on_beta;
+        this.fragmentation_mode = fragmentation_mode;
+
+    }
+
     public CPeptides(Peptide peptide_alpha, Peptide peptide_beta, CrossLinker linker, int linker_position_on_alpha, int linker_position_on_beta, FragmentationMode fragmentation_mode, int fragment_ion_charge) {
         this.peptide_alpha = peptide_alpha;
         this.peptide_beta = peptide_beta;
@@ -173,7 +186,18 @@ public class CPeptides {
      */
     public ArrayList<CPeptideIon> getTheoterical_ions() {
         if (theoterical_ions.isEmpty()) {
-            prepare_theoretical_spectrum();
+            ions_alpha_peptide = fragmentFactory.getFragmentIons(peptide_alpha);
+            product_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
+            ions_beta_peptide = fragmentFactory.getFragmentIons(peptide_beta);
+            product_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
+            prepare_theoretical_spectrum(fragment_ion_charge);
+        }
+        return theoterical_ions;
+    }
+
+    public ArrayList<CPeptideIon> getTheoterical_ions(int fragmentation_charge) {
+        if (theoterical_ions.isEmpty()) {    
+            prepare_theoretical_spectrum(fragmentation_charge);
         }
         return theoterical_ions;
     }
@@ -254,6 +278,20 @@ public class CPeptides {
         this.intensity = intensity;
     }
 
+    public double getTheoretical_mass() {
+        if (theoretical_mass == 0) {
+            double tmp_mass_peptide_alpha = peptide_alpha.getMass(),
+                    tmp_mass_peptide_beta = peptide_beta.getMass(),
+                    tmp_mass_linker = linker.getMassShift_Type2();
+            theoretical_mass = tmp_mass_peptide_alpha + tmp_mass_peptide_beta + tmp_mass_linker;
+        }
+        return theoretical_mass;
+    }
+
+    public void setTheoretical_mass(double theoretical_mass) {
+        this.theoretical_mass = theoretical_mass;
+    }
+
     /**
      * This method generates a theoretical spectrum.
      *
@@ -261,17 +299,29 @@ public class CPeptides {
      * Then, it constructs linked peptide ions and attaches them to product ions
      * from a peptide
      *
+     * @param fragment_ion_charge
      */
-    public void prepare_theoretical_spectrum() {
-        prepare_only_peptide(product_ions_alpha);
-        prepare_only_peptide(product_ions_beta);
-        prepare_linked_peptide(product_ions_alpha, linker_position_on_alpha, peptide_beta, linker_position_on_beta);
-        prepare_linked_peptide(product_ions_beta, linker_position_on_beta, peptide_alpha, linker_position_on_alpha);
-        // here remove duplicated stuff
-        HashSet<CPeptideIon> set = new HashSet<CPeptideIon>(theoterical_ions);
-        theoterical_ions = new ArrayList<CPeptideIon>(set);
-        // sort them all theoterical_ions
+    public void prepare_theoretical_spectrum(int fragment_ion_charge) {
+        
+        if (theoterical_ions.isEmpty()) {
+            ions_alpha_peptide = fragmentFactory.getFragmentIons(peptide_alpha);
+            product_ions_alpha = ions_alpha_peptide.get(0); // only peptide fragment ions
+            ions_beta_peptide = fragmentFactory.getFragmentIons(peptide_beta);
+            product_ions_beta = ions_beta_peptide.get(0); // only peptide fragment ions
+        }
+        
+        for (int i = fragment_ion_charge; i > 0; i--) {
+            prepare_only_peptide(product_ions_alpha, i);
+            prepare_only_peptide(product_ions_beta, i);
+            prepare_linked_peptide(product_ions_alpha, linker_position_on_alpha, peptide_beta, linker_position_on_beta, i);
+            prepare_linked_peptide(product_ions_beta, linker_position_on_beta, peptide_alpha, linker_position_on_alpha, i);
+            // here remove duplicated stuff
+            HashSet<CPeptideIon> set = new HashSet<CPeptideIon>(theoterical_ions);
+            theoterical_ions.addAll(new ArrayList<CPeptideIon>(set));
+            // sort them all theoterical_ions
+        }
         Collections.sort(theoterical_ions, CPeptideIon.Ion_ASC_mass_order);
+
     }
 
     /**
@@ -279,7 +329,7 @@ public class CPeptides {
      *
      * @param product_ions
      */
-    private void prepare_only_peptide(HashMap<Integer, ArrayList<Ion>> product_ions) {
+    private void prepare_only_peptide(HashMap<Integer, ArrayList<Ion>> product_ions, int fragment_ion_charge) {
         // get only peptide fragment ions
         for (Integer ion_type : product_ions.keySet()) {
             // 0= a, 1=b, 2=c, 3=x, 4=y, 5=z
@@ -288,9 +338,11 @@ public class CPeptides {
                 if (ion_type == 1 || ion_type == 4) {
                     // ? b1 is not observed much, so removed it or keep it?
                     ArrayList<Ion> tmp_ions = product_ions.get(ion_type);
+
                     for (Ion ion : tmp_ions) {
                         CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), fragment_ion_charge);
                         theoterical_ions.add(cIon);
+
                     }
                 }
             } else if (fragmentation_mode.equals(FragmentationMode.ETD)) {
@@ -342,11 +394,12 @@ public class CPeptides {
     private ArrayList<CPeptideIon> prepare_linked_peptide(HashMap<Integer, ArrayList<Ion>> product_ions,
             int linker_location_on_product_ions,
             Peptide linkedPeptide,
-            int linker_position_on_linkedPeptide) {
+            int linker_position_on_linkedPeptide,
+            int fragment_ion_charge) {
 
         ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
-        ArrayList<CPeptideIon> all_linked_peptide_ions_ntermini = prepare_linked_peptide_for_n_termini(product_ions, linker_location_on_product_ions, linkedPeptide, linker_position_on_linkedPeptide);
-        ArrayList<CPeptideIon> all_linked_peptide_ions_ctermini = prepare_linked_peptide_for_c_termini(product_ions, linker_location_on_product_ions, linkedPeptide, linker_position_on_linkedPeptide);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_ntermini = prepare_linked_peptide_for_n_termini(product_ions, linker_location_on_product_ions, linkedPeptide, linker_position_on_linkedPeptide, fragment_ion_charge);
+        ArrayList<CPeptideIon> all_linked_peptide_ions_ctermini = prepare_linked_peptide_for_c_termini(product_ions, linker_location_on_product_ions, linkedPeptide, linker_position_on_linkedPeptide, fragment_ion_charge);
         all_linked_peptide_ions.addAll(all_linked_peptide_ions_ntermini);
         all_linked_peptide_ions.addAll(all_linked_peptide_ions_ctermini);
 
@@ -367,7 +420,8 @@ public class CPeptides {
             HashMap<Integer, ArrayList<Ion>> product_ions,
             int linker_location_on_product_ions,
             Peptide linkedPeptide,
-            int linker_position_on_linkedPeptide) {
+            int linker_position_on_linkedPeptide,
+            int fragment_ion_charge) {
 
         ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
         ArrayList<Ion> n_termini_product_ions = get_ions(product_ions, true);
@@ -406,7 +460,8 @@ public class CPeptides {
             HashMap<Integer, ArrayList<Ion>> product_ions,
             int linker_location_on_product_ions,
             Peptide linkedPeptide,
-            int linker_position_on_linkedPeptide) {
+            int linker_position_on_linkedPeptide,
+            int fragment_ion_charge) {
 
         ArrayList<CPeptideIon> all_linked_peptide_ions = new ArrayList<CPeptideIon>();
         ArrayList<Ion> c_termini_product_ions = get_ions(product_ions, false);
@@ -415,6 +470,7 @@ public class CPeptides {
         double massShiftType0 = linker.getMassShift_Type0(),
                 massShiftType2 = linker.getMassShift_Type2();
         // Now only b ions (or a or c ions)/N-termini
+        // If a linker is on the end this fails! 
         for (int i = linker_location_on_product_ions; i > 0; i--) {
             // linked peptides are attached to this ion
             Ion ion = c_termini_product_ions.get(i);
@@ -489,20 +545,22 @@ public class CPeptides {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     ions.addAll(tmp_ions);
                 }
-            } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
-                // mostly a and x ions
-                if (ion_type == 0 && is_n_termini) { // & ions
-                    // ? b1 is not observed much, so removed it or keep it?
-                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
-                    ions.addAll(tmp_ions);
-                } else if (ion_type == 3 && !is_n_termini) { // y ions
-                    // ? b1 is not observed much, so removed it or keep it?
-                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
-                    ions.addAll(tmp_ions);
-                }
+//            } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
+//                // mostly a and x ions
+//                if (ion_type == 0 && is_n_termini) { // & ions
+//                    // ? b1 is not observed much, so removed it or keep it?
+//                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
+//                    ions.addAll(tmp_ions);
+//                } else if (ion_type == 3 && !is_n_termini) { // y ions
+//                    // ? b1 is not observed much, so removed it or keep it?
+//                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
+//                    ions.addAll(tmp_ions);
+//                }
             }
         }
         return ions;
     }
 
+    
+    
 }

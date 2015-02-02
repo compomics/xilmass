@@ -6,6 +6,7 @@
 package theoretical;
 
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
+import theoretical.IonType;
 import java.util.Comparator;
 
 /**
@@ -19,10 +20,12 @@ public class CPeptideIon {
             monoisotopic_mass;
     private int charge;
     private IonType type = IonType.PeptideFragmentIon;
+    private String name; 
 
     public CPeptideIon(double intensity, double mass) {
         this.intensity = intensity;
         this.monoisotopic_mass = mass;
+        type = IonType.PeptideFragmentIon;
     }
 
     public CPeptideIon(double intensity, double mass, int charge) {
