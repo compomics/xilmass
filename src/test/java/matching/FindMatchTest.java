@@ -51,7 +51,7 @@ public class FindMatchTest extends TestCase {
         MSnSpectrum ms = null;
 
         for (File mgf : new File(expMGFFolder).listFiles()) {
-            if (mgf.getName().endsWith("mgf")) {
+            if (mgf.getName().endsWith("uniform_match_testing.mgf")) {
                 System.out.println(mgf.getName());
                 SpectrumFactory fct = SpectrumFactory.getInstance();
                 fct.addSpectra(mgf);
@@ -86,6 +86,8 @@ public class FindMatchTest extends TestCase {
         assertEquals(103.7, result.get(4).mz);
         
         assertEquals(5, result.size());
+        
+        System.out.println(instance.getPSMscore());
     }
 
     /**

@@ -60,8 +60,7 @@ public class GetFixedPTMTest {
         // Getting one fixed PTMs
         PTM ptmName = ptmFactory.getPTM("carbamidomethyl c");
         String theoreticPTM = ptmName.getName();
-        boolean isUserDefinedMods = false;
-        ArrayList<ModificationMatch> result = GetFixedPTM.getPTM(ptmFactory, isUserDefinedMods, theoreticPTM, peptideSequence);
+        ArrayList<ModificationMatch> result = GetFixedPTM.getPTM(ptmFactory, theoreticPTM, peptideSequence);
         for (ModificationMatch acMatch : result) {
             assertEquals(theoreticPTM, acMatch.getTheoreticPtm());
             assertEquals(3, acMatch.getModificationSite());

@@ -19,6 +19,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -30,14 +35,20 @@ public class CPeptidesTest extends TestCase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    @After
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -492,7 +503,42 @@ public class CPeptidesTest extends TestCase {
     public void testPrepare_theoretical_spectrum() {
         System.out.println("prepare_theoretical_spectrum");
         CPeptides instance = null;
-        instance.prepare_theoretical_spectrum();
+//        instance.prepare_theoretical_spectrum();
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of getTheoretical_mass method, of class CPeptides.
+     */
+    @Test
+    public void testGetTheoretical_mass() {
+        System.out.println("getTheoretical_mass");
+        
+        String peptide_alpha_str = "MLSDA",
+                peptide_beta_str = "AIKN";
+        ArrayList<String> parent_proteins_test = new ArrayList<String>();
+        parent_proteins_test.add("Pro1");
+        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+        Peptide peptide_alpha = new Peptide(peptide_alpha_str, parent_proteins_test, modifications_test),
+                peptide_beta = new Peptide(peptide_beta_str, parent_proteins_test, modifications_test);
+        CrossLinker linker = new DSS();
+        CPeptides instance = new CPeptides(peptide_alpha, peptide_beta, linker, 3, 2, FragmentationMode.CID, 1);
+
+        double expResult = 535.2385 + 444.2769 + 138.0681000;
+        double result = instance.getTheoretical_mass();
+        assertEquals(expResult, result, 0.1);
+    }
+
+    /**
+     * Test of setTheoretical_mass method, of class CPeptides.
+     */
+    @Test
+    public void testSetTheoretical_mass() {
+        System.out.println("setTheoretical_mass");
+        double theoretical_mass = 0.0;
+        CPeptides instance = null;
+        instance.setTheoretical_mass(theoretical_mass);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
