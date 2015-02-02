@@ -16,10 +16,11 @@ import com.compomics.dbtoolkit.io.interfaces.ProteinFilter;
 import com.compomics.util.io.MascotEnzymeReader;
 import com.compomics.util.protein.Enzyme;
 import com.compomics.util.protein.Protein;
+import crossLinker.CrossLinker;
 import crossLinker.CrossLinkerName;
-import java.io.BufferedWriter;
+import crossLinker.CrossLinkerType;
+import crossLinker.GetCrossLinker;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -37,194 +38,81 @@ import java.util.StringTokenizer;
  */
 public class CreateDatabase {
 
-    private String inputFileName,
-            outputFileName,
-            crossLinker,
-            enzymeFilename = "C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\resources\\enzymes.txt",
+    private String inputProteinFileName, // input fasta file
+            inSilicoPeptideDBName, // in silico digested fasta file
+            crossLinkerName, // a cross linker name 
+            crossLinkedProteinTypes = "Both", // "Intra"(Different proteins), "Inter" (Same proteins) "Both" (Same and different proteins)           
             enzymeName = "Trypsin",
-            miscl = "2",
+            enzymeFileName, // an enzyme file from DBToolKit
+            miscl = "2", // miscleaveged number - Important to create combination, but if it is higher, search space is drastically increased
             filter,
-            lowMass = "600",
-            highMass = "4000",
-            filterParam = "",
-            crossLinked_protein_types = "Both"; //"Both"-"Inter" or "Intra"
-    private File input,
-            output,
-            crossLinkedDB;
-    private int minLen = 4,
-            maxLen_for_combined = 40;
-    private boolean is_inverted = false;
+            lowMass = "0", // Default, I do not give any permission to remove any short peptides before cross linking
+            highMass = "40000", // Default, I do not give any permission to remove any long peptides before cross linking
+            filterParam = "";
+    private int minLen = 0,
+            maxLen_for_combined = 50; // How many amino acids are on one cross linked peptides
+    private File inputProteinFile,
+            inSilicoPeptideDB;
+    private boolean does_a_peptide_link_to_itself = false; // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
+    private CrossLinker linker;
+    private HashMap<String, String> header_sequence = new HashMap<String, String>();
 
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename, String enzymeName,
-            String miscl, String filter, String lowMass, String highMass, String filterParam, String crossLinked_protein_types,
-            int minLen, int maxLen_for_combined) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
+    public CreateDatabase(String givenDBName, String inSilicoPeptideDBName, String cxDBName, // db related parameters
+            String crossLinkerName, String crossLinkedProteinTypes, // crossLinkerName related parameters
+            String enzymeName, String enzymeFileName, String misclevaged, // enzyme related parameters
+            String lowMass, String highMass, // filtering of in silico peptides on peptide masses
+            int minLen, int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
+            boolean does_link_to_itself, boolean isLabeled) throws Exception {
+        // db related parameters
+        inputProteinFileName = givenDBName;
+        this.inSilicoPeptideDBName = inSilicoPeptideDBName;
+        // crossLinkerName related parameters
+        this.crossLinkerName = crossLinkerName;
+        this.crossLinkedProteinTypes = crossLinkedProteinTypes;
+        // enzyme related
         this.enzymeName = enzymeName;
-        this.miscl = miscl;
-        this.filter = filter;
+        this.enzymeFileName = enzymeFileName;
+        miscl = misclevaged;
+        // filtering parameters
         this.lowMass = lowMass;
         this.highMass = highMass;
-        this.filterParam = filterParam;
-        this.crossLinked_protein_types = crossLinked_protein_types;
         this.minLen = minLen;
         this.maxLen_for_combined = maxLen_for_combined;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename, String enzymeName,
-            String miscl, String filter, String lowMass, String highMass, String filterParam, String crossLinked_protein_types) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.enzymeName = enzymeName;
-        this.miscl = miscl;
-        this.filter = filter;
-        this.lowMass = lowMass;
-        this.highMass = highMass;
-        this.filterParam = filterParam;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename,
-            String crossLinked_protein_types, int minLen, int maxLen_for_combined) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.minLen = minLen;
-        this.maxLen_for_combined = maxLen_for_combined;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker,
-            String crossLinked_protein_types, int minLen, int maxLen_for_combined) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.minLen = minLen;
-        this.maxLen_for_combined = maxLen_for_combined;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename, String enzymeName,
-            String miscl, String filter, String filterParam, String crossLinked_protein_types) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.enzymeName = enzymeName;
-        this.miscl = miscl;
-        this.filter = filter;
-        this.filterParam = filterParam;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename, String enzymeName,
-            String miscl, String filter, String lowMass, String highMass, String filterParam, String crossLinked_protein_types,
-            int minLen, int maxLen_for_combined, boolean is_inverted) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.enzymeName = enzymeName;
-        this.miscl = miscl;
-        this.filter = filter;
-        this.lowMass = lowMass;
-        this.highMass = highMass;
-        this.filterParam = filterParam;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.minLen = minLen;
-        this.maxLen_for_combined = maxLen_for_combined;
-        this.is_inverted = is_inverted;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename, String enzymeName,
-            String miscl, String filter, String lowMass, String highMass, String filterParam, String crossLinked_protein_types, boolean is_inverted) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.enzymeName = enzymeName;
-        this.miscl = miscl;
-        this.filter = filter;
-        this.lowMass = lowMass;
-        this.highMass = highMass;
-        this.filterParam = filterParam;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.is_inverted = is_inverted;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename,
-            String crossLinked_protein_types, int minLen, int maxLen_for_combined, boolean is_inverted) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.minLen = minLen;
-        this.maxLen_for_combined = maxLen_for_combined;
-        this.is_inverted = is_inverted;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker,
-            String crossLinked_protein_types, int minLen, int maxLen_for_combined, boolean is_inverted) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.minLen = minLen;
-        this.maxLen_for_combined = maxLen_for_combined;
-        this.is_inverted = is_inverted;
-    }
-
-    public CreateDatabase(String inputFileName, String outputFileName, String crossLinker, String enzymeFilename, String enzymeName,
-            String miscl, String filter, String filterParam, String crossLinked_protein_types, boolean is_inverted) {
-        this.inputFileName = inputFileName;
-        this.outputFileName = outputFileName;
-        this.crossLinker = crossLinker;
-        this.enzymeFilename = enzymeFilename;
-        this.enzymeName = enzymeName;
-        this.miscl = miscl;
-        this.filter = filter;
-        this.filterParam = filterParam;
-        this.crossLinked_protein_types = crossLinked_protein_types;
-        this.is_inverted = is_inverted;
+        this.does_a_peptide_link_to_itself = does_link_to_itself;
+        linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
     }
 
     // getter and setter methods    
     public String getInputFileName() {
-        return inputFileName;
+        return inputProteinFileName;
     }
 
     public void setInputFileName(String inputFileName) {
-        this.inputFileName = inputFileName;
+        this.inputProteinFileName = inputFileName;
     }
 
-    public String getOutputFileName() {
-        return outputFileName;
+    public String getInSilicoPeptideDBName() {
+        return inSilicoPeptideDBName;
     }
 
-    public void setOutputFileName(String outputFileName) {
-        this.outputFileName = outputFileName;
+    public void setInSilicoPeptideDBName(String inSilicoPeptideDBName) {
+        this.inSilicoPeptideDBName = inSilicoPeptideDBName;
     }
 
     public String getCrossLinker() {
-        return crossLinker;
+        return crossLinkerName;
     }
 
     public void setCrossLinker(String crossLinker) {
-        this.crossLinker = crossLinker;
+        this.crossLinkerName = crossLinker;
     }
 
-    public String getEnzymeFilename() {
-        return enzymeFilename;
+    public String getCrossLinked_protein_types() {
+        return crossLinkedProteinTypes;
     }
 
-    public void setEnzymeFilename(String enzymeFilename) {
-        this.enzymeFilename = enzymeFilename;
+    public void setCrossLinked_protein_types(String crossLinked_protein_types) {
+        this.crossLinkedProteinTypes = crossLinked_protein_types;
     }
 
     public String getEnzymeName() {
@@ -243,14 +131,6 @@ public class CreateDatabase {
         this.miscl = miscl;
     }
 
-    public String getFilter() {
-        return filter;
-    }
-
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
-
     public String getLowMass() {
         return lowMass;
     }
@@ -265,46 +145,6 @@ public class CreateDatabase {
 
     public void setHighMass(String highMass) {
         this.highMass = highMass;
-    }
-
-    public String getFilterParam() {
-        return filterParam;
-    }
-
-    public void setFilterParam(String filterParam) {
-        this.filterParam = filterParam;
-    }
-
-    public String getCrossLinked_protein_types() {
-        return crossLinked_protein_types;
-    }
-
-    public void setCrossLinked_protein_types(String crossLinked_protein_types) {
-        this.crossLinked_protein_types = crossLinked_protein_types;
-    }
-
-    public File getCrossLinkedDB() {
-        return crossLinkedDB;
-    }
-
-    public void setCrossLinkedDB(File crossLinkedDB) {
-        this.crossLinkedDB = crossLinkedDB;
-    }
-
-    public File getInput() {
-        return input;
-    }
-
-    public void setInput(File input) {
-        this.input = input;
-    }
-
-    public File getOutput() {
-        return output;
-    }
-
-    public void setOutput(File output) {
-        this.output = output;
     }
 
     public int getMinLen() {
@@ -323,39 +163,79 @@ public class CreateDatabase {
         this.maxLen_for_combined = maxLen_for_combined;
     }
 
-    public void construct() throws UnknownDBFormatException, IOException {
+    public CrossLinker getLinker() {
+        return linker;
+    }
+
+    public void setLinker(CrossLinker linker) {
+        this.linker = linker;
+    }
+
+    /**
+     * This method returns a hashmap containing header and cx sequences If it is
+     * not already generated, it calls construct() method
+     *
+     * @return
+     * @throws UnknownDBFormatException
+     * @throws IOException
+     * @throws Exception
+     */
+    public HashMap<String, String> getHeader_sequence() throws UnknownDBFormatException, IOException, Exception {
+        if (header_sequence.isEmpty()) {
+            construct();
+        }
+        return header_sequence;
+    }
+
+    /**
+     * This method does in silico peptide digestion, then create cross linked
+     * peptide combinations
+     *
+     * @throws UnknownDBFormatException
+     * @throws IOException
+     * @throws Exception
+     */
+    public void construct() throws UnknownDBFormatException, IOException, Exception {
         digest_insilico();
-        // read output file and modify it.
+        // read in silico digested pepti file and generate cross linked peptides
         create_crossLinkedPeptides();
     }
 
-    public void digest_insilico() throws UnknownDBFormatException, IOException {
+    /**
+     * This method does in silico enyzme digestion. This comes from DBToolKit.
+     * In the end, an output file with in silico digested peptides on is
+     * generated.
+     *
+     * @throws UnknownDBFormatException
+     * @throws IOException
+     */
+    private void digest_insilico() throws UnknownDBFormatException, IOException {
         // See if all of this is correct.
-        if (inputFileName == null) {
+        if (inputProteinFileName == null) {
             flagError("You did not specify the '--input <input_file_name>' parameter!\n\nRun program without parameters for help.");
-        } else if (outputFileName == null) {
+        } else if (inSilicoPeptideDBName == null) {
             flagError("You did not specify an outputfile!\n\nRun program without parameters for help.");
         } else {
             // Parameters were all found. Let's see if we can access all files that should be accessed.
             // Note that an existing output_file will result in clean and silent overwrite of the file!
             File enzymeFile = null;
-            if (enzymeFilename != null) {
-                enzymeFile = new File(enzymeFilename);
+            if (enzymeFileName != null) {
+                enzymeFile = new File(enzymeFileName);
                 if (!enzymeFile.exists()) {
                     flagError("The enzyme definitions file you specified (" + enzymeFile + ") could not be found!\nExiting...");
                 }
             }
-            input = new File(inputFileName);
-            output = new File(outputFileName);
-            if (!output.exists()) {
+            inputProteinFile = new File(inputProteinFileName);
+            inSilicoPeptideDB = new File(inSilicoPeptideDBName);
+            if (!inSilicoPeptideDB.exists()) {
                 try {
-                    output.createNewFile();
+                    inSilicoPeptideDB.createNewFile();
                 } catch (IOException ioe) {
-                    flagError("Could not create outputfile (" + outputFileName + "): " + ioe.getMessage());
+                    flagError("Could not create outputfile (" + inSilicoPeptideDBName + "): " + ioe.getMessage());
                 }
             }
-            if (!input.exists()) {
-                flagError("The input file you specified (" + inputFileName + ") could not be found!\nExiting...");
+            if (!inputProteinFile.exists()) {
+                flagError("The input file you specified (" + inputProteinFileName + ") could not be found!\nExiting...");
             } else {
                 // The stuff we've received as input seems to be OK.
                 // Get the props for the AutoDBLoader...
@@ -387,12 +267,12 @@ public class CreateDatabase {
                 AutoDBLoader adb = new AutoDBLoader(classNames);
                 DBLoader loader = null;
                 try {
-                    loader = adb.getLoaderForFile(input.getAbsolutePath());
+                    loader = adb.getLoaderForFile(inputProteinFile.getAbsolutePath());
                 } catch (IOException ioe) {
                 } catch (UnknownDBFormatException udfe) {
                 }
                 if (loader == null) {
-                    flagError("Unable to determine database type for your inputfile (" + inputFileName + "), exiting...");
+                    flagError("Unable to determine database type for your inputfile (" + inputProteinFileName + "), exiting...");
                 }
                 // Parse the enzyme stuff and masses etc.
                 double minMass = -1;
@@ -513,7 +393,7 @@ public class CreateDatabase {
                     massLimits = true;
                 }
 
-                ProcessThread pt = ProcessThread.getSubsetTask(loader, output, null, f, enzyme, massLimits, minMass, maxMass, (ProteinFilter) null);
+                ProcessThread pt = ProcessThread.getSubsetTask(loader, inSilicoPeptideDB, null, f, enzyme, massLimits, minMass, maxMass, (ProteinFilter) null);
 
                 StringBuffer filterSettings = new StringBuffer();
                 if (f == null) {
@@ -535,42 +415,42 @@ public class CreateDatabase {
         }
     }
 
-    public void create_crossLinkedPeptides() throws IOException {
-        DBLoader loader = DBLoaderLoader.loadDB(output),
+    /**
+     * After doing in silico digestion, this method generates all possible
+     * cross-linked peptides based on given criteria
+     *
+     * @throws IOException
+     * @throws Exception
+     */
+    private void create_crossLinkedPeptides() throws IOException, Exception {
+        DBLoader loader = DBLoaderLoader.loadDB(inSilicoPeptideDB),
                 loader_next = null;
-        Protein start_protein = null,
-                next_protein = null;
-        CrossLinkerName linker = CrossLinkerName.DSS;
-        crossLinkedDB = new File(output.getName() + ".fastacp");
-        BufferedWriter bw = new BufferedWriter(new FileWriter(crossLinkedDB));
-        if (crossLinker.equals("EDC")) {
-            linker = CrossLinkerName.EDC;
-        }
-        while ((start_protein = loader.nextProtein()) != null) {
-            String startCoreHeader = start_protein.getHeader().getCoreHeader(),
-                    startHeader = start_protein.getHeader().getAccession(),
-                    startSequence = start_protein.getSequence().getSequence(),
-                    startProteinDescription = start_protein.getHeader().getDescription();
+        Protein startProtein = null,
+                nextProtein = null;
+        // get a crossLinkerName object
+        while ((startProtein = loader.nextProtein()) != null) {
+            String startHeader = startProtein.getHeader().getAccession(),
+                    startSequence = startProtein.getSequence().getSequence();
             // check the first condition
             if (startSequence.length() >= minLen) {
                 // find if there is a possible linker locations.
-                HashMap<String, ArrayList<Integer>> possible_indices = Find_LinkerPosition.find_possibly_linker_locations(startSequence, linker);
-                for (String possible_linked_aa : possible_indices.keySet()) {
-                    ArrayList<Integer> indices = possible_indices.get(possible_linked_aa);
+                HashMap<String, ArrayList<Integer>> possible_indices = Find_LinkerPosition.find_possibly_linker_locations(startProtein, linker);
+                for (String possible_linked_aa_startSeq : possible_indices.keySet()) {
+                    ArrayList<Integer> indices = possible_indices.get(possible_linked_aa_startSeq);
                     for (int index : indices) {
-                        String mod_startSeq = startSequence.substring(0, index + 1) + "*" + startSequence.substring(index + 1);
                         // find for each possible match on the other part
-                        loader_next = DBLoaderLoader.loadDB(output);
-                        while ((next_protein = loader_next.nextProtein()) != null) {
-                            String nextHeader = next_protein.getHeader().getAccession();
+                        loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
+                        while ((nextProtein = loader_next.nextProtein()) != null) {
+                            String nextHeader = nextProtein.getHeader().getAccession();
                             if (nextHeader.equals(startHeader)) {
                                 // put a control to find either inter or intra proteins
-                                if (crossLinked_protein_types.equals("Inter") || crossLinked_protein_types.equals("Both")) {
-                                    generate_peptide_combinations(next_protein, linker, startProteinDescription, startCoreHeader, mod_startSeq, bw, possible_linked_aa, index);
+                                if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
+                                    // header and sequence
+                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
                                 }
                             } else {
-                                if (crossLinked_protein_types.equals("Intra") || crossLinked_protein_types.equals("Both")) {
-                                    generate_peptide_combinations(next_protein, linker, startProteinDescription, startCoreHeader, mod_startSeq, bw, possible_linked_aa, index);
+                                if (crossLinkedProteinTypes.equals("Intra") || crossLinkedProteinTypes.equals("Both")) {
+                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
                                 }
                             }
                         }
@@ -578,76 +458,52 @@ public class CreateDatabase {
                 }
             }
         }
-        System.out.println("A database with cross linked peptide combinations is constructed! The file name is " + outputFileName);
-        bw.close();
+        System.out.println("A database with cross linked peptide combinations is constructed! The file name is " + inSilicoPeptideDBName);
     }
 
-    public HashMap<String, String> generate_peptide_combinations(Protein next_protein, CrossLinkerName linker, String startProteinDescriptionName, String startCoreHeader, String mod_startSeq,
-            BufferedWriter bw, String possible_linked_aa, int index_linked) throws IOException {
-        HashMap<String, String> newHeader_newSequence = new HashMap<String, String>();
-
-        String nextCoreHeader = next_protein.getHeader().getCoreHeader(),
-                nextSequence = next_protein.getSequence().getSequence(),
-                info_for_inversion = "",
-                nextProteinName = next_protein.getHeader().getDescription();
-        if (is_inverted) {
-            nextSequence = new StringBuilder(nextSequence).reverse().toString();
-            info_for_inversion = "_inverted";
-        }
+    public void generate_peptide_combinations(Protein startProtein, boolean is_start_sequence_reversed, Protein nextProtein, String possible_linked_aa_startSeq, int index_linked_aa_startSeq) throws IOException {
+        String startSequence = startProtein.getSequence().getSequence(),
+                nextSequence = nextProtein.getSequence().getSequence();
         // check the condition
         if (nextSequence.length() >= minLen) {
-            HashMap<String, ArrayList<Integer>> next_possible_indices = Find_LinkerPosition.find_possibly_linker_locations(nextSequence, linker);
-            if (linker.equals(CrossLinkerName.DSS)) {
-                for (String next_possible_linker : next_possible_indices.keySet()) {
-                    ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
-                    for (int next_index : next_indices) {
-                        String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-                        String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + (index_linked + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1) + "_" + (next_index + 1) + info_for_inversion;
-                        newHeader = newHeader.replace(" ", "");
-                        newHeader += "|" + startProteinDescriptionName + "_" + nextProteinName;
-                        String newSequence = mod_startSeq + "|" + mod_nextSeq;
-                        if (newSequence.length() < maxLen_for_combined + 3) {
-                            bw.write(newHeader + "\n" + newSequence + "\n");
-//                            System.out.println(newHeader + "\n" + newSequence + "\n");
-                            newHeader_newSequence.put(newHeader.substring(1), newSequence);
+            if ((does_a_peptide_link_to_itself && nextSequence.equals(startSequence)) || (!nextSequence.equals(startSequence))) {
+
+                HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
+
+                if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSS or BS3 or.. So K-K
+                    for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
+
+                        ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
+                        for (Integer next_index : next_indices_liked_aas) {
+                            generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
+                            generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+
                         }
-                    }
-                }
-            } else if (linker.equals(CrossLinkerName.EDC)) {
-                if (possible_linked_aa.equals("K")) {
-                    // the rest should be D or E
-                    for (String next_possible_linker : next_possible_indices.keySet()) {
-                        if (next_possible_linker.equals("D") || next_possible_linker.equals("S")) {
-                            ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
-                            for (int next_index : next_indices) {
-                                String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-                                String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + (index_linked + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1) + "_" + (next_index + 1) + info_for_inversion;
-                                newHeader = newHeader.replace(" ", "");
-                                newHeader += "|" + startProteinDescriptionName + "_" + nextProteinName;
-                                String newSequence = mod_startSeq + "|" + mod_nextSeq;
-                                if (newSequence.length() < maxLen_for_combined + 3) {
-//                                    System.out.println(newHeader + "\n" + newSequence + "\n");
-                                    bw.write(newHeader + "\n" + newSequence + "\n");
-                                    newHeader_newSequence.put(newHeader.substring(1), newSequence);
+                    }//                      
+                } else if (linker.equals(CrossLinkerName.EDC)) {
+                    if (possible_linked_aa_startSeq.equals("K")) {
+                        // the rest should be D or E
+                        for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
+                            if (next_linked_aa.equals("D") || next_linked_aa.equals("S")) {
+                                ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
+                                for (Integer next_index : next_indices_liked_aas) {
+                                    generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
+                                    generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+
                                 }
                             }
                         }
-                    }
-                } else {
-                    // the rest should be K
-                    for (String next_possible_linker : next_possible_indices.keySet()) {
-                        if (next_possible_linker.equals("K")) {
-                            ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
-                            for (int next_index : next_indices) {
-                                String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-                                String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + (index_linked + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1) + "_" + (next_index + 1) + info_for_inversion;
-                                newHeader = newHeader.replace(" ", "");
-                                newHeader += "|" + startProteinDescriptionName + "_" + nextProteinName;
-                                String newSequence = mod_startSeq + "|" + mod_nextSeq;
-                                if (newSequence.length() < maxLen_for_combined + 3) {
-//                                    System.out.println(newHeader + "\n" + newSequence + "\n");
-                                    bw.write(newHeader + "\n" + newSequence + "\n");
-                                    newHeader_newSequence.put(newHeader.substring(1), newSequence);
+                    } else {
+                        // the rest should be K, So either D or S link to K
+                        if (possible_linked_aa_startSeq.equals("D") || possible_linked_aa_startSeq.equals("S")) {
+                            // the rest should be D or E
+                            for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
+                                if (next_linked_aa.equals("K")) {
+                                    ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
+                                    for (Integer next_index : next_indices_liked_aas) {
+                                        generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
+                                        generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+                                    }
                                 }
                             }
                         }
@@ -655,7 +511,6 @@ public class CreateDatabase {
                 }
             }
         }
-        return newHeader_newSequence;
     }
 
     /**
@@ -668,4 +523,34 @@ public class CreateDatabase {
         System.err.println("\n\n" + aMessage + "\n\n");
         System.exit(1);
     }
+
+    private void generate_header_and_sequence(Protein startProtein, Protein nextProtein, int index_linked_aa_startSeq, Integer next_index, boolean is_inverted, boolean is_start_sequence_reversed) throws IOException {
+        String startSequence = startProtein.getSequence().getSequence(),
+                nextSequence = nextProtein.getSequence().getSequence(),
+                mod_startSeq = startSequence.substring(0, index_linked_aa_startSeq + 1) + "*" + startSequence.substring(index_linked_aa_startSeq + 1),
+                info_if_nextSeq_reversed = "",
+                info_if_startSeq_reversed = "",
+                mod_nextSeq = "";
+        int iStart_StartProtein = startProtein.getHeader().getStartLocation(),
+                iEnd_StartProtein = startProtein.getHeader().getEndLocation(),
+                iStart_NextProtein = nextProtein.getHeader().getStartLocation(),
+                iEnd_NextProtein = nextProtein.getHeader().getEndLocation();
+        if (is_inverted) {
+            nextSequence = new StringBuilder(nextSequence).reverse().toString();
+            next_index = nextSequence.length() - next_index - 1;
+            info_if_nextSeq_reversed = "_inverted";
+        }
+        if (is_start_sequence_reversed) {
+            info_if_startSeq_reversed = "_inverted";
+        }
+        // Make sure that a linked amino acid on an inverted sequence is not at the last index
+        if (next_index != nextSequence.length() - 1) {
+            mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
+            String tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
+            String tmp_header = startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")" + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
+                    + nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")" + info_if_nextSeq_reversed + "_" + (next_index + 1);
+            header_sequence.put(tmp_header, tmp_linked_sequence);
+        }
+    }
+
 }

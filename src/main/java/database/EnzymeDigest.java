@@ -70,80 +70,80 @@ public class EnzymeDigest {
         if (crossLinker.equals("EDC")) {
             linker = CrossLinkerName.EDC;
         }
-        while ((start_protein = loader.nextProtein()) != null) {
-            String startCoreHeader = start_protein.getHeader().getCoreHeader(),
-                    startSequence = start_protein.getSequence().getSequence();
-            // check the first condition
-            if (startSequence.length() >= minLen) {
-                // find if there is a possible linker locations.
-                HashMap<String, ArrayList<Integer>> possible_indices = Find_LinkerPosition.find_possibly_linker_locations(startSequence, linker);
-                for (String possible_linked_aa : possible_indices.keySet()) {
-                    ArrayList<Integer> indices = possible_indices.get(possible_linked_aa);
-                    for (int index : indices) {
-                        String mod_startSeq = startSequence.substring(0, index + 1) + "*" + startSequence.substring(index + 1);
-                        // find for each possible match on the other part
-                        loader_next = DBLoaderLoader.loadDB(output);
-                        while ((next_protein = loader_next.nextProtein()) != null) {
-                            String nextCoreHeader = next_protein.getHeader().getCoreHeader(),
-                                    nextSequence = next_protein.getSequence().getSequence();
-                            // check the condition
-                            if (nextSequence.length() >= minLen) {
-                                HashMap<String, ArrayList<Integer>> next_possible_indices = Find_LinkerPosition.find_possibly_linker_locations(nextSequence, linker);
-                                if (linker.equals(CrossLinkerName.DSS)) {
-                                    for (String next_possible_linker : next_possible_indices.keySet()) {
-                                        ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
-                                        for (int next_index : next_indices) {
-                                            String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-                                            String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1);
-                                            newHeader = newHeader.replace(" ", "");
-                                            String newSequence = mod_startSeq + "|" + mod_nextSeq;
-                                            if (newSequence.length() < maxLen + 3) {
-                                                bw.write(newHeader + "\n" + newSequence + "\n");
-                                            }
-                                        }
-                                    }
-                                } else if (linker.equals(CrossLinkerName.EDC)) {
-                                    if (possible_linked_aa.equals("K")) {
-                                        // the rest should be D or E
-                                        for (String next_possible_linker : next_possible_indices.keySet()) {
-                                            if (next_possible_linker.equals("D") || next_possible_linker.equals("S")) {
-                                                ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
-                                                for (int next_index : next_indices) {
-                                                    String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-                                                    String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1);
-                                                    newHeader = newHeader.replace(" ", "");
-                                                    String newSequence = mod_startSeq + "|" + mod_nextSeq;
-                                                    if (newSequence.length() < maxLen + 3) {
-                                                        bw.write(newHeader + "\n" + newSequence + "\n");
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                    } else {
-                                        // the rest should be K
-                                        for (String next_possible_linker : next_possible_indices.keySet()) {
-                                            if (next_possible_linker.equals("K")) {
-                                                ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
-                                                for (int next_index : next_indices) {
-                                                    String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-                                                    String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1);
-                                                    newHeader = newHeader.replace(" ", "");
-                                                    String newSequence = mod_startSeq + "|" + mod_nextSeq;
-                                                    if (newSequence.length() < maxLen + 3) {
-                                                        bw.write(newHeader + "\n" + newSequence + "\n");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        while ((start_protein = loader.nextProtein()) != null) {
+//            String startCoreHeader = start_protein.getHeader().getCoreHeader(),
+//                    startSequence = start_protein.getSequence().getSequence();
+//            // check the first condition
+//            if (startSequence.length() >= minLen) {
+//                // find if there is a possible linker locations.
+//                HashMap<String, ArrayList<Integer>> possible_indices = Find_LinkerPosition.find_possibly_linker_locations(startSequence, linker);
+//                for (String possible_linked_aa : possible_indices.keySet()) {
+//                    ArrayList<Integer> indices = possible_indices.get(possible_linked_aa);
+//                    for (int index : indices) {
+//                        String mod_startSeq = startSequence.substring(0, index + 1) + "*" + startSequence.substring(index + 1);
+//                        // find for each possible match on the other part
+//                        loader_next = DBLoaderLoader.loadDB(output);
+//                        while ((next_protein = loader_next.nextProtein()) != null) {
+//                            String nextCoreHeader = next_protein.getHeader().getCoreHeader(),
+//                                    nextSequence = next_protein.getSequence().getSequence();
+//                            // check the condition
+//                            if (nextSequence.length() >= minLen) {
+//                                HashMap<String, ArrayList<Integer>> next_possible_indices = Find_LinkerPosition.find_possibly_linker_locations(nextSequence, linker);
+//                                if (linker.equals(CrossLinkerName.DSS)) {
+//                                    for (String next_possible_linker : next_possible_indices.keySet()) {
+//                                        ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
+//                                        for (int next_index : next_indices) {
+//                                            String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
+//                                            String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1);
+//                                            newHeader = newHeader.replace(" ", "");
+//                                            String newSequence = mod_startSeq + "|" + mod_nextSeq;
+//                                            if (newSequence.length() < maxLen + 3) {
+//                                                bw.write(newHeader + "\n" + newSequence + "\n");
+//                                            }
+//                                        }
+//                                    }
+//                                } else if (linker.equals(CrossLinkerName.EDC)) {
+//                                    if (possible_linked_aa.equals("K")) {
+//                                        // the rest should be D or E
+//                                        for (String next_possible_linker : next_possible_indices.keySet()) {
+//                                            if (next_possible_linker.equals("D") || next_possible_linker.equals("S")) {
+//                                                ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
+//                                                for (int next_index : next_indices) {
+//                                                    String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
+//                                                    String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1);
+//                                                    newHeader = newHeader.replace(" ", "");
+//                                                    String newSequence = mod_startSeq + "|" + mod_nextSeq;
+//                                                    if (newSequence.length() < maxLen + 3) {
+//                                                        bw.write(newHeader + "\n" + newSequence + "\n");
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//
+//                                    } else {
+//                                        // the rest should be K
+//                                        for (String next_possible_linker : next_possible_indices.keySet()) {
+//                                            if (next_possible_linker.equals("K")) {
+//                                                ArrayList<Integer> next_indices = next_possible_indices.get(next_possible_linker);
+//                                                for (int next_index : next_indices) {
+//                                                    String mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
+//                                                    String newHeader = ">" + startCoreHeader.substring(startCoreHeader.indexOf("|") + 1) + "_" + nextCoreHeader.substring(nextCoreHeader.indexOf("|") + 1);
+//                                                    newHeader = newHeader.replace(" ", "");
+//                                                    String newSequence = mod_startSeq + "|" + mod_nextSeq;
+//                                                    if (newSequence.length() < maxLen + 3) {
+//                                                        bw.write(newHeader + "\n" + newSequence + "\n");
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         bw.close();
     }
 
