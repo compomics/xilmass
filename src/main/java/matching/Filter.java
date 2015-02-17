@@ -98,6 +98,15 @@ public class Filter {
         this.expMSnSpectrum = expMSnSpectrum;
     }
 
+    public double getWindowSize() {
+        return windowSize;
+    }
+
+    public void setWindowSize(double windowSize) {
+        this.windowSize = windowSize;
+    }
+    
+
     /**
      * This method returns a list of peaks which are filtered out from given
      * MSnSpectrum.
