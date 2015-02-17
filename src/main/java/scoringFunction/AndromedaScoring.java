@@ -7,43 +7,46 @@ package scoringFunction;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import util.CMathUtil;
 
 /**
+ * This class calculates cumulative binominal probability based scores with
+ * considering intensities from experimental spectra to
+ * cumulativeBinomialProbability these.
+ *
+ * n: number of matched peaks
+ *
+ * N: number of theoretical peaks
+ *
+ * p: probability,topN/windowSize from a Filter object. Note that topN is [1-10]
+ *
+ * Note that cumulative binominal probability function calculates the score as
+ * inclusive (not exclusive)
+ *
+ *
+ * For each filtered peakList with a given topN parameter, p is calculated as
+ * explained and cumulative binominal probability based scoring function part is
+ * calculated as:
+ *
+ * Probability_Part (PP) = -10*[-log(P)]
+ *
  *
  * @author Sule
  */
-public class AndromedaScoring extends CumulativeBionominalProbabilityBasedScoring {
+public class AndromedaScoring extends CumulativeBinomialProbabilityBasedScoring {
 
     public AndromedaScoring(double p, int N, int n) {
-        super.p = p; // probability=m/100 because they pick the top m peaks in a 100 Da window. They pick [1- 10] peaks
+        super.p = p; // probability=m/windowSize (windowSize=100Da default)m=[1- 10] peaks
         super.N = N; // N: All theoretical peaks at a theoretical spectrum (on Andromeda)
-        super.n = n;// n: Matched peaks is number of matched peaks on theoretical spectrum  
+        super.n = n; // n: Matched peaks is number of matched peaks on theoretical spectrum  
     }
-
-    private double calculateProbabilty() throws Exception {
-        double probability = 0;
-        if (n == N) {
-            double factorial_part = CMathUtil.calculateCombination(N, n);
-            double tmp_probability = factorial_part * (Math.pow(p, n)) * (Math.pow((1 - p), (N - n)));
-            probability += tmp_probability;
-        } else {
-            for (int k = n; k < N - 1; k++) {
-                double factorial_part = CMathUtil.calculateCombination(N, k);
-                double tmp_probability = factorial_part * (Math.pow(p, k)) * (Math.pow((1 - p), (N - k)));
-                probability += tmp_probability;
-            }
-        }
-        return probability;
-    }
+   
 
     @Override
     protected void calculateScore() {
         try {
-            double probability_based_score = calculateProbabilty();
+            double probability_based_score = super.calculateCumulativeBinominalProbability();
             score = - 10 * (Math.log10(probability_based_score));
             isCalculated = true;
-
         } catch (Exception ex) {
             Logger.getLogger(AndromedaScoring.class.getName()).log(Level.SEVERE, null, ex);
         }
