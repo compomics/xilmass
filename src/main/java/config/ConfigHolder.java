@@ -8,23 +8,19 @@ import com.compomics.pride_asa_pipeline.util.ResourceUtils;
 import java.io.IOException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Logger;
 import org.springframework.core.io.Resource;
 
     
 public class ConfigHolder extends PropertiesConfiguration {
 
-    private static final Logger LOGGER = Logger.getLogger(ConfigHolder.class);
     private static ConfigHolder ourInstance;
 
     static {
         try {
-            Resource propertiesResource = ResourceUtils.getResourceByRelativePath("resources/xlinked.properties");
+            Resource propertiesResource = ResourceUtils.getResourceByRelativePath("xLink.properties");
             ourInstance = new ConfigHolder(propertiesResource);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
         } catch (ConfigurationException e) {
-            LOGGER.error(e.getMessage(), e);
         }
     }
 
