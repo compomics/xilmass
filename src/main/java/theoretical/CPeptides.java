@@ -545,17 +545,17 @@ public class CPeptides {
                     ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
                     ions.addAll(tmp_ions);
                 }
-//            } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
-//                // mostly a and x ions
-//                if (ion_type == 0 && is_n_termini) { // & ions
-//                    // ? b1 is not observed much, so removed it or keep it?
-//                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
-//                    ions.addAll(tmp_ions);
-//                } else if (ion_type == 3 && !is_n_termini) { // y ions
-//                    // ? b1 is not observed much, so removed it or keep it?
-//                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
-//                    ions.addAll(tmp_ions);
-//                }
+            } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
+                // predominantly y ion, then b and also a and x ions 
+                if ((ion_type == 0||ion_type == 1) && is_n_termini) { // b or a ions
+                    // ? b1 is not observed much, so removed it or keep it?
+                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
+                    ions.addAll(tmp_ions);
+                } else if ((ion_type == 3 || ion_type == 4) && !is_n_termini) { // y or z ions
+                    // ? b1 is not observed much, so removed it or keep it?
+                    ArrayList<Ion> tmp_ions = fragment_ions.get(ion_type);
+                    ions.addAll(tmp_ions);
+                }
             }
         }
         return ions;
