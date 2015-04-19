@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -56,6 +58,7 @@ public class CreateDatabase {
     private boolean does_a_peptide_link_to_itself = false; // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
+    private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
 
     public CreateDatabase(String givenDBName, String inSilicoPeptideDBName, String cxDBName, // db related parameters
             String crossLinkerName, String crossLinkedProteinTypes, // crossLinkerName related parameters
@@ -410,7 +413,7 @@ public class CreateDatabase {
                 long start = System.currentTimeMillis();
                 pt.run();
                 long end = System.currentTimeMillis();
-                System.out.println("Finished after " + ((end - start) / 1000) + " seconds.");
+                LOGGER.info("In silico digestion is finished after " + ((end - start) / 1000) + " seconds.");
             }
         }
     }
@@ -427,10 +430,20 @@ public class CreateDatabase {
                 loader_next = null;
         Protein startProtein = null,
                 nextProtein = null;
-        // get a crossLinkerName object
+
+        // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
             String startHeader = startProtein.getHeader().getAccession(),
                     startSequence = startProtein.getSequence().getSequence();
+
+            // check if a header comes from a generic! 
+            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
+                String subStr = startHeader.substring(startHeader.indexOf("(") + 1);
+                int firstIndex = Integer.parseInt(subStr.substring(0, subStr.indexOf("-"))),
+                        lastIndex = Integer.parseInt(subStr.substring(subStr.indexOf("-") + 1, subStr.indexOf(")")));
+                startProtein.getHeader().setAccession(startHeader.substring(0, startHeader.indexOf("(")));
+                startProtein.getHeader().setLocation(firstIndex, lastIndex);
+            }
             // check the first condition
             if (startSequence.length() >= minLen) {
                 // find if there is a possible linker locations.
@@ -442,6 +455,13 @@ public class CreateDatabase {
                         loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
                         while ((nextProtein = loader_next.nextProtein()) != null) {
                             String nextHeader = nextProtein.getHeader().getAccession();
+                            if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
+                                String subStr = nextHeader.substring(nextHeader.indexOf("(") + 1);
+                                int firstIndex = Integer.parseInt(subStr.substring(0, subStr.indexOf("-"))),
+                                        lastIndex = Integer.parseInt(subStr.substring(subStr.indexOf("-") + 1, subStr.indexOf(")")));
+                                nextProtein.getHeader().setAccession(nextHeader.substring(0, nextHeader.indexOf("(")));
+                                nextProtein.getHeader().setLocation(firstIndex, lastIndex);
+                            }
                             if (nextHeader.equals(startHeader)) {
                                 // put a control to find either inter or intra proteins
                                 if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
@@ -458,7 +478,7 @@ public class CreateDatabase {
                 }
             }
         }
-        System.out.println("A database with cross linked peptide combinations is constructed! The file name is " + inSilicoPeptideDBName);
+        LOGGER.info("Cross linked peptide combinations are constructed!");
     }
 
     public void generate_peptide_combinations(Protein startProtein, boolean is_start_sequence_reversed, Protein nextProtein, String possible_linked_aa_startSeq, int index_linked_aa_startSeq) throws IOException {
@@ -520,7 +540,7 @@ public class CreateDatabase {
      * @param aMessage String with the error message to display.
      */
     private static void flagError(String aMessage) {
-        System.err.println("\n\n" + aMessage + "\n\n");
+        LOGGER.info("\n\n" + aMessage + "\n\n");
         System.exit(1);
     }
 
@@ -547,7 +567,8 @@ public class CreateDatabase {
         if (next_index != nextSequence.length() - 1) {
             mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
             String tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
-            String tmp_header = startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")" + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
+            String tmp_header = startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")"
+                    + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
                     + nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")" + info_if_nextSeq_reversed + "_" + (next_index + 1);
             header_sequence.put(tmp_header, tmp_linked_sequence);
         }
