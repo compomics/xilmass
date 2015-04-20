@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 /**
@@ -430,12 +429,10 @@ public class CreateDatabase {
                 loader_next = null;
         Protein startProtein = null,
                 nextProtein = null;
-
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
             String startHeader = startProtein.getHeader().getAccession(),
                     startSequence = startProtein.getSequence().getSequence();
-
             // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                 String subStr = startHeader.substring(startHeader.indexOf("(") + 1);
@@ -569,8 +566,16 @@ public class CreateDatabase {
             String tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
             String tmp_header = startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")"
                     + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
-                    + nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")" + info_if_nextSeq_reversed + "_" + (next_index + 1);
-            header_sequence.put(tmp_header, tmp_linked_sequence);
+                    + nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")"
+                    + info_if_nextSeq_reversed + "_" + (next_index + 1);
+
+            String prev_tmp_header = nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")"
+                    + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
+                    + startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")"
+                    + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
+            if (!header_sequence.containsKey(prev_tmp_header)) {
+                header_sequence.put(tmp_header, tmp_linked_sequence);
+            }
         }
     }
 
