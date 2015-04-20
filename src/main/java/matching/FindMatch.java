@@ -9,6 +9,7 @@ import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import scoringFunction.Andromeda;
 import scoringFunction.MSRobin;
 import theoretical.CPeptideIon;
@@ -17,8 +18,7 @@ import theoretical.CPeptides;
 /**
  *
  * This class finds matched peaks between an experimental and theoretical
- * spectrum.
- * Then, it calculates a score! 
+ * spectrum. Then, it calculates a score!
  *
  * @author Sule
  */
@@ -28,25 +28,23 @@ public class FindMatch {
     private ArrayList<CPeptideIon> theoCMS2ions; // theoretical ions for MS2 spectrum on cross linked peptide 
     private CPeptides cPeptides;
     private int charge;
-    private ArrayList<Peak> matchedPeaks = new ArrayList<Peak>(); // found peak on an experimental MS2 spectrum with the same mz from theoCMS2ion
+    private HashSet<Peak> matchedPeaks = new HashSet<Peak>(); // found peak on an experimental MS2 spectrum with the same mz from theoCMS2ion
     private double fragTol; // fragment tolerance, to show mz interval 
-    private double[] diffs = null;
 //    private int situation = 0; // 0-the closest, 1-the highest (like applying noisefilter before and selecting), 2-combination, weighting option
     private int scoring = 0; // 0-MSRobin (MSRobin with N=AllPickedPeaks), 1-Andromeda, 2-TheoMSRobin (MSRobin with N=AllTheoPeaks)
     private int intensity_option = 0;
 
     /* Constructor */
-    public FindMatch(MSnSpectrum expMS2, int scoring, CPeptides cPeptides, double fragTol, int charge) {
+    public FindMatch(MSnSpectrum expMS2, int scoring, CPeptides cPeptides, double fragTol, int charge, int intensity_option) {
         this.scoring = scoring;
         this.expMS2 = expMS2;
         this.charge = charge;
         this.cPeptides = cPeptides;
-        theoCMS2ions = cPeptides.getTheoterical_ions(charge);
-        this.fragTol = fragTol;
-        diffs = new double[theoCMS2ions.size()];
-        for (int i = 0; i < diffs.length; i++) {
-            diffs[i] = Double.MIN_VALUE;
+        if (cPeptides != null) {
+            theoCMS2ions = cPeptides.getTheoterical_ions(charge);
         }
+        this.fragTol = fragTol;
+        this.intensity_option = intensity_option;
     }
 
     /* getters and setters */
@@ -64,6 +62,7 @@ public class FindMatch {
 
     public void setcPeptides(CPeptides cPeptides) {
         this.cPeptides = cPeptides;
+        setTheoCMS2ions(cPeptides.getTheoterical_ions(charge));
     }
 
     public void setTheoCMS2ions(ArrayList<CPeptideIon> theoCMS2ions) {
@@ -106,8 +105,10 @@ public class FindMatch {
         int totalN = getTheoCMS2ions().size();
         ArrayList<Double> scores = new ArrayList<Double>();
         for (int numHighestPeak = 1; numHighestPeak < 11; numHighestPeak++) {
+            matchedPeaks = new HashSet<Peak>();
             Filter filter = new Filter(expMS2, numHighestPeak);
             ArrayList<Peak> filteredPeaks = filter.getFilteredCPeaks();
+//            System.out.println("FilteredSpec size="+filteredPeaks.size());
             double probability = (double) numHighestPeak / (double) (filter.getWindowSize());
             int n = 0;
             double intensities = 0,
@@ -135,21 +136,23 @@ public class FindMatch {
                 are_intensities_ready = true;
                 if (matchedPeak != null) {
                     matchedPeaks.add(matchedPeak);
+//                    System.out.println("\t \t"+ matchedPeak.mz+"\t"+matchedPeak.intensity);
                     explainedIntensities += matchedPeak.intensity;
                 }
             }
             n = matchedPeaks.size();
-            // MSRobin
+//            System.out.println("MatchedPeaks="+n);
+            // MSRobin with expertimentatl spectrum
             if (scoring == 0) {
                 MSRobin object = new MSRobin(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensity_option);
                 double score = object.getScore();
                 scores.add(score);
-            // Andromeda
+                // Andromeda with theoretical spectra size
             } else if (scoring == 1) {
                 Andromeda object = new Andromeda(probability, totalN, n);
                 double score = object.getScore();
                 scores.add(score);
-            // MSRobin with theoretical spectra size
+                // MSRobin with theoretical spectra size
             } else if (scoring == 2) {
                 MSRobin object = new MSRobin(probability, totalN, n, intensities, explainedIntensities, intensity_option);
                 double score = object.getScore();
@@ -158,6 +161,13 @@ public class FindMatch {
         }
         double finalScore = Collections.max(scores);
         return finalScore;
+    }
+
+    public HashSet<Peak> getMatchedPeaks() {
+        if (matchedPeaks.isEmpty()) {
+            getPSMScore();
+        }
+        return matchedPeaks;
     }
 
 }
