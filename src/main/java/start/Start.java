@@ -139,7 +139,7 @@ public class Start {
         LOGGER.info("Getting experimental spectra");
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile));
         String fileTitle = "SpecIndex" + "\t" + "MSnSpectrumTitle" + "\t" + "PrecursorMZ" + "\t" + "Charge" + "\t" + "precursorMass" + "\t" + "theoreticalMass" + "\t";
-        fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "AlphaSequence" + "\t" + "BetaSequence" + "\t";
+        fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "FirstSequence" + "\t" + "SecondSequence" + "\t";
         fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\n";
         bw.write(fileTitle);
 
@@ -164,14 +164,16 @@ public class Start {
                     double precursor_mass = ms.getPrecursor().getMass(charge_value);
                     String peptideAlpha = "",
                             peptideBeta = "";
+                    CPeptides tmpCpeptides = null;
+                    FindMatch f = new FindMatch(ms, scoring, tmpCpeptides, ms2Err, charge_value, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
 
                     for (int i = 0; i < theoretical_masses.size(); i++) {
                         Double theoretical_mass = theoretical_masses.get(i);
                         double tmpMS1Err = CalculateMS1Err.getMS1Err(isPPM, theoretical_mass, precursor_mass);
                         if (tmpMS1Err <= ms1Err) {
-                            // Make sure that different charge states are added to the same theoretical spectra! 
-                            CPeptides tmpCpeptides = cpeptides.get(i);
-                            FindMatch f = new FindMatch(ms, 0, tmpCpeptides, ms2Err, charge_value, intensity_option); // 0 - for MSRobin
+                            // set a temporary xlinked peptide object
+                            tmpCpeptides = cpeptides.get(i);
+                            f.setcPeptides(tmpCpeptides);
                             double psmscore = f.getPSMScore();
 
                             peptideAlpha = (tmpCpeptides.getPeptide_alpha().getSequence());
@@ -179,17 +181,8 @@ public class Start {
 
                             int linkerPositionOnAlpha = tmpCpeptides.getLinker_position_on_alpha(),
                                     linkerPositionOnBeta = tmpCpeptides.getLinker_position_on_beta();
-                            String msAmandaInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + "MSRobin" + "\t" + tmpMS1Err + "\t" + psmscore + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\n");
-                            // Andromeda
-                            bw.write(specInfo + msAmandaInfo);
-
-                            f.setScoring(1);// 1 - for Andromeda
-                            double psmscore2 = f.getPSMScore();
-//                                System.out.print("\t" + "MSAmanda" + "\t" + "PPM error=" + "\t" + bestPPMMSAmanda + "\t" + "MSAmanda derived score=" + maxPMSMSAmanda + "\t" + "AlphaSequence=" + peptideAlphaMSAmanda + "\t" + "BetaSequence=" + peptideBetaMSAmanda + "\n");
-                            // Andromeda
-                            String andromedaInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + "Andromeda" + "\t " + tmpMS1Err + "\t" + psmscore2 + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\n");
-                            bw.write(specInfo + andromedaInfo);
-
+                            String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + "MSRobin" + "\t" + tmpMS1Err + "\t" + psmscore + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\n");
+                            bw.write(specInfo + runningInfo);
                         }
                     }
                 }
