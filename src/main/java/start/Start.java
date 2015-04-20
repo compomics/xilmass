@@ -6,10 +6,7 @@
 package start;
 
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
-import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
@@ -27,26 +24,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import jcuda.*;
-import jcuda.jcublas.*;
-
-import static jcuda.jcublas.JCublas2.*;
-import static jcuda.jcublas.cublasPointerMode.*;
-import jcuda.runtime.JCuda;
-import static jcuda.runtime.JCuda.*;
-import static jcuda.runtime.cudaMemcpyKind.*;
 import matching.FindMatch;
 import org.apache.log4j.Logger;
-import org.xmlpull.v1.XmlPullParserException;
-import theoretical.CPeptideIon;
 import theoretical.CPeptides;
 import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
@@ -85,9 +65,12 @@ public class Start {
                 fragModeName = ConfigHolder.getInstance().getString("fragMode");
         FragmentationMode fragMode = null;
 
-        if (fragModeName.equals(
-                "CID")) {
+        if (fragModeName.equals("CID")) {
             fragMode = FragmentationMode.CID;
+        } else if (fragModeName.equals("HCD")) {
+            fragMode = FragmentationMode.HCD;
+        } else if (fragModeName.equals("ETD")) {
+            fragMode = FragmentationMode.ETD;
         }
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
@@ -159,7 +142,7 @@ public class Start {
         fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "AlphaSequence" + "\t" + "BetaSequence" + "\t";
         fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\n";
         bw.write(fileTitle);
-        
+
         File ms2spectra = new File(mgfs);
         int num = 0;
         // Maybe MSnSpectrum with PMs
