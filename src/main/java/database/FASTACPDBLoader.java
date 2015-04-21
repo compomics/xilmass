@@ -5,9 +5,6 @@
  */
 package database;
 
-import com.compomics.dbtoolkit.io.implementations.DefaultDBLoader;
-import com.compomics.dbtoolkit.io.interfaces.DBLoader;
-import com.compomics.dbtoolkit.io.interfaces.Filter;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
@@ -29,19 +26,20 @@ import theoretical.FragmentationMode;
  *
  * @author Sule
  */
-public class FASTACPDBLoader  {   
-    
-    
-     public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File mass_pept_cache, HashMap<String, String> header_sequence, PTMFactory ptmFactory, String fixed_modification, CrossLinker linker, FragmentationMode fragMode) throws XmlPullParserException, IOException {
+public class FASTACPDBLoader {
+
+    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File mass_pept_cache, HashMap<String, String> header_sequence, PTMFactory ptmFactory, String fixed_modification, CrossLinker linker, FragmentationMode fragMode) throws XmlPullParserException, IOException {
         HashMap<CPeptides, Double> cPeptides_theoreticalMasses = new HashMap<CPeptides, Double>();
         Peptide peptideAlpha = null,
                 peptideBeta = null;
+        String proteinA = null,
+                proteinB = null;
         CPeptides cPeptide = null;
         String seqs = "",
                 startSeq = "",
                 nextSeq = "";
         BufferedWriter bw = new BufferedWriter(new FileWriter(mass_pept_cache));
-        bw.write("start_sequence \t next_sequence \t linker_position_start \t linker_position_next \t theoretical_mass \n");
+        bw.write("proteinA" + "\t" + "proteinB" + "\t" + "peptideA" + "\t" + "peptideB" + "\t" + "linker_position_PepA" + "\t" + "linker_position_PepB" + "\t" + "theoretical_mass" + "\n");
         for (String header : header_sequence.keySet()) {
             // indices must be known to generate a cross linked theoretical spectrum
             String[] split = header.split("_");
@@ -57,6 +55,13 @@ public class FASTACPDBLoader  {
             int linker_position_start = Integer.parseInt(split[startIndex]) - 1,
                     linker_position_next = Integer.parseInt(split[endIndex]) - 1;
             seqs = header_sequence.get(header);
+
+            String[] headerSplit = header.substring(0).split("_");
+
+            proteinA = headerSplit[0];
+            proteinB = headerSplit[2];
+            bw.write(proteinA + "\t" + proteinB + "\t");
+
             startSeq = seqs.substring(0, seqs.indexOf("|")).replace("*", "");
             nextSeq = seqs.substring((seqs.indexOf("|") + 1), seqs.length()).replace("*", "");
             bw.write(startSeq + "\t" + nextSeq + "\t");
@@ -65,41 +70,70 @@ public class FASTACPDBLoader  {
                     ptmBeta = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
             peptideAlpha = new Peptide(startSeq, ptmAlpha);
             peptideBeta = new Peptide(nextSeq, ptmBeta);
-            cPeptide = new CPeptides(peptideAlpha, peptideBeta, linker, linker_position_start, linker_position_next, fragMode);
+            cPeptide = new CPeptides(proteinA, proteinB, peptideAlpha, peptideBeta, linker, linker_position_start, linker_position_next, fragMode);
             bw.write(linker_position_start + "\t" + linker_position_next + "\t");
 
-            double theoretical_mass = cPeptide.getTheoretical_mass();
+            double theoretical_mass = cPeptide.getTheoreticalMass();
             cPeptides_theoreticalMasses.put(cPeptide, theoretical_mass);
             bw.write(theoretical_mass + "\n");
         }
         bw.close();
         return cPeptides_theoreticalMasses;
     }
-     
-     public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, String fixed_modification, CrossLinker linker, FragmentationMode fragMode) throws XmlPullParserException, IOException {
+
+    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, String fixed_modification, CrossLinker linker, FragmentationMode fragMode) throws XmlPullParserException, IOException {
         HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = "";
         while ((line = br.readLine()) != null) {
-            if (!line.startsWith("start")) {
+            if (!line.startsWith("protein")) {
                 String[] split = line.split("\t");
-                String startSeq = split[0],
-                        nextSeq = split[1];
-                Integer linker_position_start = Integer.parseInt(split[2]),
-                        linker_position_next = Integer.parseInt(split[3]);
-                Double theoreticalMass = Double.parseDouble(split[4]);
-
+                String proteinA = split[0],
+                        proteinB = split[1],
+                        startSeq = split[2],
+                        nextSeq = split[3];
+                Integer linker_position_start = Integer.parseInt(split[4]),
+                        linker_position_next = Integer.parseInt(split[5]);
+                Double theoreticalMass = Double.parseDouble(split[6]);
+                
                 ArrayList<ModificationMatch> ptmAlpha = GetFixedPTM.getPTM(ptmFactory, fixed_modification, startSeq),
                         ptmBeta = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
-
+                
                 Peptide peptideAlpha = new Peptide(startSeq, ptmAlpha),
                         peptideBeta = new Peptide(nextSeq, ptmBeta);
-                CPeptides cPeptide = new CPeptides(peptideAlpha, peptideBeta, linker, linker_position_start, linker_position_next, fragMode);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideAlpha, peptideBeta, linker, linker_position_start, linker_position_next, fragMode);
                 cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
             }
         }
         return cPeptide_theoreticalMass;
     }
 
-   
+    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, String fixed_modification, ArrayList<String> variable_modifications, CrossLinker linker, FragmentationMode fragMode) throws XmlPullParserException, IOException {
+        HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line = "";
+        while ((line = br.readLine()) != null) {
+            if (!line.startsWith("start")) {
+                String[] split = line.split("\t");
+                String proteinA = split[0],
+                        proteinB = split[1],
+                        startSeq = split[2],
+                        nextSeq = split[3];
+                Integer linker_position_start = Integer.parseInt(split[4]),
+                        linker_position_next = Integer.parseInt(split[5]);
+                Double theoreticalMass = Double.parseDouble(split[6]);
+
+                ArrayList<ModificationMatch> ptmAlpha = GetFixedPTM.getPTM(ptmFactory, fixed_modification, startSeq),
+                        ptmBeta = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
+
+                Peptide peptideAlpha = new Peptide(startSeq, ptmAlpha),
+                        peptideBeta = new Peptide(nextSeq, ptmBeta);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideAlpha, peptideBeta, linker, linker_position_start, linker_position_next, fragMode);
+                cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
+
+            }
+        }
+        return cPeptide_theoreticalMass;
+    }
+
 }
