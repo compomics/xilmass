@@ -6,7 +6,7 @@
 package theoretical;
 
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
-import theoretical.IonType;
+import theoretical.CPeptideIonType;
 import java.util.Comparator;
 
 /**
@@ -18,15 +18,15 @@ public class CPeptideIon {
 
     private double intensity,
             monoisotopic_mass;
-    private int charge;
-    private IonType type = IonType.PeptideFragmentIon;
-    private String name; 
+    private int charge,
+            fragmentIonType = 1; //0-a, 1-b, 2-c , 3-x, 4-y, 5-z
+    private CPeptideIonType type = CPeptideIonType.Backbone_PepA;
 
-    public CPeptideIon(double intensity, double mass) {
-        this.intensity = intensity;
-        this.monoisotopic_mass = mass;
-        type = IonType.PeptideFragmentIon;
-    }
+//    public CPeptideIon(double intensity, double mass) {
+//        this.intensity = intensity;
+//        this.monoisotopic_mass = mass;
+//        type = CPeptideIonType.Backbone_PepA;
+//    }
 
     public CPeptideIon(double intensity, double mass, int charge) {
         this.intensity = intensity;
@@ -34,11 +34,12 @@ public class CPeptideIon {
         this.monoisotopic_mass = mass;
     }
 
-    public CPeptideIon(double intensity, double mass, int charge, IonType type) {
+    public CPeptideIon(double intensity, double mass, int charge, CPeptideIonType type, int fragmentIonType) {
         this.intensity = intensity;
         this.charge = charge;
         this.type = type;
         this.monoisotopic_mass = mass;
+        this.fragmentIonType = fragmentIonType;
     }
 
     public double getMass() {
@@ -65,14 +66,22 @@ public class CPeptideIon {
         this.charge = charge;
     }
 
-    public IonType getType() {
+    public CPeptideIonType getType() {
         return type;
     }
 
-    public void setType(IonType type) {
+    public void setType(CPeptideIonType type) {
         this.type = type;
     }
 
+    public int getFragmentIonType() {
+        return fragmentIonType;
+    }
+
+    public void setFragmentIonType(int fragmentIonType) {
+        this.fragmentIonType = fragmentIonType;
+    }
+   
     /**
      * This method returns a theoretical mz happens with given chargeValue
      *
@@ -126,6 +135,12 @@ public class CPeptideIon {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return  "(ch=" + charge + "_fragIon=" + fragmentIonType + "_" + type + ')';
+    }
+        
 
     /**
      * To sort CPeptideIon in a ascending mass order
