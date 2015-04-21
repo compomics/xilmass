@@ -9,6 +9,7 @@ import com.compomics.dbtoolkit.io.UnknownDBFormatException;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
+import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import config.ConfigHolder;
 import crossLinker.CrossLinker;
@@ -25,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import matching.FindMatch;
 import org.apache.log4j.Logger;
 import theoretical.CPeptides;
@@ -139,8 +141,8 @@ public class Start {
         LOGGER.info("Getting experimental spectra");
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile));
         String fileTitle = "SpecIndex" + "\t" + "MSnSpectrumTitle" + "\t" + "PrecursorMZ" + "\t" + "Charge" + "\t" + "precursorMass" + "\t" + "theoreticalMass" + "\t";
-        fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "FirstSequence" + "\t" + "SecondSequence" + "\t";
-        fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\n";
+        fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t";
+        fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\t" + "#MatchedPeaks" + "\n";
         bw.write(fileTitle);
 
         File ms2spectra = new File(mgfs);
@@ -164,24 +166,32 @@ public class Start {
                     double precursor_mass = ms.getPrecursor().getMass(charge_value);
                     String peptideAlpha = "",
                             peptideBeta = "";
-                    CPeptides tmpCpeptides = null;
-                    FindMatch f = new FindMatch(ms, scoring, tmpCpeptides, ms2Err, charge_value, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
+                    CPeptides tmpCpeptide = null;
+                    FindMatch f = new FindMatch(ms, scoring, tmpCpeptide, ms2Err, charge_value, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
 
                     for (int i = 0; i < theoretical_masses.size(); i++) {
                         Double theoretical_mass = theoretical_masses.get(i);
                         double tmpMS1Err = CalculateMS1Err.getMS1Err(isPPM, theoretical_mass, precursor_mass);
                         if (tmpMS1Err <= ms1Err) {
                             // set a temporary xlinked peptide object
-                            tmpCpeptides = cpeptides.get(i);
-                            f.setcPeptides(tmpCpeptides);
+                            tmpCpeptide = cpeptides.get(i);
+                            f.setcPeptides(tmpCpeptide);
                             double psmscore = f.getPSMScore();
 
-                            peptideAlpha = (tmpCpeptides.getPeptide_alpha().getSequence());
-                            peptideBeta = (tmpCpeptides.getPeptide_beta().getSequence());
+                            peptideAlpha = (tmpCpeptide.getPeptideA().getSequence());
+                            peptideBeta = (tmpCpeptide.getPeptideB().getSequence());
 
-                            int linkerPositionOnAlpha = tmpCpeptides.getLinker_position_on_alpha(),
-                                    linkerPositionOnBeta = tmpCpeptides.getLinker_position_on_beta();
-                            String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + "MSRobin" + "\t" + tmpMS1Err + "\t" + psmscore + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\n");
+                            String proteinA = tmpCpeptide.getProteinA(),
+                                    proteinB = tmpCpeptide.getProteinB();
+
+                            int linkerPositionOnAlpha = tmpCpeptide.getLinker_position_on_peptideA() + 1,
+                                    linkerPositionOnBeta = tmpCpeptide.getLinker_position_on_peptideB() + 1;
+
+                            // analyze matchedPeaks!
+                            HashSet<Peak> matchedPeaks = f.getMatchedPeaks();
+
+                            String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + scoring + "\t" + tmpMS1Err + "\t" + psmscore + "\t"
+                                    + proteinA + "\t" + proteinB + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\t" + matchedPeaks.size() + "\n");
                             bw.write(specInfo + runningInfo);
                         }
                     }
@@ -199,7 +209,6 @@ public class Start {
                 header = "",
                 sequence = "";
         while ((line = br.readLine()) != null) {
-
             if (line.startsWith(">")) {
                 // so this is a header
                 header = line.substring(1);
