@@ -16,52 +16,35 @@ import java.util.ArrayList;
  * peptide to a A-peptide. So, all linkedPeptideIon masses derived from
  * B-peptide are calculated here. Also, all possible fragments derived from
  * B-peptides according to a linked position are generated.
- * 
+ *
  *
  * @author Sule
  */
-public class LinkedPeptideFragmentIon {
+public final class LinkedPeptideFragmentIon {
 
-    private Peptide linkedPeptide;
-    private int index_linkedPeptide;
-    private ArrayList<ArrayList<Character>> aaLinkedPeptideStrs;
+    private Peptide linkedPeptide; // 
+    private int linker_position_on_linkedPeptide; // An index on where a linker is bond to that linkedPeptide
     private ArrayList<Double> cTerminiMasses = new ArrayList<Double>(),
             nTerminiMasses = new ArrayList<Double>();
 
-    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int index_linkedPeptide) {
+    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int linker_position_on_linkedPeptide) {
         this.linkedPeptide = linkedPeptide;
-        this.index_linkedPeptide = index_linkedPeptide;
+        this.linker_position_on_linkedPeptide = linker_position_on_linkedPeptide;
         getAALinkedPeptide();
     }
 
-    public ArrayList<ArrayList<Character>> getAaLinkedPeptideStrs() {
-        return aaLinkedPeptideStrs;
-    }
-
-    public void setAaLinkedPeptideStrs(ArrayList<ArrayList<Character>> aaLinkedPeptideStrs) {
-        this.aaLinkedPeptideStrs = aaLinkedPeptideStrs;
-    }
-
-    public ArrayList<Double> getcTerminiMasses(int type) {
+    public ArrayList<Double> getCTerminiMasses(int fragmentIonType) {
         if (cTerminiMasses.isEmpty()) {
-            calculateCTerminiMasses(type);
+            calculateCTerminiMasses(fragmentIonType);
         }
         return cTerminiMasses;
     }
 
-    public void setcTerminiMasses(ArrayList<Double> cTerminiMasses) {
-        this.cTerminiMasses = cTerminiMasses;
-    }
-
-    public ArrayList<Double> getnTerminiMasses(int type) {
+    public ArrayList<Double> getNTerminiMasses(int fragmentIonType) {
         if (nTerminiMasses.isEmpty()) {
-            calculateNTerminiMasses(type);
+            calculateNTerminiMasses(fragmentIonType);
         }
         return nTerminiMasses;
-    }
-
-    public void setnTerminiMasses(ArrayList<Double> nTerminiMasses) {
-        this.nTerminiMasses = nTerminiMasses;
     }
 
     /**
@@ -72,7 +55,7 @@ public class LinkedPeptideFragmentIon {
      */
     public ArrayList<ArrayList<Character>> getAALinkedPeptide() {
         ArrayList<ArrayList<Character>> characters = new ArrayList<ArrayList<Character>>();
-        int startIndex = index_linkedPeptide,
+        int startIndex = linker_position_on_linkedPeptide,
                 endIndex = linkedPeptide.getSequence().length();
         ArrayList<Character> startCharacters = new ArrayList<Character>();
         for (int i = startIndex; i < endIndex; i++) {
@@ -86,27 +69,29 @@ public class LinkedPeptideFragmentIon {
                 characters.add(cpy);
             }
         }
-        aaLinkedPeptideStrs = characters;
         return characters;
     }
 
     /**
      * This method calculates monoisotopic masses of all linkedIons on Ntermini
      *
-     * AI*KN would yield ions of cK, IK, AIK, KN, IKN, AIKN. And here these
-     * n-termini masses are calculated.
+     * AI*KN would yield ions of K, IK, (Ntermini+)AIK, KN, IKN, (Ntermini+)AIKN
+     * and their n-termini masses are calculated.
      *
-     * @param type : PeptideFragmentIon type-PeptideFragmentIon.A_ION,
-     * PeptideFragmentIon.B_ION, PeptideFragmentIon.C_ION
+     * @param fragmentIonType : PeptideFragmentIon
+     * type-PeptideFragmentIon.A_ION, PeptideFragmentIon.B_ION,
+     * PeptideFragmentIon.C_ION
      */
-    private void calculateNTerminiMasses(int type) {
-        int startIndex = index_linkedPeptide,
-                lpeptideLength = linkedPeptide.getSequence().length();
+    private void calculateNTerminiMasses(int fragmentIonType) {
+        int startIndex = linker_position_on_linkedPeptide,
+                pepLength = linkedPeptide.getSequence().length();
         double startMass = 0;
-        double nTerminiMassAddition = getMassDiff(type);    
-        for (int i = startIndex; i < lpeptideLength; i++) {
+        boolean isLeftResiduesCalculated = false;
+        double nTerminiMassAddition = getMassDiff(fragmentIonType);   // b yields 0, the other needs to be calculated 
+        ArrayList<Double> leftResidues = new ArrayList<Double>(3);
+        for (int i = startIndex; i < pepLength; i++) {
             char start = linkedPeptide.getSequence().charAt(i);
-            // here is the first one with N termini 
+            // here is the first residue on the left containing N-termini 
             if (i == 0) {
                 startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
                 startMass += nTerminiMassAddition;
@@ -115,13 +100,26 @@ public class LinkedPeptideFragmentIon {
             }
             nTerminiMasses.add(startMass);
             double tmp_mass = startMass;
-            for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
-                char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);
-                tmp_mass += AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
-                if (start_i == 0) {
-                    tmp_mass += nTerminiMassAddition;
+            if (isLeftResiduesCalculated) {
+                // Add all left residues to calculated ones!
+                for (Double leftRes : leftResidues) {
+                    tmp_mass += leftRes;
+                    nTerminiMasses.add(tmp_mass);
                 }
-                nTerminiMasses.add(tmp_mass);
+            }
+            // here prepare residues derived from the left of the linked one!
+            if (!isLeftResiduesCalculated) {
+                isLeftResiduesCalculated = true;
+                for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
+                    char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);
+                    double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
+                    leftResidues.add(leftRes);
+                    tmp_mass += leftRes;
+                    if (start_i == 0) {
+                        leftRes += nTerminiMassAddition;
+                    }
+                    nTerminiMasses.add(tmp_mass);
+                }
             }
         }
     }
@@ -129,21 +127,24 @@ public class LinkedPeptideFragmentIon {
     /**
      * This method calculates monoisotopic masses of all linkedIons on Ctermini
      *
-     * AI*KN would yield ions of cK, IK, AIK, KN, IKN, AIKN. And here these
-     * c-termini masses are calculated.
+     * AI*KN would yield ions of K, IK, AIK, KN(+Ctermini), IKN(+Ctermini) ,
+     * AIKN(+Ctermini) and their c-termini masses are calculated.
      *
-     * @param type : PeptideFragmentIon type-PeptideFragmentIon.X_ION,
-     * PeptideFragmentIon.Y_ION, PeptideFragmentIon.Z_ION
+     * @param fragmentIonType : PeptideFragmentIon
+     * type-PeptideFragmentIon.X_ION, PeptideFragmentIon.Y_ION,
+     * PeptideFragmentIon.Z_ION
      */
-    private void calculateCTerminiMasses(int type) {
-        int startIndex = index_linkedPeptide,
-                lpeptideLength = linkedPeptide.getSequence().length();
+    private void calculateCTerminiMasses(int fragmentIonType) {
+        int startIndex = linker_position_on_linkedPeptide,
+                pepLength = linkedPeptide.getSequence().length();
         double startMass = 0;
-        double cTerminiMassAddition = getMassDiff(type);
-        for (int i = startIndex; i < lpeptideLength; i++) {
+        boolean isLeftResiduesCalculated = false;
+        double cTerminiMassAddition = getMassDiff(fragmentIonType);   // b yields 0, the other needs to be calculated 
+        ArrayList<Double> leftResidues = new ArrayList<Double>(3);
+        for (int i = startIndex; i < pepLength; i++) {
             char start = linkedPeptide.getSequence().charAt(i);
-            // here is the first one with N termini 
-            if (i == lpeptideLength - 1) {
+            // here is the first residue on the left containing C-termini 
+            if (i == pepLength - 1) {
                 startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
                 startMass += cTerminiMassAddition;
             } else {
@@ -151,10 +152,26 @@ public class LinkedPeptideFragmentIon {
             }
             cTerminiMasses.add(startMass);
             double tmp_mass = startMass;
-            for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
-                char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);;
-                tmp_mass += AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
-                cTerminiMasses.add(tmp_mass);
+            if (isLeftResiduesCalculated) {
+                // Add all left residues to calculated ones!
+                for (Double leftRes : leftResidues) {
+                    tmp_mass += leftRes;
+                    cTerminiMasses.add(tmp_mass);
+                }
+            }
+            // here prepare residues derived from the left of the linked one!
+            if (!isLeftResiduesCalculated) {
+                isLeftResiduesCalculated = true;
+                for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
+                    char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);
+                    double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
+                    leftResidues.add(leftRes);
+                    tmp_mass += leftRes;
+                    if (start_i == pepLength - 1) {
+                        leftRes += cTerminiMassAddition;
+                    }
+                    cTerminiMasses.add(tmp_mass);
+                }
             }
         }
     }
@@ -163,12 +180,13 @@ public class LinkedPeptideFragmentIon {
      * This method calculate mass shift on the first ion based on either
      * containing N-termini or C-termini
      *
-     * @param type PeptideFragmentIon int class
+     * @param fragmentIonType PeptideFragmentIon int class (use
+     * PeptideFragmentIon.xxx_ION!
      * @return
      */
-    private double getMassDiff(int type) {
+    private double getMassDiff(int fragmentIonType) {
         double mass = 0;
-        switch (type) {
+        switch (fragmentIonType) {
             case PeptideFragmentIon.A_ION:
                 mass = -(Atom.C.getMonoisotopicMass() + Atom.O.getMonoisotopicMass());
                 break;
