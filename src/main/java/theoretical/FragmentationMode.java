@@ -15,6 +15,6 @@ package theoretical;
 public enum FragmentationMode {
     CID,// mostly b and y ions (b1 is rarely observed and b2 holds the highest intensity
     ETD,// mostly c and z ions
-    HCD // b- and y- ions, as well as a- and x-ions
+    HCD // b- and (mostly) y- ions, as well as a-ions (fragmented from b ions)
     
 }
