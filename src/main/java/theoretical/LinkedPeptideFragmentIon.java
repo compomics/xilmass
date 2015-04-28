@@ -7,62 +7,157 @@ package theoretical;
 
 import com.compomics.util.experiment.biology.AminoAcid;
 import com.compomics.util.experiment.biology.Atom;
+import com.compomics.util.experiment.biology.Ion;
+import com.compomics.util.experiment.biology.IonFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
- * This class holds information about a linked peptide. B-peptide is a linked
- * peptide to a A-peptide. So, all linkedPeptideIon masses derived from
- * B-peptide are calculated here. Also, all possible fragments derived from
- * B-peptides according to a linked position are generated.
+ *
+ * This class holds information on a linked (or attached) peptide with two
+ * possible ways to generate fragment ions derived from a linked peptide:
+ *
+ * Attaching: Simply generating all backbone ions for a linked peptide
+ *
+ * Branching: Fragment ion generation starts from a node (linked aminoacid) and
+ * then go to the right while adding amino acid masses (if it is C-termini
+ * included ion, adding c-termini as well). Then, going to the left with the
+ * same strategy (adding N-termini mass shift to an ion including N-termini).
+ *
+ * Note that none of the ions with index of a peptide length is not generated at
+ * all!
  *
  *
  * @author Sule
  */
 public final class LinkedPeptideFragmentIon {
 
-    private Peptide linkedPeptide; // 
+    private Peptide linkedPeptide; //a linked or attached peptide 
     private int linker_position_on_linkedPeptide; // An index on where a linker is bond to that linkedPeptide
-    private ArrayList<Double> cTerminiMasses = new ArrayList<Double>(),
-            nTerminiMasses = new ArrayList<Double>();
+    private boolean isLinkedPepA; // Used for naming...
+    private double intensity; // intensity for a theoretical ion intensity
+    private boolean isBranchingApproach; // true:Branching stragety/false:Attaching strategy
+    private IonFactory fragmentFactory = IonFactory.getInstance();
+    private HashMap<Integer, ArrayList<Ion>> product_ions_linkedPeptide;// peptide backbon ion of a linked peptide
 
-    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int linker_position_on_linkedPeptide) {
+    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int linker_position_on_linkedPeptide, boolean isLinkedPepA, double intensity, boolean isBranchingApproach) {
         this.linkedPeptide = linkedPeptide;
         this.linker_position_on_linkedPeptide = linker_position_on_linkedPeptide;
-        getAALinkedPeptide();
-    }
-
-    public ArrayList<Double> getCTerminiMasses(int fragmentIonType) {
-        if (cTerminiMasses.isEmpty()) {
-            calculateCTerminiMasses(fragmentIonType);
-        }
-        return cTerminiMasses;
-    }
-
-    public ArrayList<Double> getNTerminiMasses(int fragmentIonType) {
-        if (nTerminiMasses.isEmpty()) {
-            calculateNTerminiMasses(fragmentIonType);
-        }
-        return nTerminiMasses;
+        this.isLinkedPepA = isLinkedPepA;
+        this.intensity = intensity;
+        this.isBranchingApproach = isBranchingApproach;
+        product_ions_linkedPeptide = fragmentFactory.getFragmentIons(linkedPeptide).get(0); // only peptide fragment ions
     }
 
     /**
-     * Here all possible fragment ion parts from linked peptide is written as an
-     * arraylist of character of a single letter amino acid code
+     * This method generates linked peptide ions including C-termini according
+     * to fragmentIonType.
      *
+     *
+     * @param fragmentIonType Must be
+     * PeptideFragmentIon.X_ION/PeptideFragmentIon.Y_ION/PeptideFragmentIon.Z_ION
+     * @return a list of generated CPeptideIons for a linked peptide
+     *
+     */
+    public ArrayList<CPeptideIon> getCTerminiMasses(int fragmentIonType) {
+        // make sure that only correctly given fragmentIonType is used!
+        if (fragmentIonType == PeptideFragmentIon.X_ION
+                || fragmentIonType == PeptideFragmentIon.Y_ION
+                || fragmentIonType == PeptideFragmentIon.Z_ION) {
+            ArrayList<CPeptideIon> cTerminiMasses;
+            if (isBranchingApproach) {
+                cTerminiMasses = calculateCTerminiCPeptideIons(fragmentIonType);
+            } else {
+                cTerminiMasses = calculateTerminisAttaching(fragmentIonType);
+            }
+            return cTerminiMasses;
+        } else {
+            System.err.print("N-termini including fragment ion type is selected to retrieve C-termini ones!");
+        }
+        return null;
+    }
+
+    /**
+     * This method generates linked peptide ions including N-termini according
+     * to fragmentIonType.
+     *
+     * @param fragmentIonType (PeptideFragmentIon.A_ION/B_ION/C_ION)
+     * @return a list of generated CPeptideIons for a linked peptide
+     */
+    public ArrayList<CPeptideIon> getNTerminiMasses(int fragmentIonType) {
+        // make sure that only correctly given fragmentIonType is used!
+        if (fragmentIonType == PeptideFragmentIon.A_ION
+                || fragmentIonType == PeptideFragmentIon.B_ION
+                || fragmentIonType == PeptideFragmentIon.C_ION) {
+            ArrayList<CPeptideIon> nTerminiMasses;
+            if (isBranchingApproach) {
+                nTerminiMasses = calculateNTerminiCPeptideIons(fragmentIonType);
+            } else {
+                nTerminiMasses = calculateTerminisAttaching(fragmentIonType);
+            }
+            return nTerminiMasses;
+        } else {
+            System.err.print("C-termini including fragment ion type is selected to retrieve N-termini ones!");
+        }
+        return null;
+    }
+
+    /**
+     * This method selects a list of fragment ions based according to the
+     * "Attaching approach"
+     *
+     * @param fragmentIonType - any (call as PeptideFragmentIon.XXX_ION)
      * @return
      */
-    public ArrayList<ArrayList<Character>> getAALinkedPeptide() {
+    private ArrayList<CPeptideIon> calculateTerminisAttaching(int fragmentIonType) {
+        // prepare naming.. 
+        String lepName = "lepA";
+        CPeptideIonType cPeptideIonType = CPeptideIonType.LinkedPeptideBackbone_PepA;
+        if (!isLinkedPepA) {
+            cPeptideIonType = CPeptideIonType.LinkedPeptideBackbone_PepB;
+            lepName = "lepB";
+        }
+        String abbrIonType = getAbbrIonType(fragmentIonType);
+        String rootName = lepName + "_" + abbrIonType + "_";
+        // select given fragment ion types and retrieve them..
+        ArrayList<CPeptideIon> terminiCPepIons = new ArrayList<CPeptideIon>();
+        ArrayList<Ion> tmp_ions = product_ions_linkedPeptide.get(fragmentIonType);
+        for (int ion_index = 0; ion_index < tmp_ions.size(); ion_index++) {
+            int index_for_user = ion_index + 1;
+            String cPepIonTypeName = rootName + "_" + index_for_user;
+            Ion ion = tmp_ions.get(ion_index);
+            CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), cPeptideIonType, fragmentIonType, cPepIonTypeName);
+            terminiCPepIons.add(cIon);
+        }
+        return terminiCPepIons;
+    }
+
+    /**
+     * Here all possible fragment ions derived from a linked peptide are written
+     * as an arraylist of character of a single letter amino acid code on
+     * Branching approach
+     *
+     * @param isNtermini - enables two different generations of aas containing
+     * either N-termini (true) or C-termini (false)
+     * @return
+     */
+    public ArrayList<ArrayList<Character>> getAALinkedPeptide(boolean isNtermini) {
         ArrayList<ArrayList<Character>> characters = new ArrayList<ArrayList<Character>>();
         int startIndex = linker_position_on_linkedPeptide,
-                endIndex = linkedPeptide.getSequence().length();
+                endIndex = linkedPeptide.getSequence().length(),
+                last_generated_index = 1;
+        if (isNtermini) {
+            endIndex--;
+            last_generated_index = 0;
+        }
         ArrayList<Character> startCharacters = new ArrayList<Character>();
         for (int i = startIndex; i < endIndex; i++) {
             char start = linkedPeptide.getSequence().charAt(i);
             startCharacters.add(start);
             characters.add(new ArrayList(startCharacters));
-            for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
+            for (int start_i = startIndex - 1; start_i >= last_generated_index; start_i--) {
                 char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);
                 ArrayList<Character> cpy = new ArrayList<Character>(characters.get(characters.size() - 1));
                 cpy.add(0, tmp_char_start_i);
@@ -73,107 +168,128 @@ public final class LinkedPeptideFragmentIon {
     }
 
     /**
-     * This method calculates monoisotopic masses of all linkedIons on Ntermini
+     * This method calculates monoisotopic masses of all linkedIons including
+     * N-termini with branching approach
      *
-     * AI*KN would yield ions of K, IK, (Ntermini+)AIK, KN, IKN, (Ntermini+)AIKN
-     * and their n-termini masses are calculated.
+     * AIK*NK would yield ions of K and KN (in the right side), IK and
+     * AIK+(N-termini) (left side), and an ion containing last amino acid is not
+     * calculated
      *
      * @param fragmentIonType : PeptideFragmentIon
      * type-PeptideFragmentIon.A_ION, PeptideFragmentIon.B_ION,
      * PeptideFragmentIon.C_ION
      */
-    private void calculateNTerminiMasses(int fragmentIonType) {
-        int startIndex = linker_position_on_linkedPeptide,
-                pepLength = linkedPeptide.getSequence().length();
-        double startMass = 0;
-        boolean isLeftResiduesCalculated = false;
-        double nTerminiMassAddition = getMassDiff(fragmentIonType);   // b yields 0, the other needs to be calculated 
-        ArrayList<Double> leftResidues = new ArrayList<Double>(3);
-        for (int i = startIndex; i < pepLength; i++) {
-            char start = linkedPeptide.getSequence().charAt(i);
-            // here is the first residue on the left containing N-termini 
-            if (i == 0) {
-                startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
-                startMass += nTerminiMassAddition;
-            } else {
-                startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
-            }
-            nTerminiMasses.add(startMass);
-            double tmp_mass = startMass;
-            if (isLeftResiduesCalculated) {
-                // Add all left residues to calculated ones!
-                for (Double leftRes : leftResidues) {
-                    tmp_mass += leftRes;
-                    nTerminiMasses.add(tmp_mass);
-                }
-            }
-            // here prepare residues derived from the left of the linked one!
-            if (!isLeftResiduesCalculated) {
-                isLeftResiduesCalculated = true;
-                for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
-                    char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);
-                    double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
-                    leftResidues.add(leftRes);
-                    tmp_mass += leftRes;
-                    if (start_i == 0) {
-                        leftRes += nTerminiMassAddition;
-                    }
-                    nTerminiMasses.add(tmp_mass);
-                }
-            }
+    private ArrayList<CPeptideIon> calculateNTerminiCPeptideIons(int fragmentIonType) {
+        // prepare first part of peptide..
+        String lepName = "lepA";
+        CPeptideIonType cPeptideIonType = CPeptideIonType.LinkedPeptideBackbone_PepA;
+        if (!isLinkedPepA) {
+            cPeptideIonType = CPeptideIonType.LinkedPeptideBackbone_PepB;
+            lepName = "lepB";
         }
+        String abbrIonType = getAbbrIonType(fragmentIonType);
+        String rootName = lepName + "_" + abbrIonType + "_";
+        // Now prepare linked ions...
+        ArrayList<CPeptideIon> nTerminiCPepIons_Branching = new ArrayList<CPeptideIon>();
+        int startInd = linker_position_on_linkedPeptide,
+                pepLen = linkedPeptide.getSequence().length();
+        double nTerminiMassAddition = getMassDiff(fragmentIonType);   // b yields 0, the other needs to be calculated 
+        // Left branching...
+        // get mass of node...then add it to a list...
+        char node = linkedPeptide.getSequence().charAt(linker_position_on_linkedPeptide);
+        double startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        String nodeName = rootName + "_" + linker_position_on_linkedPeptide;
+        CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
+        nTerminiCPepIons_Branching.add(cPepIonNode);
+        // Since it is N-termini, we shall not go till the end...
+        for (int i = startInd + 1; i < pepLen - 1; i++) {
+            char start = linkedPeptide.getSequence().charAt(i);
+            // here, select all aminoacids to the right side...             
+            startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
+            if (i == 0) {
+                startMass += nTerminiMassAddition;
+            }
+            int naming_index = i + 1;
+            String name = rootName + "_" + naming_index;
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            nTerminiCPepIons_Branching.add(cPepIon);
+        }
+        startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        // here prepare residues derived from the left of the linked one!
+        for (int i = startInd - 1; i >= 0; i--) {
+            char tmp_char_start_i = linkedPeptide.getSequence().charAt(i);
+            double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
+            startMass += leftRes;
+            if (i == 0) {
+                startMass += nTerminiMassAddition;
+            }
+            int naming_index = i + 1;
+            String name = rootName + "_" + naming_index;
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            nTerminiCPepIons_Branching.add(cPepIon);
+        }
+
+        return nTerminiCPepIons_Branching;
     }
 
     /**
-     * This method calculates monoisotopic masses of all linkedIons on Ctermini
+     * This method calculates monoisotopic masses of all linkedIons including
+     * C-termini with branching approach
      *
-     * AI*KN would yield ions of K, IK, AIK, KN(+Ctermini), IKN(+Ctermini) ,
-     * AIKN(+Ctermini) and their c-termini masses are calculated.
+     * AIK*NK would yield ions of K, KN, KNK(+Ctermini) (in the right side), IK
+     * (left side), and an ion containing first amino acid is not calculated
      *
      * @param fragmentIonType : PeptideFragmentIon
      * type-PeptideFragmentIon.X_ION, PeptideFragmentIon.Y_ION,
      * PeptideFragmentIon.Z_ION
      */
-    private void calculateCTerminiMasses(int fragmentIonType) {
-        int startIndex = linker_position_on_linkedPeptide,
-                pepLength = linkedPeptide.getSequence().length();
-        double startMass = 0;
-        boolean isLeftResiduesCalculated = false;
-        double cTerminiMassAddition = getMassDiff(fragmentIonType);   // b yields 0, the other needs to be calculated 
-        ArrayList<Double> leftResidues = new ArrayList<Double>(3);
-        for (int i = startIndex; i < pepLength; i++) {
-            char start = linkedPeptide.getSequence().charAt(i);
-            // here is the first residue on the left containing C-termini 
-            if (i == pepLength - 1) {
-                startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
-                startMass += cTerminiMassAddition;
-            } else {
-                startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
-            }
-            cTerminiMasses.add(startMass);
-            double tmp_mass = startMass;
-            if (isLeftResiduesCalculated) {
-                // Add all left residues to calculated ones!
-                for (Double leftRes : leftResidues) {
-                    tmp_mass += leftRes;
-                    cTerminiMasses.add(tmp_mass);
-                }
-            }
-            // here prepare residues derived from the left of the linked one!
-            if (!isLeftResiduesCalculated) {
-                isLeftResiduesCalculated = true;
-                for (int start_i = startIndex - 1; start_i >= 0; start_i--) {
-                    char tmp_char_start_i = linkedPeptide.getSequence().charAt(start_i);
-                    double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
-                    leftResidues.add(leftRes);
-                    tmp_mass += leftRes;
-                    if (start_i == pepLength - 1) {
-                        leftRes += cTerminiMassAddition;
-                    }
-                    cTerminiMasses.add(tmp_mass);
-                }
-            }
+    private ArrayList<CPeptideIon> calculateCTerminiCPeptideIons(int fragmentIonType) {
+        // prepare first part of peptide..
+        String lepName = "lepA";
+        CPeptideIonType cPeptideIonType = CPeptideIonType.LinkedPeptideBackbone_PepA;
+        if (!isLinkedPepA) {
+            cPeptideIonType = CPeptideIonType.LinkedPeptideBackbone_PepB;
+            lepName = "lepB";
         }
+        String abbrIonType = getAbbrIonType(fragmentIonType);
+        String rootName = lepName + "_" + abbrIonType + "_";
+        // Now prepare linked ions...
+        ArrayList<CPeptideIon> cTerminiCPepIons_Branching = new ArrayList<CPeptideIon>();
+        int startInd = linker_position_on_linkedPeptide,
+                pepLen = linkedPeptide.getSequence().length();
+        double cTerminiMassAddition = getMassDiff(fragmentIonType);
+        // Left branching...
+        // get mass of node...then add it to a list...
+        char node = linkedPeptide.getSequence().charAt(linker_position_on_linkedPeptide);
+        double startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        String nodeName = rootName + "_" + linker_position_on_linkedPeptide;
+        CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
+        cTerminiCPepIons_Branching.add(cPepIonNode);
+        // Since it is N-termini, we shall not go till the end...ONLY HERE C-TERMINI CAN BE FOUND!
+        for (int i = startInd + 1; i < pepLen; i++) {
+            char start = linkedPeptide.getSequence().charAt(i);
+            // here, select all aminoacids to the right side...             
+            startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
+            if (i == pepLen - 1) {
+                startMass += cTerminiMassAddition;
+            }
+            int naming_index = pepLen - i;
+            String name = rootName + "_" + naming_index;
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            cTerminiCPepIons_Branching.add(cPepIon);
+        }
+        startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        // here prepare residues derived from the left of the linked one!
+        for (int i = startInd - 1; i > 0; i--) {
+            char tmp_char_start_i = linkedPeptide.getSequence().charAt(i);
+            double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
+            startMass += leftRes;
+            int naming_index = pepLen - i;
+            String name = rootName + "_" + naming_index;
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            cTerminiCPepIons_Branching.add(cPepIon);
+        }
+        return cTerminiCPepIons_Branching;
     }
 
     /**
@@ -200,9 +316,38 @@ public final class LinkedPeptideFragmentIon {
                 mass = 2 * Atom.H.getMonoisotopicMass() + (Atom.O.getMonoisotopicMass());
                 break;
             case PeptideFragmentIon.Z_ION:
-                mass = Atom.O.getMonoisotopicMass() - Atom.N.getMonoisotopicMass();
+                mass = -Atom.N.getMonoisotopicMass() + Atom.O.getMonoisotopicMass();
                 break;
         }
         return mass;
+    }
+
+    /**
+     * This method returns one letter string name-lower case for given
+     * fragmentIontype
+     *
+     * @param fragmentIonType
+     * @return
+     */
+    public static String getAbbrIonType(int fragmentIonType) {
+        String abbr = "b";
+        switch (fragmentIonType) {
+            case PeptideFragmentIon.A_ION:
+                abbr = "a";
+                break;
+            case PeptideFragmentIon.C_ION:
+                abbr = "c";
+                break;
+            case PeptideFragmentIon.X_ION:
+                abbr = "x";
+                break;
+            case PeptideFragmentIon.Y_ION:
+                abbr = "y";
+                break;
+            case PeptideFragmentIon.Z_ION:
+                abbr = "z";
+                break;
+        }
+        return abbr;
     }
 }
