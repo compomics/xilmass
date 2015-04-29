@@ -1,0 +1,48 @@
+Ion_Info	m/z(+1-Attaching)	Annotation	Explanation	Found			
+A	72.044	pepB_b1	BackboneB	+			
+M	132.04	pepA_b1	BackboneA	+			
+K	147.1128	pepA_y1_pepB_y1	BackboneA_BackboneB	+			
+I	185.129	pepB_b2	BackboneB	+			
+A	218.1499	pepA_y2	BackboneA	+			
+L	245.13	pepA_b2	BackboneA	+			
+N	261.1557	pepB_y2	BackboneB	+			
+K	313.224	pepB_b3	BackboneB	+			
+S	332.16	pepA_b3	BackboneA	+			
+D	333.1769	pepA_y3	BackboneA	+		420.2088892	lepA_y__4
+K	389.2507	pepB_y3	BackboneB	+		518.2279105	lepA_b__5
+D	447.19	pepA_b4	BackboneA	+			
+K-monolink	469.302	pepB_b3_lepA_monolink_b4	BackboneB_Monolink_LinkedPeptideA	+			
+D-monolink	489.2549	pepA_y3_lepB_monolink_y3	BackboneA_Monolink_LinkedPeptideB	+			
+K-monolink	545.3287	pepB_y3_lepA_monolink_y3	BackboneB-LinkedPeptideA	+			
+K-M 	582.332	pepB_b3_lepA_b1	BackboneB-LinkedPeptideA	+			
+D	603.268	pepA_b4_lepB_monolink_b3	BackboneA_Monolink_LinkedPeptideB	+			
+D-K	617.3577	pepA_y3_lepB_y1	BackboneA-LinkedPeptideB	+			
+D-A	656.302	pepA_b4_lepB_b1	BackboneA-LinkedPeptideB	+			
+K-K	673.4315	pepB_y3_lepA_y1	BackboneB-LinkedPeptideA	+			
+K-L	695.422	pepB_b3_lepA_b2	BackboneB-LinkedPeptideA	+			
+D-N	731.4006	pepA_y3_lepB_y2	BackboneA-LinkedPeptideB	+			
+K-A	744.4686	pepB_y3_lepA_y2	BackboneB-LinkedPeptideA	+			
+D-I	769.38	pepA_b4_lepB_b2	BackboneA-LinkedPeptideB	+			
+K-S	782.452	pepB_b3_lepA_b3	BackboneB-LinkedPeptideA	+			
+D-K/K-D	859.4956	pepA_y3_lepB_y3_pepB_y3_lepA_y3	BackboneA-LinkedPeptideB_BackboneB-LinkedPeptideA	+			
+D-K/K-D	897.482	pepA_b4_lepB_b3_pepB_b3_lepA_b4	BackboneA-LinkedPeptideB_BackboneB-LinkedPeptideA	+			
+K-S	946.5276	pepB_y3_lepA_y4	BackboneB-LinkedPeptideA				
+K-A	968.52	pepB_b3_lepA_b5	BackboneB-LinkedPeptideA				
+D-I	972.5797	pepA_y3_lepB_y4	BackboneA-LinkedPeptideB	+			
+D-N	1011.518	pepA_b4_lepB_b4	BackboneA-LinkedPeptideB	+			
+K-L	1059.6117	pepB_y3_lepA_y5	BackboneB-LinkedPeptideA	+			
+S-Type2-Mass	1130.64154	pepA_y4	BackboneA_AttachedB	+			
+N-Type2-Attach	1228.65421	pepA_b5_pepB_b4	BackboneB_AttachedA	?			
+L-Type2-Mass	1243.72564	pepA_y5	BackboneA_AttachedB	+			
+I-Type2-Mass	1303.72901	pepB_y4	BackboneB_AttachedA	+			
+-	-	-	-				
+-	-	-	-				
+-	-	-	-				
+D-K	-	pepA_b4_lepB_b5	BackboneA-LinkedPeptideB				
+K	-	pepA_b6	BackboneA_AttachedB				
+D-A	-	pepA_y3_lepB_y5	BackboneA-LinkedPeptideB				
+M-y6	-	pepA_y6	BackboneA_AttachedB				
+K-K	-	pepB_b3_lepA_b6	BackboneB-LinkedPeptideA				
+K-Type2-Attach	-	pepB_b5	BackboneB_AttachedA				
+K-M 	-	pepB_y3_lepA_y6	BackboneB-LinkedPeptideA				
+A-y5	-	pepB_y5	BackboneB_AttachedA				
