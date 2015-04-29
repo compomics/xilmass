@@ -25,10 +25,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import matching.FindMatch;
 import org.apache.log4j.Logger;
+import theoretical.CPeptideIon;
 import theoretical.CPeptides;
 import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
@@ -84,7 +86,9 @@ public class Start {
                 scoring = ConfigHolder.getInstance().getInt("scoring"),
                 intensity_option = 0;
         boolean does_link_to_itself = false,
-                isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled");
+                isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
+                isBranching = ConfigHolder.getInstance().getBoolean("isBranching");
+
         // Parameters for searching against experimental spectrum 
         double ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff
                 ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"); // Precursor tolerance - ppm error 
@@ -102,10 +106,10 @@ public class Start {
             if (f.getName().endsWith(".fastacp")) {
                 control++;
                 File cxDBFile = new File(cxDBName + ".fastacp");
-                LOGGER.info("An already constrcuted fastacp file is found!" + new File(cxDBName + ".fastacp").getName());
+                LOGGER.info("An already constrcuted fastacp file is found! The name=" + new File(cxDBName + ".fastacp").getName());
                 // Read a file 
                 header_sequence = getHeaderSequence(cxDBFile);
-                cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), ptmFactory, fixed_modification, linker, fragMode);
+                cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), ptmFactory, fixed_modification, linker, fragMode, isBranching);
             }
         }
         if (control == 0) {
@@ -117,7 +121,7 @@ public class Start {
                     lowMass, highMass, // filtering of in silico peptides on peptide masses
                     minLen, maxLen_for_combined, does_link_to_itself, isLabeled);
             header_sequence = instance.getHeader_sequence();
-            cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), header_sequence, ptmFactory, fixed_modification, linker, fragMode);
+            cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), header_sequence, ptmFactory, fixed_modification, linker, fragMode, isBranching);
         }
         // If necessary, and crossLinked database is not constructed..
         if (control == 0) {
@@ -125,7 +129,7 @@ public class Start {
         }
 
         LOGGER.info("CX database is ready! ");
-        LOGGER.info("Header and sequence object is ready" + header_sequence.size());
+        LOGGER.info("Header and sequence object is ready! Total size is" + header_sequence.size());
 
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         ArrayList<Double> theoretical_masses = new ArrayList<Double>();
@@ -138,11 +142,11 @@ public class Start {
 
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! MS2 spectra
-        LOGGER.info("Getting experimental spectra");
+        LOGGER.info("Getting experimental spectra and calculating PCXMs");
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile));
-        String fileTitle = "SpecIndex" + "\t" + "MSnSpectrumTitle" + "\t" + "PrecursorMZ" + "\t" + "Charge" + "\t" + "precursorMass" + "\t" + "theoreticalMass" + "\t";
+        String fileTitle = "SpecIndex" + "\t" + "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t" + "PrecursorMZ" + "\t" + "Charge" + "\t" + "precursorMass" + "\t" + "theoreticalMass" + "\t";
         fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t";
-        fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\t" + "#MatchedPeaks" + "\n";
+        fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\t" + "#MatchedPeaks" + "\t" + "#MatchedCTheoPeaks" + "\t" + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\n";
         bw.write(fileTitle);
 
         File ms2spectra = new File(mgfs);
@@ -161,13 +165,13 @@ public class Start {
                     // PREPARE MSnSPECTRUM object no<w 
                     ArrayList<Charge> possibleCharges = ms.getPrecursor().getPossibleCharges();
                     Charge charge = possibleCharges.get(possibleCharges.size() - 1);
-                    String specInfo = (num + "\t" + ms.getSpectrumTitle() + "\t" + ms.getPrecursor().getMz() + "\t" + ms.getPrecursor().getPossibleChargesAsString() + "\t");
+                    String specInfo = (num + "\t" + mgf.getName() + "\t" + ms.getSpectrumTitle() + "\t" + ms.getPrecursor().getMz() + "\t" + ms.getPrecursor().getPossibleChargesAsString() + "\t");
                     int charge_value = charge.value;
                     double precursor_mass = ms.getPrecursor().getMass(charge_value);
                     String peptideAlpha = "",
                             peptideBeta = "";
                     CPeptides tmpCpeptide = null;
-                    FindMatch f = new FindMatch(ms, scoring, tmpCpeptide, ms2Err, charge_value, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
+//                    FindMatch f = new FindMatch(ms, scoring, tmpCpeptide, ms2Err, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
 
                     for (int i = 0; i < theoretical_masses.size(); i++) {
                         Double theoretical_mass = theoretical_masses.get(i);
@@ -175,7 +179,9 @@ public class Start {
                         if (tmpMS1Err <= ms1Err) {
                             // set a temporary xlinked peptide object
                             tmpCpeptide = cpeptides.get(i);
-                            f.setcPeptides(tmpCpeptide);
+                            FindMatch f = new FindMatch(ms, scoring, tmpCpeptide, ms2Err, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
+
+//                            f.setcPeptides(tmpCpeptide);
                             double psmscore = f.getPSMScore();
 
                             peptideAlpha = (tmpCpeptide.getPeptideA().getSequence());
@@ -189,16 +195,35 @@ public class Start {
 
                             // analyze matchedPeaks!
                             HashSet<Peak> matchedPeaks = f.getMatchedPeaks();
+                            HashSet<CPeptideIon> matchedCTheoPeaks = f.getMatchedCTheoPeaks();
+                            int theoSize = f.getTheoCMS2ions().size();
+                            ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
+                            Collections.sort(matchedPLists, Peak.ASC_mz_order);
+                            ArrayList<CPeptideIon> matchedCTheoPLists = new ArrayList<CPeptideIon>(matchedCTheoPeaks);
+                            Collections.sort(matchedCTheoPLists, CPeptideIon.Ion_ASC_mass_order_IDCharged);
 
                             String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + scoring + "\t" + tmpMS1Err + "\t" + psmscore + "\t"
-                                    + proteinA + "\t" + proteinB + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\t" + matchedPeaks.size() + "\n");
+                                    + proteinA + "\t" + proteinB + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\t"
+                                    + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t");
+
                             bw.write(specInfo + runningInfo);
+
+                            for (Peak p : matchedPLists) {
+                                bw.write(p.mz + " ");
+                            }
+                            bw.write("\t");
+
+                            for (CPeptideIon tmpCPIon : matchedCTheoPLists) {
+                                bw.write(tmpCPIon.toString() + "  ");
+                            }
+                            bw.write("\t");
+                            bw.newLine();
                         }
                     }
                 }
             }
         }
-        LOGGER.info("Cross linked database search is done8");
+        LOGGER.info("Cross linked database search is done!");
         bw.close();
     }
 
