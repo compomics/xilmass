@@ -8,6 +8,7 @@ package theoretical;
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
 import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
 import crossLinker.type.DSS;
@@ -17,7 +18,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -52,495 +56,328 @@ public class CPeptidesTest extends TestCase {
     }
 
     /**
-     * Test of getPeptide_alpha method, of class CPeptides.
-     */
-    public void testGetPeptide_alpha() {
-        System.out.println("getPeptide_alpha");
-        CPeptides instance = null;
-        Peptide expResult = null;
-        Peptide result = instance.getPeptide_alpha();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setPeptide_alpha method, of class CPeptides.
-     */
-    public void testSetPeptide_alpha() {
-        System.out.println("setPeptide_alpha");
-        Peptide peptide_alpha = null;
-        CPeptides instance = null;
-        instance.setPeptide_alpha(peptide_alpha);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getPeptide_beta method, of class CPeptides.
-     */
-    public void testGetPeptide_beta() {
-        System.out.println("getPeptide_beta");
-        CPeptides instance = null;
-        Peptide expResult = null;
-        Peptide result = instance.getPeptide_beta();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setPeptide_beta method, of class CPeptides.
-     */
-    public void testSetPeptide_beta() {
-        System.out.println("setPeptide_beta");
-        Peptide peptide_beta = null;
-        CPeptides instance = null;
-        instance.setPeptide_beta(peptide_beta);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getLinker method, of class CPeptides.
-     */
-    public void testGetLinker() {
-        System.out.println("getLinker");
-        CPeptides instance = null;
-        CrossLinker expResult = null;
-        CrossLinker result = instance.getLinker();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setLinker method, of class CPeptides.
-     */
-    public void testSetLinker() {
-        System.out.println("setLinker");
-        CrossLinker linker = null;
-        CPeptides instance = null;
-        instance.setLinker(linker);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getLinker_position_on_alpha method, of class CPeptides.
-     */
-    public void testGetLinker_position_on_alpha() {
-        System.out.println("getLinker_position_on_alpha");
-        CPeptides instance = null;
-        int expResult = 0;
-        int result = instance.getLinker_position_on_alpha();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setLinker_position_on_alpha method, of class CPeptides.
-     */
-    public void testSetLinker_position_on_alpha() {
-        System.out.println("setLinker_position_on_alpha");
-        int linker_position_on_alpha = 0;
-        CPeptides instance = null;
-        instance.setLinker_position_on_alpha(linker_position_on_alpha);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getLinker_position_on_beta method, of class CPeptides.
-     */
-    public void testGetLinker_position_on_beta() {
-        System.out.println("getLinker_position_on_beta");
-        CPeptides instance = null;
-        int expResult = 0;
-        int result = instance.getLinker_position_on_beta();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setLinker_position_on_beta method, of class CPeptides.
-     */
-    public void testSetLinker_position_on_beta() {
-        System.out.println("setLinker_position_on_beta");
-        int linker_position_on_beta = 0;
-        CPeptides instance = null;
-        instance.setLinker_position_on_beta(linker_position_on_beta);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getFragmentation_mode method, of class CPeptides.
-     */
-    public void testGetFragmentation_mode() {
-        System.out.println("getFragmentation_mode");
-        CPeptides instance = null;
-        FragmentationMode expResult = null;
-        FragmentationMode result = instance.getFragmentation_mode();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setFragmentation_mode method, of class CPeptides.
-     */
-    public void testSetFragmentation_mode() {
-        System.out.println("setFragmentation_mode");
-        FragmentationMode fragmentation_mode = null;
-        CPeptides instance = null;
-        instance.setFragmentation_mode(fragmentation_mode);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getFragment_ion_charge method, of class CPeptides.
-     */
-    public void testGetFragment_ion_charge() {
-        System.out.println("getFragment_ion_charge");
-        CPeptides instance = null;
-        int expResult = 0;
-        int result = instance.getFragment_ion_charge();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setFragment_ion_charge method, of class CPeptides.
-     */
-    public void testSetFragment_ion_charge() {
-        System.out.println("setFragment_ion_charge");
-        int fragment_ion_charge = 0;
-        CPeptides instance = null;
-        instance.setFragment_ion_charge(fragment_ion_charge);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of getTheoterical_ions method, of class CPeptides.
      */
     public void testGetTheoterical_ions() throws FileNotFoundException, IOException {
         System.out.println("getTheoterical_ions");
-        
-        String peptide_alpha_str = "MLSDA",
-                peptide_beta_str = "AIKN";
+
+        String peptideA_str = "MLSDAK",
+                peptideB_str = "AIKNK";
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptide_alpha = new Peptide(peptide_alpha_str, parent_proteins_test, modifications_test),
-                peptide_beta = new Peptide(peptide_beta_str, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
+                peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
+        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
+        HashSet<CPeptideIon> result = o.getTheoterical_ions();
 
-        CPeptides o = new CPeptides(peptide_alpha, peptide_beta, linker, 3, 2, FragmentationMode.CID, 1);
-        ArrayList<CPeptideIon> result = o.getTheoterical_ions();
-              
-        assertEquals(59, result.size());
-
-        File test_theoSpec = new File("Data/Test/theoretical/test_MassTheoSpec.txt");
+        File test_theoSpec = new File("Data/Test/theoretical/MLSDAK_AIKNK_by_theo.txt");
         BufferedReader br = new BufferedReader(new FileReader(test_theoSpec));
         String line = "";
-        int count = 0;
+        ArrayList<CPeptideIon> list = new ArrayList<CPeptideIon>(result);
+        ArrayList<Double> list_from_given_file = new ArrayList<Double>();
+        ArrayList<TestIon> list_test_ions = new ArrayList<TestIon>();
+
         while ((line = br.readLine()) != null) {
-            if (!line.startsWith("Mass")) {
-                double tmp_mass = Double.parseDouble(line.split("\t")[0]);
-                assertEquals(tmp_mass, result.get(count).getMass(), 0.05);                
-                count++;
+            if (!line.startsWith("Ion_Info")) {
+                String mz_str = line.split("\t")[1];
+                if (!mz_str.equals("-")) {
+                    Double tmp_mz = new Double(mz_str);
+                    String tmp_name = line.split("\t")[2];
+                    TestIon t = new TestIon(tmp_mz, tmp_name);
+                    list_test_ions.add(t);
+                    list_from_given_file.add(tmp_mz);
+                }
             }
         }
+        Collections.sort(list, CPeptideIon.Ion_ASC_mass_order);
+        Collections.sort(list_test_ions, Ion_ASC_mass_order);
+        Collections.sort(list_from_given_file);
 
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println(list.get(i).get_theoretical_mz(1) + "\t" + list.get(i).getName());
+//            assertEquals(list_from_given_file.get(i), list.get(i).getMass(), 0.02);
+        }
+
+        assertEquals(36, list.size());
+        // Now check...
+        for (int i = 0; i < list_test_ions.size(); i++) {
+            Double tmp_mz = list_test_ions.get(i).getMz();
+            System.out.println(tmp_mz + "\t" + list_test_ions.get(i).getName() + "\t" + list.get(i).get_theoretical_mz(1) + " found one name = " + list.get(i).getName());
+            assertEquals(tmp_mz, list.get(i).get_theoretical_mz(1), 0.02);
+            assertEquals(list_test_ions.get(i).getName(), list.get(i).getName());
+        }
+
+        // Test a problematic case...
+        // PepA=AILVNFKAR	 PepB=KMRPEVR	 at 6	0
+        peptideA = new Peptide("AILVNFKAR", parent_proteins_test, modifications_test);
+        peptideB = new Peptide("KMRPEVR", parent_proteins_test, modifications_test);
+        o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false);
+        result = o.getTheoterical_ions();
+//        assertEquals(60, result.size());
+
+//        test_theoSpec = new File("Data/Test/theoretical/test_MassTheoSpec_AILVNFKAR_KMRPEVR.txt");
+//        br = new BufferedReader(new FileReader(test_theoSpec));
+//        line = "";
+//        list = new ArrayList<CPeptideIon>(result);
+//        list_from_given_file = new ArrayList<Double>();
+//
+//        while ((line = br.readLine()) != null) {
+//            if (!line.startsWith("Ion_Info")) {
+//                double tmp_mass = Double.parseDouble(line.split("\t")[1]);
+//                list_from_given_file.add(tmp_mass);
+//            }
+//        }
+//        Collections.sort(list, CPeptideIon.Ion_ASC_mass_order);
+//        Collections.sort(list_from_given_file);
+        // Now check...
     }
 
     /**
-     * Test of setTheoterical_ions method, of class CPeptides.
-     */
-    public void testSetTheoterical_ions() {
-        System.out.println("setTheoterical_ions");
-        ArrayList<CPeptideIon> theoterical_ions = null;
-        CPeptides instance = null;
-        instance.setTheoterical_ions(theoterical_ions);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getFragmentFactory method, of class CPeptides.
-     */
-    public void testGetFragmentFactory() {
-        System.out.println("getFragmentFactory");
-        CPeptides instance = null;
-        IonFactory expResult = null;
-        IonFactory result = instance.getFragmentFactory();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setFragmentFactory method, of class CPeptides.
-     */
-    public void testSetFragmentFactory() {
-        System.out.println("setFragmentFactory");
-        IonFactory fragmentFactory = null;
-        CPeptides instance = null;
-        instance.setFragmentFactory(fragmentFactory);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getIons_alpha_peptide method, of class CPeptides.
-     */
-    public void testGetIons_alpha_peptide() {
-        System.out.println("getIons_alpha_peptide");
-        CPeptides instance = null;
-        HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> expResult = null;
-        HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> result = instance.getIons_alpha_peptide();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setIons_alpha_peptide method, of class CPeptides.
-     */
-    public void testSetIons_alpha_peptide() {
-        System.out.println("setIons_alpha_peptide");
-        HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> ions_alpha_peptide = null;
-        CPeptides instance = null;
-        instance.setIons_alpha_peptide(ions_alpha_peptide);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getIons_beta_peptide method, of class CPeptides.
-     */
-    public void testGetIons_beta_peptide() {
-        System.out.println("getIons_beta_peptide");
-        CPeptides instance = null;
-        HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> expResult = null;
-        HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> result = instance.getIons_beta_peptide();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setIons_beta_peptide method, of class CPeptides.
-     */
-    public void testSetIons_beta_peptide() {
-        System.out.println("setIons_beta_peptide");
-        HashMap<Integer, HashMap<Integer, ArrayList<Ion>>> ions_beta_peptide = null;
-        CPeptides instance = null;
-        instance.setIons_beta_peptide(ions_beta_peptide);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getC_termini_type method, of class CPeptides.
-     */
-    public void testGetC_termini_type() {
-        System.out.println("getC_termini_type");
-        CPeptides instance = null;
-        int expResult = 0;
-        int result = instance.getC_termini_type();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setC_termini_type method, of class CPeptides.
-     */
-    public void testSetC_termini_type() {
-        System.out.println("setC_termini_type");
-        int c_termini_type = 0;
-        CPeptides instance = null;
-        instance.setC_termini_type(c_termini_type);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getN_termini_type method, of class CPeptides.
-     */
-    public void testGetN_termini_type() {
-        System.out.println("getN_termini_type");
-        CPeptides instance = null;
-        int expResult = 0;
-        int result = instance.getN_termini_type();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setN_termini_type method, of class CPeptides.
-     */
-    public void testSetN_termini_type() {
-        System.out.println("setN_termini_type");
-        int n_termini_type = 0;
-        CPeptides instance = null;
-        instance.setN_termini_type(n_termini_type);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getProduct_ions_alpha method, of class CPeptides.
-     */
-    public void testGetProduct_ions_alpha() {
-        System.out.println("getProduct_ions_alpha");
-        CPeptides instance = null;
-        HashMap<Integer, ArrayList<Ion>> expResult = null;
-        HashMap<Integer, ArrayList<Ion>> result = instance.getProduct_ions_alpha();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setProduct_ions_alpha method, of class CPeptides.
-     */
-    public void testSetProduct_ions_alpha() {
-        System.out.println("setProduct_ions_alpha");
-        HashMap<Integer, ArrayList<Ion>> product_ions_alpha = null;
-        CPeptides instance = null;
-        instance.setProduct_ions_alpha(product_ions_alpha);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getProduct_ions_beta method, of class CPeptides.
-     */
-    public void testGetProduct_ions_beta() {
-        System.out.println("getProduct_ions_beta");
-        CPeptides instance = null;
-        HashMap<Integer, ArrayList<Ion>> expResult = null;
-        HashMap<Integer, ArrayList<Ion>> result = instance.getProduct_ions_beta();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setProduct_ions_beta method, of class CPeptides.
-     */
-    public void testSetProduct_ions_beta() {
-        System.out.println("setProduct_ions_beta");
-        HashMap<Integer, ArrayList<Ion>> product_ions_beta = null;
-        CPeptides instance = null;
-        instance.setProduct_ions_beta(product_ions_beta);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of isIs_monoisotopic_mass method, of class CPeptides.
-     */
-    public void testIsIs_monoisotopic_mass() {
-        System.out.println("isIs_monoisotopic_mass");
-        CPeptides instance = null;
-        boolean expResult = false;
-        boolean result = instance.isIs_monoisotopic_mass();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setIs_monoisotopic_mass method, of class CPeptides.
-     */
-    public void testSetIs_monoisotopic_mass() {
-        System.out.println("setIs_monoisotopic_mass");
-        boolean is_monoisotopic_mass = false;
-        CPeptides instance = null;
-        instance.setIs_monoisotopic_mass(is_monoisotopic_mass);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getIntensity method, of class CPeptides.
-     */
-    public void testGetIntensity() {
-        System.out.println("getIntensity");
-        CPeptides instance = null;
-        double expResult = 0.0;
-        double result = instance.getIntensity();
-        assertEquals(expResult, result, 0.0);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setIntensity method, of class CPeptides.
-     */
-    public void testSetIntensity() {
-        System.out.println("setIntensity");
-        double intensity = 0.0;
-        CPeptides instance = null;
-        instance.setIntensity(intensity);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of prepare_theoretical_spectrum method, of class CPeptides.
-     */
-    public void testPrepare_theoretical_spectrum() {
-        System.out.println("prepare_theoretical_spectrum");
-        CPeptides instance = null;
-//        instance.prepare_theoretical_spectrum();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getTheoretical_mass method, of class CPeptides.
+     * Test of getTheoreticalXLinkedMass method, of class CPeptides.
      */
     @Test
     public void testGetTheoretical_mass() {
         System.out.println("getTheoretical_mass");
-        
-        String peptide_alpha_str = "MLSDA",
-                peptide_beta_str = "AIKN";
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptide_alpha = new Peptide(peptide_alpha_str, parent_proteins_test, modifications_test),
-                peptide_beta = new Peptide(peptide_beta_str, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide("MLSDA", parent_proteins_test, modifications_test),
+                peptideB = new Peptide("AIKN", parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides(peptide_alpha, peptide_beta, linker, 3, 2, FragmentationMode.CID, 1);
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true);
 
         double expResult = 535.2385 + 444.2769 + 138.0681000;
-        double result = instance.getTheoretical_mass();
+        double result = instance.getTheoreticalXLinkedMass();
         assertEquals(expResult, result, 0.1);
     }
 
     /**
-     * Test of setTheoretical_mass method, of class CPeptides.
+     * Test of prepareBackbone method, of class CPeptides.
      */
     @Test
-    public void testSetTheoretical_mass() {
-        System.out.println("setTheoretical_mass");
-        double theoretical_mass = 0.0;
-        CPeptides instance = null;
-        instance.setTheoretical_mass(theoretical_mass);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testPrepareBackbone() {
+        System.out.println("prepareBackbone");
+        String peptideAstr = "MLSDAK",
+                peptideBstr = "AIKNK";
+        ArrayList<String> parent_proteins_test = new ArrayList<String>();
+        parent_proteins_test.add("Pro1");
+        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+        Peptide peptideA = new Peptide(peptideAstr, parent_proteins_test, modifications_test),
+                peptideB = new Peptide(peptideBstr, parent_proteins_test, modifications_test);
+        CrossLinker linker = new DSS();
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true);
+
+        // First get N-termini ones!!
+        HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
+        int ion_type = PeptideFragmentIon.B_ION,
+                linked_index = 3;
+        double mass_shift = 572.365;
+        String lepName = "pepA_b_";
+        CPeptideIonType cPepIonType = CPeptideIonType.Backbone_PepA;
+        HashSet<CPeptideIon> backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        ArrayList<CPeptideIon> backbone_al = new ArrayList<CPeptideIon>(backbone);
+        Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(5, backbone.size()); // 5-N-terminis
+        assertEquals(131.04, backbone_al.get(0).getMass(), 0.05);
+        assertEquals(244.13, backbone_al.get(1).getMass(), 0.05);
+        assertEquals(331.16, backbone_al.get(2).getMass(), 0.05);
+        assertEquals(446.19, backbone_al.get(3).getMass(), 0.05);
+        assertEquals(1227.66, backbone_al.get(4).getMass(), 0.05);
+
+        product_ions = IonFactory.getInstance().getFragmentIons(peptideB).get(0);
+        linked_index = 2;
+        lepName = "pepB_b_";
+        mass_shift = 663.3262;
+        cPepIonType = CPeptideIonType.Backbone_PepB;
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        backbone_al = new ArrayList<CPeptideIon>(backbone);
+        Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(4, backbone.size()); // 4-N terminis
+
+        assertEquals(71.04, backbone_al.get(0).getMass(), 0.05);
+        assertEquals(184.13, backbone_al.get(1).getMass(), 0.05);
+        assertEquals(312.22, backbone_al.get(2).getMass(), 0.05);
+        assertEquals(1227.65, backbone_al.get(3).getMass(), 0.05);
+
+        // Now C-termini ones!!!
+        product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
+        ion_type = PeptideFragmentIon.Y_ION;
+        linked_index = 6 - 3 - 1;
+        mass_shift = 572.365;
+        lepName = "pepA_y_";
+        cPepIonType = CPeptideIonType.Backbone_PepA;
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        backbone_al = new ArrayList<CPeptideIon>(backbone);
+        Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(5, backbone.size()); // 5-N-terminis
+        assertEquals(146.11, backbone_al.get(0).getMass(), 0.05);
+        assertEquals(217.15, backbone_al.get(1).getMass(), 0.05);
+        assertEquals(332.1769, backbone_al.get(2).getMass(), 0.05);
+        assertEquals(1129.642, backbone_al.get(3).getMass(), 0.05);
+        assertEquals(1242.726, backbone_al.get(4).getMass(), 0.05);
+
+        product_ions = IonFactory.getInstance().getFragmentIons(peptideB).get(0);
+        ion_type = PeptideFragmentIon.Y_ION;
+        linked_index = 5 - 2 - 1;
+        lepName = "pepB_y_";
+        mass_shift = 663.3262;
+        cPepIonType = CPeptideIonType.Backbone_PepB;
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        backbone_al = new ArrayList<CPeptideIon>(backbone);
+        Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(3, backbone.size()); // 5-N-termini
+//        assertEquals(146.1128, backbone_al.get(0).getMass(), 0.05); - This one is already calculated, so this is only updated!
+        assertEquals(260.1557, backbone_al.get(0).getMass(), 0.05);
+        assertEquals(388.2507, backbone_al.get(1).getMass(), 0.05);
+        assertEquals(1302.729, backbone_al.get(2).getMass(), 0.05);
     }
+
+    /**
+     * Test of prepare_linked_peptides method, of class CPeptides.
+     */
+    @Test
+    public void testPrepare_linked_peptides_attaching() {
+
+        System.out.println("prepare_linked_peptides-Attaching_ON");
+        String peptideAstr = "MLSDAK",
+                peptideBstr = "AIKNK";
+        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+        Peptide peptideA = new Peptide(peptideAstr, modifications_test),
+                peptideB = new Peptide(peptideBstr, modifications_test);
+        CrossLinker linker = new DSS();
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
+
+        // First get N-termini one with LinkedPeptideA!!
+        int fragmentIonType = PeptideFragmentIon.B_ION;
+        boolean isLinkedPeptideA = false;
+
+        ArrayList<CPeptideIon> result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
+        Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(5, result.size());
+
+        assertEquals(602.26, result.get(0).getMass(), 0.05);
+        assertEquals(655.30, result.get(1).getMass(), 0.05);
+        assertEquals(768.38, result.get(2).getMass(), 0.05);
+        assertEquals(896.482, result.get(3).getMass(), 0.05);
+        assertEquals(1010.52, result.get(4).getMass(), 0.05);
+
+        // Then, get N-termini ones with LinkedPeptideB!!
+        isLinkedPeptideA = true;
+
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
+        Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(5, result.size());
+        assertEquals(468.3, result.get(0).getMass(), 0.05);
+        assertEquals(581.33, result.get(1).getMass(), 0.05);
+        assertEquals(694.42, result.get(2).getMass(), 0.05);
+        assertEquals(781.45, result.get(3).getMass(), 0.05);
+//        assertEquals(896.48, result.get(4).getMass(), 0.05);
+        assertEquals(967.5, result.get(4).getMass(), 0.05);
+
+        // Later, get C-termini one with LinkedPeptideA!!
+        fragmentIonType = PeptideFragmentIon.Y_ION;
+        isLinkedPeptideA = false;
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
+        Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(5, result.size());
+
+        assertEquals(488.25, result.get(0).getMass(), 0.05); //mono-linked
+        assertEquals(616.3, result.get(1).getMass(), 0.05);
+        assertEquals(730.4, result.get(2).getMass(), 0.05);
+        assertEquals(858.49, result.get(3).getMass(), 0.05);
+        assertEquals(971.57, result.get(4).getMass(), 0.05);
+
+        isLinkedPeptideA = true;
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
+        Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(5, result.size());
+
+        assertEquals(544.32, result.get(0).getMass(), 0.05); //mono-linked
+        assertEquals(672.43, result.get(1).getMass(), 0.05);
+        assertEquals(743.46, result.get(2).getMass(), 0.05);
+//        assertEquals(858.49, result.get(3).getMass(), 0.05);
+        assertEquals(945.52, result.get(3).getMass(), 0.05);
+        assertEquals(1058.61, result.get(4).getMass(), 0.05);
+    }
+
+    /**
+     * Test of get_redundant_linked_ions, of class CPeptides. //
+     */
+//    @Test
+//    public void testget_redundant_linked_ions() {
+//        
+//        System.out.println("get_redundant_linked_ions");
+//        String peptideAstr = "MLSDAK",
+//                peptideBstr = "AIKNK";
+//        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+//        Peptide peptideA = new Peptide(peptideAstr, modifications_test),
+//                peptideB = new Peptide(peptideBstr, modifications_test);
+//        CrossLinker linker = new DSS();
+//        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
+//
+//        // First get N-termini one with LinkedPeptideA!!
+//        ArrayList<String> redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.B_ION);
+//        assertEquals(0, redundant_linked_ions.size());
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.Y_ION);
+//        assertEquals(1, redundant_linked_ions.size());
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.Z_ION);
+//        assertEquals(1, redundant_linked_ions.size());
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.X_ION);
+//        assertEquals(1, redundant_linked_ions.size());
+//        
+//        instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 2, 2, FragmentationMode.CID, false);
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.B_ION);
+//        assertEquals(1, redundant_linked_ions.size());
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.A_ION);
+//        assertEquals(1, redundant_linked_ions.size());
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.C_ION);
+//        assertEquals(1, redundant_linked_ions.size());
+//        
+//        redundant_linked_ions = instance.get_redundant_linked_ions(PeptideFragmentIon.Y_ION);
+//        assertEquals(0, redundant_linked_ions.size());
+//    }
+//    
+    public class TestIon {
+
+        private double mz;
+        private String name;
+
+        public TestIon(double mz, String name) {
+            this.mz = mz;
+            this.name = name;
+        }
+
+        public double getMz() {
+            return mz;
+        }
+
+        public void setMz(double mz) {
+            this.mz = mz;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+    }
+    public static final Comparator<TestIon> Ion_ASC_mass_order
+            = new Comparator<TestIon>() {
+                @Override
+                public int compare(TestIon o1, TestIon o2) {
+                    return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
+                }
+            };
 
 }
