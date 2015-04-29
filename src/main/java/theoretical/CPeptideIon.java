@@ -6,7 +6,6 @@
 package theoretical;
 
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
-import theoretical.CPeptideIonType;
 import java.util.Comparator;
 
 /**
@@ -17,29 +16,45 @@ import java.util.Comparator;
 public class CPeptideIon {
 
     private double intensity,
-            monoisotopic_mass;
-    private int charge,
-            fragmentIonType = 1; //0-a, 1-b, 2-c , 3-x, 4-y, 5-z
-    private CPeptideIonType type = CPeptideIonType.Backbone_PepA;
+            monoisotopic_mass,
+            diff = Double.MAX_VALUE;
+    private int fragmentIonType, //0-a, 1-b, 2-c , 3-x, 4-y, 5-z
+            identification_charge = 0;
+    private boolean isFound = false;
+    private CPeptideIonType type;
+    private String name;
 
-//    public CPeptideIon(double intensity, double mass) {
-//        this.intensity = intensity;
-//        this.monoisotopic_mass = mass;
-//        type = CPeptideIonType.Backbone_PepA;
-//    }
 
-    public CPeptideIon(double intensity, double mass, int charge) {
+    public CPeptideIon(double intensity, double mass, CPeptideIonType type, int fragmentIonType, String name) {
         this.intensity = intensity;
-        this.charge = charge;
-        this.monoisotopic_mass = mass;
-    }
-
-    public CPeptideIon(double intensity, double mass, int charge, CPeptideIonType type, int fragmentIonType) {
-        this.intensity = intensity;
-        this.charge = charge;
         this.type = type;
         this.monoisotopic_mass = mass;
         this.fragmentIonType = fragmentIonType;
+        this.name = name;
+    }
+
+    public double getDiff() {
+        return diff;
+    }
+
+    public void setDiff(double diff) {
+        this.diff = diff;
+    }
+
+    public boolean isFound() {
+        return isFound;
+    }
+
+    public void setIsFound(boolean isFound) {
+        this.isFound = isFound;
+    }
+
+    public int getIdentification_charge() {
+        return identification_charge;
+    }
+
+    public void setIdentification_charge(int identification_charge) {
+        this.identification_charge = identification_charge;
     }
 
     public double getMass() {
@@ -58,14 +73,6 @@ public class CPeptideIon {
         this.intensity = intensity;
     }
 
-    public double getCharge() {
-        return charge;
-    }
-
-    public void setCharge(int charge) {
-        this.charge = charge;
-    }
-
     public CPeptideIonType getType() {
         return type;
     }
@@ -81,7 +88,15 @@ public class CPeptideIon {
     public void setFragmentIonType(int fragmentIonType) {
         this.fragmentIonType = fragmentIonType;
     }
-   
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     /**
      * This method returns a theoretical mz happens with given chargeValue
      *
@@ -92,23 +107,17 @@ public class CPeptideIon {
         return (monoisotopic_mass + chargeValue * ElementaryIon.proton.getTheoreticMass()) / chargeValue;
     }
 
-    /**
-     * This method returns a theoretical mz happens with a chargeValue given
-     * during construction
-     *
-     * @return a theoretical m/z
-     */
-    public double get_theoretical_mz() {
-        return (monoisotopic_mass + charge * ElementaryIon.proton.getTheoreticMass()) / charge;
-    }
-
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.intensity) ^ (Double.doubleToLongBits(this.intensity) >>> 32));
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.monoisotopic_mass) ^ (Double.doubleToLongBits(this.monoisotopic_mass) >>> 32));
-        hash = 89 * hash + this.charge;
-        hash = 89 * hash + (this.type != null ? this.type.hashCode() : 0);
+        int hash = 3;
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.intensity) ^ (Double.doubleToLongBits(this.intensity) >>> 32));
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.monoisotopic_mass) ^ (Double.doubleToLongBits(this.monoisotopic_mass) >>> 32));
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.diff) ^ (Double.doubleToLongBits(this.diff) >>> 32));
+        hash = 17 * hash + this.fragmentIonType;
+        hash = 17 * hash + this.identification_charge;
+        hash = 17 * hash + (this.isFound ? 1 : 0);
+        hash = 17 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 17 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
 
@@ -121,35 +130,57 @@ public class CPeptideIon {
             return false;
         }
         final CPeptideIon other = (CPeptideIon) obj;
-        if (Double.doubleToLongBits(this.intensity) != Double.doubleToLongBits(other.intensity)) {
-            return false;
-        }
         if (Double.doubleToLongBits(this.monoisotopic_mass) != Double.doubleToLongBits(other.monoisotopic_mass)) {
             return false;
         }
-        if (this.charge != other.charge) {
+        if (this.fragmentIonType != other.fragmentIonType) {
+            return false;
+        }
+        if (this.identification_charge != other.identification_charge) {
             return false;
         }
         if (this.type != other.type) {
             return false;
         }
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
         return true;
     }
+    
 
     @Override
     public String toString() {
-        return  "(ch=" + charge + "_fragIon=" + fragmentIonType + "_" + type + ')';
+        double mass_to_show = Math.floor(monoisotopic_mass * 10000) / 10000;
+        if (identification_charge == 0) {
+            return "(mass=" + mass_to_show + "_" + name + ')';
+        }
+        String id_info = "singly";
+        if (identification_charge == 2) {
+            id_info = "doubly";
+        }
+        double mz = get_theoretical_mz(identification_charge),
+                mz_to_show = Math.floor(mz * 10000) / 10000;
+        return "(mass=" + mass_to_show + "_" + id_info + "MZ=" + mz_to_show + "_" + name + ')';
     }
-        
 
     /**
      * To sort CPeptideIon in a ascending mass order
      */
-    static final Comparator<CPeptideIon> Ion_ASC_mass_order
+    public static final Comparator<CPeptideIon> Ion_ASC_mass_order
             = new Comparator<CPeptideIon>() {
                 @Override
                 public int compare(CPeptideIon o1, CPeptideIon o2) {
                     return o1.getMass() < o2.getMass() ? -1 : o1.getMass() == o2.getMass() ? 0 : 1;
+                }
+            };
+
+    public static final Comparator<CPeptideIon> Ion_ASC_mass_order_IDCharged
+            = new Comparator<CPeptideIon>() {
+                @Override
+                public int compare(CPeptideIon o1, CPeptideIon o2) {
+
+                    return o1.get_theoretical_mz(o1.getIdentification_charge()) < o2.get_theoretical_mz(o2.getIdentification_charge()) ? -1 : o1.get_theoretical_mz(o1.getIdentification_charge()) == o2.get_theoretical_mz(o2.getIdentification_charge()) ? 0 : 1;
                 }
             };
 
