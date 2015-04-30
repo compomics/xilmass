@@ -11,9 +11,9 @@ import junit.framework.TestCase;
  *
  * @author Sule
  */
-public class MSRobinTest extends TestCase {
+public class MSAmanda_derivedTest extends TestCase {
 
-    public MSRobinTest(String testName) {
+    public MSAmanda_derivedTest(String testName) {
         super(testName);
     }
 
@@ -28,7 +28,7 @@ public class MSRobinTest extends TestCase {
     }
 
     /**
-     * Test of getScore method, of class MSRobin.
+     * Test of getScore method, of class MSAmanda_derived.
      */
     public void testGetScore() {
         System.out.println("getScore");
@@ -37,7 +37,7 @@ public class MSRobinTest extends TestCase {
                 explainedIntensity = 220;
         int N = 2,
                 n = 2;
-        MSRobin instance = new MSRobin(p, N, n, intensity, explainedIntensity, 0);
+        MSAmanda_derived instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
         double expResult = 40;
         double result = instance.getScore();
         assertEquals(expResult, result, 0.01);
@@ -47,12 +47,12 @@ public class MSRobinTest extends TestCase {
         explainedIntensity = 351;
         N = 4;
         n = 3;
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
         expResult = 40.66;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 36.74;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -62,12 +62,12 @@ public class MSRobinTest extends TestCase {
         explainedIntensity = 351;
         N = 6;
         n = 3;
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
         expResult = 24.45;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 18.13;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -77,12 +77,12 @@ public class MSRobinTest extends TestCase {
         explainedIntensity = 351;
         N = 8;
         n = 3;
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
         expResult = 16.28;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 10.55;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -92,12 +92,12 @@ public class MSRobinTest extends TestCase {
         explainedIntensity = 351;
         N = 10;
         n = 3;
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
         expResult = 11.34;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
         
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 6.63;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -107,12 +107,12 @@ public class MSRobinTest extends TestCase {
         explainedIntensity = 630;
         N = 20;
         n = 6;
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
         expResult = 11.39;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
         
-        instance = new MSRobin(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 6.66;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);

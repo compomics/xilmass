@@ -11,9 +11,9 @@ import junit.framework.TestCase;
  *
  * @author Sule
  */
-public class AndromedaTest extends TestCase {
+public class Andromeda_derivedTest extends TestCase {
 
-    public AndromedaTest(String testName) {
+    public Andromeda_derivedTest(String testName) {
         super(testName);
     }
 
@@ -28,16 +28,16 @@ public class AndromedaTest extends TestCase {
     }
 
     /**
-     * Test of calculateScore method, of class Andromeda.
+     * Test of calculateScore method, of class Andromeda_derived.
      */
     public void testCalculateScore() {
         System.out.println("calculateScore");
         int N = 24;
-        Andromeda instance = new Andromeda(0.01, N, 2);
+        Andromeda_derived instance = new Andromeda_derived(0.01, N, 2);
         double score = instance.getScore();
         assertEquals(16.2, score,0.1);
 
-        instance = new Andromeda(0.02, N, 2);
+        instance = new Andromeda_derived(0.02, N, 2);
         score = instance.getScore();
         assertEquals(10.8, score, 0.1);
 
