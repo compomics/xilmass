@@ -70,7 +70,7 @@ public class FASTACPDBLoader {
                     ptm_pepB = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
             peptideA = new Peptide(startSeq, ptm_pepA);
             peptideB = new Peptide(nextSeq, ptm_pepB);
-            cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, isBranching);
+            cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
             bw.write(linker_position_start + "\t" + linker_position_next + "\t");
 
             double theoretical_mass = cPeptide.getTheoreticalXLinkedMass();
@@ -95,8 +95,8 @@ public class FASTACPDBLoader {
                 Integer linker_position_start = Integer.parseInt(split[4]),
                         linker_position_next = Integer.parseInt(split[5]);
                 Double theoreticalMass = Double.parseDouble(split[6]);
-                // TODO: improve PTMs - add variable PTMs and also a list of several fixed PTMs
 
+                // TODO: improve PTMs - add variable PTMs and also a list of several fixed PTMs
                 ArrayList<ModificationMatch> ptm_peptideA = GetFixedPTM.getPTM(ptmFactory, fixed_modification, startSeq),
                         ptm_peptideB = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
 
@@ -105,7 +105,7 @@ public class FASTACPDBLoader {
 
                 Peptide peptideA = new Peptide(startSeq, ptm_peptideA),
                         peptideB = new Peptide(nextSeq, ptm_peptideB);
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, isBranching);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
                 cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
             }
         }
@@ -133,7 +133,7 @@ public class FASTACPDBLoader {
 
                 Peptide peptideA = new Peptide(startSeq, ptm_peptideA),
                         peptideB = new Peptide(nextSeq, ptm_peptideB);
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, isBranching);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
                 cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
 
             }
