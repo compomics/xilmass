@@ -35,14 +35,17 @@ public class MatchAndScore {
             // TODO: Need to see the performance in terms of object generation!
             matchedTheoreticalCXPeaks = new HashSet<CPeptidePeak>(); // Matched theoretical cross linked peaks
     private double fragTol, // fragment tolerance to select 
-            cXPSMScore = 0; // A CX-PSM Score 
+            cXPSMScore = 0, // A CX-PSM Score 
+            massWindow =100; // Mass window to filter out peaks from a given MSnSpectrum
     private int scoring_type, // 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmanda (MSAmanda_derived with N=AllTheoPeaks)
-            intensity_option_for_msAmandaDerived = 0;
+            intensity_option_for_msAmandaDerived = 0,
+            minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)            
+            maxFPeaks; // Maximum number of filtered peaks per 100Da mass window.. (To test)
     private boolean isTheoreticalCXPeaksReady = false,
             isFoundAndMatched = false;
 
     /* Constructor */
-    public MatchAndScore(MSnSpectrum expMS2, int scoring, CPeptides cPeptides, double fragTol, int intensity_option) {
+    public MatchAndScore(MSnSpectrum expMS2, int scoring, CPeptides cPeptides, double fragTol, int intensity_option, int minFPeakNum, int maxFPeakNum, double massWindow) {
         this.expMS2 = expMS2;
         this.scoring_type = scoring;
         this.cPeptides = cPeptides;
@@ -53,6 +56,9 @@ public class MatchAndScore {
         }
         this.fragTol = fragTol;
         this.intensity_option_for_msAmandaDerived = intensity_option;
+        this.minFPeaks = minFPeakNum;
+        this.maxFPeaks = maxFPeakNum;
+        this.massWindow = massWindow;
     }
 
     /* getters and setters */
@@ -164,9 +170,9 @@ public class MatchAndScore {
         if (!isFoundAndMatched) {
             int totalN = getTheoreticalCXMS2ions().size();
             ArrayList<Double> scores = new ArrayList<Double>();
-            for (int numHighestPeak = 1; numHighestPeak < 11; numHighestPeak++) {
+            for (int numHighestPeak = minFPeaks; numHighestPeak < maxFPeaks; numHighestPeak++) {
                 matchedPeaks = new HashSet<Peak>();
-                Filter filter = new Filter(expMS2, numHighestPeak);
+                Filter filter = new Filter(expMS2, numHighestPeak, massWindow);
                 ArrayList<Peak> filteredPeaks = filter.getFilteredCPeaks();
                 double probability = (double) numHighestPeak / (double) (filter.getWindowSize());
                 int n = 0;
