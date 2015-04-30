@@ -7,7 +7,6 @@ package scoringFunction;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import util.CMathUtil;
 
 
 /**
@@ -44,7 +43,7 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
 
     private double intensity, // sum of all intensities from every picked peak
             explainedIntensity; // sum of all intensities from matched picked peak
-    private int option; // 0:SQRT(IP), 1:IP
+    private int intensityOption; // 0:SQRT(IP), 1:IP
 
     /**
      *
@@ -56,15 +55,15 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
      * spectrum
      * @param intensity sum of all intensities from every picked peak
      * @param explainedIntensity sum of all intensities from matched picked peak
-     * @param option 0-Intensities are squared, 1-No preprocessing on intensity part
+     * @param intesityOption 0-Intensities are squared, 1-No preprocessing on intensity part
      */
-    public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int option) {
+    public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption) {
         super.p = p;
         super.N = N;
         super.n = n;
         this.intensity = intensity;
         this.explainedIntensity = explainedIntensity;
-        this.option = option;
+        this.intensityOption = intesityOption;
     }
     
 
@@ -79,11 +78,11 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
         try {
             double probability_part = super.calculateCumulativeBinominalProbability();
             double intensity_part = explainedIntensity / intensity;
-            if (option == 0) {
+            if (intensityOption == 0) {
                 probability_part = -10 * (Math.log10(probability_part));
                 intensity_part = (Math.sqrt(intensity_part));
                 score = probability_part * intensity_part;
-            } else if (option == 1) {
+            } else if (intensityOption == 1) {
                 probability_part = -10 * (Math.log10(probability_part));
                 score = probability_part * intensity_part;
             }
