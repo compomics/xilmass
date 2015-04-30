@@ -40,7 +40,7 @@ import util.CMathUtil;
  *
  * @author Sule
  */
-public class MSRobin extends CumulativeBinomialProbabilityBasedScoring {
+public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring {
 
     private double intensity, // sum of all intensities from every picked peak
             explainedIntensity; // sum of all intensities from matched picked peak
@@ -58,7 +58,7 @@ public class MSRobin extends CumulativeBinomialProbabilityBasedScoring {
      * @param explainedIntensity sum of all intensities from matched picked peak
      * @param option 0-Intensities are squared, 1-No preprocessing on intensity part
      */
-    public MSRobin(double p, int N, int n, double intensity, double explainedIntensity, int option) {
+    public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int option) {
         super.p = p;
         super.N = N;
         super.n = n;
@@ -69,8 +69,8 @@ public class MSRobin extends CumulativeBinomialProbabilityBasedScoring {
     
 
     /**
-     * This calculate MSRobin cumulativeBinomialProbability with an option in
-     * selection.
+     * This calculate MSAmanda_derived cumulativeBinomialProbability with an option in
+ selection.
      * Option0-Sqrt(IntensityPart)
      * Option1-IntensityPart
      */
@@ -92,7 +92,7 @@ public class MSRobin extends CumulativeBinomialProbabilityBasedScoring {
             }
             isCalculated = true;
         } catch (Exception ex) {
-            Logger.getLogger(MSRobin.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MSAmanda_derived.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
