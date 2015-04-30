@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import matching.FindMatch;
+import matching.MatchAndScore;
 import org.apache.log4j.Logger;
-import theoretical.CPeptideIon;
+import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
@@ -84,14 +84,17 @@ public class Start {
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
                 scoring = ConfigHolder.getInstance().getInt("scoring"),
-                intensity_option = 0;
+                intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
+                minFPeakNum = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumber"),
+                maxFPeakNum = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumber");
         boolean does_link_to_itself = false,
                 isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getBoolean("isBranching");
 
         // Parameters for searching against experimental spectrum 
         double ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff
-                ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"); // Precursor tolerance - ppm error 
+                ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm error 
+                massWindow = ConfigHolder.getInstance().getDouble("massWindow");    // mass window to make window on a given MSnSpectrum for FILTERING 
         boolean isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"); // Relative or absolute precursor tolerance 
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled); // Required for constructing theoretical spectra
 
@@ -144,9 +147,11 @@ public class Start {
         // Get all MSnSpectrum! MS2 spectra
         LOGGER.info("Getting experimental spectra and calculating PCXMs");
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile));
-        String fileTitle = "SpecIndex" + "\t" + "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t" + "PrecursorMZ" + "\t" + "Charge" + "\t" + "precursorMass" + "\t" + "theoreticalMass" + "\t";
-        fileTitle += "MSRobin/Andromeda/ThMSRobin" + "\t" + "MS1Err(PPM)" + "\t" + "Score" + "\t" + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t";
-        fileTitle += "linkerPositionOnAlpha" + "\t" + "linkerPositionOnBeta" + "\t" + "#MatchedPeaks" + "\t" + "#MatchedCTheoPeaks" + "\t" + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\n";
+        String fileTitle = "SpectrumIndex" + "\t" + "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t"
+                + "PrecursorMZ" + "\t" + "PrecursorCharge" + "\t" + "PrecursorMass" + "\t" + "TheoreticalMass" + "\t" + "MS1Err(PPM)" + "\t"
+                + "ScoringFunction" + "\t" + "Score" + "\t"
+                + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t"
+                + "linkerPositionOnPeptideA" + "\t" + "linkerPositionOnPeptideB" + "\t" + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t" + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\n";
         bw.write(fileTitle);
 
         File ms2spectra = new File(mgfs);
@@ -168,10 +173,10 @@ public class Start {
                     String specInfo = (num + "\t" + mgf.getName() + "\t" + ms.getSpectrumTitle() + "\t" + ms.getPrecursor().getMz() + "\t" + ms.getPrecursor().getPossibleChargesAsString() + "\t");
                     int charge_value = charge.value;
                     double precursor_mass = ms.getPrecursor().getMass(charge_value);
-                    String peptideAlpha = "",
-                            peptideBeta = "";
+                    String peptideA = "",
+                            peptideB = "";
                     CPeptides tmpCpeptide = null;
-//                    FindMatch f = new FindMatch(ms, scoring, tmpCpeptide, ms2Err, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
+//                    MatchAndScore f = new MatchAndScore(ms, scoring, tmpCpeptide, ms2Err, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
 
                     for (int i = 0; i < theoretical_masses.size(); i++) {
                         Double theoretical_mass = theoretical_masses.get(i);
@@ -179,31 +184,30 @@ public class Start {
                         if (tmpMS1Err <= ms1Err) {
                             // set a temporary xlinked peptide object
                             tmpCpeptide = cpeptides.get(i);
-                            FindMatch f = new FindMatch(ms, scoring, tmpCpeptide, ms2Err, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
+                            MatchAndScore f = new MatchAndScore(ms, scoring, tmpCpeptide, ms2Err, intensity_option, minFPeakNum, maxFPeakNum, massWindow); // MSAmandad -0, Andromedad-1, TheoMSAmandad-2
 
-//                            f.setcPeptides(tmpCpeptide);
-                            double psmscore = f.getPSMScore();
+                            double psmscore = f.getCXPSMScore();
 
-                            peptideAlpha = (tmpCpeptide.getPeptideA().getSequence());
-                            peptideBeta = (tmpCpeptide.getPeptideB().getSequence());
+                            peptideA = (tmpCpeptide.getPeptideA().getSequence());
+                            peptideB = (tmpCpeptide.getPeptideB().getSequence());
 
                             String proteinA = tmpCpeptide.getProteinA(),
                                     proteinB = tmpCpeptide.getProteinB();
 
-                            int linkerPositionOnAlpha = tmpCpeptide.getLinker_position_on_peptideA() + 1,
-                                    linkerPositionOnBeta = tmpCpeptide.getLinker_position_on_peptideB() + 1;
+                            int linkerPositionOnPeptideA = tmpCpeptide.getLinker_position_on_peptideA() + 1,
+                                    linkerPositionOnPeptideB = tmpCpeptide.getLinker_position_on_peptideB() + 1;
 
                             // analyze matchedPeaks!
                             HashSet<Peak> matchedPeaks = f.getMatchedPeaks();
-                            HashSet<CPeptideIon> matchedCTheoPeaks = f.getMatchedCTheoPeaks();
-                            int theoSize = f.getTheoCMS2ions().size();
+                            HashSet<CPeptidePeak> matchedCTheoPeaks = f.getMatchedTheoreticalCPeaks();
+
                             ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
                             Collections.sort(matchedPLists, Peak.ASC_mz_order);
-                            ArrayList<CPeptideIon> matchedCTheoPLists = new ArrayList<CPeptideIon>(matchedCTheoPeaks);
-                            Collections.sort(matchedCTheoPLists, CPeptideIon.Ion_ASC_mass_order_IDCharged);
+                            ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
+                            Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
 
-                            String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + scoring + "\t" + tmpMS1Err + "\t" + psmscore + "\t"
-                                    + proteinA + "\t" + proteinB + "\t" + peptideAlpha + "\t" + peptideBeta + "\t" + linkerPositionOnAlpha + "\t" + linkerPositionOnBeta + "\t"
+                            String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + tmpMS1Err + "\t" + getScoringStr(scoring) + "\t" + psmscore + "\t"
+                                    + proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t" + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
                                     + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t");
 
                             bw.write(specInfo + runningInfo);
@@ -213,8 +217,8 @@ public class Start {
                             }
                             bw.write("\t");
 
-                            for (CPeptideIon tmpCPIon : matchedCTheoPLists) {
-                                bw.write(tmpCPIon.toString() + "  ");
+                            for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                bw.write(tmpCPeak.toString() + "  ");
                             }
                             bw.write("\t");
                             bw.newLine();
@@ -244,6 +248,16 @@ public class Start {
             }
         }
         return headerAndSequence;
+    }
+
+    private static String getScoringStr(int scoring) {
+        String scoreName = "MSAmandaD";
+        if(scoring==1){
+            scoreName = "AndromedaD";
+        } else if(scoring==2){
+            scoreName = "TheoMSAmandaD";
+        }
+        return scoreName;
     }
 
 }
