@@ -65,8 +65,10 @@ public class Start {
                 highMass = ConfigHolder.getInstance().getString("higherMass"),
                 mgfs = ConfigHolder.getInstance().getString("mgfs"),
                 resultFile = ConfigHolder.getInstance().getString("resultFile"),
-                fixed_modification = ConfigHolder.getInstance().getString("fixedModification"),
+                fixed_modification_names = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by spaces.
                 fragModeName = ConfigHolder.getInstance().getString("fragMode");
+
+        ArrayList<String> fixedModifications = getFixedModificationsName(fixed_modification_names);
         FragmentationMode fragMode = null;
 
         if (fragModeName.equals("CID")) {
@@ -78,9 +80,7 @@ public class Start {
         }
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
-
-        ptmFactory.importModifications(
-                new File(modsFileName), false, false);
+        ptmFactory.importModifications(new File(modsFileName), false);
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
                 scoring = ConfigHolder.getInstance().getInt("scoring"),
@@ -112,7 +112,7 @@ public class Start {
                 LOGGER.info("An already constrcuted fastacp file is found! The name=" + new File(cxDBName + ".fastacp").getName());
                 // Read a file 
                 header_sequence = getHeaderSequence(cxDBFile);
-                cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), ptmFactory, fixed_modification, linker, fragMode, isBranching);
+                cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), ptmFactory, fixedModifications, linker, fragMode, isBranching);
             }
         }
         if (control == 0) {
@@ -124,7 +124,7 @@ public class Start {
                     lowMass, highMass, // filtering of in silico peptides on peptide masses
                     minLen, maxLen_for_combined, does_link_to_itself, isLabeled);
             header_sequence = instance.getHeader_sequence();
-            cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), header_sequence, ptmFactory, fixed_modification, linker, fragMode, isBranching);
+            cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), header_sequence, ptmFactory, fixedModifications, linker, fragMode, isBranching);
         }
         // If necessary, and crossLinked database is not constructed..
         if (control == 0) {
@@ -188,8 +188,8 @@ public class Start {
 
                             double psmscore = f.getCXPSMScore();
 
-                            peptideA = (tmpCpeptide.getPeptideA().getSequence());
-                            peptideB = (tmpCpeptide.getPeptideB().getSequence());
+                            peptideA = tmpCpeptide.getPeptideA().getSequenceWithLowerCasePtms();
+                            peptideB = tmpCpeptide.getPeptideB().getSequenceWithLowerCasePtms();
 
                             String proteinA = tmpCpeptide.getProteinA(),
                                     proteinB = tmpCpeptide.getProteinB();
@@ -207,7 +207,8 @@ public class Start {
                             Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
 
                             String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + tmpMS1Err + "\t" + getScoringStr(scoring) + "\t" + psmscore + "\t"
-                                    + proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t" + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
+                                    + proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
+                                    + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
                                     + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t");
 
                             bw.write(specInfo + runningInfo);
@@ -218,7 +219,7 @@ public class Start {
                             bw.write("\t");
 
                             for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
-                                bw.write(tmpCPeak.toString() + "  ");
+                                bw.write(tmpCPeak.toString() + " ");
                             }
                             bw.write("\t");
                             bw.newLine();
@@ -252,12 +253,21 @@ public class Start {
 
     private static String getScoringStr(int scoring) {
         String scoreName = "MSAmandaD";
-        if(scoring==1){
+        if (scoring == 1) {
             scoreName = "AndromedaD";
-        } else if(scoring==2){
+        } else if (scoring == 2) {
             scoreName = "TheoMSAmandaD";
         }
         return scoreName;
+    }
+
+    private static ArrayList<String> getFixedModificationsName(String fixed_modification_names) {
+        ArrayList<String> fixedMods = new ArrayList<String>();
+        String[] fixed_modifications_name_split = fixed_modification_names.split(";");
+        for (String fixed_modification_name : fixed_modifications_name_split) {
+            fixedMods.add(fixed_modification_name);
+        }
+        return fixedMods;
     }
 
 }
