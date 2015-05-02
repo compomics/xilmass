@@ -28,7 +28,8 @@ import theoretical.FragmentationMode;
  */
 public class FASTACPDBLoader {
 
-    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File mass_pept_cache, HashMap<String, String> header_sequence, PTMFactory ptmFactory, String fixed_modification, CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File mass_pept_cache, HashMap<String, String> header_sequence, 
+            PTMFactory ptmFactory, ArrayList<String> fixedModifications, CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
         HashMap<CPeptides, Double> cPeptides_theoreticalMasses = new HashMap<CPeptides, Double>();
         Peptide peptideA,
                 peptideB;
@@ -54,6 +55,9 @@ public class FASTACPDBLoader {
             }
             int linker_position_start = Integer.parseInt(split[startIndex]),
                     linker_position_next = Integer.parseInt(split[endIndex]);
+            linker_position_start = linker_position_start - 1;
+            linker_position_next = linker_position_next - 1;
+
             seqs = header_sequence.get(header);
 
             String[] headerSplit = header.substring(0).split("_");
@@ -66,10 +70,14 @@ public class FASTACPDBLoader {
             nextSeq = seqs.substring((seqs.indexOf("|") + 1), seqs.length()).replace("*", "");
             bw.write(startSeq + "\t" + nextSeq + "\t");
 
-            ArrayList<ModificationMatch> ptm_pepA = GetFixedPTM.getPTM(ptmFactory, fixed_modification, startSeq),
-                    ptm_pepB = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
+            // TODO: improve PTMs - add variable PTMs and also a list of several fixed PTMs
+
+            ArrayList<ModificationMatch> ptm_pepA = GetFixedPTM.getPTM(ptmFactory, fixedModifications, startSeq),
+                    ptm_pepB = GetFixedPTM.getPTM(ptmFactory, fixedModifications, nextSeq);
+           
             peptideA = new Peptide(startSeq, ptm_pepA);
             peptideB = new Peptide(nextSeq, ptm_pepB);
+
             cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
             bw.write(linker_position_start + "\t" + linker_position_next + "\t");
 
@@ -81,7 +89,8 @@ public class FASTACPDBLoader {
         return cPeptides_theoreticalMasses;
     }
 
-    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, String fixed_modification, CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, ArrayList<String> fixedModifications,
+            CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
         HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = "";
@@ -97,9 +106,8 @@ public class FASTACPDBLoader {
                 Double theoreticalMass = Double.parseDouble(split[6]);
 
                 // TODO: improve PTMs - add variable PTMs and also a list of several fixed PTMs
-                ArrayList<ModificationMatch> ptm_peptideA = GetFixedPTM.getPTM(ptmFactory, fixed_modification, startSeq),
-                        ptm_peptideB = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
-
+                ArrayList<ModificationMatch> ptm_peptideA = GetFixedPTM.getPTM(ptmFactory, fixedModifications, startSeq),
+                        ptm_peptideB = GetFixedPTM.getPTM(ptmFactory, fixedModifications, nextSeq);
                 linker_position_next = linker_position_next - 1;
                 linker_position_start = linker_position_start - 1;
 
@@ -112,33 +120,32 @@ public class FASTACPDBLoader {
         return cPeptide_theoreticalMass;
     }
 
-    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, String fixed_modification, ArrayList<String> variable_modifications, CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
-        HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            if (!line.startsWith("start")) {
-                String[] split = line.split("\t");
-                String proteinA = split[0],
-                        proteinB = split[1],
-                        startSeq = split[2],
-                        nextSeq = split[3];
-                Integer linker_position_start = Integer.parseInt(split[4]),
-                        linker_position_next = Integer.parseInt(split[5]);
-                Double theoreticalMass = Double.parseDouble(split[6]);
-
-                // TODO: improve PTMs - add variable PTMs and also a list of several fixed PTMs
-                ArrayList<ModificationMatch> ptm_peptideA = GetFixedPTM.getPTM(ptmFactory, fixed_modification, startSeq),
-                        ptm_peptideB = GetFixedPTM.getPTM(ptmFactory, fixed_modification, nextSeq);
-
-                Peptide peptideA = new Peptide(startSeq, ptm_peptideA),
-                        peptideB = new Peptide(nextSeq, ptm_peptideB);
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
-                cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
-
-            }
-        }
-        return cPeptide_theoreticalMass;
-    }
-
+//    public static HashMap<CPeptides, Double> getCPeptide_TheoreticalMass(File file, PTMFactory ptmFactory, ArrayList<String>fixedModifications, ArrayList<String> variable_modifications, CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+//        HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
+//        BufferedReader br = new BufferedReader(new FileReader(file));
+//        String line = "";
+//        while ((line = br.readLine()) != null) {
+//            if (!line.startsWith("start")) {
+//                String[] split = line.split("\t");
+//                String proteinA = split[0],
+//                        proteinB = split[1],
+//                        startSeq = split[2],
+//                        nextSeq = split[3];
+//                Integer linker_position_start = Integer.parseInt(split[4]),
+//                        linker_position_next = Integer.parseInt(split[5]);
+//                Double theoreticalMass = Double.parseDouble(split[6]);
+//
+//                // TODO: improve PTMs - add variable PTMs and also a list of several fixed PTMs
+//                ArrayList<ModificationMatch> ptm_peptideA = GetFixedPTM.getPTM(ptmFactory, fixedModifications, startSeq),
+//                        ptm_peptideB = GetFixedPTM.getPTM(ptmFactory, fixedModifications, nextSeq);
+//
+//                Peptide peptideA = new Peptide(startSeq, ptm_peptideA),
+//                        peptideB = new Peptide(nextSeq, ptm_peptideB);
+//                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
+//                cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
+//
+//            }
+//        }
+//        return cPeptide_theoreticalMass;
+//    }
 }
