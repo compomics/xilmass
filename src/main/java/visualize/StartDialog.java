@@ -4,6 +4,8 @@
  */
 package visualize;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
@@ -13,10 +15,11 @@ import javax.swing.JTextField;
  * @author Sule
  */
 public class StartDialog extends javax.swing.JDialog {
+
     private JFileChooser fileChooser = new JFileChooser();
     private int totalSpectra = 0;
     private boolean isSpectraLoaded = false,
-                    isScoreFileLoaded = false;
+            isScoreFileLoaded = false;
     private String specFolder = "";
 
     /**
@@ -25,9 +28,15 @@ public class StartDialog extends javax.swing.JDialog {
     public StartDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        setLocation(620, 400);
+        this.setSize(750, 300);
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = toolkit.getScreenSize();
+        int x = (screenSize.width - this.getWidth()) / 2,
+                y = (screenSize.height - this.getHeight()) / 2;
+        this.setLocation(x, y);
         setVisible(true);
     }
+
     public JTextField getPathSpectrumFolderjTextField() {
         return pathSpecsFolderjTextField;
     }
@@ -35,11 +44,11 @@ public class StartDialog extends javax.swing.JDialog {
     public JTextField getPathToScoreFilejTextField() {
         return pathToResultFilejTextField;
     }
-    
+
     public String getSpecFolder() {
         return specFolder;
     }
-   
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -134,7 +143,7 @@ public class StartDialog extends javax.swing.JDialog {
                 .addComponent(browseResultFilejButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(clearResultFilejButton)
-                .addGap(5, 5, 5))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         resultFilejPanelLayout.setVerticalGroup(
             resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -159,13 +168,13 @@ public class StartDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(resultFilejPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(createjButton, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(specsFolderjPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(specsFolderjPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(resultFilejPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -197,7 +206,7 @@ public class StartDialog extends javax.swing.JDialog {
             File folder = fileChooser.getSelectedFile();
             specFolder = folder.getAbsolutePath();
             pathSpecsFolderjTextField.setText(folder.getAbsolutePath());
-            isSpectraLoaded = true;  
+            isSpectraLoaded = true;
         } else {
             System.out.println("File access is cancelled by user.");
         }
@@ -222,9 +231,9 @@ public class StartDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_browseResultFilejButtonActionPerformed
 
     private void createjButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createjButtonActionPerformed
-       if(isScoreFileLoaded && isSpectraLoaded){
-           this.setVisible(false);
-       }              
+        if (isScoreFileLoaded && isSpectraLoaded) {
+            this.setVisible(false);
+        }
     }//GEN-LAST:event_createjButtonActionPerformed
 
 //    /**

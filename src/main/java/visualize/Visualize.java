@@ -6,16 +6,14 @@
 package visualize;
 
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
-import com.compomics.util.experiment.massspectrometry.Peak;
-import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.gui.interfaces.SpectrumAnnotation;
 import com.compomics.util.gui.spectrum.DefaultSpectrumAnnotation;
 import com.compomics.util.gui.spectrum.SpectrumPanel;
-import gui.SimilarityTableCellRenderer;
-import gui.SimilarityTableModel;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,13 +21,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.CellEditor;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
+import org.apache.commons.lang.NumberUtils;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -48,6 +48,7 @@ public final class Visualize extends javax.swing.JFrame {
     private File resultFile;
     private boolean isOpenFileMenu = false;
     private SpectrumFactory spFct = SpectrumFactory.getInstance();
+    private static final Logger LOGGER = Logger.getLogger(Visualize.class.toString());
 
     /**
      * Creates new form Visualize
@@ -57,7 +58,7 @@ public final class Visualize extends javax.swing.JFrame {
         initComponents();
         setSpecsFolder(startDialog.getSpecFolder());
         prepareTable();
-        setLocation(200, WIDTH);
+//        setLocation(200, WIDTH);
         this.setVisible(true);
     }
 
@@ -85,12 +86,13 @@ public final class Visualize extends javax.swing.JFrame {
                     String[] split = line.split("\t");
                     // prepare column names
                     if (control == 0) {
-                        columnNames = new String[4];
+                        columnNames = new String[split.length + 1];
                         // first column - just for indexing
-                        columnNames[0] = "index"; 
+                        columnNames[0] = "index";
                         // write names of other columns
                         for (int i = 0; i < split.length; i++) {
                             columnNames[i + 1] = split[i];
+
                         }
                     }
                     // prepare data
@@ -108,22 +110,54 @@ public final class Visualize extends javax.swing.JFrame {
             // Prepare similarity table
             SimilarityTableModel similarityTableModel = new SimilarityTableModel(columnNames, data);
             resultFilejTable.setModel(similarityTableModel);
-            resultFilejTable.setFillsViewportHeight(true);
-            
+//            resultFilejTable.setFillsViewportHeight(true);
+
             // Prepare a sorter
             TableRowSorter sorter = new TableRowSorter(resultFilejTable.getModel()) {
                 @Override
                 public Comparator getComparator(int column) {
                     Comparator<String> comparator = new Comparator<String>() {
+                        @Override
                         public int compare(String o1, String o2) {
-                            Double o1_integer = Double.parseDouble(o1),
-                                    o2_integer = Double.parseDouble(o2);
-                            return (o1_integer.compareTo(o2_integer));
+                            boolean isNumber = NumberUtils.isNumber(o1);
+                            if (isNumber) {
+                                Double o1_integer = Double.parseDouble(o1),
+                                        o2_integer = Double.parseDouble(o2);
+
+                                return (o1_integer.compareTo(o2_integer));
+                            } else {
+                                return o1.compareTo(o2);
+                            }
                         }
                     };
                     return comparator;
                 }
             };
+
+            resultFilejScrollPane.setAutoscrolls(true);
+            resultFilejTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            // set widths.
+            resultFilejTable.getColumnModel().getColumn(0).setPreferredWidth(880);  // index            
+            resultFilejTable.getColumnModel().getColumn(1).setPreferredWidth(7000); // spectrum index
+            resultFilejTable.getColumnModel().getColumn(2).setPreferredWidth(15000); // spectrum file           
+            resultFilejTable.getColumnModel().getColumn(3).setPreferredWidth(15000); // spectrum title 
+            resultFilejTable.getColumnModel().getColumn(4).setPreferredWidth(5300); // precursor mz
+            resultFilejTable.getColumnModel().getColumn(5).setPreferredWidth(1500); // precursor charg
+            resultFilejTable.getColumnModel().getColumn(6).setPreferredWidth(5800); // precursor mass            
+            resultFilejTable.getColumnModel().getColumn(7).setPreferredWidth(5800); // theoretical mass
+            resultFilejTable.getColumnModel().getColumn(8).setPreferredWidth(3000); // MS1mass error
+            resultFilejTable.getColumnModel().getColumn(9).setPreferredWidth(3500); // Scoring funcion
+            resultFilejTable.getColumnModel().getColumn(10).setPreferredWidth(6600); // Score
+            resultFilejTable.getColumnModel().getColumn(11).setPreferredWidth(5500); // proteinA name
+            resultFilejTable.getColumnModel().getColumn(12).setPreferredWidth(5500); //proteinB name
+            resultFilejTable.getColumnModel().getColumn(13).setPreferredWidth(9400);  // peptide sequence A
+            resultFilejTable.getColumnModel().getColumn(14).setPreferredWidth(9400); // peptide sequence B
+            resultFilejTable.getColumnModel().getColumn(15).setPreferredWidth(900); // linker position peptideA
+            resultFilejTable.getColumnModel().getColumn(16).setPreferredWidth(900); // linker position peptideB
+            resultFilejTable.getColumnModel().getColumn(17).setPreferredWidth(2000); // #matched peaks
+            resultFilejTable.getColumnModel().getColumn(18).setPreferredWidth(2000); // #matched theoretical peaks
+            resultFilejTable.getColumnModel().getColumn(19).setPreferredWidth(60000); // matched peak list
+            resultFilejTable.getColumnModel().getColumn(20).setPreferredWidth(135000); // theoretical matched peak list
 
             // Fill information on data.
             int number = 0;
@@ -134,8 +168,13 @@ public final class Visualize extends javax.swing.JFrame {
                     number++;
                     resultFilejTable.setValueAt(number, arr, 0);
                     for (int i = 0; i < strArr.length; i++) {
-                        data[arr][i + 1] = strArr[i];
-                        resultFilejTable.setValueAt(strArr[i], arr, i + 1);
+                        if (i == 3 || i == 5 || i == 6 || i == 7 || i == 9) {
+                            double value_to_show = Math.floor(new Double(strArr[i]) * 10000) / 10000;
+                            resultFilejTable.setValueAt(value_to_show, arr, i + 1);
+                        } else {
+                            data[arr][i + 1] = strArr[i];
+                            resultFilejTable.setValueAt(strArr[i], arr, i + 1);
+                        }
                     }
                 }
             }
@@ -145,41 +184,38 @@ public final class Visualize extends javax.swing.JFrame {
             resultFilejTable.setDefaultRenderer(Object.class, renderer);
             resultFilejTable.setRowSorter(sorter);
             resultFilejTable.setAutoCreateColumnsFromModel(true);
-            resultFilejTable.setPreferredScrollableViewportSize(resultFilejTable.getPreferredSize());
             // select an entire row by clicking
             resultFilejTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             resultFilejTable.setRowSelectionAllowed(true);
             resultFilejTable.setColumnSelectionAllowed(false);
-            resultFilejTable.setAutoResizeMode(5);
             resultFilejTable.setRowSelectionInterval(0, 0);
-
-            // select min/max/preferred widths
-            resultFilejTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-            resultFilejTable.getColumnModel().getColumn(0).setMaxWidth(100);
-            resultFilejTable.getColumnModel().getColumn(0).setMinWidth(30);
-
-            String specName = (String) resultFilejTable.getValueAt(0, 1);
-            setOriginalSpectrumForPlotting(specName);
+            Dimension size = new Dimension(resultFilejTable.getColumnModel().getTotalColumnWidth()+2700, resultFilejTable.getRowCount() * resultFilejTable.getRowHeight());
+            resultFilejTable.setPreferredSize(size);
+            resultFilejTable.setPreferredScrollableViewportSize(size);
+            String spectrumFileName = (String) resultFilejTable.getValueAt(1, 2),
+                    spectrumTitle = (String) resultFilejTable.getValueAt(1, 3);
+            setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
             annotateSpectrum();
-            
+
         } catch (IOException ex) {
-            System.out.println("Something went wrong while start up. Check either your spectrum folders or your score file!");
+            LOGGER.info("Something went wrong while start up. Check either your spectrum folders or your score file!");
         }
     }
 
     /**
      * To prepare spectrum for plotting from a spectra folder.
      *
-     * @param specName is MSnSpectrum object 
+     * @param spectrumName is MSnSpectrum object
      * @throws IOException
      * @throws MzMLUnmarshallerException
      * @throws FileNotFoundException
      * @throws ClassNotFoundException
      */
-    private void setOriginalSpectrumForPlotting(String specName) throws IOException, MzMLUnmarshallerException, FileNotFoundException, ClassNotFoundException {
+    private void setOriginalSpectrumForPlotting(String spectrumFileName, String spectrumTitle) throws IOException, MzMLUnmarshallerException, FileNotFoundException, ClassNotFoundException {
         boolean isSpecfound = false;
         // find spectrum...
-        original_spec = findMSnSpectrum(specsFolder, specName);
+        LOGGER.info("SpectrumFileName=" + spectrumFileName + "\t" + "SpectrumTitle=" + spectrumTitle);
+        original_spec = findMSnSpectrum(specsFolder, spectrumFileName, spectrumTitle);
         // create copies for the selected spectra
         // check the possible error
         if (original_spec != null) {
@@ -196,7 +232,7 @@ public final class Visualize extends javax.swing.JFrame {
      * To find a spectrum according to spectrum name while searching in all
      * spectra files on a given spectra folder
      *
-     * @param specFolder
+     * @param spectraFolder
      * @param specName
      * @return
      * @throws IOException
@@ -204,14 +240,14 @@ public final class Visualize extends javax.swing.JFrame {
      * @throws ClassNotFoundException
      * @throws MzMLUnmarshallerException
      */
-    private MSnSpectrum findMSnSpectrum(String specFolder, String specName) throws IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException {
+    private MSnSpectrum findMSnSpectrum(String spectraFolder, String spectrumFileName, String spectrumTitle) throws IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException {
         MSnSpectrum msms = null;
         SpectrumFactory fct = SpectrumFactory.getInstance();
-        for (File mgf : new File(specFolder).listFiles()) {
-            if (mgf.getName().endsWith(".mgf")) {
+        for (File mgf : new File(spectraFolder).listFiles()) {
+            if (mgf.getName().endsWith(".mgf") && mgf.getName().equals(spectrumFileName)) {
                 fct.addSpectra(mgf);
                 for (String title : spFct.getSpectrumTitles(mgf.getName())) {
-                    if (title.equals(specName)) {
+                    if (title.equals(spectrumTitle)) {
                         msms = (MSnSpectrum) spFct.getSpectrum(mgf.getName(), title);
                     }
                 }
@@ -235,6 +271,7 @@ public final class Visualize extends javax.swing.JFrame {
         resultFilejTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMaximumSize(new java.awt.Dimension(2147, 2147));
 
         visualizeSpectrumjPanel.setBackground(new java.awt.Color(255, 255, 255));
         java.awt.GridBagLayout visualizeSpectrumjPanelLayout = new java.awt.GridBagLayout();
@@ -244,7 +281,12 @@ public final class Visualize extends javax.swing.JFrame {
         visualizeSpectrumjPanelLayout.rowWeights = new double[] {2000.0};
         visualizeSpectrumjPanel.setLayout(visualizeSpectrumjPanelLayout);
 
+        resultFilejScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        resultFilejScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         resultFilejScrollPane.setAutoscrolls(true);
+        resultFilejScrollPane.setMaximumSize(new java.awt.Dimension(3, 3));
+        resultFilejScrollPane.setMinimumSize(new java.awt.Dimension(2, 2));
+        resultFilejScrollPane.setPreferredSize(new java.awt.Dimension(2, 2));
 
         resultFilejTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -257,9 +299,16 @@ public final class Visualize extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        resultFilejTable.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
+        resultFilejTable.setPreferredSize(new java.awt.Dimension(12000, 6000));
         resultFilejTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 resultFilejTableMouseClicked(evt);
+            }
+        });
+        resultFilejTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                resultFilejTableKeyReleased(evt);
             }
         });
         resultFilejScrollPane.setViewportView(resultFilejTable);
@@ -272,7 +321,7 @@ public final class Visualize extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(visualizeSpectrumjPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 900, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -281,7 +330,7 @@ public final class Visualize extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(visualizeSpectrumjPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -290,9 +339,19 @@ public final class Visualize extends javax.swing.JFrame {
 
     private void resultFilejTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resultFilejTableMouseClicked
         int selectedRow = resultFilejTable.getSelectedRow();
-        String specName = resultFilejTable.getValueAt(selectedRow, 1).toString();
+        String spectrumFileName = (String) resultFilejTable.getValueAt(selectedRow, 2),
+                spectrumTitle = (String) resultFilejTable.getValueAt(selectedRow, 3);
         try {
-            original_spec = findMSnSpectrum(specsFolder, specName);
+            setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
+        } catch (IOException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MzMLUnmarshallerException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            original_spec = findMSnSpectrum(specsFolder, spectrumFileName, spectrumTitle);
             annotateSpectrum();
         } catch (IOException ex) {
             Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
@@ -302,6 +361,31 @@ public final class Visualize extends javax.swing.JFrame {
             Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_resultFilejTableMouseClicked
+
+    private void resultFilejTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resultFilejTableKeyReleased
+        int selectedRow = resultFilejTable.getSelectedRow();
+        String spectrumFileName = (String) resultFilejTable.getValueAt(selectedRow, 2),
+                spectrumTitle = (String) resultFilejTable.getValueAt(selectedRow, 3);
+        try {
+            setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
+        } catch (IOException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MzMLUnmarshallerException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            original_spec = findMSnSpectrum(specsFolder, spectrumFileName, spectrumTitle);
+            annotateSpectrum();
+        } catch (IOException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MzMLUnmarshallerException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_resultFilejTableKeyReleased
 
     public void annotateSpectrum() {
         // First prepare a spectrum Panel
@@ -319,20 +403,19 @@ public final class Visualize extends javax.swing.JFrame {
 
         // TODO: Make sure about these annotations!
         // set up the peak annotations!!!
-        List<SpectrumAnnotation> peakAnnotation = new ArrayList();
+        List<SpectrumAnnotation> peakAnnotation = getAnnotatedPeaks();
         peakAnnotation.add(
                 new DefaultSpectrumAnnotation(
                         180, // the mz value to annotate
                         -0.0068229, // the mz error margin
                         new Color(248, 151, 202), // the annotation color
                         "y1+"));  // the annotation label
+
         // add the annotations to the spectrum
         spectrumPanel.setAnnotations(peakAnnotation);
 
         // add the spectrum panel to the parent frame or dialog
         visualizeSpectrumjPanel.add(spectrumPanel);
-        spectrumPanel.setiXAxisMax(220);
-        spectrumPanel.setiYAxisMax(12200);
         spectrumPanel.setBackground(Color.getHSBColor(10, 0, 8));
         visualizeSpectrumjPanel.removeAll();
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -391,4 +474,45 @@ public final class Visualize extends javax.swing.JFrame {
     private javax.swing.JTable resultFilejTable;
     private javax.swing.JPanel visualizeSpectrumjPanel;
     // End of variables declaration//GEN-END:variables
+
+    private List<SpectrumAnnotation> getAnnotatedPeaks() {
+        List<SpectrumAnnotation> annotations = new ArrayList<SpectrumAnnotation>();
+        int selectedRow = resultFilejTable.getSelectedRow();
+        String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, 20);
+        String[] splittedAnnotatedPeaksStr = annotatedPeaksStr.split(" ");
+        Color lightBlue = Color.getHSBColor(0.56f, 0.3f, 1f),
+                lightPink = Color.getHSBColor(0.92f, 0.3f, 1f),
+                lightYellow = Color.getHSBColor(0.16f, 0.4f, 1f),
+                purple = Color.getHSBColor(0.76f, 0.4f, 1f),
+                selectedColor = null;
+        for (String splittedAnnotatedPeak : splittedAnnotatedPeaksStr) {
+            if (!splittedAnnotatedPeak.isEmpty()) {
+                String[] annotationInfo = splittedAnnotatedPeak.split("_");
+                String chargeState = annotationInfo[0],
+                        ionNameAndIndex = splittedAnnotatedPeak.substring(splittedAnnotatedPeak.indexOf("_") + 1, splittedAnnotatedPeak.lastIndexOf("_")),
+                        mz = (splittedAnnotatedPeak.substring(splittedAnnotatedPeak.lastIndexOf("_")).split("="))[1];
+                String chInfo = "1+";
+                if (chargeState.equals("doublyCharged")) {
+                    chInfo = "2+";
+                }
+                ionNameAndIndex = "(" + ionNameAndIndex + ")" + chInfo;
+                if (ionNameAndIndex.contains("lepA")) {
+                    selectedColor = purple;
+                } else if (ionNameAndIndex.contains("lepB")) {
+                    selectedColor = lightBlue;
+                } else if (ionNameAndIndex.contains("pepA")) {
+                    selectedColor = Color.ORANGE;
+                } else if (ionNameAndIndex.contains("pepB")) {
+                    selectedColor = Color.BLUE;
+                }
+                DefaultSpectrumAnnotation defaultSpecAn = new DefaultSpectrumAnnotation(
+                        new Double(mz), // the mz value to annotate
+                        0.0068229, // the mz error margin
+                        selectedColor, // the annotation color
+                        ionNameAndIndex); // the annotation label-like y1+
+                annotations.add(defaultSpecAn);
+            }
+        }
+        return annotations;
+    }
 }
