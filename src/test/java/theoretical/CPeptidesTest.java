@@ -7,6 +7,7 @@ package theoretical;
 
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
@@ -28,6 +29,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xmlpull.v1.XmlPullParserException;
+import start.GetPTMs;
 
 /**
  *
@@ -300,6 +303,30 @@ public class CPeptidesTest extends TestCase {
 //        assertEquals(858.49, result.get(3).getMass(), 0.05);
         assertEquals(945.52, result.get(3).getMass(), 0.05);
         assertEquals(1058.61, result.get(4).getMass(), 0.05);
+    }
+
+    /**
+     * Test of get_redundant_linked_ions, of class CPeptides. //
+     */
+    @Test
+    public void testGetlinked_ions_modifications() throws XmlPullParserException, IOException {
+        String peptideSequence = "MLCSDAIK";
+        // Importing PTMs
+        File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\compomics-utilities\\src/test/resources/experiment/mods.xml");
+        PTMFactory ptmFactory = PTMFactory.getInstance();
+        ptmFactory.importModifications(modsFile, false);
+        // Getting one fixed PTMs
+        ArrayList<String> theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add("oxidation of m");
+        ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
+        Peptide peptideA = new Peptide(peptideSequence, result);
+
+        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+        Peptide peptideB = new Peptide("AIKNK", modifications_test);
+        CrossLinker linker = new DSS();
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
+        HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
+        assertEquals(7,product_ions.size());        
     }
 
     /**
