@@ -282,14 +282,14 @@ public class MatchAndScore {
             HashMap<CPeptidePeak, Double> singlyCharged_peak_and_mz = new HashMap<CPeptidePeak, Double>();
             for (CPeptideIon c : getTheoreticalCXMS2ions()) {
                 // singly and doubly charged ones..
-                String name = "singly_charged" + c.getName();
+                String name = "singlyCharged_" + c.getName();
                 double singly_mz = c.get_theoretical_mz(1);
                 CPeptidePeak singly_charged = new CPeptidePeak(singly_mz, c.getIntensity(), 1, name);
                 singlyCharged_peak_and_mz.put(singly_charged, singly_mz);
                 cPeakList.add(singly_charged);
             }
             for (CPeptideIon c : getTheoreticalCXMS2ions()) {
-                String name = "doubly_charged" + c.getName();
+                String name = "doublyCharged_" + c.getName();
                 double doubly_mz = c.get_theoretical_mz(2);
                 CPeptidePeak doubly_charged = new CPeptidePeak(doubly_mz, c.getIntensity(), 2, name);
                 if (singlyCharged_peak_and_mz.containsValue(doubly_mz)) {

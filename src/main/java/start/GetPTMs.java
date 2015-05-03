@@ -16,9 +16,9 @@ import org.xmlpull.v1.XmlPullParserException;
  *
  * @author Sule
  */
-public class GetFixedPTM {
+public class GetPTMs {
 
-    public static ArrayList<ModificationMatch> getPTM(PTMFactory ptmFactory, ArrayList<String> ptmNames, String peptideSequence) throws XmlPullParserException, IOException {
+    public static ArrayList<ModificationMatch> getPTM(PTMFactory ptmFactory, ArrayList<String> ptmNames, String peptideSequence, boolean isVariable) throws XmlPullParserException, IOException {
         ArrayList<ModificationMatch> modifications = new ArrayList<ModificationMatch>();
         // Getting one fixed PTMs
         for (String ptmName : ptmNames) {            
@@ -31,7 +31,7 @@ public class GetFixedPTM {
                     char aa = peptideSequence.charAt(i);
                     if (aa == targetAA) {
                         int index = i + 1;
-                        ModificationMatch m = new ModificationMatch(theoreticPTM, false, index);
+                        ModificationMatch m = new ModificationMatch(theoreticPTM, isVariable, index);
                         modifications.add(m);
                     }
                 }
