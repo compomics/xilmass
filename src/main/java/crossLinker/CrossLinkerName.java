@@ -12,8 +12,10 @@ package crossLinker;
  * @author Sule
  */
 public enum CrossLinkerName {
-    DSS,
+    DSSd0,// light labeled..
+    DSSd12, // heavy labeled..
     EDC,
     BS3,
+    BS3d4, // heavy labeled one..
     GA
 }
