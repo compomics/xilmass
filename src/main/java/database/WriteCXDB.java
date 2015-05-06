@@ -10,12 +10,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author Sule
  */
 public class WriteCXDB {
+
+    private static final Logger LOGGER = Logger.getLogger(WriteCXDB.class);
 
     /**
      * This class is used to write a CXDB database (with .fastacp extension)
@@ -27,6 +30,7 @@ public class WriteCXDB {
      * @throws IOException
      */
     public static void writeCXDB(HashMap<String, String> header_sequence, String cxDBName) throws IOException {
+        LOGGER.info("CX database is writing!");
         File crossLinkedDB = new File(cxDBName + ".fastacp");
         BufferedWriter bw = new BufferedWriter(new FileWriter(crossLinkedDB));
         for (String header : header_sequence.keySet()) {
@@ -34,6 +38,7 @@ public class WriteCXDB {
             bw.write(">" + header + "\n" + sequence + "\n");
         }
         bw.close();
+        LOGGER.info("CX database is READY!");
     }
 
 }
