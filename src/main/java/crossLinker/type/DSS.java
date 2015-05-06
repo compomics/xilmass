@@ -20,27 +20,30 @@ import crossLinker.CrossLinkerType;
 public class DSS extends CrossLinker {
 
     public DSS() {
-        this.name = CrossLinkerName.DSS;
+        this.name = CrossLinkerName.DSSd0;
         this.type = CrossLinkerType.homobifunctional;
         double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * Atom.H.getMonoisotopicMass());
         super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
         super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass());
-//        super.massShift_Type0 = 253.0000; // TODO: ask about this Type0 shift! This must be accurate!!!!!
-        // super.massShift_Type2 = 138.0681000;
     }
 
-    // To introduce heavy options, otherwise it is "light only"
-    // Here deteurium is used instead of hydrogen atom
+    /**
+     * Here is isLabeled option introduced to return DSSd12.
+     * Otherwise DSSd0 is returned
+     *
+     * @param isLabeled
+     */
     public DSS(boolean isLabeled) {
-        this.name = CrossLinkerName.BS3;
         this.type = CrossLinkerType.homobifunctional; // K-K     
         double hydrogen_mass = Atom.H.getMonoisotopicMass(),
                 deuterium_mass = Atom.H.getIsotopeMass(1);
         if (isLabeled) {
+            this.name = CrossLinkerName.DSSd12;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * deuterium_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * deuterium_mass);
         } else {
+            this.name = CrossLinkerName.DSSd0;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
