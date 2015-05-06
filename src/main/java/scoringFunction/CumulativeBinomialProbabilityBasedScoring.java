@@ -5,7 +5,8 @@
  */
 package scoringFunction;
 
-import util.CMathUtil;
+import org.apache.commons.math.distribution.BinomialDistribution;
+import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 /**
  * This abstract class is used to write cumulative binominal probability based
@@ -42,18 +43,14 @@ public abstract class CumulativeBinomialProbabilityBasedScoring {
     
     /**
      * To calculate CumulativeBinominalProbability with given n,N and p values.
-     * n is inclusive during cumulative binominal probability function
+     * by calling BinomialDistribution class on Apache
      *
      * @return
      * @throws Exception
      */
     protected double calculateCumulativeBinominalProbability() throws Exception {
-        double probability = 0;
-        for (int k = n; k < N + 1; k++) {
-            double factorial_part = CMathUtil.calculateCombination(N, k);
-            double tmp_probability = factorial_part * (Math.pow(p, k)) * (Math.pow((1 - p), (N - k)));
-            probability += tmp_probability;
-        }
+        BinomialDistribution b = new BinomialDistributionImpl(N, p);       
+        double probability = 1-b.cumulativeProbability(n);        
         return probability;
     }
 
