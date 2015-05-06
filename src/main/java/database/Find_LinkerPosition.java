@@ -23,7 +23,13 @@ public class Find_LinkerPosition {
             case BS3:
                 link_homobifunctional(startSequence, crossLinker_and_indices);
                 break;
-            case DSS:
+            case BS3d4:
+                link_homobifunctional(startSequence, crossLinker_and_indices);
+                break;
+            case DSSd0:
+                link_homobifunctional(startSequence, crossLinker_and_indices);
+                break;
+            case DSSd12:
                 link_homobifunctional(startSequence, crossLinker_and_indices);
                 break;
             case GA:
@@ -61,8 +67,8 @@ public class Find_LinkerPosition {
         for (int i = 0; i < startSequence.length(); i++) {
             char charAt = startSequence.charAt(i);
             if (charAt == 'K' && i != startSequence.length() - 1) {
-                        indices.add(i);
-                    }
+                indices.add(i);
+            }
             crossLinker_and_indices.put("K", indices);
         }
     }
