@@ -49,8 +49,9 @@ public abstract class CumulativeBinomialProbabilityBasedScoring {
      * @throws Exception
      */
     protected double calculateCumulativeBinominalProbability() throws Exception {
-        BinomialDistribution b = new BinomialDistributionImpl(N, p);       
-        double probability = 1-b.cumulativeProbability(n);        
+        BinomialDistribution b = new BinomialDistributionImpl(N, p);
+        int tmp = n-1;
+        double probability = 1-b.cumulativeProbability(tmp);        
         return probability;
     }
 
