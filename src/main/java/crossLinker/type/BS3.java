@@ -24,18 +24,24 @@ public class BS3 extends CrossLinker {
         super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass());
     }
 
-    // To introduce heavy options, otherwise it is "light only"
-    // Here deteurium is used instead of hydrogen atom
+
+    /**
+     * heavy labeled BS3 is introduced as addition of 4 more deuterium ions...
+     * If isLabeled is true, it returns BSSd4, otherwise BS3.
+     * 
+     * @param isLabeled 
+     */
     public BS3(boolean isLabeled) {
-        this.name = CrossLinkerName.BS3;
         this.type = CrossLinkerType.homobifunctional; // K-K     
         double hydrogen_mass = Atom.H.getMonoisotopicMass(),
                 deuterium_mass = Atom.H.getIsotopeMass(1);
         if (isLabeled) {
-            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * deuterium_mass);
+            this.name = CrossLinkerName.BS3d4;
+            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass) + (4 * deuterium_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
-            super.massShift_Type2 = moleculeMass - (2 * deuterium_mass);
+            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
         } else {
+            this.name = CrossLinkerName.BS3;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
