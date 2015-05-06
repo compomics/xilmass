@@ -5,6 +5,7 @@
  */
 package database;
 
+import playground.EnzymeDigest;
 import com.compomics.dbtoolkit.gui.workerthreads.ProcessThread;
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.EnzymeLoader;
@@ -431,10 +432,10 @@ public class CreateDatabase {
                 nextProtein = null;
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
-            String startHeader = startProtein.getHeader().getAccession(),
-                    startSequence = startProtein.getSequence().getSequence();
+            StringBuilder startHeader = new StringBuilder(startProtein.getHeader().getAccession()),
+                    startSequence = new StringBuilder(startProtein.getSequence().getSequence());
             // check if a header comes from a generic! 
-            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
+            if (startHeader.toString().matches(".*[^0-9].*-.*[^0-9].*")) {
                 String subStr = startHeader.substring(startHeader.indexOf("(") + 1);
                 int firstIndex = Integer.parseInt(subStr.substring(0, subStr.indexOf("-"))),
                         lastIndex = Integer.parseInt(subStr.substring(subStr.indexOf("-") + 1, subStr.indexOf(")")));
@@ -484,10 +485,8 @@ public class CreateDatabase {
         // check the condition
         if (nextSequence.length() >= minLen) {
             if ((does_a_peptide_link_to_itself && nextSequence.equals(startSequence)) || (!nextSequence.equals(startSequence))) {
-
-                HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
-
-                if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSS or BS3 or.. So K-K
+                HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);                
+                if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3 or BS3d4.. So K-K
                     for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
 
                         ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
@@ -506,7 +505,6 @@ public class CreateDatabase {
                                 for (Integer next_index : next_indices_liked_aas) {
                                     generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
                                     generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
-
                                 }
                             }
                         }
