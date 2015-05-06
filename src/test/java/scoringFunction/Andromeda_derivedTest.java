@@ -6,6 +6,10 @@
 package scoringFunction;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -17,15 +21,22 @@ public class Andromeda_derivedTest extends TestCase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
+
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    @After
+    public void tearDown() throws Exception {
+    }
+
 
     /**
      * Test of calculateScore method, of class Andromeda_derived.

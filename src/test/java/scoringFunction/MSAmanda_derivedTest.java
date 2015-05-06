@@ -6,6 +6,11 @@
 package scoringFunction;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -17,14 +22,20 @@ public class MSAmanda_derivedTest extends TestCase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    @After
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -96,7 +107,7 @@ public class MSAmanda_derivedTest extends TestCase {
         expResult = 11.34;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
-        
+
         instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 6.63;
         result = instance.getScore();
@@ -111,7 +122,7 @@ public class MSAmanda_derivedTest extends TestCase {
         expResult = 11.39;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
-        
+
         instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
         expResult = 6.66;
         result = instance.getScore();
