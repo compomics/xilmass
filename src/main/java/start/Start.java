@@ -13,6 +13,7 @@ import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import config.ConfigHolder;
 import crossLinker.CrossLinker;
 import crossLinker.GetCrossLinker;
@@ -33,6 +34,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import matching.MatchAndScore;
 import org.apache.log4j.Logger;
+import org.paukov.combinatorics.Factory;
+import org.paukov.combinatorics.Generator;
+import org.paukov.combinatorics.ICombinatoricsVector;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.FragmentationMode;
@@ -109,49 +113,79 @@ public class Start {
         LOGGER.info("CX database is checking!");
 
         // This part of the code makes sure that an already generated CXDB is not constructed again..
-        HashMap<String, String> header_sequence = new HashMap<String, String>();
-        HashMap<CPeptides, Double> cPeptide_TheoreticalMass = null;
+        HashMap<String, String> headers_sequences = new HashMap<String, String>();
+        HashSet<CPeptides> cPeptides = new HashSet<CPeptides>();
+        HashMap<CPeptides, Double> cPeptides_masses = new HashMap<CPeptides, Double>();
+        // Theoretical masses and CPeptides objects...
+        ArrayList<Double> theoretical_masses = new ArrayList<Double>();
+        ArrayList<CPeptides> cpeptides = new ArrayList<CPeptides>();
+
         File settings = new File("settings.txt");
         boolean isSame = areTheSameDBSettings(settings); // either the same/different or absent;
-
+        int xlinkedDBsize = 0;
+        // Now there is already constructed crosslinked peptide database exists...
         if (isSame) {
             for (File f : new File(dbFolder).listFiles()) {
                 if (f.getName().endsWith(".fastacp")) {
-                    File cxDBFile = new File(cxDBName + ".fastacp");
                     LOGGER.info("An already constrcuted fastacp file is found! The name=" + new File(cxDBName + ".fastacp").getName());
                     // Read a file 
-                    header_sequence = getHeaderSequence(cxDBFile);
-                    cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), ptmFactory, fixedModifications, variableModifications, linker, fragMode, isBranching);
+                    cPeptides_masses = FASTACPDBLoader.readFiletoGetCPeptideTheoMass(new File(cxDBNameCache), ptmFactory, linker, fragMode, isBranching);
+
+                    // after retrieving this CPeptides and their masses as a hashmap, fill arraylist for CPeptides and Theoretical masses
+                    for (CPeptides cpep : cPeptides_masses.keySet()) {
+                        double mass = cPeptides_masses.get(cpep);
+                        theoretical_masses.add(mass);
+                        cpeptides.add(cpep);
+                    }
+                    xlinkedDBsize = cpeptides.size();
                 }
             }
         } else {
-            // So, file is empty.. 
-            // first write a settings file
-            writeSettings(settings);
-            LOGGER.info("A constructed fastacp file is NOT found! It is going to be constructed..");
-            CreateDatabase instance = new CreateDatabase(givenDBName, inSilicoPeptideDBName, cxDBName, // db related parameters
+            // So, file is empty.. Construct a cross linked peptide database and write a cache file with masses...
+            LOGGER.info("A required constructed fastacp file is NOT found or run setting has been changed! It is going to be constructed..");
+            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName, cxDBName, // db related parameters
                     crossLinkerName, crossLinkedProteinTypes, // crossLinker related parameters
                     enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
                     lowMass, highMass, // filtering of in silico peptides on peptide masses
                     minLen, maxLen_for_combined, does_link_to_itself, isLabeled);
-            header_sequence = instance.getHeader_sequence();
-            cPeptide_TheoreticalMass = FASTACPDBLoader.getCPeptide_TheoreticalMass(new File(cxDBNameCache), header_sequence, ptmFactory, fixedModifications, variableModifications, linker, fragMode, isBranching);
-            // If necessary, and crossLinked database is not constructed..
-            WriteCXDB.writeCXDB(header_sequence, cxDBName);
-        }
+            headers_sequences = instanceToCreateDB.getHeadersAndSequences();
+            // first write down a cross-linked peptide database
+            WriteCXDB.writeCXDB(headers_sequences, cxDBName);
+            LOGGER.info("CX database is ready! Now cache (peptide-mass index file is being created)");
+            // now start caching...
+            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(cxDBNameCache)));
+            bw.write("proteinA" + "\t" + "proteinB" + "\t" + "peptideA" + "\t" + "peptideB"
+                    + "\t" + "linker_position_PepA" + "\t" + "linker_position_PepB"
+                    + "\t" + "fixedModification_PepA" + "\t" + "fixedModification_PepB"
+                    + "\t" + "variableModification_PepA" + "\t" + "variableModification_PepB"
+                    + "\t" + "theoretical_mass" + "\n");
 
+            ArrayList<CPeptides> tmpCPeptides = FASTACPDBLoader.generate_peptide_mass_index(
+                    headers_sequences, ptmFactory,
+                    fixedModifications,
+                    variableModifications,
+                    linker, fragMode, isBranching);
+            cPeptides.addAll(tmpCPeptides);
+            // now write all CPeptides object as string to Cache file..
+            for (CPeptides cp : cPeptides) {
+                bw.write(getInfo(cp).toString() + "\n");
+            }
+            bw.close();
+            // and fill out a list of theoretical masses and their cPeptides...
+            for (CPeptides cPeptide : cPeptides) {
+                double theoreticalMass = cPeptide.getTheoreticalXLinkedMass();
+                theoretical_masses.add(theoreticalMass);
+                cpeptides.add(cPeptide);
+            }
+            // now write a settings file
+            writeSettings(settings);
+            xlinkedDBsize = headers_sequences.size();
+        }
+        
         LOGGER.info("CX database is ready! ");
-        LOGGER.info("Header and sequence object is ready! Total size is" + header_sequence.size());
+        LOGGER.info("Header and sequence object is ready! Total size is " + xlinkedDBsize);
 
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
-        ArrayList<Double> theoretical_masses = new ArrayList<Double>();
-        ArrayList<CPeptides> cpeptides = new ArrayList<CPeptides>();
-        for (CPeptides cPeptide : cPeptide_TheoreticalMass.keySet()) {
-            double theoreticalMass = cPeptide_TheoreticalMass.get(cPeptide);
-            theoretical_masses.add(theoreticalMass);
-            cpeptides.add(cPeptide);
-        }
-
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! MS2 spectra
         LOGGER.info("Getting experimental spectra and calculating PCXMs");
@@ -161,7 +195,9 @@ public class Start {
                 + "ScoringFunction" + "\t" + "Score" + "\t"
                 + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t"
                 + "ModificationPeptideA" + "\t" + "ModificationPeptideB" + "\t"
-                + "linkerPositionOnPeptideA" + "\t" + "linkerPositionOnPeptideB" + "\t" + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t" + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\n";
+                + "LinkerPositionOnPeptideA" + "\t" + "LinkerPositionOnPeptideB" + "\t"
+                + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t"
+                + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\n";
         bw.write(fileTitle);
 
         File ms2spectra = new File(mgfs);
@@ -172,22 +208,24 @@ public class Start {
         for (File mgf : ms2spectra.listFiles()) {
             if (mgf.getName().endsWith("mgf")) {
                 SpectrumFactory fct = SpectrumFactory.getInstance();
-                fct.addSpectra(mgf);
+                fct.addSpectra(mgf, new WaitingHandlerCLIImpl());
                 for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                    StringBuilder specInfo = new StringBuilder();
                     num++;
                     MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
                     precursorMass_MSnSpectrum.put(ms.getPrecursor().getMass(1), ms);
                     // PREPARE MSnSPECTRUM object no<w 
                     ArrayList<Charge> possibleCharges = ms.getPrecursor().getPossibleCharges();
                     Charge charge = possibleCharges.get(possibleCharges.size() - 1);
-                    String specInfo = (num + "\t" + mgf.getName() + "\t" + ms.getSpectrumTitle() + "\t" + ms.getPrecursor().getMz() + "\t" + ms.getPrecursor().getPossibleChargesAsString() + "\t");
+                    specInfo.append(num).append("\t").append(mgf.getName()).append("\t").append(ms.getSpectrumTitle()).append("\t").append(ms.getPrecursor().getMz()).append("\t").append(ms.getPrecursor().getPossibleChargesAsString()).append("\t");
+                    StringBuilder runningInfo = null;
                     int charge_value = charge.value;
                     double precursor_mass = ms.getPrecursor().getMass(charge_value);
                     String peptideA,
                             peptideB,
                             proteinA,
-                            proteinB ,
-                            modificationA ,
+                            proteinB,
+                            modificationA,
                             modificationB;
                     CPeptides tmpCpeptide = null;
 //                    MatchAndScore f = new MatchAndScore(ms, scoring, tmpCpeptide, ms2Err, intensity_option); // MSRobin -0, Andromeda-1, TheMSRobin-2
@@ -217,18 +255,19 @@ public class Start {
                             HashSet<CPeptidePeak> matchedCTheoPeaks = f.getMatchedTheoreticalCPeaks();
 
                             ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
+                            //System.out.println("psmscore"+psmscore+"\t"+"matchedPList="+matchedPLists.size());
                             Collections.sort(matchedPLists, Peak.ASC_mz_order);
                             ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
                             Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
 
-                            String runningInfo = (precursor_mass + "\t" + theoretical_mass + "\t" + tmpMS1Err + "\t"
+                            runningInfo = new StringBuilder(precursor_mass + "\t" + theoretical_mass + "\t" + tmpMS1Err + "\t"
                                     + getScoringStr(scoring) + "\t" + psmscore + "\t"
                                     + proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
                                     + modificationA + "\t" + modificationB + "\t"
                                     + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
                                     + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t");
 
-                            bw.write(specInfo + runningInfo);
+                            bw.write(specInfo.toString() + runningInfo.toString());
 
                             for (Peak p : matchedPLists) {
                                 bw.write(p.mz + " ");
@@ -378,7 +417,9 @@ public class Start {
                 enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
                 misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
                 lowMass = ConfigHolder.getInstance().getString("lowerMass"),
-                highMass = ConfigHolder.getInstance().getString("higherMass");
+                highMass = ConfigHolder.getInstance().getString("higherMass"),
+                variableModification = ConfigHolder.getInstance().getString("variableModification"),
+                fixedModification = ConfigHolder.getInstance().getString("fixedModification");
         boolean isSame = true;
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
         String line = "";
@@ -401,6 +442,10 @@ public class Start {
                 return false;
             } else if ((line.startsWith("highMass")) && (!line.split("\t")[1].equals(highMass))) {
                 return false;
+            } else if ((line.startsWith("fixedModification")) && (!line.split("\t")[1].equals(fixedModification))) {
+                return false;
+            } else if ((line.startsWith("variableModification")) && (!line.split("\t")[1].equals(variableModification))) {
+                return false;
             }
         }
         if (lineNumber == 0) {
@@ -410,7 +455,8 @@ public class Start {
     }
 
     /**
-     * This method returns modification info derived from a given peptide
+     * This method returns modification info derived from a given peptide. It
+     * only returns variable modifications
      *
      * @param peptide
      * @return
@@ -418,12 +464,60 @@ public class Start {
     private static String getModificationInfo(Peptide peptide) {
         ArrayList<ModificationMatch> modificationMatches = peptide.getModificationMatches();
         String info = "";
-        for (int i = 0; i < modificationMatches.size(); i++) {
-            ModificationMatch m = modificationMatches.get(i);
-            String tmp = "[" + m.getTheoreticPtm() + "_" + m.getModificationSite() + "]";
-            info += tmp + ";";
+        for (ModificationMatch m : modificationMatches) {
+            if (m.isVariable()) {
+                String tmp = "[" + m.getTheoreticPtm() + "_" + m.getModificationSite() + "]";
+                info += tmp + ";";
+            }
         }
         return info;
     }
 
+    /**
+     * This method returns all required information to construct a CPeptides
+     * object and also to write them on a cache file with their masses
+     *
+     * @param cPeptide
+     * @return
+     */
+    public static StringBuilder getInfo(CPeptides cPeptide) {
+        String proteinA = cPeptide.getProteinA(),
+                proteinB = cPeptide.getProteinB(),
+                peptideA = cPeptide.getPeptideA().getSequence(),
+                peptideB = cPeptide.getPeptideB().getSequence(),
+                fixedModPepA = getPTMName(cPeptide.getPeptideA().getModificationMatches(), false),
+                fixedModPepB = getPTMName(cPeptide.getPeptideB().getModificationMatches(), false),
+                varModPepA = getPTMName(cPeptide.getPeptideA().getModificationMatches(), true),
+                varModPepB = getPTMName(cPeptide.getPeptideB().getModificationMatches(), true);
+        int linkerPosPepA = cPeptide.getLinker_position_on_peptideA(),
+                linkerPosPepB = cPeptide.getLinker_position_on_peptideB();
+        double mass = cPeptide.getTheoreticalXLinkedMass();
+        StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
+                + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
+        return sb;
+    }
+
+    /**
+     * This method returns a PTM name from a given ModificationMatches from a
+     * peptide
+     *
+     * @param ptms_peptide a list of Modification matches
+     * @param isVariable true:Variable/false:Fixed
+     * @return
+     */
+    private static String getPTMName(ArrayList<ModificationMatch> ptms_peptide, boolean isVariable) {
+        String tmp_ptm = "";
+        for (ModificationMatch m : ptms_peptide) {
+            if (m.isVariable() == isVariable) {
+                String tmp = "[" + m.getTheoreticPtm() + "_" + m.getModificationSite() + "]";
+                tmp_ptm += tmp;
+            } else {
+                if (m.isVariable() == isVariable) {
+                    String tmp = "[" + m.getTheoreticPtm() + "_" + m.getModificationSite() + "]";
+                    tmp_ptm += tmp;
+                }
+            }
+        }
+        return tmp_ptm;
+    }
 }
