@@ -10,12 +10,13 @@ import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.paukov.combinatorics.Factory;
+import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.ICombinatoricsVector;
 import org.xmlpull.v1.XmlPullParserException;
 import start.GetPTMs;
@@ -23,6 +24,7 @@ import theoretical.CPeptides;
 import theoretical.FragmentationMode;
 
 /**
+ * This class is used to load
  *
  * @author Sule
  */
@@ -34,10 +36,6 @@ public class FASTACPDBLoader {
      *
      * @param file
      * @param ptmFactory
-     * @param fixedModifications
-     * @param fixedModNames
-     * @param variableModifications
-     * @param variableModNames
      * @param linker
      * @param fragMode
      * @param isBranching
@@ -45,11 +43,9 @@ public class FASTACPDBLoader {
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static HashMap<CPeptides, Double> get_CPeptide_theoreticalMass(File file,
-            PTMFactory ptmFactory, ArrayList<String> fixedModifications, String fixedModNames,
-            ArrayList<String> variableModifications, String variableModNames,
-            CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
-        HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
+    public static HashMap<CPeptides, Double> readFiletoGetCPeptideTheoMass(File file, PTMFactory ptmFactory, CrossLinker linker, FragmentationMode fragMode, boolean isBranching)
+            throws XmlPullParserException, IOException {
+        HashMap<CPeptides, Double> cPeptides_Masses = new HashMap<CPeptides, Double>();
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = "";
         while ((line = br.readLine()) != null) {
@@ -57,137 +53,135 @@ public class FASTACPDBLoader {
                 String[] split = line.split("\t");
                 String proteinA = split[0],
                         proteinB = split[1],
-                        startSeq = split[2],
-                        nextSeq = split[3],
-                        modA = split[6],
-                        modB = split[7];
+                        peptideAseq = split[2],
+                        peptideBseq = split[3],
+                        fixedModA = split[6],
+                        fixedModB = split[7],
+                        variableModA = split[8],
+                        variableModB = split[9];
                 // linker positions...
-                Integer linker_position_start = Integer.parseInt(split[4]),
-                        linker_position_next = Integer.parseInt(split[5]);
-                Double theoreticalMass = Double.parseDouble(split[8]);
-
-                // First find fixed variable modifications...
-                ArrayList<ModificationMatch> ptms_peptideA = GetPTMs.getPTM(ptmFactory, modA, fixedModifications, startSeq),
-                        ptms_peptideB = GetPTMs.getPTM(ptmFactory, modB, fixedModifications, nextSeq);
-
+                Integer linkerPosPeptideA = Integer.parseInt(split[4]),
+                        linkerPosPeptideB = Integer.parseInt(split[5]);
+                Double mass = Double.parseDouble(split[10]);
+                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false),
+                        fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModB, false);
+                // Start putting them on a list which will contain also variable PTMs
+                ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA),
+                        ptms_peptideB = new ArrayList<ModificationMatch>(fixedPTM_peptideB);
+                // Add variable PTMs and also a list of several fixed PTMs
+                ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true),
+                        variablePTM_peptideB = GetPTMs.getPTM(ptmFactory, variableModB, true);
+                ptms_peptideA.addAll(variablePTM_peptideA);
+                ptms_peptideB.addAll(variablePTM_peptideB);
                 // First peptideA
-                Peptide peptideA = new Peptide(startSeq, ptms_peptideA),
-                        peptideB = new Peptide(nextSeq, ptms_peptideB);
-
+                Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA),
+                        peptideB = new Peptide(peptideBseq, ptms_peptideB);
                 // now generate peptide...
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linker_position_start, linker_position_next, fragMode, isBranching);
-                cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                cPeptides_Masses.put(cPeptide, mass);
             }
         }
-        return cPeptide_theoreticalMass;
+        return cPeptides_Masses;
     }
 
     /**
-     * This method generates a peptide and mass file
+     * This method generates a list of CPeptides with always a fixed
+     * Modification and all possible variable modifications..
      *
-     * @param bw
-     * @param header_sequence
-     * @param ptmFactory
-     * @param fixedModifications
-     * @param fixedModNames
-     * @param tmpVarMods
-     * @param variableModifications
-     * @param variableModNames
-     * @param tmpTargetAAs
-     * @param linker
-     * @param fragMode
-     * @param isBranching
+     *
+     * @param header_sequence a list of crosslinked header and their
+     * corresponding sequences
+     * @param ptmFactory is already instantiated PTMFactory
+     * @param fixedModifications is a list of given fixed Modifications.
+     * @param variableModifications is a list of given variable modifications
+     * @param linker a CrossLinker object to construct CPeptides objects
+     * @param fragMode fragmentation mode
+     * @param isBranching true:is branching/false:attaching
      * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static HashMap<CPeptides, Double> generate_peptide_mass_index(BufferedWriter bw,
+    public static ArrayList<CPeptides> generate_peptide_mass_index(
             HashMap<String, String> header_sequence,
-            PTMFactory ptmFactory, ArrayList<String> fixedModifications, String fixedModNames,
-            ICombinatoricsVector<String> tmpVarMods,
+            PTMFactory ptmFactory,
+            ArrayList<String> fixedModifications,
+            ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
 
-        HashMap<CPeptides, Double> cPeptide_theoreticalMass = new HashMap<CPeptides, Double>();
+        ArrayList<CPeptides> cPeptides = new ArrayList<CPeptides>();
         StringBuilder proteinA,
                 proteinB,
-                startSeq,
-                nextSeq,
-                writingInfo;
-        CPeptides cPeptide;
-        Peptide peptideA = null,
-                peptideB = null;
-
+                peptideAseq,
+                peptideBseq;
+        // Read each header to construct CrossLinkedPeptide object
         for (String header : header_sequence.keySet()) {
-            writingInfo = new StringBuilder();
-            // indices must be known to generate a cross linked theoretical spectrum
             String[] split = header.split("_");
-            int startIndex = 1,
-                    endIndex = 3;
-            if (split[startIndex].equals("inverted")) {
-                endIndex++;
-                startIndex++;
+            int pepAIndex = 1,
+                    pepBIndex = 3;
+            if (split[pepAIndex].equals("inverted")) {
+                pepBIndex++;
+                pepAIndex++;
             }
-            if (split[endIndex].equals("inverted")) {
-                endIndex++;
+            if (split[pepBIndex].equals("inverted")) {
+                pepBIndex++;
             }
-            int linker_position_start = Integer.parseInt(split[startIndex]),
-                    linker_position_next = Integer.parseInt(split[endIndex]);
-            // linker positions for constructing a XLinked peptide...
-            int linker_position_start_for_program = linker_position_start - 1,
-                    linker_position_next_for_program = linker_position_next - 1;
-
+            int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
+                    writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
+            // indices for linker positions necessary for constructing a CrossLinkedPeptide object...
+            int linkerPosPeptideA = writen_linkerPositionPeptideA - 1,
+                    linkerPosPeptideB = writen_linkerPositionPeptideB - 1;
+            // now get protein names
             String[] headerSplit = header.substring(0).split("_");
-
             proteinA = new StringBuilder(headerSplit[0]);
             proteinB = new StringBuilder(headerSplit[2]);
-
-            writingInfo.append(proteinA).append("\t").append(proteinB).append("\t");
-
-            startSeq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
-            nextSeq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
-
-            writingInfo.append(startSeq).append("\t").append(nextSeq).append("\t");
-
-            // First find fixed variable modifications...
-            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, startSeq.toString(), false),
-                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, nextSeq.toString(), false);
-
-            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA),
-                    ptms_peptideB = new ArrayList<ModificationMatch>(fixedPTM_peptideB);
-            for (String tmpVarMod : tmpVarMods) {
-                // Add variable PTMs and also a list of several fixed PTMs
-                ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, tmpVarMod, startSeq.toString(), true),
-                        variablePTM_peptideB = GetPTMs.getPTM(ptmFactory, tmpVarMod, nextSeq.toString(), true);
-                ptms_peptideA.addAll(variablePTM_peptideA);
-                ptms_peptideB.addAll(variablePTM_peptideB);
+            // and now peptide sequences..
+            peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
+            peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
+            // First, find fixed variable modifications to construct a Peptide object!
+            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false),
+                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false);
+            // Then, get all variable PTMs locations for a given Peptide sequence
+            ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
+                    possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
+            // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
+            ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA),
+                    peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB);
+            // fill all possible modified peptides here...
+            for (Peptide pA : peptideAs) {
+                for (Peptide pB : peptideBs) {
+                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                    cPeptides.add(cPeptide);
+                }
             }
-
-            String modPepA = getPTMName(ptms_peptideA),
-                    modPepB = getPTMName(ptms_peptideB);
-
-            peptideA = new Peptide(startSeq.toString(), ptms_peptideA);
-            peptideB = new Peptide(nextSeq.toString(), ptms_peptideB);
-
-            // now generate peptide...
-            cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), peptideA, peptideB, linker, linker_position_start_for_program, linker_position_next_for_program, fragMode, isBranching);
-            writingInfo.append(linker_position_start_for_program).append("\t").append(linker_position_next_for_program).append("\t");
-            double theoreticalMass = cPeptide.getTheoreticalXLinkedMass();
-            writingInfo.append(modPepA).append("\t").append(modPepB).append("\t");
-            cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
-            writingInfo.append(theoreticalMass).append("\n");
-            bw.write(writingInfo.toString());
-            cPeptide_theoreticalMass.put(cPeptide, theoreticalMass);
         }
-        return cPeptide_theoreticalMass;
+        return cPeptides;
     }
 
-    private static String getPTMName(ArrayList<ModificationMatch> ptms_peptide) {
-        String tmp_ptm = "";
-        for (ModificationMatch m : ptms_peptide) {
-            String tmp = "[" + m.getTheoreticPtm() + "_" + m.getModificationSite() + "]";
-            tmp_ptm += tmp;
+    /**
+     * 
+     * @param possibleDetailedVariablePTMs
+     * @param peptideSeq
+     * @param fixedPTM
+     * @return 
+     */
+    private static ArrayList<Peptide> getPeptidesVarPTMs(ArrayList<GetPTMs.PTMNameIndex> possibleDetailedVariablePTMs, StringBuilder peptideSeq, ArrayList<ModificationMatch> fixedPTM) {
+        ArrayList<Peptide> peptides = new ArrayList<Peptide>();
+        ICombinatoricsVector<GetPTMs.PTMNameIndex> varMods = Factory.createVector(possibleDetailedVariablePTMs);
+        Generator<GetPTMs.PTMNameIndex> gen = Factory.createSubSetGenerator(varMods);
+        for (ICombinatoricsVector<GetPTMs.PTMNameIndex> tmpVarMods : gen) {
+            Peptide pep = constructPeptideVarMods(peptideSeq.toString(), fixedPTM, tmpVarMods);
+            peptides.add(pep);
         }
-        return tmp_ptm;
+        return peptides;
     }
 
+    private static Peptide constructPeptideVarMods(String peptideSeq, ArrayList<ModificationMatch> fixedPTMs, ICombinatoricsVector<GetPTMs.PTMNameIndex> variablePTMs) {
+        ArrayList<ModificationMatch> ptms = new ArrayList<ModificationMatch>(fixedPTMs);
+        for (GetPTMs.PTMNameIndex tmpInfo : variablePTMs) {
+            ModificationMatch tmpMM = new ModificationMatch(tmpInfo.getPtmName(), true, tmpInfo.getPtmIndex());
+            ptms.add(tmpMM);
+        }
+        Peptide p = new Peptide(peptideSeq, ptms);
+        return p;
+    }
 }

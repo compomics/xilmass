@@ -34,7 +34,8 @@ import org.apache.log4j.Logger;
 
 /**
  *
- * @author Lennart adapted from DBToolKit
+ * @author Lennart adapted from DBToolKit for in silico digestion of database
+ * from DBToolKit
  * @author Sule to integrate for crossLinkedPeptides
  *
  */
@@ -183,7 +184,7 @@ public class CreateDatabase {
      * @throws IOException
      * @throws Exception
      */
-    public HashMap<String, String> getHeader_sequence() throws UnknownDBFormatException, IOException, Exception {
+    public HashMap<String, String> getHeadersAndSequences() throws UnknownDBFormatException, IOException, Exception {
         if (header_sequence.isEmpty()) {
             construct();
         }
@@ -485,7 +486,7 @@ public class CreateDatabase {
         // check the condition
         if (nextSequence.length() >= minLen) {
             if ((does_a_peptide_link_to_itself && nextSequence.equals(startSequence)) || (!nextSequence.equals(startSequence))) {
-                HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);                
+                HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
                 if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3 or BS3d4.. So K-K
                     for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
 
