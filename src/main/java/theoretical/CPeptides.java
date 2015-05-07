@@ -5,10 +5,8 @@
  */
 package theoretical;
 
-import com.compomics.util.experiment.biology.Atom;
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
-import static com.compomics.util.experiment.biology.IonFactory.getLossesMass;
 import com.compomics.util.experiment.biology.NeutralLoss;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
@@ -520,6 +518,72 @@ public class CPeptides {
             redundant_ions.add(tmpName);
         }
         return redundant_ions;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + (this.peptideA != null ? this.peptideA.hashCode() : 0);
+        hash = 73 * hash + (this.peptideB != null ? this.peptideB.hashCode() : 0);
+        hash = 73 * hash + (this.proteinA != null ? this.proteinA.hashCode() : 0);
+        hash = 73 * hash + (this.proteinB != null ? this.proteinB.hashCode() : 0);
+        hash = 73 * hash + (this.linker != null ? this.linker.hashCode() : 0);
+        hash = 73 * hash + this.linker_position_on_peptideA;
+        hash = 73 * hash + this.linker_position_on_peptideB;
+        hash = 73 * hash + (this.fragmentation_mode != null ? this.fragmentation_mode.hashCode() : 0);
+        hash = 73 * hash + (this.theoretical_ions != null ? this.theoretical_ions.hashCode() : 0);
+        hash = 73 * hash + (this.fragmentFactory != null ? this.fragmentFactory.hashCode() : 0);
+        hash = 73 * hash + (this.is_Branching ? 1 : 0);
+        hash = 73 * hash + (int) (Double.doubleToLongBits(this.theoretical_xlinked_mass) ^ (Double.doubleToLongBits(this.theoretical_xlinked_mass) >>> 32));
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CPeptides other = (CPeptides) obj;
+        if (this.peptideA != other.peptideA && (this.peptideA == null || !this.peptideA.equals(other.peptideA))) {
+            return false;
+        }
+        if (this.peptideB != other.peptideB && (this.peptideB == null || !this.peptideB.equals(other.peptideB))) {
+            return false;
+        }
+        if ((this.proteinA == null) ? (other.proteinA != null) : !this.proteinA.equals(other.proteinA)) {
+            return false;
+        }
+        if ((this.proteinB == null) ? (other.proteinB != null) : !this.proteinB.equals(other.proteinB)) {
+            return false;
+        }
+        if (this.linker != other.linker && (this.linker == null || !this.linker.equals(other.linker))) {
+            return false;
+        }
+        if (this.linker_position_on_peptideA != other.linker_position_on_peptideA) {
+            return false;
+        }
+        if (this.linker_position_on_peptideB != other.linker_position_on_peptideB) {
+            return false;
+        }
+        if (this.fragmentation_mode != other.fragmentation_mode) {
+            return false;
+        }
+        if (this.theoretical_ions != other.theoretical_ions && (this.theoretical_ions == null || !this.theoretical_ions.equals(other.theoretical_ions))) {
+            return false;
+        }
+        if (this.fragmentFactory != other.fragmentFactory && (this.fragmentFactory == null || !this.fragmentFactory.equals(other.fragmentFactory))) {
+            return false;
+        }
+        if (this.is_Branching != other.is_Branching) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.theoretical_xlinked_mass) != Double.doubleToLongBits(other.theoretical_xlinked_mass)) {
+            return false;
+        }
+        return true;
     }
 
 }
