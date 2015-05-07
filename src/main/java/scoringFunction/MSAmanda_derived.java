@@ -8,7 +8,6 @@ package scoringFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  * This class calculates cumulative binominal probability based scores with
  * considering intensities from experimental spectra to
@@ -55,7 +54,8 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
      * spectrum
      * @param intensity sum of all intensities from every picked peak
      * @param explainedIntensity sum of all intensities from matched picked peak
-     * @param intesityOption 0-Intensities are squared, 1-No preprocessing on intensity part
+     * @param intesityOption 0-Intensities are squared, 1-No preprocessing on
+     * intensity part
      */
     public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption) {
         super.p = p;
@@ -65,35 +65,37 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
         this.explainedIntensity = explainedIntensity;
         this.intensityOption = intesityOption;
     }
-    
 
     /**
-     * This calculate MSAmanda_derived cumulativeBinomialProbability with an option in
- selection.
-     * Option0-Sqrt(IntensityPart)
-     * Option1-IntensityPart
+     * This calculate MSAmanda_derived cumulativeBinomialProbability with an
+     * option in selection. Option0-Sqrt(IntensityPart) Option1-IntensityPart
      */
     @Override
     protected void calculateScore() {
         try {
-            double probability_part = super.calculateCumulativeBinominalProbability();
-            double intensity_part = explainedIntensity / intensity;
+            double tmp = 0;
+            double probability_based_score = super.calculateCumulativeBinominalProbability(),
+                    intensity_part = (double) explainedIntensity / (double) intensity;
             if (intensityOption == 0) {
-                probability_part = -10 * (Math.log10(probability_part));
-                intensity_part = (Math.sqrt(intensity_part));
-                score = probability_part * intensity_part;
+                if (probability_based_score == 0) {
+                    score = 0;
+                } else {
+                    tmp = -10 * (Math.log10(probability_based_score));
+                    intensity_part = (Math.sqrt(intensity_part));
+                    score = tmp * intensity_part;
+                }
             } else if (intensityOption == 1) {
-                probability_part = -10 * (Math.log10(probability_part));
-                score = probability_part * intensity_part;
-            }
-            if (score == -0) {
-                score = 0;
+                if (probability_based_score == 0) {
+                    score = 0;
+                } else {
+                    tmp = - 10 * (Math.log10(probability_based_score));
+                    score = tmp * intensity_part;
+                }
             }
             isCalculated = true;
         } catch (Exception ex) {
             Logger.getLogger(MSAmanda_derived.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 
 }

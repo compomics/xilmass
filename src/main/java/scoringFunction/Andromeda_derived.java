@@ -39,13 +39,16 @@ public class Andromeda_derived extends CumulativeBinomialProbabilityBasedScoring
         super.N = N; // N: All theoretical peaks at a theoretical spectrum (on Andromeda_derived)
         super.n = n; // n: Matched peaks is number of matched peaks on theoretical spectrum  
     }
-   
 
     @Override
     protected void calculateScore() {
         try {
             double probability_based_score = super.calculateCumulativeBinominalProbability();
-            score = - 10 * (Math.log10(probability_based_score));
+            if (probability_based_score == 0) {
+                score = 0;
+            } else {
+                score = - 10 * (Math.log10(probability_based_score));
+            }
             isCalculated = true;
         } catch (Exception ex) {
             Logger.getLogger(Andromeda_derived.class.getName()).log(Level.SEVERE, null, ex);

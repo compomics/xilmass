@@ -27,7 +27,7 @@ public abstract class CumulativeBinomialProbabilityBasedScoring {
      *
      */
     protected abstract void calculateScore();
-   
+
     /**
      * It returns a cumulativeBinomialProbability. It checks if a it is already
      * calculated; if not it calculates
@@ -40,7 +40,7 @@ public abstract class CumulativeBinomialProbabilityBasedScoring {
         }
         return score;
     }
-    
+
     /**
      * To calculate CumulativeBinominalProbability with given n,N and p values.
      * by calling BinomialDistribution class on Apache
@@ -50,8 +50,8 @@ public abstract class CumulativeBinomialProbabilityBasedScoring {
      */
     protected double calculateCumulativeBinominalProbability() throws Exception {
         BinomialDistribution b = new BinomialDistributionImpl(N, p);
-        int tmp = n-1;
-        double probability = 1-b.cumulativeProbability(tmp);        
+        int tmp = n - 1;
+        double probability = 1 - b.cumulativeProbability(tmp);
         return probability;
     }
 

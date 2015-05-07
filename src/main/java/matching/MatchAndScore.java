@@ -168,7 +168,7 @@ public class MatchAndScore {
      */
     public double getCXPSMScore() {
         if (!isFoundAndMatched) {
-            int totalN = getTheoreticalCXMS2ions().size();
+            int totalN = getTheoreticalCXPeaks().size();
             ArrayList<Double> scores = new ArrayList<Double>();
             for (int numHighestPeak = minFPeaks; numHighestPeak < maxFPeaks; numHighestPeak++) {
                 matchedPeaks = new HashSet<Peak>();
@@ -211,13 +211,13 @@ public class MatchAndScore {
                 }
                 n = matchedPeaks.size();
                 // MSAmanda_derived with expertimentatl spectrum
-                if (scoring_type == 0) {
+                if (scoring_type == 0) {                   
                     MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // Andromeda_derived with theoretical spectra size
                 } else if (scoring_type == 1) {
-                    Andromeda_derived object = new Andromeda_derived(probability, totalN, n);
+                    Andromeda_derived object = new Andromeda_derived(probability, totalN, n);                   
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // MSAmanda_derived with theoretical spectra size
@@ -303,6 +303,7 @@ public class MatchAndScore {
                 }
                 cPeakList.add(doubly_charged);
             }
+            theoreticalCXPeaks.addAll(cPeakList);
             isTheoreticalCXPeaksReady = true;
             return cPeakList;
         } else {
