@@ -55,10 +55,8 @@ public class GetPTMs {
         // Create an instance of the subset generator as combinatorially for variables..
         ArrayList<ModificationMatch> modifications = new ArrayList<ModificationMatch>();
         if (!ptmName.isEmpty()) {
-            System.out.println("PTMName=" + ptmName);
             ArrayList<String> ptms = getPTMStoRead(ptmName);
             for (String ptm : ptms) {
-                System.out.println("PTM=" + ptm);
                 PTM tmpPTM = ptmFactory.getPTM(ptm);
                 String theoreticPTM = tmpPTM.getName();
                 int ptmType = tmpPTM.getType();
