@@ -152,12 +152,16 @@ public final class Visualize extends javax.swing.JFrame {
             resultFilejTable.getColumnModel().getColumn(12).setPreferredWidth(5500); //proteinB name
             resultFilejTable.getColumnModel().getColumn(13).setPreferredWidth(9400);  // peptide sequence A
             resultFilejTable.getColumnModel().getColumn(14).setPreferredWidth(9400); // peptide sequence B
-            resultFilejTable.getColumnModel().getColumn(15).setPreferredWidth(900); // linker position peptideA
-            resultFilejTable.getColumnModel().getColumn(16).setPreferredWidth(900); // linker position peptideB
-            resultFilejTable.getColumnModel().getColumn(17).setPreferredWidth(2000); // #matched peaks
-            resultFilejTable.getColumnModel().getColumn(18).setPreferredWidth(2000); // #matched theoretical peaks
-            resultFilejTable.getColumnModel().getColumn(19).setPreferredWidth(60000); // matched peak list
-            resultFilejTable.getColumnModel().getColumn(20).setPreferredWidth(135000); // theoretical matched peak list
+
+            resultFilejTable.getColumnModel().getColumn(15).setPreferredWidth(9400);  // modification peptide seq A
+            resultFilejTable.getColumnModel().getColumn(16).setPreferredWidth(9400); // modification peptide seq B
+
+            resultFilejTable.getColumnModel().getColumn(17).setPreferredWidth(900); // linker position peptideA
+            resultFilejTable.getColumnModel().getColumn(18).setPreferredWidth(900); // linker position peptideB
+            resultFilejTable.getColumnModel().getColumn(19).setPreferredWidth(2000); // #matched peaks
+            resultFilejTable.getColumnModel().getColumn(20).setPreferredWidth(2000); // #matched theoretical peaks
+            resultFilejTable.getColumnModel().getColumn(21).setPreferredWidth(60000); // matched peak list
+            resultFilejTable.getColumnModel().getColumn(22).setPreferredWidth(135000); // theoretical matched peak list
 
             // Fill information on data.
             int number = 0;
@@ -189,7 +193,7 @@ public final class Visualize extends javax.swing.JFrame {
             resultFilejTable.setRowSelectionAllowed(true);
             resultFilejTable.setColumnSelectionAllowed(false);
             resultFilejTable.setRowSelectionInterval(0, 0);
-            Dimension size = new Dimension(resultFilejTable.getColumnModel().getTotalColumnWidth()+2700, resultFilejTable.getRowCount() * resultFilejTable.getRowHeight());
+            Dimension size = new Dimension(resultFilejTable.getColumnModel().getTotalColumnWidth() + 2700, resultFilejTable.getRowCount() * resultFilejTable.getRowHeight());
             resultFilejTable.setPreferredSize(size);
             resultFilejTable.setPreferredScrollableViewportSize(size);
             String spectrumFileName = (String) resultFilejTable.getValueAt(1, 2),
@@ -404,13 +408,7 @@ public final class Visualize extends javax.swing.JFrame {
         // TODO: Make sure about these annotations!
         // set up the peak annotations!!!
         List<SpectrumAnnotation> peakAnnotation = getAnnotatedPeaks();
-        peakAnnotation.add(
-                new DefaultSpectrumAnnotation(
-                        180, // the mz value to annotate
-                        -0.0068229, // the mz error margin
-                        new Color(248, 151, 202), // the annotation color
-                        "y1+"));  // the annotation label
-
+        System.out.println("Annotated peaks=" + peakAnnotation.size());
         // add the annotations to the spectrum
         spectrumPanel.setAnnotations(peakAnnotation);
 
@@ -478,7 +476,7 @@ public final class Visualize extends javax.swing.JFrame {
     private List<SpectrumAnnotation> getAnnotatedPeaks() {
         List<SpectrumAnnotation> annotations = new ArrayList<SpectrumAnnotation>();
         int selectedRow = resultFilejTable.getSelectedRow();
-        String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, 20);
+        String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, 22);
         String[] splittedAnnotatedPeaksStr = annotatedPeaksStr.split(" ");
         Color lightBlue = Color.getHSBColor(0.56f, 0.3f, 1f),
                 lightPink = Color.getHSBColor(0.92f, 0.3f, 1f),
