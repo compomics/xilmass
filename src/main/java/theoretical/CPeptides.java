@@ -142,6 +142,16 @@ public class CPeptides {
         this.fragmentation_mode = fragmentation_mode;
     }
 
+    public boolean isIs_Branching() {
+        return is_Branching;
+    }
+
+    public void setIs_Branching(boolean is_Branching) {
+        this.is_Branching = is_Branching;
+    }
+    
+    
+
     /**
      * This method returns theoretical spectrum.
      *
