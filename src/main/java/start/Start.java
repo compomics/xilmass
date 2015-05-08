@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -102,7 +104,8 @@ public class Start {
                 maxFPeakNum = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumber");
         boolean does_link_to_itself = false,
                 isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
-                isBranching = ConfigHolder.getInstance().getBoolean("isBranching");
+                isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
+                doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore");
         // Parameters for searching against experimental spectrum 
         double ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff
                 ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm error 
@@ -121,16 +124,17 @@ public class Start {
         ArrayList<CPeptides> cpeptides = new ArrayList<CPeptides>();
 
         File settings = new File("settings.txt");
-        boolean isSame = areTheSameDBSettings(settings); // either the same/different or absent;
+        boolean isSame = areTheSameDBSettings(settings), // either the same/different or absent
+                doesCXDBExist = false;
         int xlinkedDBsize = 0;
         // Now there is already constructed crosslinked peptide database exists...
         if (isSame) {
             for (File f : new File(dbFolder).listFiles()) {
-                if (f.getName().endsWith(".fastacp")) {
+                if (f.getName().equals(cxDBName + ".fastacp")) {
                     LOGGER.info("An already constrcuted fastacp file is found! The name=" + new File(cxDBName + ".fastacp").getName());
+                    doesCXDBExist = true;
                     // Read a file 
                     cPeptides_masses = FASTACPDBLoader.readFiletoGetCPeptideTheoMass(new File(cxDBNameCache), ptmFactory, linker, fragMode, isBranching);
-
                     // after retrieving this CPeptides and their masses as a hashmap, fill arraylist for CPeptides and Theoretical masses
                     for (CPeptides cpep : cPeptides_masses.keySet()) {
                         double mass = cPeptides_masses.get(cpep);
@@ -140,7 +144,8 @@ public class Start {
                     xlinkedDBsize = cpeptides.size();
                 }
             }
-        } else {
+        }
+        if ((isSame && !doesCXDBExist) || !isSame) {
             // So, file is empty.. Construct a cross linked peptide database and write a cache file with masses...
             LOGGER.info("A required constructed fastacp file is NOT found or run setting has been changed! It is going to be constructed..");
             CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName, cxDBName, // db related parameters
@@ -180,6 +185,9 @@ public class Start {
             // now write a settings file
             writeSettings(settings);
             xlinkedDBsize = headers_sequences.size();
+            // delete in silico DB
+            File f = new File(instanceToCreateDB.getInSilicoPeptideDBName());
+            f.delete();
         }
 
         LOGGER.info("CX database is ready! ");
@@ -240,45 +248,47 @@ public class Start {
 
                             double psmscore = f.getCXPSMScore();
 
-                            peptideA = tmpCpeptide.getPeptideA().getSequence();
-                            peptideB = tmpCpeptide.getPeptideB().getSequence();
-                            proteinA = tmpCpeptide.getProteinA();
-                            proteinB = tmpCpeptide.getProteinB();
-                            modificationA = getModificationInfo(tmpCpeptide.getPeptideA());
-                            modificationB = getModificationInfo(tmpCpeptide.getPeptideB());
+                            if ((psmscore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
+                                peptideA = tmpCpeptide.getPeptideA().getSequence();
+                                peptideB = tmpCpeptide.getPeptideB().getSequence();
+                                proteinA = tmpCpeptide.getProteinA();
+                                proteinB = tmpCpeptide.getProteinB();
+                                modificationA = getModificationInfo(tmpCpeptide.getPeptideA());
+                                modificationB = getModificationInfo(tmpCpeptide.getPeptideB());
 
-                            int linkerPositionOnPeptideA = tmpCpeptide.getLinker_position_on_peptideA() + 1,
-                                    linkerPositionOnPeptideB = tmpCpeptide.getLinker_position_on_peptideB() + 1;
+                                int linkerPositionOnPeptideA = tmpCpeptide.getLinker_position_on_peptideA() + 1,
+                                        linkerPositionOnPeptideB = tmpCpeptide.getLinker_position_on_peptideB() + 1;
 
-                            // analyze matchedPeaks!
-                            HashSet<Peak> matchedPeaks = f.getMatchedPeaks();
-                            HashSet<CPeptidePeak> matchedCTheoPeaks = f.getMatchedTheoreticalCPeaks();
+                                // analyze matchedPeaks!
+                                HashSet<Peak> matchedPeaks = f.getMatchedPeaks();
+                                HashSet<CPeptidePeak> matchedCTheoPeaks = f.getMatchedTheoreticalCPeaks();
 
-                            ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
-                            //System.out.println("psmscore"+psmscore+"\t"+"matchedPList="+matchedPLists.size());
-                            Collections.sort(matchedPLists, Peak.ASC_mz_order);
-                            ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
-                            Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
+                                ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
+                                //System.out.println("psmscore"+psmscore+"\t"+"matchedPList="+matchedPLists.size());
+                                Collections.sort(matchedPLists, Peak.ASC_mz_order);
+                                ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
+                                Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
 
-                            runningInfo = new StringBuilder(precursor_mass + "\t" + theoretical_mass + "\t" + tmpMS1Err + "\t"
-                                    + getScoringStr(scoring) + "\t" + psmscore + "\t"
-                                    + proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
-                                    + modificationA + "\t" + modificationB + "\t"
-                                    + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
-                                    + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t");
+                                runningInfo = new StringBuilder(precursor_mass + "\t" + theoretical_mass + "\t" + tmpMS1Err + "\t"
+                                        + getScoringStr(scoring) + "\t" + psmscore + "\t"
+                                        + proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
+                                        + modificationA + "\t" + modificationB + "\t"
+                                        + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
+                                        + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t");
 
-                            bw.write(specInfo.toString() + runningInfo.toString());
+                                bw.write(specInfo.toString() + runningInfo.toString());
 
-                            for (Peak p : matchedPLists) {
-                                bw.write(p.mz + " ");
+                                for (Peak p : matchedPLists) {
+                                    bw.write(p.mz + " ");
+                                }
+                                bw.write("\t");
+
+                                for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                    bw.write(tmpCPeak.toString() + " ");
+                                }
+                                bw.write("\t");
+                                bw.newLine();
                             }
-                            bw.write("\t");
-
-                            for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
-                                bw.write(tmpCPeak.toString() + " ");
-                            }
-                            bw.write("\t");
-                            bw.newLine();
                         }
                     }
                 }
