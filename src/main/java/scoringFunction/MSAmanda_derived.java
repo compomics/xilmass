@@ -91,6 +91,13 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
                     tmp = - 10 * (Math.log10(probability_based_score));
                     score = tmp * intensity_part;
                 }
+            } else if (intensityOption == 2) {
+                if (probability_based_score == 0) {
+                    score = 0;
+                } else {
+                    tmp = - 10 * (Math.log10(probability_based_score));
+                    score = tmp * (Math.log10(1/intensity_part));
+                }
             }
             isCalculated = true;
         } catch (Exception ex) {
