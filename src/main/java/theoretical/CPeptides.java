@@ -271,6 +271,12 @@ public class CPeptides {
             ion_types.add(PeptideFragmentIon.A_ION);
             ion_types.add(PeptideFragmentIon.B_ION);
             ion_types.add(PeptideFragmentIon.Y_ION);
+        } else if (fragmentation_mode.equals(FragmentationMode.HCD_all)) {
+            // mostly y ions and then b and a ions
+            ion_types.add(PeptideFragmentIon.A_ION);
+            ion_types.add(PeptideFragmentIon.B_ION);
+            ion_types.add(PeptideFragmentIon.Y_ION);
+            ion_types.add(PeptideFragmentIon.Z_ION);
         }
         for (Integer tmp_ion_type : ion_types) {
             int index = linked_index;

@@ -34,15 +34,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import matching.MatchAndScore;
 import org.apache.log4j.Logger;
-import org.paukov.combinatorics.Factory;
-import org.paukov.combinatorics.Generator;
-import org.paukov.combinatorics.ICombinatoricsVector;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
+ * TODO: Remove in silico digested FASTA file...
  *
  * @author Sule
  */
@@ -90,6 +88,8 @@ public class Start {
             fragMode = FragmentationMode.HCD;
         } else if (fragModeName.equals("ETD")) {
             fragMode = FragmentationMode.ETD;
+        } else if (fragModeName.equals("HCD_all")) {
+            fragMode = FragmentationMode.HCD_all;
         }
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
@@ -181,7 +181,7 @@ public class Start {
             writeSettings(settings);
             xlinkedDBsize = headers_sequences.size();
         }
-        
+
         LOGGER.info("CX database is ready! ");
         LOGGER.info("Header and sequence object is ready! Total size is " + xlinkedDBsize);
 
