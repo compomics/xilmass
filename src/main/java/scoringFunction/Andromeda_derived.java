@@ -38,6 +38,7 @@ public class Andromeda_derived extends CumulativeBinomialProbabilityBasedScoring
         super.p = p; // probability=m/windowSize (windowSize=100Da default)m=[1- 10] peaks
         super.N = N; // N: All theoretical peaks at a theoretical spectrum (on Andromeda_derived)
         super.n = n; // n: Matched peaks is number of matched peaks on theoretical spectrum  
+        super.name = ScoreName.Andromeda;
     }
 
     @Override

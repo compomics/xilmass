@@ -57,13 +57,14 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
      * @param intesityOption 0-Intensities are squared, 1-No preprocessing on
      * intensity part
      */
-    public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption) {
+    public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption, ScoreName name) {
         super.p = p;
         super.N = N;
         super.n = n;
         this.intensity = intensity;
         this.explainedIntensity = explainedIntensity;
         this.intensityOption = intesityOption;
+        this.name = name;
     }
 
     /**
