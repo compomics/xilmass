@@ -233,7 +233,7 @@ public class FASTACPDBLoader {
                         mass = cPeptide.getTheoreticalXLinkedMass();
                         isCPeptidesObjConstructed = true;
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
-                        bw.write(info + "\t" + mass + "\n");
+                        bw.write(info + "\n");
 
                     } else {
                         cPeptide.setProteinA(proteinA.toString());
@@ -244,7 +244,7 @@ public class FASTACPDBLoader {
                         cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
                         mass = cPeptide.getTheoreticalXLinkedMass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
-                        bw.write(info + "\t" + mass + "\n");
+                        bw.write(info + "\n");
                     }
                 }
             }
