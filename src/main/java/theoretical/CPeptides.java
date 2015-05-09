@@ -38,7 +38,8 @@ public class CPeptides {
     private HashMap<Integer, ArrayList<Ion>> product_ions_peptideA,
             product_ions_peptideB;
     private boolean is_monoisotopic_mass = true,
-            is_Branching; // true/false to create linkedPeptideFragmentIons with Branching/Attaching
+            is_Branching, // true/false to create linkedPeptideFragmentIons with Branching/Attaching
+            isMassCalculated = false;
     private double intensity = 100,
             theoretical_xlinked_mass = 0;
 
@@ -83,6 +84,7 @@ public class CPeptides {
     }
 
     public void setProteinA(String proteinA) {
+        isMassCalculated = false;
         this.proteinA = proteinA;
     }
 
@@ -91,6 +93,7 @@ public class CPeptides {
     }
 
     public void setProteinB(String proteinB) {
+        isMassCalculated = false;
         this.proteinB = proteinB;
     }
 
@@ -99,6 +102,7 @@ public class CPeptides {
     }
 
     public void setPeptideA(Peptide peptideA) {
+        isMassCalculated = false;
         this.peptideA = peptideA;
     }
 
@@ -107,6 +111,7 @@ public class CPeptides {
     }
 
     public void setPeptideB(Peptide peptideB) {
+        isMassCalculated = false;
         this.peptideB = peptideB;
     }
 
@@ -115,6 +120,7 @@ public class CPeptides {
     }
 
     public void setLinker(CrossLinker linker) {
+        isMassCalculated = false;
         this.linker = linker;
     }
 
@@ -149,8 +155,6 @@ public class CPeptides {
     public void setIs_Branching(boolean is_Branching) {
         this.is_Branching = is_Branching;
     }
-    
-    
 
     /**
      * This method returns theoretical spectrum.
@@ -216,11 +220,12 @@ public class CPeptides {
     }
 
     public double getTheoreticalXLinkedMass() {
-        if (theoretical_xlinked_mass == 0) {
+        if (!isMassCalculated) {
             double tmp_mass_peptideA = peptideA.getMass(),
                     tmp_mass_peptideB = peptideB.getMass(),
                     tmp_mass_linker = linker.getMassShift_Type2();
             theoretical_xlinked_mass = tmp_mass_peptideA + tmp_mass_peptideB + tmp_mass_linker;
+            isMassCalculated = true;
         }
         return theoretical_xlinked_mass;
     }
