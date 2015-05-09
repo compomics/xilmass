@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import scoringFunction.Andromeda_derived;
 import scoringFunction.MSAmanda_derived;
+import scoringFunction.ScoreName;
 import theoretical.CPeptideIon;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
@@ -230,7 +231,7 @@ public class MatchAndScore {
                 n = matchedPeaks.size();
                 // MSAmanda_derived with expertimentatl spectrum
                 if (scoring_type == 0) {
-                    MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived);
+                    MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, ScoreName.MSAmanda);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // Andromeda_derived with theoretical spectra size
@@ -240,7 +241,7 @@ public class MatchAndScore {
                     scores.add(tmp_score);
                     // MSAmanda_derived with theoretical spectra size
                 } else if (scoring_type == 2) {
-                    MSAmanda_derived object = new MSAmanda_derived(probability, totalN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived);
+                    MSAmanda_derived object = new MSAmanda_derived(probability, totalN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, ScoreName.TheoMSAmanda);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 }
