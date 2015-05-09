@@ -39,17 +39,17 @@ public class MatchAndScore {
     private double fragTol, // fragment tolerance to select 
             cXPSMScore = 0, // A CX-PSM Score 
             massWindow = 100; // Mass window to filter out peaks from a given MSnSpectrum
-    private int scoring_type, // 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmanda (MSAmanda_derived with N=AllTheoPeaks)
-            intensityOptionForMSAmandaDerived = 0,
+    private int intensityOptionForMSAmandaDerived = 0,
             minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)            
             maxFPeaks; // Maximum number of filtered peaks per 100Da mass window.. (To test)
+    private ScoreName scoreName;// 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmanda (MSAmanda_derived with N=AllTheoPeaks)
     private boolean isTheoreticalCXPeaksReady = false,
             isFoundAndMatched = false;
 
     /* Constructor */
-    public MatchAndScore(MSnSpectrum expMS2, int scoring, CPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow) {
+    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow) {
         this.expMS2 = expMS2;
-        this.scoring_type = scoring;
+        this.scoreName = scoreName;
         this.cPeptides = cPeptides;
         if (cPeptides != null) {
             theoreticalCXMS2ions = cPeptides.getTheoterical_ions();
@@ -170,8 +170,8 @@ public class MatchAndScore {
      *
      * @return
      */
-    public int getScoring_Type() {
-        return scoring_type;
+    public ScoreName getScoreName() {
+        return scoreName;
     }
 
     /**
@@ -230,18 +230,18 @@ public class MatchAndScore {
                 }
                 n = matchedPeaks.size();
                 // MSAmanda_derived with expertimentatl spectrum
-                if (scoring_type == 0) {
-                    MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, ScoreName.MSAmanda);
+                if (scoreName.equals(ScoreName.MSAmanda)) {
+                    MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // Andromeda_derived with theoretical spectra size
-                } else if (scoring_type == 1) {
+                } else if (scoreName.equals(ScoreName.Andromeda)) {
                     Andromeda_derived object = new Andromeda_derived(probability, totalN, n);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // MSAmanda_derived with theoretical spectra size
-                } else if (scoring_type == 2) {
-                    MSAmanda_derived object = new MSAmanda_derived(probability, totalN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, ScoreName.TheoMSAmanda);
+                } else if (scoreName.equals(ScoreName.TheoMSAmanda)) {
+                    MSAmanda_derived object = new MSAmanda_derived(probability, totalN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 }
