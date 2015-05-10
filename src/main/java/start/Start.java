@@ -185,12 +185,12 @@ public class Start {
                     linker, fragMode, isBranching);
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
-        }        
-        
+        }
+
         // delete in silico DB
         File f = new File(inSilicoPeptideDBName);
         f.delete();
-        
+
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! (all MS2 spectra)
@@ -373,7 +373,9 @@ public class Start {
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled");
+                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
+                minLen = ConfigHolder.getInstance().getString("minLen"),
+                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         bw.write("Settings file" + "\n");
@@ -396,6 +398,8 @@ public class Start {
         bw.write("fixedModificationNames" + "\t" + fixedModificationNames + "\n");
         bw.write("variableModificationNames" + "\t" + variableModificationNames + "\n");
         bw.write("fragModeName" + "\t" + fragModeName + "\n");
+        bw.write("minLen" + "\t" + minLen + "\n");
+        bw.write("maxLenCombined" + "\t" + maxLenCombined + "\n");
         bw.close();
     }
 
@@ -418,7 +422,9 @@ public class Start {
                 highMass = ConfigHolder.getInstance().getString("higherMass"),
                 variableModification = ConfigHolder.getInstance().getString("variableModification"),
                 fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled");
+                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
+                minLen = ConfigHolder.getInstance().getString("minLen"),
+                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined");
         int control = 0;
         boolean isSame = false;
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
@@ -446,9 +452,13 @@ public class Start {
                 control++;
             } else if ((line.startsWith("isLabeled")) && (line.split("\t")[1].equals(isLabeled))) {
                 control++;
+            } else if ((line.startsWith("minLen")) && (line.split("\t")[1].equals(minLen))) {
+                control++;
+            } else if ((line.startsWith("maxLenCombined")) && (line.split("\t")[1].equals(maxLenCombined))) {
+                control++;
             }
         }
-        if (control == 11) {
+        if (control == 13) {
             isSame = true;
         }
         return isSame;

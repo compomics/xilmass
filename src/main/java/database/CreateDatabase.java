@@ -68,7 +68,8 @@ public class CreateDatabase {
             String crossLinkedProteinTypes, // crossLinking strategy
             String enzymeName, String enzymeFileName, String misclevaged, // enzyme related parameters
             String lowMass, String highMass, // filtering of in silico peptides on peptide masses
-            int minLen, int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
+            int minLen, 
+            int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
             boolean does_link_to_itself,
             boolean isLabeled // T: heavy labeled protein, F:no labeled
     ) throws Exception {
