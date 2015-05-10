@@ -90,11 +90,12 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>com.compomics</groupId>
             <artifactId>pride-asa-pipeline</artifactId>
             <version>1.5.0</version>
-        </dependency>
+        </dependency-->
+        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -133,36 +134,33 @@
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
             <version>3.45.24</version>
-            <type>jar</type>
-            
+            <type>jar</type>            
         </dependency>
         
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>dbtoolkit</artifactId>
             <version>4.2.4</version>
-            <type>jar</type>
-            
+            <type>jar</type>            
         </dependency>
-        
-        
-        <dependency>
+                
+        <!--dependency>
             <groupId>unknown.binary</groupId>
             <artifactId>AbsoluteLayout</artifactId>
             <version>SNAPSHOT</version>
-        </dependency>
-        <dependency>
+        </dependency-->
+        <!--dependency>
             <groupId>jcuda</groupId>
             <artifactId>jcublas</artifactId>
             <version>0.6.0</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
+        </dependency-->
+        <!--dependency>
             <groupId>jcuda</groupId>
             <artifactId>jcuda</artifactId>
             <version>0.6.0</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>MSim</artifactId>
@@ -175,8 +173,5 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
-    
-    
-    
+    </properties>   
 </project>
