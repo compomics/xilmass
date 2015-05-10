@@ -210,9 +210,13 @@ public class FASTACPDBLoader {
             int linkerPosPeptideA = writen_linkerPositionPeptideA - 1,
                     linkerPosPeptideB = writen_linkerPositionPeptideB - 1;
             // now get protein names
-            String[] headerSplit = header.substring(0).split("_");
+            String[] headerSplit = header.substring(0).split("_");           
+            String proteinBStr = headerSplit[2];
+            if(pepBIndex!=3){
+                proteinBStr+="_"+"inverted";
+            }            
             proteinA = new StringBuilder(headerSplit[0]);
-            proteinB = new StringBuilder(headerSplit[2]);
+            proteinB = new StringBuilder(proteinBStr);
             // and now peptide sequences..
             peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
             peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
