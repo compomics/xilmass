@@ -317,16 +317,30 @@ public class CPeptidesTest extends TestCase {
         ptmFactory.importModifications(modsFile, false);
         // Getting one fixed PTMs
         ArrayList<String> theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add("oxidation of m");
+        theoreticPTMs.add("acetylation of protein n-term");
+//        theoreticPTMs.add("propionamide c");
+//        theoreticPTMs.add("pyro-cmc");
+//        theoreticPTMs.add("oxidation of m");
         ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
+
+//        theoreticPTMs = new ArrayList<String>();
+//        theoreticPTMs.add("propionamide c");
+//        theoreticPTMs.add("oxidation of m");
+        result.addAll(GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true));
         Peptide peptideA = new Peptide(peptideSequence, result);
+
+        for (ModificationMatch m : peptideA.getModificationMatches()) {
+            System.out.println(m.getTheoreticPtm() + "\t" + m.getModificationSite());
+        }
 
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
         Peptide peptideB = new Peptide("AIKNK", modifications_test);
         CrossLinker linker = new DSS();
         CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
+
         HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
-        assertEquals(7,product_ions.size());        
+        assertEquals(7, product_ions.size());
+
     }
 
     /**

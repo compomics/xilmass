@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import junit.framework.TestCase;
+import scoringFunction.ScoreName;
 import theoretical.CPeptideIon;
 import theoretical.CPeptideIonType;
 import theoretical.CPeptides;
@@ -78,7 +79,7 @@ public class MatchAndScoreTest extends TestCase {
         theoCMS2ions.add(cpi_5);
 
         CPeptides c = null;
-        MatchAndScore instance = new MatchAndScore(ms, 0, c, fragTol, 0,1,11,100);
+        MatchAndScore instance = new MatchAndScore(ms, ScoreName.MSAmandaD, c, fragTol, 0,1,11,100);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
 
         ArrayList<Peak> result = new ArrayList<Peak>(instance.getMatchedPeaks());

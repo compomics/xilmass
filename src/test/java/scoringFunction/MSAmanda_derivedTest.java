@@ -48,7 +48,7 @@ public class MSAmanda_derivedTest extends TestCase {
                 explainedIntensity = 220;
         int N = 2,
                 n = 2;
-        MSAmanda_derived instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
+        MSAmanda_derived instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0, ScoreName.MSAmandaD);
         double expResult = 40;
         double result = instance.getScore();
         assertEquals(expResult, result, 0.01);
@@ -58,12 +58,12 @@ public class MSAmanda_derivedTest extends TestCase {
         explainedIntensity = 351;
         N = 4;
         n = 3;
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0, ScoreName.MSAmandaD);
         expResult = 40.66;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1, ScoreName.MSAmandaD);
         expResult = 36.74;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -73,12 +73,12 @@ public class MSAmanda_derivedTest extends TestCase {
         explainedIntensity = 351;
         N = 6;
         n = 3;
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0, ScoreName.MSAmandaD);
         expResult = 24.45;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1, ScoreName.MSAmandaD);
         expResult = 18.13;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -88,12 +88,12 @@ public class MSAmanda_derivedTest extends TestCase {
         explainedIntensity = 351;
         N = 8;
         n = 3;
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0, ScoreName.MSAmandaD);
         expResult = 16.28;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1, ScoreName.MSAmandaD);
         expResult = 10.55;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -103,12 +103,12 @@ public class MSAmanda_derivedTest extends TestCase {
         explainedIntensity = 351;
         N = 10;
         n = 3;
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0, ScoreName.MSAmandaD);
         expResult = 11.34;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1, ScoreName.MSAmandaD);
         expResult = 6.63;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
@@ -118,12 +118,12 @@ public class MSAmanda_derivedTest extends TestCase {
         explainedIntensity = 630;
         N = 20;
         n = 6;
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 0, ScoreName.MSAmandaD);
         expResult = 11.39;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
 
-        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1);
+        instance = new MSAmanda_derived(p, N, n, intensity, explainedIntensity, 1, ScoreName.MSAmandaD);
         expResult = 6.66;
         result = instance.getScore();
         assertEquals(expResult, result, 0.05);
