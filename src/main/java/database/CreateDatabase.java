@@ -61,7 +61,9 @@ public class CreateDatabase {
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
 
-    public CreateDatabase(String givenDBName, String inSilicoPeptideDBName, String cxDBName, // db related parameters
+    public CreateDatabase(String givenDBName,
+            String inSilicoPeptideDBName,
+            String cxDBName, // db related parameters
             String crossLinkerName, // crossLinkerName
             String crossLinkedProteinTypes, // crossLinking strategy
             String enzymeName, String enzymeFileName, String misclevaged, // enzyme related parameters
@@ -69,7 +71,6 @@ public class CreateDatabase {
             int minLen, int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
             boolean does_link_to_itself,
             boolean isLabeled // T: heavy labeled protein, F:no labeled
-    //            CrossLinkedProteinType linkingType // Inter (between different protein), Intra (within the same protein), Both (different proteins)
     ) throws Exception {
         // db related parameters
         inputProteinFileName = givenDBName;
@@ -91,20 +92,12 @@ public class CreateDatabase {
     }
 
     // getter and setter methods    
-    public String getInputFileName() {
+    public String getFastaFileName() {
         return inputProteinFileName;
-    }
-
-    public void setInputFileName(String inputFileName) {
-        this.inputProteinFileName = inputFileName;
     }
 
     public String getInSilicoPeptideDBName() {
         return inSilicoPeptideDBName;
-    }
-
-    public void setInSilicoPeptideDBName(String inSilicoPeptideDBName) {
-        this.inSilicoPeptideDBName = inSilicoPeptideDBName;
     }
 
     public String getCrossLinker() {
@@ -437,11 +430,11 @@ public class CreateDatabase {
                 nextProtein = null;
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
-            String tmpStartAccession = startProtein.getHeader().getAccession();
-            StringBuilder startHeader = new StringBuilder(startProtein.getHeader().getAccession()),
-                    startSequence = new StringBuilder(startProtein.getSequence().getSequence());
+            String tmpStartAccession = startProtein.getHeader().getAccession(),
+                    startHeader = startProtein.getHeader().getAccession(),
+                    startSequence = startProtein.getSequence().getSequence();
             // check if a header comes from a generic! 
-            if (startHeader.toString().matches(".*[^0-9].*-.*[^0-9].*")) {
+            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                 tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
             // check the first condition
@@ -455,20 +448,20 @@ public class CreateDatabase {
                         loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
                         while ((nextProtein = loader_next.nextProtein()) != null) {
                             // now start building a cross linked peptides...
-                            StringBuilder nextHeader = new StringBuilder(nextProtein.getHeader().getAccession());
-                            String tmpNextAccession = nextProtein.getHeader().getAccession();
-                            if (nextHeader.toString().matches(".*[^0-9].*-.*[^0-9].*")) {
+                            String nextHeader = nextProtein.getHeader().getAccession(),
+                                    tmpNextAccession = nextProtein.getHeader().getAccession();
+                            if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                                 tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
-                                if (tmpNextAccession.equals(tmpStartAccession)) {
-                                    // put a control to find either inter or intra proteins
-                                    if (crossLinkedProteinTypes.equals("Intra") || crossLinkedProteinTypes.equals("Both")) {
-                                        // header and sequence
-                                        generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                                    }
-                                } else {
-                                    if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
-                                        generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                                    }
+                            }
+                            if (tmpNextAccession.equals(tmpStartAccession)) {
+                                // put a control to find either inter or intra proteins
+                                if (crossLinkedProteinTypes.equals("Intra") || crossLinkedProteinTypes.equals("Both")) {
+                                    // header and sequence
+                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
+                                }
+                            } else {
+                                if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
+                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
                                 }
                             }
                         }
@@ -489,7 +482,6 @@ public class CreateDatabase {
                 HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
                 if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3 or BS3d4.. So K-K
                     for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
-
                         ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                         for (Integer next_index : next_indices_liked_aas) {
                             generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);

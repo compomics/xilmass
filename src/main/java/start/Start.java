@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import multithread.ms1diff.DiffInfo;
 import multithread.score.Result;
 import multithread.score.Score;
 import org.apache.log4j.Logger;
@@ -68,7 +67,7 @@ public class Start {
         LOGGER.info("Program starts! " + "\t");
         // STEP 1: DATABASE GENERATIONS! 
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
-                inSilicoPeptideDBName = givenDBName + "_in_silico.fasta",
+                inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                 dbFolder = ConfigHolder.getInstance().getString("folder"),
@@ -157,7 +156,9 @@ public class Start {
         if ((isSame && !doesCXDBExist) || !isSame) {
             // Construct a cross linked peptide database and write an index file with masses...
             LOGGER.info("A CXDB IS NOT found or DIFFERENT DATABASE SETTINGS! A CXDB is going to be constructed..");
-            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName, cxDBName, // db related parameters
+            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
+                    inSilicoPeptideDBName,
+                    cxDBName, // db related parameters
                     crossLinkerName, // crossLinker name
                     crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
                     enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
@@ -167,14 +168,12 @@ public class Start {
                     does_link_to_itself, // if a peptide itself links to itself..
                     isLabeled); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
+
             // first write down a cross-linked peptide database
             WriteCXDB.writeCXDB(headers_sequences, cxDBName);
             LOGGER.info("A CX database is now ready!");
             // now write a settings file
             writeSettings(settings);
-            // delete in silico DB
-            File f = new File(instanceToCreateDB.getInSilicoPeptideDBName());
-            f.delete();
         }
         // Make sure that an index file also exists...
         if (!doesIndexFileExist) {
@@ -187,6 +186,10 @@ public class Start {
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
         }
+        
+        // delete in silico DB
+        File f = new File(inSilicoPeptideDBName);
+        f.delete();
 
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
@@ -247,7 +250,7 @@ public class Start {
                         tmpDiff = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass);
                 if (tmpDiff <= ms1Err) {
                     selectedMSnSpectra.add(specAndInfo.get(i).getMS());
-                // Leave the loop because precursor mass is much far from precursor mass tolerance
+                    // Leave the loop because precursor mass is much far from precursor mass tolerance
                 } else if (theoMass < precMass && (tmpDiff >= (5 * ms1Err))) {
                     i = specAndInfo.size();
                 }
@@ -354,7 +357,6 @@ public class Start {
      */
     private static void writeSettings(File file) throws IOException {
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
-                inSilicoPeptideDBName = ConfigHolder.getInstance().getString("inSilicoPeptideDBName"),
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + "header_seq_mass_cxms.index", // An index file from already generated cross linked protein database
                 dbFolder = ConfigHolder.getInstance().getString("folder"),
@@ -370,16 +372,18 @@ public class Start {
                 resultFile = ConfigHolder.getInstance().getString("resultFile"),
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
-                fragModeName = ConfigHolder.getInstance().getString("fragMode");
+                fragModeName = ConfigHolder.getInstance().getString("fragMode"),
+                isLabeled = ConfigHolder.getInstance().getString("isLabeled");
+
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         bw.write("Settings file" + "\n");
         bw.write("Running date=" + new Date().toString() + "\n");
         bw.write("givenDBName" + "\t" + givenDBName + "\n");
-        bw.write("inSilicoPeptideDBName" + "\t" + inSilicoPeptideDBName + "\n");
         bw.write("cxDBName" + "\t" + cxDBName + "\n");
         bw.write("cxDBNameIndexFile" + "\t" + cxDBNameIndexFile + "\n");
         bw.write("dbFolder" + "\t" + dbFolder + "\n");
         bw.write("crossLinkerName" + "\t" + crossLinkerName + "\n");
+        bw.write("isLabeled" + "\t" + isLabeled + "\n");
         bw.write("crossLinkedProteinTypes" + "\t" + crossLinkedProteinTypes + "\n");
         bw.write("enzymeName" + "\t" + enzymeName + "\n");
         bw.write("enzymeFileName" + "\t" + enzymeFileName + "\n");
@@ -413,7 +417,8 @@ public class Start {
                 lowMass = ConfigHolder.getInstance().getString("lowerMass"),
                 highMass = ConfigHolder.getInstance().getString("higherMass"),
                 variableModification = ConfigHolder.getInstance().getString("variableModification"),
-                fixedModification = ConfigHolder.getInstance().getString("fixedModification");
+                fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
+                isLabeled = ConfigHolder.getInstance().getString("isLabeled");
         int control = 0;
         boolean isSame = false;
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
@@ -439,9 +444,11 @@ public class Start {
                 control++;
             } else if ((line.startsWith("variableModification")) && (line.split("\t")[1].equals(variableModification))) {
                 control++;
+            } else if ((line.startsWith("isLabeled")) && (line.split("\t")[1].equals(isLabeled))) {
+                control++;
             }
         }
-        if (control == 10) {
+        if (control == 11) {
             isSame = true;
         }
         return isSame;
