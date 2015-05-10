@@ -62,11 +62,15 @@ public class CreateDatabase {
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
 
     public CreateDatabase(String givenDBName, String inSilicoPeptideDBName, String cxDBName, // db related parameters
-            String crossLinkerName, String crossLinkedProteinTypes, // crossLinkerName related parameters
+            String crossLinkerName, // crossLinkerName
+            String crossLinkedProteinTypes, // crossLinking strategy
             String enzymeName, String enzymeFileName, String misclevaged, // enzyme related parameters
             String lowMass, String highMass, // filtering of in silico peptides on peptide masses
             int minLen, int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
-            boolean does_link_to_itself, boolean isLabeled) throws Exception {
+            boolean does_link_to_itself,
+            boolean isLabeled // T: heavy labeled protein, F:no labeled
+    //            CrossLinkedProteinType linkingType // Inter (between different protein), Intra (within the same protein), Both (different proteins)
+    ) throws Exception {
         // db related parameters
         inputProteinFileName = givenDBName;
         this.inSilicoPeptideDBName = inSilicoPeptideDBName;
@@ -433,15 +437,12 @@ public class CreateDatabase {
                 nextProtein = null;
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
+            String tmpStartAccession = startProtein.getHeader().getAccession();
             StringBuilder startHeader = new StringBuilder(startProtein.getHeader().getAccession()),
                     startSequence = new StringBuilder(startProtein.getSequence().getSequence());
             // check if a header comes from a generic! 
             if (startHeader.toString().matches(".*[^0-9].*-.*[^0-9].*")) {
-                String subStr = startHeader.substring(startHeader.indexOf("(") + 1);
-                int firstIndex = Integer.parseInt(subStr.substring(0, subStr.indexOf("-"))),
-                        lastIndex = Integer.parseInt(subStr.substring(subStr.indexOf("-") + 1, subStr.indexOf(")")));
-                startProtein.getHeader().setAccession(startHeader.substring(0, startHeader.indexOf("(")));
-                startProtein.getHeader().setLocation(firstIndex, lastIndex);
+                tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
             // check the first condition
             if (startSequence.length() >= minLen) {
@@ -453,23 +454,21 @@ public class CreateDatabase {
                         // find for each possible match on the other part
                         loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
                         while ((nextProtein = loader_next.nextProtein()) != null) {
-                            String nextHeader = nextProtein.getHeader().getAccession();
-                            if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
-                                String subStr = nextHeader.substring(nextHeader.indexOf("(") + 1);
-                                int firstIndex = Integer.parseInt(subStr.substring(0, subStr.indexOf("-"))),
-                                        lastIndex = Integer.parseInt(subStr.substring(subStr.indexOf("-") + 1, subStr.indexOf(")")));
-                                nextProtein.getHeader().setAccession(nextHeader.substring(0, nextHeader.indexOf("(")));
-                                nextProtein.getHeader().setLocation(firstIndex, lastIndex);
-                            }
-                            if (nextHeader.equals(startHeader)) {
-                                // put a control to find either inter or intra proteins
-                                if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
-                                    // header and sequence
-                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                                }
-                            } else {
-                                if (crossLinkedProteinTypes.equals("Intra") || crossLinkedProteinTypes.equals("Both")) {
-                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
+                            // now start building a cross linked peptides...
+                            StringBuilder nextHeader = new StringBuilder(nextProtein.getHeader().getAccession());
+                            String tmpNextAccession = nextProtein.getHeader().getAccession();
+                            if (nextHeader.toString().matches(".*[^0-9].*-.*[^0-9].*")) {
+                                tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
+                                if (tmpNextAccession.equals(tmpStartAccession)) {
+                                    // put a control to find either inter or intra proteins
+                                    if (crossLinkedProteinTypes.equals("Intra") || crossLinkedProteinTypes.equals("Both")) {
+                                        // header and sequence
+                                        generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
+                                    }
+                                } else {
+                                    if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
+                                        generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
+                                    }
                                 }
                             }
                         }
@@ -483,8 +482,9 @@ public class CreateDatabase {
     public void generate_peptide_combinations(Protein startProtein, boolean is_start_sequence_reversed, Protein nextProtein, String possible_linked_aa_startSeq, int index_linked_aa_startSeq) throws IOException {
         String startSequence = startProtein.getSequence().getSequence(),
                 nextSequence = nextProtein.getSequence().getSequence();
-        // check the condition
-        if (nextSequence.length() >= minLen) {
+        int totalLen = startSequence.length() + nextSequence.length();
+        // check the condition - next sequence needs be to larger than minLen and also a cross linked peptide needs to be shorter than maxLen
+        if (nextSequence.length() >= minLen && totalLen <= maxLen_for_combined) {
             if ((does_a_peptide_link_to_itself && nextSequence.equals(startSequence)) || (!nextSequence.equals(startSequence))) {
                 HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
                 if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3 or BS3d4.. So K-K
@@ -497,7 +497,7 @@ public class CreateDatabase {
 
                         }
                     }//                      
-                } else if (linker.equals(CrossLinkerName.EDC)) {
+                } else if (linker.getType().equals(CrossLinkerName.EDC)) {
                     if (possible_linked_aa_startSeq.equals("K")) {
                         // the rest should be D or E
                         for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
