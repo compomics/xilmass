@@ -185,12 +185,12 @@ public class Start {
                     linker, fragMode, isBranching);
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
-        }
+        }        
         
         // delete in silico DB
         File f = new File(inSilicoPeptideDBName);
         f.delete();
-
+        
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! (all MS2 spectra)

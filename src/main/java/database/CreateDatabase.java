@@ -429,11 +429,11 @@ public class CreateDatabase {
         Protein startProtein = null,
                 nextProtein = null;
         // get a crossLinkerName object        
-        while ((startProtein = loader.nextProtein()) != null) {
+        while ((startProtein = loader.nextProtein()) != null) {          
             String tmpStartAccession = startProtein.getHeader().getAccession(),
                     startHeader = startProtein.getHeader().getAccession(),
                     startSequence = startProtein.getSequence().getSequence();
-            // check if a header comes from a generic! 
+                     // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                 tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
