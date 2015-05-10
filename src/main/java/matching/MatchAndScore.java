@@ -42,7 +42,7 @@ public class MatchAndScore {
     private int intensityOptionForMSAmandaDerived = 0,
             minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)            
             maxFPeaks; // Maximum number of filtered peaks per 100Da mass window.. (To test)
-    private ScoreName scoreName;// 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmanda (MSAmanda_derived with N=AllTheoPeaks)
+    private ScoreName scoreName;// 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmandaD (MSAmanda_derived with N=AllTheoPeaks)
     private boolean isTheoreticalCXPeaksReady = false,
             isFoundAndMatched = false;
 
@@ -230,17 +230,17 @@ public class MatchAndScore {
                 }
                 n = matchedPeaks.size();
                 // MSAmanda_derived with expertimentatl spectrum
-                if (scoreName.equals(ScoreName.MSAmanda)) {
+                if (scoreName.equals(ScoreName.MSAmandaD)) {
                     MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // Andromeda_derived with theoretical spectra size
-                } else if (scoreName.equals(ScoreName.Andromeda)) {
+                } else if (scoreName.equals(ScoreName.AndromedaD)) {
                     Andromeda_derived object = new Andromeda_derived(probability, totalN, n);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // MSAmanda_derived with theoretical spectra size
-                } else if (scoreName.equals(ScoreName.TheoMSAmanda)) {
+                } else if (scoreName.equals(ScoreName.TheoMSAmandaD)) {
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
