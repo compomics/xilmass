@@ -114,19 +114,21 @@ public class Start {
                 intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
                 minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
                 maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
-                threadNum = ConfigHolder.getInstance().getInt("threadNumbers");
+                threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
+                peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch");
+
         // more cross linking option..;
         boolean does_link_to_itself = false,
                 isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
-                doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore");
+                doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
+                isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"); // Relative or absolute precursor tolerance 
         // A CrossLinker object, required for constructing theoretical spectra
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled);
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
                 massWindow = ConfigHolder.getInstance().getDouble("massWindow");    // mass window to make window on a given MSnSpectrum for FILTERING 
-        boolean isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"); // Relative or absolute precursor tolerance 
 
         LOGGER.info("Parameters are ready!");
         LOGGER.info("CX database is checking!");
@@ -144,9 +146,13 @@ public class Start {
                 if (f.getName().equals(cxDB.getName())) {
                     LOGGER.info("A constrcuted fastacp file is found! The name=" + f.getName());
                     doesCXDBExist = true;
-                }
+                }                
+            }
+        }
+        if(isSame && doesCXDBExist){
+             for (File f : new File(dbFolder).listFiles()) {                
                 if (f.getName().equals(indexFile.getName())) {
-                    LOGGER.info("An index file of fastacp file is found! The name=" + f.getName());
+                    LOGGER.info("An index file for fastacp file is also found! The name=" + f.getName());
                     doesIndexFileExist = true;
                 }
             }
@@ -289,35 +295,41 @@ public class Start {
                         Collections.sort(matchedPLists, Peak.ASC_mz_order);
                         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
                         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
-                        // select precursor mass, theoretical mass and MS1 error
-                        ArrayList<Charge> possibleCharges = res.getMsms().getPrecursor().getPossibleCharges();
-                        Charge charge = possibleCharges.get(possibleCharges.size() - 1);
-                        double precMass = CalculatePrecursorMass.getPrecursorMass(res.getMsms()),
-                                theoMass = res.getCp().getTheoreticalXLinkedMass(),
-                                tmpMS1Err = Math.abs(precMass - theoMass),
-                                precMZ = res.getMsms().getPrecursor().getMz();
-                        // Result line..
-                        String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
-                        String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
-                                + scoreName + "\t" + res.getScore() + "\t"
-                                + res.getCp().getProteinA() + "\t" + res.getCp().getProteinB() + "\t"
-                                + res.getCp().getPeptideA().getSequence() + "\t" + res.getCp().getPeptideB().getSequence() + "\t"
-                                + modificationA + "\t" + modificationB + "\t"
-                                + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
-                                + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
-                        // write a result line..
-                        bw.write(specInfo + runningInfo);
-                        // now write all matched peaks..
-                        for (Peak p : matchedPLists) {
-                            bw.write(p.mz + " ");
+                        boolean hasEnoughPeaks = false;
+                        if (peakRequiredForImprovedSearch > 0) {
+                            hasEnoughPeaks = hasEnoughPeaks(matchedCTheoPLists, peakRequiredForImprovedSearch);
                         }
-                        bw.write("\t");
-                        // now write all matched theoretical peaks...
-                        for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
-                            bw.write(tmpCPeak.toString() + " ");
+                        if ((peakRequiredForImprovedSearch == 0) || hasEnoughPeaks) {
+                            // select precursor mass, theoretical mass and MS1 error
+                            ArrayList<Charge> possibleCharges = res.getMsms().getPrecursor().getPossibleCharges();
+                            Charge charge = possibleCharges.get(possibleCharges.size() - 1);
+                            double precMass = CalculatePrecursorMass.getPrecursorMass(res.getMsms()),
+                                    theoMass = res.getCp().getTheoreticalXLinkedMass(),
+                                    tmpMS1Err = Math.abs(precMass - theoMass),
+                                    precMZ = res.getMsms().getPrecursor().getMz();
+                            // Result line..
+                            String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
+                            String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
+                                    + scoreName + "\t" + res.getScore() + "\t"
+                                    + res.getCp().getProteinA() + "\t" + res.getCp().getProteinB() + "\t"
+                                    + res.getCp().getPeptideA().getSequence() + "\t" + res.getCp().getPeptideB().getSequence() + "\t"
+                                    + modificationA + "\t" + modificationB + "\t"
+                                    + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
+                                    + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
+                            // write a result line..
+                            bw.write(specInfo + runningInfo);
+                            // now write all matched peaks..
+                            for (Peak p : matchedPLists) {
+                                bw.write(p.mz + " ");
+                            }
+                            bw.write("\t");
+                            // now write all matched theoretical peaks...
+                            for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                bw.write(tmpCPeak.toString() + " ");
+                            }
+                            bw.write("\t");
+                            bw.newLine();
                         }
-                        bw.write("\t");
-                        bw.newLine();
                     }
                 }
             } catch (InterruptedException e) {
@@ -375,6 +387,7 @@ public class Start {
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
+                isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
@@ -400,6 +413,7 @@ public class Start {
         bw.write("fragModeName" + "\t" + fragModeName + "\n");
         bw.write("minLen" + "\t" + minLen + "\n");
         bw.write("maxLenCombined" + "\t" + maxLenCombined + "\n");
+        bw.write("isBranching" + "\t" + isBranching + "\n");
         bw.close();
     }
 
@@ -423,6 +437,7 @@ public class Start {
                 variableModification = ConfigHolder.getInstance().getString("variableModification"),
                 fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
+                isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined");
         int control = 0;
@@ -456,9 +471,11 @@ public class Start {
                 control++;
             } else if ((line.startsWith("maxLenCombined")) && (line.split("\t")[1].equals(maxLenCombined))) {
                 control++;
+            } else if ((line.startsWith("isBranching")) && (line.split("\t")[1].equals(isBranching))) {
+                control++;
             }
         }
-        if (control == 13) {
+        if (control == 14) {
             isSame = true;
         }
         return isSame;
@@ -529,5 +546,31 @@ public class Start {
             }
         }
         return tmp_ptm;
+    }
+
+    /**
+     * This method makes sure that there are enough peaks from each peptide
+     * (containing number of requiredPeaks for each peptide)
+     *
+     * @param matchedCTheoPLists a list of matched CPeptide Theoretical peaks
+     * @param requiredPeaks minimum number of required peaks for each
+     * theoretical CPeptide fragment ions
+     * @return true/has enough peaks; false/not enough peaks
+     */
+    private static boolean hasEnoughPeaks(ArrayList<CPeptidePeak> matchedCTheoPLists, int requiredPeaks) {
+        boolean hasEnoughPeaks = false;
+        int theoPepA = 0,
+                theoPepB = 0;
+        for (CPeptidePeak cpP : matchedCTheoPLists) {
+            if (cpP.getName().contains("pepA") || cpP.getName().contains("lepA")) {
+                theoPepA++;
+            } else if (cpP.getName().contains("pepB") || cpP.getName().contains("lepB")) {
+                theoPepB++;
+            }
+        }
+        if (theoPepA >= requiredPeaks && theoPepB >= requiredPeaks) {
+            hasEnoughPeaks = true;
+        }
+        return hasEnoughPeaks;
     }
 }
