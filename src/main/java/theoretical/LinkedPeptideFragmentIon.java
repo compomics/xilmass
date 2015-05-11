@@ -262,7 +262,7 @@ public final class LinkedPeptideFragmentIon {
         // get mass of node...then add it to a list...
         char node = linkedPeptide.getSequence().charAt(linker_position_on_linkedPeptide);
         double startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
-        int index_for_naming = linker_position_on_linkedPeptide+1;
+        int index_for_naming = linker_position_on_linkedPeptide + 1;
         String nodeName = rootName + "_" + index_for_naming;
         CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
         cTerminiCPepIons_Branching.add(cPepIonNode);
