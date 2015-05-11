@@ -47,23 +47,6 @@ public class CPeptides {
     public CPeptides(String proteinA, String proteinB,
             Peptide peptideA, Peptide peptideB,
             CrossLinker linker, int linker_position_on_peptideA, int linker_position_on_peptideB,
-            boolean is_Branching_Approach) {
-        this.proteinA = proteinA;
-        this.proteinB = proteinB;
-        this.peptideA = peptideA;
-        this.peptideB = peptideB;
-        this.linker = linker;
-        this.is_Branching = is_Branching_Approach;
-        this.linker_position_on_peptideA = linker_position_on_peptideA;
-        this.linker_position_on_peptideB = linker_position_on_peptideB;
-        this.fragmentation_mode = FragmentationMode.CID;
-        product_ions_peptideA = fragmentFactory.getFragmentIons(peptideA).get(0); // only peptide fragment ions
-        product_ions_peptideB = fragmentFactory.getFragmentIons(peptideB).get(0);
-    }
-
-    public CPeptides(String proteinA, String proteinB,
-            Peptide peptideA, Peptide peptideB,
-            CrossLinker linker, int linker_position_on_peptideA, int linker_position_on_peptideB,
             FragmentationMode fragmentation_mode, boolean is_Branching_Approach) {
         this.proteinA = proteinA;
         this.proteinB = proteinB;
@@ -290,8 +273,8 @@ public class CPeptides {
             // mostly y ions and then b and a ions
             ion_types.add(PeptideFragmentIon.A_ION);
             ion_types.add(PeptideFragmentIon.B_ION);
+            ion_types.add(PeptideFragmentIon.X_ION);
             ion_types.add(PeptideFragmentIon.Y_ION);
-            ion_types.add(PeptideFragmentIon.Z_ION);
         }
         for (Integer tmp_ion_type : ion_types) {
             int index = linked_index;
@@ -386,6 +369,11 @@ public class CPeptides {
         } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
             theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA)); // b ions
             theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA)); // a ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA)); // y ions
+        } else if (fragmentation_mode.equals(FragmentationMode.HCD_all)) {
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA)); // a ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA)); // b ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.X_ION, isLinkedPeptideA)); // x ions
             theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA)); // y ions
         }
     }
@@ -540,6 +528,7 @@ public class CPeptides {
         }
         return redundant_ions;
     }
+    
 
     @Override
     public int hashCode() {
@@ -558,6 +547,7 @@ public class CPeptides {
         hash = 73 * hash + (int) (Double.doubleToLongBits(this.theoretical_xlinked_mass) ^ (Double.doubleToLongBits(this.theoretical_xlinked_mass) >>> 32));
         return hash;
     }
+    
 
     @Override
     public boolean equals(Object obj) {
@@ -601,7 +591,7 @@ public class CPeptides {
         if (this.is_Branching != other.is_Branching) {
             return false;
         }
-        if (Double.doubleToLongBits(this.theoretical_xlinked_mass) != Double.doubleToLongBits(other.theoretical_xlinked_mass)) {
+        if (this.theoretical_xlinked_mass != other.theoretical_xlinked_mass && this.theoretical_xlinked_mass == 0) {
             return false;
         }
         return true;
