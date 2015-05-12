@@ -18,9 +18,9 @@ import theoretical.CPeptidePeak;
  *
  * @author Sule
  */
-public class IdCPepNameTest {
+public class DefineIdCPeptideFragmentationPatternNameTest {
 
-    public IdCPepNameTest() {
+    public DefineIdCPeptideFragmentationPatternNameTest() {
     }
 
     @BeforeClass
@@ -40,12 +40,12 @@ public class IdCPepNameTest {
     }
 
     /**
-     * Test of getMatchedCPepPeaks method, of class IdCPepName.
+     * Test of getMatchedCPepPeaks method, of class DefineIdCPeptideFragmentationPattern.
      */
     @Test
     public void testGetMatchedCPepPeaks() {
         System.out.println("getMatchedCPepPeaks");
-        IdCPepName instance = null;
+        DefineIdCPeptideFragmentationPattern instance = null;
         ArrayList<CPeptidePeak> expResult = null;
         ArrayList<CPeptidePeak> result = instance.getMatchedCPepPeaks();
         assertEquals(expResult, result);
@@ -54,20 +54,7 @@ public class IdCPepNameTest {
     }
 
     /**
-     * Test of setMatchedCPepPeaks method, of class IdCPepName.
-     */
-    @Test
-    public void testSetMatchedCPepPeaks() {
-        System.out.println("setMatchedCPepPeaks");
-        ArrayList<CPeptidePeak> matchedCPepPeaks = null;
-        IdCPepName instance = null;
-        instance.setMatchedCPepPeaks(matchedCPepPeaks);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getName method, of class IdCPepName.
+     * Test of getName method, of class DefineIdCPeptideFragmentationPattern.
      */
     @Test
     public void testGetName_LINEAR() {
@@ -86,9 +73,9 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(633.2878, 100, 1, "singlyCharged_pepB_b5_mz=130.5656"));//10
         matchedCPepPeaks.add(new CPeptidePeak(733.3515, 100, 1, "singlyCharged_pepB_a6_mz=130.5656"));//12
 
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 4, 12, 25, 19); //score=0.138399306
-        IdCPepType expResult = IdCPepType.LINEAR_NPEPB_CPEPA;
-        IdCPepType result = instance.getName();
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 4, 12, 25, 19); //score=0.138399306
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.LINEAR_NPEPB_CPEPA;
+        IdCPeptideFragmentationPatternName result = instance.getName();
         assertEquals(expResult, result);
 
         matchedCPepPeaks = new ArrayList<CPeptidePeak>();
@@ -108,8 +95,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(750.9226, 100, 2, "doublyCharged_pepA_y7_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(794.4386, 100, 1, "doublyCharged_pepA_y8_mz=130.5656"));
 
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LINEAR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LINEAR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -117,14 +104,14 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_b2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a4_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LINEAR_PEPB;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LINEAR_PEPB;
         result = instance.getName();
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of getName method, of class IdCPepName.
+     * Test of getName method, of class DefineIdCPeptideFragmentationPattern.
      */
     @Test
     public void testGetName_MONOLINK() {
@@ -140,9 +127,9 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(287.1349, 100, 2, "doublyCharged_pepA_x4_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(175.1189, 100, 2, "singlyCharged_pepA_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepA_b5_lepB_monolink_b3_mz=130.5656"));
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        IdCPepType expResult = IdCPepType.MONOLINKED_PEPA;
-        IdCPepType result = instance.getName();
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.MONOLINKED_PEPA;
+        IdCPeptideFragmentationPatternName result = instance.getName();
         assertEquals(expResult, result);
 
         matchedCPepPeaks = new ArrayList<CPeptidePeak>();
@@ -150,8 +137,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a4_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.MONOLINKED_PEPB;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.MONOLINKED_PEPB;
         result = instance.getName();
         assertEquals(expResult, result);
     }
@@ -168,9 +155,9 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_b2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        IdCPepType expResult = IdCPepType.LEFT_U;
-        IdCPepType result = instance.getName();
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.LEFT_U;
+        IdCPeptideFragmentationPatternName result = instance.getName();
         assertEquals(expResult, result);
 
         matchedCPepPeaks = new ArrayList<CPeptidePeak>();
@@ -182,8 +169,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepA_a7_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -196,8 +183,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_U;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_U;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -211,8 +198,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepA_a7_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
     }
@@ -234,9 +221,9 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_b2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        IdCPepType expResult = IdCPepType.LEFT_CHAIR_PEPA;
-        IdCPepType result = instance.getName();
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPA;
+        IdCPeptideFragmentationPatternName result = instance.getName();
         assertEquals(expResult, result);
 
         matchedCPepPeaks = new ArrayList<CPeptidePeak>();
@@ -248,8 +235,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_b2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_U;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_U;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -262,8 +249,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepA_a7_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -279,8 +266,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepA_a6_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepA_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepA_a8_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -296,8 +283,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a4_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPB;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPB;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -314,8 +301,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_a4_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a2_mz=130.5656")); // only one ion on the other arm..       
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPB;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPB;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -333,8 +320,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.LEFT_CHAIR_PEPB;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPB;
         result = instance.getName();
         assertEquals(expResult, result);
     }
@@ -362,8 +349,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x3_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_a2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        IdCPepType expResult = IdCPepType.INTACT,
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.ALLOVER,
                 result = instance.getName();
         assertEquals(expResult, result);
     }
@@ -380,9 +367,9 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_a4_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x1_mz=130.5656"));
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        IdCPepType expResult = IdCPepType.RIGHT_U;
-        IdCPepType result = instance.getName();
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.RIGHT_U;
+        IdCPeptideFragmentationPatternName result = instance.getName();
         assertEquals(expResult, result);
 
         matchedCPepPeaks = new ArrayList<CPeptidePeak>();
@@ -394,8 +381,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepA_a1_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.RIGHT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -408,8 +395,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.RIGHT_U;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.RIGHT_U;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -423,14 +410,14 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepA_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.RIGHT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of getName method, of class IdCPepName.
+     *Test of getName method, of class DefineIdCPeptideFragmentationPattern..
      */
     @Test
     public void testGetName_RIGHTCHAIR() {
@@ -448,9 +435,9 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepA_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepA_b2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepA_a4_mz=130.5656"));
-        IdCPepName instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        IdCPepType expResult = IdCPepType.RIGHT_CHAIR_PEPA;
-        IdCPepType result = instance.getName();
+        DefineIdCPeptideFragmentationPattern instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        IdCPeptideFragmentationPatternName expResult = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPA;
+        IdCPeptideFragmentationPatternName result = instance.getName();
         assertEquals(expResult, result);
 
         matchedCPepPeaks = new ArrayList<CPeptidePeak>();
@@ -464,8 +451,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepA_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepA_b2_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepA_a4_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.RIGHT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -480,8 +467,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepA_a1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(629.314, 100, 2, "singlyCharged_pepB_b5_lepA_monolink_b3_mz=130.5656"));
 
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.RIGHT_CHAIR_PEPA;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPA;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -494,8 +481,8 @@ public class IdCPepNameTest {
         matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "singlyCharged_pepB_a4_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "singlyCharged_pepB_y1_mz=130.5656"));
         matchedCPepPeaks.add(new CPeptidePeak(159.0764, 100, 2, "doublyCharged_pepB_x1_mz=130.5656"));
-        instance = new IdCPepName(matchedCPepPeaks, 5, 3, 9, 4);
-        expResult = IdCPepType.RIGHT_U;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 5, 3, 9, 4);
+        expResult = IdCPeptideFragmentationPatternName.RIGHT_U;
         result = instance.getName();
         assertEquals(expResult, result);
 
@@ -516,7 +503,7 @@ public class IdCPepNameTest {
 //        matchedCPepPeaks.add(new CPeptidePeak(387.2714, 100, 1, "singlyCharged_pepB_y3"));//4
 //        matchedCPepPeaks.add(new CPeptidePeak(558.3504, 100, 2, "doublyCharged_pepB_y9"));//9
 //        matchedCPepPeaks.add(new CPeptidePeak(674.3984, 100, 1, "singlyCharged_pepB_y5"));//11    
-//        instance = new IdCPepName(matchedCPepPeaks, 9, 4);
+//        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, 9, 4);
 //
 //        doublyCharged_pepA_a5_lepB_a3_pepB_a3_lepA_a5_mz = 455.7714 
 //        doublyCharged_pepA_b5_lepB_b2_mz = 419.7188 
