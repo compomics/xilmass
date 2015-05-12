@@ -9,25 +9,34 @@ import java.util.ArrayList;
 import theoretical.CPeptidePeak;
 
 /**
+ * This class is used to have an idea on how fragmentation pattern occurs on a
+ * cross-linked peptide
  *
  * @author Sule
  */
-public class IdCPepName {
+public class DefineIdCPeptideFragmentationPattern {
 
-    private ArrayList<CPeptidePeak> matchedCPepPeaks;
-    private IdCPepType name;
-    private int linkerPositionOnPepA,// needs to start counting from 0 
-            linkerPositionOnPepB, // needs to start counting from 0 
-            pepALen,
-            pepBLen,
-            ions_PepA_Left = 0,
-            ions_PepB_Left = 0,
-            ions_PepA_Right = 0,
-            ions_PepB_Right = 0;
-
+    private ArrayList<CPeptidePeak> matchedCPepPeaks; // a given list containing found CPeptides
+    private IdCPeptideFragmentationPatternName name;     private int linkerPositionOnPepA,
+            linkerPositionOnPepB,
+            pepALen, // length of peptideA
+            pepBLen, // length of peptideB
+            ions_PepA_Left = 0, // number of found ions derived from PeptideB, left from linked position.. 
+            ions_PepB_Left = 0, // number of found ions derived from PeptideB, left from linked position.. 
+            ions_PepA_Right = 0, // number of found ions derived from PeptideB, right from linked position.. 
+            ions_PepB_Right = 0; // number of found ions derived from PeptideB, right from linked position.. 
     private boolean isMonoLinked = false;
 
-    public IdCPepName(ArrayList<CPeptidePeak> matchedCPepPeaks, int linkerPositionOnPepA, int linkerPositionOnPepB, int pepALen, int pepBLen) {
+    /**
+     * To construct a object to get name of fragmentation pattern
+     *
+     * @param matchedCPepPeaks a list of found CPeptidePeaks
+     * @param linkerPositionOnPepA a linker position on PeptideA (start=1)
+     * @param linkerPositionOnPepB a linker position on PeptideB (start=1)
+     * @param pepALen length of PeptideA
+     * @param pepBLen length of PeptideB
+     */
+    public DefineIdCPeptideFragmentationPattern(ArrayList<CPeptidePeak> matchedCPepPeaks, int linkerPositionOnPepA, int linkerPositionOnPepB, int pepALen, int pepBLen) {
         this.matchedCPepPeaks = matchedCPepPeaks;
         this.linkerPositionOnPepA = linkerPositionOnPepA;
         this.linkerPositionOnPepB = linkerPositionOnPepB;
@@ -35,25 +44,32 @@ public class IdCPepName {
         this.pepBLen = pepBLen;
     }
 
+    /**
+     * To return a list of matched CPeptidePeaks
+     *
+     * @return
+     */
     public ArrayList<CPeptidePeak> getMatchedCPepPeaks() {
-        if (name == null) {
-            name();
-        }
         return matchedCPepPeaks;
     }
 
-    public void setMatchedCPepPeaks(ArrayList<CPeptidePeak> matchedCPepPeaks) {
-        this.matchedCPepPeaks = matchedCPepPeaks;
-        name();
-    }
-
-    public IdCPepType getName() {
+    /**
+     * To return a name defining fragmentation pattern
+     *
+     * @return
+     */
+    public IdCPeptideFragmentationPatternName getName() {
         if (name == null) {
             name();
         }
         return name;
     }
 
+    /**
+     * This method checks each assigned CPeptidePeak to find their status
+     * (coming from which part of Peptide/right or left)
+     *
+     */
     private void name() {
         for (CPeptidePeak tmpCPPeak : matchedCPepPeaks) {
             String tmpPeakName = tmpCPPeak.getName();
@@ -62,44 +78,59 @@ public class IdCPepName {
         defineStatus();
     }
 
-//    @Override
-//    public String toString() {
-//        String toString = linkerPositionOnPepA+"_"+linkerPositionOnPepB+"_"+
-//        return "IdCPepName{" + "name=" + name + ", linkerPositionOnPepA=" + linkerPositionOnPepA + ", linkerPositionOnPepB=" + linkerPositionOnPepB + '}';
-//    }
+    @Override
+    public String toString() {
+        String toString = name + "_"
+                + linkerPositionOnPepA + "_" + linkerPositionOnPepB + "_"
+                + ions_PepA_Left + "_" + ions_PepA_Right + "_"
+                + ions_PepB_Left + "_" + ions_PepB_Right;
+        return toString;
+    }
+
+    /**
+     * To define status.
+     *
+     */
     private void defineStatus() {
-        if ((ions_PepA_Right > 0 && ions_PepA_Left > 0) && ((ions_PepB_Right + ions_PepB_Left) == 0) && !isMonoLinked) {
-            name = IdCPepType.LINEAR_PEPA;
-        } else if ((ions_PepA_Right + ions_PepA_Left) == 0 && (ions_PepB_Right > 0 && ions_PepB_Left > 0) && !isMonoLinked) {
-            name = IdCPepType.LINEAR_PEPB;
-
+        // ions only comes from PeptideA (either the left of the right or both does not matter) but it must not be monolinked
+        if ((ions_PepA_Right > 0 || ions_PepA_Left > 0) && ((ions_PepB_Right + ions_PepB_Left) == 0) && !isMonoLinked) {
+            name = IdCPeptideFragmentationPatternName.LINEAR_PEPA;
+            // ions only from PeptideB (either the left of the right or both does not matter) but it must not be monolinked
+        } else if ((ions_PepA_Right + ions_PepA_Left) == 0 && (ions_PepB_Right > 0 || ions_PepB_Left > 0) && !isMonoLinked) {
+            name = IdCPeptideFragmentationPatternName.LINEAR_PEPB;
+            // ions only from PeptideA (either the left of the right or both does not matter) and this time it MUST BE monolinked
         } else if ((ions_PepA_Right + ions_PepA_Left) > 0 && ((ions_PepB_Right + ions_PepB_Left) == 0) && isMonoLinked) {
-            name = IdCPepType.MONOLINKED_PEPA;
+            name = IdCPeptideFragmentationPatternName.MONOLINKED_PEPA;
+            // ions only from PeptideA (either the left of the right or both does not matter) and this time it MUST BE monolinked
         } else if ((ions_PepA_Right + ions_PepA_Left) == 0 && ((ions_PepB_Right + ions_PepB_Left) > 0) && isMonoLinked) {
-            name = IdCPepType.MONOLINKED_PEPB;
-
+            name = IdCPeptideFragmentationPatternName.MONOLINKED_PEPB;
+            // ions from the left side of PeptideA and the right side of PeptideB // None from the other arms..
         } else if (ions_PepA_Right == 0 && ions_PepA_Left > 0 && ions_PepB_Right > 0 && ions_PepB_Left == 0) {
-            name = IdCPepType.LINEAR_NPEPA_CPEPB;
+            name = IdCPeptideFragmentationPatternName.LINEAR_NPEPA_CPEPB;
+            // ions from the right side of PeptideA and the left side of PeptideB // None from the other arms...
         } else if (ions_PepA_Right > 0 && ions_PepA_Left == 0 && ions_PepB_Right == 0 && ions_PepB_Left > 0) {
-            name = IdCPepType.LINEAR_NPEPB_CPEPA;
-
+            name = IdCPeptideFragmentationPatternName.LINEAR_NPEPB_CPEPA;
+            // ions from ONLY the left side of both peptides, NONE from the RIGHT... 
         } else if (ions_PepA_Left > 0 && ions_PepB_Left > 0 && (ions_PepA_Right + ions_PepB_Right) == 0) {
-            name = IdCPepType.LEFT_U;
+            name = IdCPeptideFragmentationPatternName.LEFT_U;
+            // ions from ONLY the RIGHT side of both peptides, NONE from the LEFT... 
         } else if (ions_PepA_Right > 0 && ions_PepB_Right > 0 && (ions_PepA_Left + ions_PepB_Left) == 0) {
-            name = IdCPepType.RIGHT_U;
-
+            name = IdCPeptideFragmentationPatternName.RIGHT_U;
+            // ions from both Left side and right side of PeptideA
         } else if (ions_PepA_Left > 0 && ions_PepB_Left > 0 && ions_PepA_Right > 0 && ions_PepB_Right == 0) {
-            name = IdCPepType.LEFT_CHAIR_PEPA;
-        } else if (ions_PepA_Right > 0 && ions_PepB_Right > 0 && ions_PepA_Left > 0 && ions_PepB_Left == 0) {
-            name = IdCPepType.RIGHT_CHAIR_PEPA;
-
+            name = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPA;
+            // ions from both Left side and right side of PeptideB
         } else if (ions_PepA_Left > 0 && ions_PepB_Left > 0 && ions_PepA_Right == 0 && ions_PepB_Right > 0) {
-            name = IdCPepType.LEFT_CHAIR_PEPB;
+            name = IdCPeptideFragmentationPatternName.LEFT_CHAIR_PEPB;
+            // ions from both Right side and Left side of PeptideA
+        } else if (ions_PepA_Right > 0 && ions_PepB_Right > 0 && ions_PepA_Left > 0 && ions_PepB_Left == 0) {
+            name = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPA;
+            // ions from both Right side and Left side of PeptideA
         } else if (ions_PepA_Right > 0 && ions_PepB_Right > 0 && ions_PepA_Left == 0 && ions_PepB_Left > 0) {
-            name = IdCPepType.RIGHT_CHAIR_PEPB;
-
+            name = IdCPeptideFragmentationPatternName.RIGHT_CHAIR_PEPB;
+            // There are ions FROM EVERY ARMS
         } else if (ions_PepA_Right > 0 && ions_PepB_Right > 0 && ions_PepA_Left > 0 && ions_PepB_Left > 0) {
-            name = IdCPepType.INTACT;
+            name = IdCPeptideFragmentationPatternName.ALLOVER;
         }
     }
 
@@ -132,6 +163,14 @@ public class IdCPepName {
         }
     }
 
+    /**
+     * This method count how many ions are on the left side/right side of both
+     * peptides
+     *
+     * @param peptide
+     * @param ionName
+     * @param ionIndex
+     */
     private void check(String peptide, String ionName, int ionIndex) {
         if ((peptide.equals("pepA") || peptide.equals("lepA"))
                 && (((ionName.equals("x") || ionName.equals("y") || ionName.equals("z")))

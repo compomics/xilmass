@@ -10,9 +10,9 @@ package naming;
  *
  * @author Sule
  */
-public enum IdCPepType {
+public enum IdCPeptideFragmentationPatternName {
 
-    INTACT, // both peptides were linked and so there are ions from 4 arms of a cross linked peptides...
+    ALLOVER, // both peptides were linked and so there are ions from 4 arms of a cross linked peptides...
     
     LINEAR_PEPA, // Only ion series from PeptideA 
     LINEAR_PEPB, // Only ion series from PeptideB
