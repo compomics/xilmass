@@ -30,5 +30,7 @@ public enum IdCPeptideFragmentationPatternName {
     RIGHT_CHAIR_PEPB, // Ion series containing C-termini from both peptides  + ion series containing N-termini on one peptide  on PeptideB
 
     LINEAR_NPEPA_CPEPB, // Ion series containing N-termini from PeptideA + C-termini from PeptideB
-    LINEAR_NPEPB_CPEPA  // Ion series containing N-termini from PeptideB + C-termini from PeptideA
+    LINEAR_NPEPB_CPEPA , // Ion series containing N-termini from PeptideB + C-termini from PeptideA
+    
+    LINK // Ion containing only link between two linked positions
 }
