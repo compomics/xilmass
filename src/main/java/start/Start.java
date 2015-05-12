@@ -38,8 +38,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import multithread.score.Result;
 import multithread.score.Score;
-import naming.IdCPepName;
-import naming.IdCPepType;
+import naming.DefineIdCPeptideFragmentationPattern;
+import naming.IdCPeptideFragmentationPatternName;
 import org.apache.log4j.Logger;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
@@ -336,7 +336,7 @@ public class Start {
                             }
                             // if necessary, write fragmentation pattern for each found CPeptides object..
                             if (doesKeepCPeptideFragmPattern) {
-                                IdCPepName p = new IdCPepName(matchedCTheoPLists,
+                                DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
                                         linkerPositionOnPeptideA, linkerPositionOnPeptideB,
                                         res.getCp().getPeptideA().getSequence().length(), res.getCp().getPeptideB().getSequence().length());
                                 bw.write("\t" + p.toString());
