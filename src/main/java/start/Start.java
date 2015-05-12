@@ -38,6 +38,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import multithread.score.Result;
 import multithread.score.Score;
+import naming.IdCPepName;
+import naming.IdCPepType;
 import org.apache.log4j.Logger;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
@@ -122,7 +124,8 @@ public class Start {
                 isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
                 doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
-                isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"); // Relative or absolute precursor tolerance 
+                isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
+                doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern");
         // A CrossLinker object, required for constructing theoretical spectra
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled);
         // Parameters for searching against experimental spectrum 
@@ -146,11 +149,11 @@ public class Start {
                 if (f.getName().equals(cxDB.getName())) {
                     LOGGER.info("A constrcuted fastacp file is found! The name=" + f.getName());
                     doesCXDBExist = true;
-                }                
+                }
             }
         }
-        if(isSame && doesCXDBExist){
-             for (File f : new File(dbFolder).listFiles()) {                
+        if (isSame && doesCXDBExist) {
+            for (File f : new File(dbFolder).listFiles()) {
                 if (f.getName().equals(indexFile.getName())) {
                     LOGGER.info("An index file for fastacp file is also found! The name=" + f.getName());
                     doesIndexFileExist = true;
@@ -202,15 +205,19 @@ public class Start {
         // Get all MSnSpectrum! (all MS2 spectra)
         LOGGER.info("Getting experimental spectra and calculating PCXMs");
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile));
-        String fileTitle = "SpectrumIndex" + "\t" + "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t"
+        StringBuilder fileTitle = new StringBuilder("SpectrumIndex" + "\t" + "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t"
                 + "PrecursorMZ" + "\t" + "PrecursorCharge" + "\t" + "PrecursorMass" + "\t" + "TheoreticalMass" + "\t" + "MS1Err(PPM)" + "\t"
                 + "ScoringFunction" + "\t" + "Score" + "\t"
                 + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t"
                 + "ModificationPeptideA" + "\t" + "ModificationPeptideB" + "\t"
                 + "LinkerPositionOnPeptideA" + "\t" + "LinkerPositionOnPeptideB" + "\t"
                 + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t"
-                + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\n";
-        bw.write(fileTitle);
+                + "MatchedPeakList" + "\t" + "TheoreticalPeakList");
+        if (doesKeepCPeptideFragmPattern) {
+            fileTitle.append("\t").append("CPeptideFragPatternName");
+        }
+        bw.write(fileTitle.toString());
+        bw.newLine();
 
         // List required for multithreading...
         ExecutorService excService = Executors.newFixedThreadPool(threadNum);
@@ -327,7 +334,13 @@ public class Start {
                             for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
                                 bw.write(tmpCPeak.toString() + " ");
                             }
-                            bw.write("\t");
+                            // if necessary, write fragmentation pattern for each found CPeptides object..
+                            if (doesKeepCPeptideFragmPattern) {
+                                IdCPepName p = new IdCPepName(matchedCTheoPLists,
+                                        linkerPositionOnPeptideA, linkerPositionOnPeptideB,
+                                        res.getCp().getPeptideA().getSequence().length(), res.getCp().getPeptideB().getSequence().length());
+                                bw.write("\t" + p.toString());
+                            }
                             bw.newLine();
                         }
                     }
