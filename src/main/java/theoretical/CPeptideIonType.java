@@ -18,6 +18,7 @@ package theoretical;
  * @author Sule
  */
 public enum CPeptideIonType {    
+    Backbone,
     Backbone_PepA,
     Backbone_PepB,
     Linker,
