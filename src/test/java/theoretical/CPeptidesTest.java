@@ -73,7 +73,7 @@ public class CPeptidesTest extends TestCase {
                 peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
         CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
-        HashSet<CPeptideIon> result = o.getTheoterical_ions();
+        HashSet<CPeptideIon> result = o.getTheoretical_ions();
 
         File test_theoSpec = new File("Data/Test/theoretical/MLSDAK_AIKNK_by_theo.txt");
         BufferedReader br = new BufferedReader(new FileReader(test_theoSpec));
@@ -117,7 +117,7 @@ public class CPeptidesTest extends TestCase {
         peptideA = new Peptide("AILVNFKAR", parent_proteins_test, modifications_test);
         peptideB = new Peptide("KMRPEVR", parent_proteins_test, modifications_test);
         o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false);
-        result = o.getTheoterical_ions();
+        result = o.getTheoretical_ions();
 //        assertEquals(60, result.size());
 
 //        test_theoSpec = new File("Data/Test/theoretical/test_MassTheoSpec_AILVNFKAR_KMRPEVR.txt");
@@ -152,7 +152,7 @@ public class CPeptidesTest extends TestCase {
         CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true);
 
         double expResult = 535.2385 + 444.2769 + 138.0681000;
-        double result = instance.getTheoreticalXLinkedMass();
+        double result = instance.getTheoretical_xlinked_mass();
         assertEquals(expResult, result, 0.1);
     }
 
@@ -339,7 +339,7 @@ public class CPeptidesTest extends TestCase {
         CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
-        assertEquals(7, product_ions.size());
+        assertEquals(7, product_ions.get(0).size());
 
     }
 
