@@ -6,7 +6,6 @@
 package theoretical;
 
 import com.compomics.util.experiment.biology.Ion;
-import com.compomics.util.experiment.biology.IonFactory;
 import com.compomics.util.experiment.biology.NeutralLoss;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
@@ -23,25 +22,16 @@ import static theoretical.LinkedPeptideFragmentIon.getAbbrIonType;
  *
  * @author Sule
  */
-public class CPeptides {
+public class CPeptides extends CrossLinkedPeptides {
 
     private Peptide peptideA,// first occured peptide on a database
             peptideB;// second occured peptide on a database
     private String proteinA,
             proteinB;
-    private CrossLinker linker;
     private int linker_position_on_peptideA,
             linker_position_on_peptideB;
-    private FragmentationMode fragmentation_mode;
-    private HashSet<CPeptideIon> theoretical_ions = new HashSet<CPeptideIon>();
-    private IonFactory fragmentFactory = IonFactory.getInstance();
     private HashMap<Integer, ArrayList<Ion>> product_ions_peptideA,
-            product_ions_peptideB;
-    private boolean is_monoisotopic_mass = true,
-            is_Branching, // true/false to create linkedPeptideFragmentIons with Branching/Attaching
-            isMassCalculated = false;
-    private double intensity = 100,
-            theoretical_xlinked_mass = 0;
+            product_ions_peptideB; 
 
     /* Constructor */
     public CPeptides(String proteinA, String proteinB,
@@ -52,13 +42,14 @@ public class CPeptides {
         this.proteinB = proteinB;
         this.peptideA = peptideA;
         this.peptideB = peptideB;
-        this.linker = linker;
+        super.linker = linker;
         this.linker_position_on_peptideA = linker_position_on_peptideA;
         this.linker_position_on_peptideB = linker_position_on_peptideB;
         this.fragmentation_mode = fragmentation_mode;
         product_ions_peptideA = fragmentFactory.getFragmentIons(peptideA).get(0); // only peptide fragment ions
         product_ions_peptideB = fragmentFactory.getFragmentIons(peptideB).get(0);
-        this.is_Branching = is_Branching_Approach;
+        super.is_Branching = is_Branching_Approach;
+        super.linkingType = CrossLinkingType.CROSSLINK;
     }
 
     /* getters and setters */
@@ -98,10 +89,6 @@ public class CPeptides {
         this.peptideB = peptideB;
     }
 
-    public CrossLinker getLinker() {
-        return linker;
-    }
-
     public void setLinker(CrossLinker linker) {
         isMassCalculated = false;
         this.linker = linker;
@@ -123,18 +110,10 @@ public class CPeptides {
         this.linker_position_on_peptideB = linker_position_on_peptideB;
     }
 
-    public FragmentationMode getFragmentation_mode() {
-        return fragmentation_mode;
-    }
-
     public void setFragmentation_mode(FragmentationMode fragmentation_mode) {
         this.fragmentation_mode = fragmentation_mode;
     }
-
-    public boolean isIs_Branching() {
-        return is_Branching;
-    }
-
+    
     public void setIs_Branching(boolean is_Branching) {
         this.is_Branching = is_Branching;
     }
@@ -148,7 +127,8 @@ public class CPeptides {
      *
      * @return contains all fragment ions in ASC mass order.
      */
-    public HashSet<CPeptideIon> getTheoterical_ions() {
+    @Override
+    public HashSet<CPeptideIon> getTheoretical_ions() {
         if (theoretical_ions.isEmpty()) {
             product_ions_peptideA = fragmentFactory.getFragmentIons(peptideA).get(0); // only peptide fragment ions
             product_ions_peptideB = fragmentFactory.getFragmentIons(peptideB).get(0);
@@ -157,52 +137,16 @@ public class CPeptides {
         return theoretical_ions;
     }
 
-    public void setTheoterical_ions(HashSet<CPeptideIon> theoterical_ions) {
-
-        this.theoretical_ions = theoterical_ions;
-    }
-
-    public IonFactory getFragmentFactory() {
-        return fragmentFactory;
-    }
-
-    public void setFragmentFactory(IonFactory fragmentFactory) {
-        this.fragmentFactory = fragmentFactory;
-    }
-
     public HashMap<Integer, ArrayList<Ion>> getProduct_ions_peptideA() {
         return product_ions_peptideA;
-    }
-
-    public void setProduct_ions_peptideA(HashMap<Integer, ArrayList<Ion>> product_ions_peptideA) {
-        this.product_ions_peptideA = product_ions_peptideA;
     }
 
     public HashMap<Integer, ArrayList<Ion>> getProduct_ions_peptideB() {
         return product_ions_peptideB;
     }
-
-    public void setProduct_ions_peptideB(HashMap<Integer, ArrayList<Ion>> product_ions_peptideB) {
-        this.product_ions_peptideB = product_ions_peptideB;
-    }
-
-    public boolean isIs_monoisotopic_mass() {
-        return is_monoisotopic_mass;
-    }
-
-    public void setIs_monoisotopic_mass(boolean is_monoisotopic_mass) {
-        this.is_monoisotopic_mass = is_monoisotopic_mass;
-    }
-
-    public double getIntensity() {
-        return intensity;
-    }
-
-    public void setIntensity(double intensity) {
-        this.intensity = intensity;
-    }
-
-    public double getTheoreticalXLinkedMass() {
+    
+    @Override
+    public double getTheoretical_xlinked_mass() {
         if (!isMassCalculated) {
             double tmp_mass_peptideA = peptideA.getMass(),
                     tmp_mass_peptideB = peptideB.getMass(),
@@ -286,51 +230,7 @@ public class CPeptides {
         return backbones;
     }
 
-    /**
-     * This method retrieves product ions in a selected mode for only a peptide
-     * TODO: MAKE SURE THAT WORKS WITH C-TERMI
-     *
-     * @param ion_type
-     * @param linked_index
-     * @param product_ions
-     * @param mass_shift
-     * @param lepName
-     * @param cPepIonType
-     *
-     * @return NI IONS!
-     */
-    public HashSet<CPeptideIon> prepareBackbone(HashMap<Integer, ArrayList<Ion>> product_ions,
-            int ion_type, int linked_index, double mass_shift, String lepName, CPeptideIonType cPepIonType) {
-        HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
-        String abbrIonType = LinkedPeptideFragmentIon.getAbbrIonType(ion_type);
-        String rootName = lepName + "_" + abbrIonType;
-        ArrayList<Ion> tmp_ions = product_ions.get(ion_type);
-        for (int index = 0; index < tmp_ions.size(); index++) {
-            Ion ion = tmp_ions.get(index);
-            double ion_mass = ion.getTheoreticMass();
-            if (index > linked_index) { // from a linker index on a peptide, shift remaining ions with a mass of a linkedPeptide                
-                ion_mass += mass_shift + linker.getMassShift_Type2();
-            }
-            int index_to_show = index + 1;
-            String ionName = rootName + index_to_show;
-            boolean isFound = false;
-            // check if there is an ion with the same mass already...Because there are two N-terminis and C-terminis!
-            for (CPeptideIon cPepTheo : theoretical_ions) {
-                double tmp_cpeptheo = cPepTheo.getMass();
-                if (Math.abs(tmp_cpeptheo - ion_mass) < 0.0000001) {
-                    ionName = cPepTheo.getName() + "_" + ionName;
-                    cPepTheo.setName(ionName);
-                    isFound = true;
-                }
-            }
-            if (!isFound) {
-                CPeptideIon cIon = new CPeptideIon(intensity, ion_mass, cPepIonType, ion_type, ionName);
-                backbones.add(cIon);
-                theoretical_ions.add(cIon);
-            }
-        }
-        return backbones;
-    }
+    
 
     /**
      * This method constructs linked fragment ions for a peptide.
@@ -528,7 +428,6 @@ public class CPeptides {
         }
         return redundant_ions;
     }
-    
 
     @Override
     public int hashCode() {
@@ -547,7 +446,6 @@ public class CPeptides {
         hash = 73 * hash + (int) (Double.doubleToLongBits(this.theoretical_xlinked_mass) ^ (Double.doubleToLongBits(this.theoretical_xlinked_mass) >>> 32));
         return hash;
     }
-    
 
     @Override
     public boolean equals(Object obj) {
