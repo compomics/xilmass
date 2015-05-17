@@ -18,6 +18,7 @@ import scoringFunction.ScoreName;
 import theoretical.CPeptideIon;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
+import theoretical.CrossLinkedPeptides;
 
 /**
  *
@@ -30,7 +31,7 @@ public class MatchAndScore {
 
     private MSnSpectrum expMS2; // experimental MS2 spectrum
     private HashSet<Peak> matchedPeaks = new HashSet<Peak>(); // matched peaks on on an experimental MS2 spectrum with the certain fragment tolerance against theoretical spectrum
-    private CPeptides cPeptides; // cross linked peptide object (containing peptideA, peptideB and crosslinker)
+    private CrossLinkedPeptides cPeptides; // cross linked peptide object (containing peptideA, peptideB and crosslinker)
     private HashSet<CPeptideIon> theoreticalCXMS2ions = new HashSet<CPeptideIon>(); // theoretical crosslinked ions derived from a cross linked peptide (they have an attribute called mass)
     private HashSet<CPeptidePeak> theoreticalCXPeaks = new HashSet<CPeptidePeak>(), // theoretical crosslinked peaks derived from a cross linked peptide (they have an attribute called MZ, not MASS)
             // TODO: Need to see the performance in terms of object generation!
@@ -47,12 +48,12 @@ public class MatchAndScore {
             isFoundAndMatched = false;
 
     /* Constructor */
-    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow) {
+    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow) {
         this.expMS2 = expMS2;
         this.scoreName = scoreName;
         this.cPeptides = cPeptides;
         if (cPeptides != null) {
-            theoreticalCXMS2ions = cPeptides.getTheoterical_ions();
+            theoreticalCXMS2ions = cPeptides.getTheoretical_ions();
             theoreticalCXPeaks = getTheoreticalCXPeaks();
             isTheoreticalCXPeaksReady = true;
         }
@@ -77,7 +78,7 @@ public class MatchAndScore {
      */
     public HashSet<CPeptideIon> getTheoreticalCXMS2ions() {
         if (theoreticalCXMS2ions.isEmpty()) {
-            theoreticalCXMS2ions = cPeptides.getTheoterical_ions();
+            theoreticalCXMS2ions = cPeptides.getTheoretical_ions();
         }
         return theoreticalCXMS2ions;
     }
@@ -88,7 +89,7 @@ public class MatchAndScore {
      *
      * @return
      */
-    public CPeptides getCPeptides() {
+    public CrossLinkedPeptides getCPeptides() {
         return cPeptides;
     }
 
@@ -125,7 +126,7 @@ public class MatchAndScore {
         this.cPeptides = cPeptides;
         matchedPeaks = new HashSet<Peak>();
         cXPSMScore = Double.MIN_VALUE;
-        theoreticalCXMS2ions = cPeptides.getTheoterical_ions();
+        theoreticalCXMS2ions = cPeptides.getTheoretical_ions();
         theoreticalCXPeaks = getTheoreticalCXPeaks();
         matchedTheoreticalCXPeaks = new HashSet<CPeptidePeak>();
         isFoundAndMatched = false;
