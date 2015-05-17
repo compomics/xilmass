@@ -11,6 +11,7 @@ import java.util.HashSet;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
+import theoretical.CrossLinkedPeptides;
 
 /**
  * This method keeps results spectrum-cross linked peptide score calculation via
@@ -21,7 +22,7 @@ import theoretical.CPeptides;
 public class Result {
 
     private MSnSpectrum msms; // a selected MSnSpectrum object
-    private CPeptides cp; // a cross linked peptide object
+    private CrossLinkedPeptides cp; // a cross linked peptide object
     private double score; // score how likely that cross linked peptide spectra looks like MSnSpectrum object
     private ScoreName scoreName; // a name of scoring function
     private HashSet<Peak> matchedPeaks; // list of matched peaks on an experimental spectrum 
@@ -36,7 +37,7 @@ public class Result {
      * @param matchedPeaks matched experimental peaks
      * @param matchedCTheoPeaks matched theoretical peaks
      */
-    public Result(MSnSpectrum msms, CPeptides cp, ScoreName scoreName, double score, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks) {
+    public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks) {
         this.msms = msms;
         this.cp = cp;
         this.score = score;
@@ -54,11 +55,11 @@ public class Result {
         this.msms = msms;
     }
 
-    public CPeptides getCp() {
+    public CrossLinkedPeptides getCp() {
         return cp;
     }
 
-    public void setCp(CPeptides cp) {
+    public void setCp(CrossLinkedPeptides cp) {
         this.cp = cp;
     }
 
