@@ -101,10 +101,10 @@ public class DefineIdCPeptideFragmentationPattern {
      */
     private void defineStatus() {
         // ions only comes from PeptideA (either the left of the right or both does not matter) but it must not be monolinked
-        if ((ions_PepA_Right > 0 || ions_PepA_Left > 0 || ions_PepA_Node > 0) && ((ions_PepB_Right + ions_PepB_Left) == 0) && !isMonoLinked) {
+        if (((ions_PepA_Right + ions_PepA_Left + ions_PepA_Node) > 0) && ((ions_PepB_Right + ions_PepB_Left) == 0) && !isMonoLinked) {
             name = IdCPeptideFragmentationPatternName.LINEAR_PEPA;
             // ions only from PeptideB (either the left of the right or both does not matter) but it must not be monolinked
-        } else if ((ions_PepA_Right + ions_PepA_Left) == 0 && (ions_PepB_Right > 0 || ions_PepB_Left > 0 || ions_PepB_Node > 0) && !isMonoLinked) {
+        } else if ((ions_PepA_Right + ions_PepA_Left) == 0 && ((ions_PepB_Right + ions_PepB_Left + ions_PepB_Node) > 0) && !isMonoLinked) {
             name = IdCPeptideFragmentationPatternName.LINEAR_PEPB;
             // ions only from PeptideA (either the left of the right or both does not matter) and this time it MUST BE monolinked
         } else if ((ions_PepA_Right + ions_PepA_Left) > 0 && ((ions_PepB_Right + ions_PepB_Left) == 0) && isMonoLinked) {
