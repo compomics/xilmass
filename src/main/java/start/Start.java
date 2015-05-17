@@ -39,12 +39,13 @@ import java.util.concurrent.Future;
 import multithread.score.Result;
 import multithread.score.Score;
 import naming.DefineIdCPeptideFragmentationPattern;
-import naming.IdCPeptideFragmentationPatternName;
 import org.apache.log4j.Logger;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
+import theoretical.CrossLinkedPeptides;
 import theoretical.FragmentationMode;
+import theoretical.MonoLinkedPeptides;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -68,10 +69,12 @@ public class Start {
 
         LOGGER.info("Program starts! " + "\t");
         // STEP 1: DATABASE GENERATIONS! 
+        HashSet<File> indexFiles = new HashSet<File>();
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
+                monoLinkFile = cxDBName + "_monoLink.index",
                 dbFolder = ConfigHolder.getInstance().getString("folder"),
                 crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes"),
@@ -125,7 +128,8 @@ public class Start {
                 isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
                 doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
                 isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
-                doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern");
+                doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
+                searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink");
         // A CrossLinker object, required for constructing theoretical spectra
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled);
         // Parameters for searching against experimental spectrum 
@@ -139,7 +143,8 @@ public class Start {
         // This part of the code makes sure that an already generated CXDB is not constructed again..
         File settings = new File("settings.txt"),
                 cxDB = new File(cxDBName + ".fastacp"),
-                indexFile = new File(cxDBNameIndexFile);
+                indexFile = new File(cxDBNameIndexFile),
+                indexMonoLinkFile = new File(monoLinkFile);
         boolean isSame = isSameDBSetting(settings), // either the same/different/empty
                 doesCXDBExist = false,
                 doesIndexFileExist = false;
@@ -157,6 +162,8 @@ public class Start {
                 if (f.getName().equals(indexFile.getName())) {
                     LOGGER.info("An index file for fastacp file is also found! The name=" + f.getName());
                     doesIndexFileExist = true;
+                    indexFiles.add(indexFile);
+
                 }
             }
         }
@@ -184,6 +191,42 @@ public class Start {
             // now write a settings file
             writeSettings(settings);
         }
+        if (searcForAlsoMonoLink && !headers_sequences.isEmpty()) {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(indexMonoLinkFile));
+            FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw,
+                    headers_sequences, ptmFactory,
+                    fixedModifications,
+                    variableModifications,
+                    linker, fragMode, isBranching);
+            bw.close();
+            indexFiles.add(indexMonoLinkFile);
+            LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
+
+        } else if (searcForAlsoMonoLink && headers_sequences.isEmpty()) {
+            LOGGER.info("A header and sequence object is empty to build index file for monolink index file! Therefore, a CXDB is going to be constructed..");
+            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
+                    inSilicoPeptideDBName,
+                    cxDBName, // db related parameters
+                    crossLinkerName, // crossLinker name
+                    crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
+                    enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
+                    lowMass, highMass, // filtering of in silico peptides on peptide masses
+                    minLen, // minimum length for each in silico digested peptide
+                    maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
+                    does_link_to_itself, // if a peptide itself links to itself..
+                    isLabeled); //
+            headers_sequences = instanceToCreateDB.getHeadersAndSequences();
+            BufferedWriter bw = new BufferedWriter(new FileWriter(indexMonoLinkFile));
+            FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw,
+                    headers_sequences, ptmFactory,
+                    fixedModifications,
+                    variableModifications,
+                    linker, fragMode, isBranching);
+            bw.close();
+            indexFiles.add(indexMonoLinkFile);
+
+            LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
+        }
         // Make sure that an index file also exists...
         if (!doesIndexFileExist) {
             BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
@@ -194,6 +237,7 @@ public class Start {
                     linker, fragMode, isBranching);
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
+            indexFiles.add(indexFile);
         }
 
         // delete in silico DB
@@ -221,133 +265,139 @@ public class Start {
 
         // List required for multithreading...
         ExecutorService excService = Executors.newFixedThreadPool(threadNum);
-        List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
 
-        // now check all spectra to collect all required calculations...
-        int specNum = 0;
-        File ms2spectra = new File(mgfs);
-        ArrayList<SpectrumInfo> specAndInfo = new ArrayList<SpectrumInfo>();
-        SpectrumFactory fct = SpectrumFactory.getInstance();
-        for (File mgf : ms2spectra.listFiles()) {
-            if (mgf.getName().endsWith("mgf")) {
-                fct.addSpectra(mgf, new WaitingHandlerCLIImpl());
-                for (String title : fct.getSpectrumTitles(mgf.getName())) {
-                    specNum++;
-                    MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
-                    double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
-                    SpectrumInfo i = new SpectrumInfo(ms, precMass);
-                    specAndInfo.add(i);
-                }
-                LOGGER.info("Spectra from " + mgf.getName() + " are loaded. Total spectra=" + specNum);
-            }
-        }
-        LOGGER.info("Number of all spectra are stored in memory=" + specNum);
-        // Now sort all spectra based on their precursor mass for scoring against CPeptides object.
-        Collections.sort(specAndInfo, SpectrumInfo.Precursor_ASC_mz_order);
-
-        // Now read all CPeptides from an index file and put them into futureList for multithreading.
-        String line = "";
-        BufferedReader br = new BufferedReader(new FileReader(new File(cxDBNameIndexFile)));
-        int numLine = 0;
-        while ((line = br.readLine()) != null) {
-            numLine++;
-            if (numLine % 25000 == 0) {
-                LOGGER.info("Number of spectra getting ready for cross linked peptide searching=" + numLine);
-            }
-            String[] split = line.split("\t");
-            Double theoMass = Double.parseDouble(split[10]);
-            //Select spectra if fits to given MS1Err diff
-            ArrayList<MSnSpectrum> selectedMSnSpectra = new ArrayList<MSnSpectrum>();
-            for (int i = 0; i < specAndInfo.size(); i++) {
-                double precMass = specAndInfo.get(i).getPrecursorMass(),
-                        tmpDiff = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass);
-                if (tmpDiff <= ms1Err) {
-                    selectedMSnSpectra.add(specAndInfo.get(i).getMS());
-                    // Leave the loop because precursor mass is much far from precursor mass tolerance
-                } else if (theoMass < precMass && (tmpDiff >= (5 * ms1Err))) {
-                    i = specAndInfo.size();
-                }
-            }
-            if (!selectedMSnSpectra.isEmpty()) {
-                Score score = new Score(selectedMSnSpectra, line, scoreName, ptmFactory, linker, fragMode, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, massWindow, isBranching);
-                Future future = excService.submit(score);
-                futureList.add(future);
-            }
-        }
-        LOGGER.info("Scoring starts now!");
-
-        // now multithreading calculation starts...
-        int counting = 0;
-        for (Future<ArrayList<Result>> future : futureList) {
-            try {
-                counting++;
-                if (counting % 25000 == 0) {
-                    LOGGER.info("Number of scored spectra=" + counting);
-                }
-                ArrayList<Result> results = future.get();
-                for (Result res : results) {
-                    double tmpScore = res.getScore();
-                    if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
-                        CPeptides tmpCpeptide = res.getCp();
-                        String modificationA = getModificationInfo(tmpCpeptide.getPeptideA()),
-                                modificationB = getModificationInfo(tmpCpeptide.getPeptideB());
-                        // get linker positions to write them down..
-                        int linkerPositionOnPeptideA = tmpCpeptide.getLinker_position_on_peptideA() + 1,
-                                linkerPositionOnPeptideB = tmpCpeptide.getLinker_position_on_peptideB() + 1;
-                        // analyze matchedPeaks!
-                        HashSet<Peak> matchedPeaks = res.getMatchedPeaks();
-                        HashSet<CPeptidePeak> matchedCTheoPeaks = res.getMatchedCTheoPeaks();
-                        // Sort them to write down on a result file
-                        ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
-                        Collections.sort(matchedPLists, Peak.ASC_mz_order);
-                        ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
-                        Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
-                        boolean hasEnoughPeaks = false;
-                        if (peakRequiredForImprovedSearch > 0) {
-                            hasEnoughPeaks = hasEnoughPeaks(matchedCTheoPLists, peakRequiredForImprovedSearch);
-                        }
-                        if ((peakRequiredForImprovedSearch == 0) || hasEnoughPeaks) {
-                            // select precursor mass, theoretical mass and MS1 error
-                            ArrayList<Charge> possibleCharges = res.getMsms().getPrecursor().getPossibleCharges();
-                            Charge charge = possibleCharges.get(possibleCharges.size() - 1);
-                            double precMass = CalculatePrecursorMass.getPrecursorMass(res.getMsms()),
-                                    theoMass = res.getCp().getTheoreticalXLinkedMass(),
-                                    tmpMS1Err = Math.abs(precMass - theoMass),
-                                    precMZ = res.getMsms().getPrecursor().getMz();
-                            // Result line..
-                            String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
-                            String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
-                                    + scoreName + "\t" + res.getScore() + "\t"
-                                    + res.getCp().getProteinA() + "\t" + res.getCp().getProteinB() + "\t"
-                                    + res.getCp().getPeptideA().getSequence() + "\t" + res.getCp().getPeptideB().getSequence() + "\t"
-                                    + modificationA + "\t" + modificationB + "\t"
-                                    + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
-                                    + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
-                            // write a result line..
-                            bw.write(specInfo + runningInfo);
-                            // now write all matched peaks..
-                            for (Peak p : matchedPLists) {
-                                bw.write(p.mz + " ");
+        for (File tmpIndexFile : indexFiles) {
+            List<Future<ArrayList<Result>>> futureList = fillFutureList(mgfs, tmpIndexFile, ms1Err, isPPM, scoreName, ptmFactory, linker, fragMode, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                    massWindow, isBranching, excService);
+            // now multithreading calculation starts...
+            int counting = 0;
+            for (Future<ArrayList<Result>> future : futureList) {
+                try {
+                    counting++;
+                    if (counting % 25000 == 0) {
+                        LOGGER.info("Number of scored spectra=" + counting);
+                    }
+                    ArrayList<Result> results = future.get();
+                    for (Result res : results) {
+                        double tmpScore = res.getScore();
+                        if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
+                            CrossLinkedPeptides crossLinkedPeptides = res.getCp();
+                            if (crossLinkedPeptides instanceof CPeptides) {
+                                CPeptides tmpCpeptide = (CPeptides) res.getCp();
+                                String modificationA = getModificationInfo(tmpCpeptide.getPeptideA()),
+                                        modificationB = getModificationInfo(tmpCpeptide.getPeptideB());
+                                // get linker positions to write them down..
+                                int linkerPositionOnPeptideA = tmpCpeptide.getLinker_position_on_peptideA() + 1,
+                                        linkerPositionOnPeptideB = tmpCpeptide.getLinker_position_on_peptideB() + 1;
+                                // analyze matchedPeaks!
+                                HashSet<Peak> matchedPeaks = res.getMatchedPeaks();
+                                HashSet<CPeptidePeak> matchedCTheoPeaks = res.getMatchedCTheoPeaks();
+                                // Sort them to write down on a result file
+                                ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
+                                Collections.sort(matchedPLists, Peak.ASC_mz_order);
+                                ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
+                                Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
+                                boolean hasEnoughPeaks = false;
+                                if (peakRequiredForImprovedSearch > 0) {
+                                    hasEnoughPeaks = hasEnoughPeaks(matchedCTheoPLists, peakRequiredForImprovedSearch);
+                                }
+                                if ((peakRequiredForImprovedSearch == 0) || hasEnoughPeaks) {
+                                    // select precursor mass, theoretical mass and MS1 error
+                                    ArrayList<Charge> possibleCharges = res.getMsms().getPrecursor().getPossibleCharges();
+                                    Charge charge = possibleCharges.get(possibleCharges.size() - 1);
+                                    double precMass = CalculatePrecursorMass.getPrecursorMass(res.getMsms()),
+                                            theoMass = res.getCp().getTheoretical_xlinked_mass(),
+                                            tmpMS1Err = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass),
+                                            precMZ = res.getMsms().getPrecursor().getMz();
+                                    // Result line..
+                                    String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
+                                    String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
+                                            + scoreName + "\t" + res.getScore() + "\t"
+                                            + tmpCpeptide.getProteinA() + "\t" + tmpCpeptide.getProteinB() + "\t"
+                                            + tmpCpeptide.getPeptideA().getSequence() + "\t" + tmpCpeptide.getPeptideB().getSequence() + "\t"
+                                            + modificationA + "\t" + modificationB + "\t"
+                                            + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
+                                            + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
+                                    // write a result line..
+                                    bw.write(specInfo + runningInfo);
+                                    // now write all matched peaks..
+                                    for (Peak p : matchedPLists) {
+                                        bw.write(p.mz + " ");
+                                    }
+                                    bw.write("\t");
+                                    // now write all matched theoretical peaks...
+                                    for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                        bw.write(tmpCPeak.toString() + " ");
+                                    }
+                                    // if necessary, write fragmentation pattern for each found CPeptides object..
+                                    if (doesKeepCPeptideFragmPattern) {
+                                        DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
+                                                linkerPositionOnPeptideA, linkerPositionOnPeptideB,
+                                                tmpCpeptide.getPeptideA().getSequence().length(), tmpCpeptide.getPeptideB().getSequence().length());
+                                        p.getName();
+                                        bw.write("\t" + p.getName());
+                                    }
+                                    bw.newLine();
+                                }
+                            } else {
+                                // MONOLINKED FOUND...
+                                MonoLinkedPeptides tmpCpeptide = (MonoLinkedPeptides) res.getCp();
+                                String modification = getModificationInfo(tmpCpeptide.getPeptide());
+                                // get linker positions to write them down..
+                                int linkerPositionOnPeptide = tmpCpeptide.getLinker_position() + 1;
+                                // analyze matchedPeaks!
+                                HashSet<Peak> matchedPeaks = res.getMatchedPeaks();
+                                HashSet<CPeptidePeak> matchedCTheoPeaks = res.getMatchedCTheoPeaks();
+                                // Sort them to write down on a result file
+                                ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
+                                Collections.sort(matchedPLists, Peak.ASC_mz_order);
+                                ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
+                                Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
+                                boolean hasEnoughPeaks = false;
+                                if (peakRequiredForImprovedSearch > 0) {
+                                    hasEnoughPeaks = hasEnoughPeaks(matchedCTheoPLists, peakRequiredForImprovedSearch);
+                                }
+                                if ((peakRequiredForImprovedSearch == 0) || hasEnoughPeaks) {
+                                    // select precursor mass, theoretical mass and MS1 error
+                                    ArrayList<Charge> possibleCharges = res.getMsms().getPrecursor().getPossibleCharges();
+                                    Charge charge = possibleCharges.get(possibleCharges.size() - 1);
+                                    double precMass = CalculatePrecursorMass.getPrecursorMass(res.getMsms()),
+                                            theoMass = res.getCp().getTheoretical_xlinked_mass(),
+                                            tmpMS1Err = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass),
+                                            precMZ = res.getMsms().getPrecursor().getMz();
+                                    // Result line..
+                                    String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
+                                    String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
+                                            + scoreName + "\t" + res.getScore() + "\t"
+                                            + tmpCpeptide.getProtein() + "\t" + "-" + "\t"
+                                            + tmpCpeptide.getPeptide().getSequence() + "\t" + "-" + "\t"
+                                            + modification + "\t" + "-" + "\t"
+                                            + linkerPositionOnPeptide + "\t" + "-" + "\t"
+                                            + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
+                                    // write a result line..
+                                    bw.write(specInfo + runningInfo);
+                                    // now write all matched peaks..
+                                    for (Peak p : matchedPLists) {
+                                        bw.write(p.mz + " ");
+                                    }
+                                    bw.write("\t");
+                                    // now write all matched theoretical peaks...
+                                    for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                        bw.write(tmpCPeak.toString() + " ");
+                                    }
+                                    // if necessary, write fragmentation pattern for each found CPeptides object..
+                                    if (doesKeepCPeptideFragmPattern) {
+                                        bw.write("\t" + "MONOLINK_FOUND");
+                                    }
+                                    bw.newLine();
+                                }
                             }
-                            bw.write("\t");
-                            // now write all matched theoretical peaks...
-                            for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
-                                bw.write(tmpCPeak.toString() + " ");
-                            }
-                            // if necessary, write fragmentation pattern for each found CPeptides object..
-                            if (doesKeepCPeptideFragmPattern) {
-                                DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
-                                        linkerPositionOnPeptideA, linkerPositionOnPeptideB,
-                                        res.getCp().getPeptideA().getSequence().length(), res.getCp().getPeptideB().getSequence().length());
-                                bw.write("\t" + p.toString());
-                            }
-                            bw.newLine();
                         }
                     }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    LOGGER.error(e);
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                LOGGER.error(e);
             }
         }
         LOGGER.info("Cross linked database search is done!");
@@ -371,6 +421,103 @@ public class Start {
             }
         }
         return mods;
+    }
+
+    //cxDBNameIndexFile
+    private static List<Future<ArrayList<Result>>> fillFutureList(String mgfs,
+            File indexFile, double ms1Err, boolean isPPM,
+            ScoreName scoreName,
+            PTMFactory ptmFactory,
+            CrossLinker linker,
+            FragmentationMode fragMode,
+            double ms2Err,
+            int intensity_option,
+            int minFPeakNumPerWindow,
+            int maxFPeakNumPerWindow,
+            double massWindow,
+            boolean isBranching,
+            ExecutorService excService) throws IOException, MzMLUnmarshallerException {
+        List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
+
+        // now check all spectra to collect all required calculations...
+        int specNum = 0;
+        File ms2spectra = new File(mgfs);
+        ArrayList<SpectrumInfo> specAndInfo = new ArrayList<SpectrumInfo>();
+        SpectrumFactory fct = SpectrumFactory.getInstance();
+        for (File mgf : ms2spectra.listFiles()) {
+            if (mgf.getName().endsWith("mgf")) {
+                fct.addSpectra(mgf, new WaitingHandlerCLIImpl());
+                for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                    specNum++;
+                    MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                    double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
+                    SpectrumInfo i = new SpectrumInfo(ms, precMass);
+                    specAndInfo.add(i);
+                }
+                LOGGER.info("Spectra from " + mgf.getName() + " are loaded. Total spectra=" + specNum);
+            }
+        }
+        LOGGER.info("Number of all spectra are stored in memory=" + specNum);
+        // Now sort all spectra based on their precursor mass for scoring against CPeptides object.
+        Collections.sort(specAndInfo, SpectrumInfo.Precursor_ASC_roundDown_mz_order);
+        ArrayList<Integer> precs = new ArrayList<Integer>();
+        for (SpectrumInfo info : specAndInfo) {
+            precs.add(info.getRoundDownPrecMass());
+        }
+
+        // Now read all CPeptides from an index file and put them into futureList for multithreading.
+        String line = "";
+        BufferedReader br = new BufferedReader(new FileReader(indexFile));
+        int numLine = 0;
+        while ((line = br.readLine()) != null) {
+            numLine++;
+            if (numLine % 25000 == 0) {
+                LOGGER.info("Number of spectra getting ready for cross linked peptide searching=" + numLine);
+            }
+            String[] split = line.split("\t");
+            double theoMass = Double.parseDouble(split[10]);
+            int downTheoMass = (int) theoMass;
+            downTheoMass = downTheoMass - 10;
+            //Select spectra if fits to given MS1Err diff
+            ArrayList<MSnSpectrum> selectedMSnSpectra = new ArrayList<MSnSpectrum>();
+            int pos = Collections.binarySearch(precs, downTheoMass);
+            if (pos >= 0) {
+                for (int i = pos; i < specAndInfo.size(); i++) {
+                    double precMass = specAndInfo.get(i).getPrecursorMass(),
+                            tmpDiff = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass);
+                    if (tmpDiff <= ms1Err) {
+                        selectedMSnSpectra.add(specAndInfo.get(i).getMS());
+                        // Leave the loop because precursor mass is much far from precursor mass tolerance
+                    } else if (theoMass < precMass && (tmpDiff >= (5 * ms1Err))) {
+                        i = specAndInfo.size();
+                        if (!selectedMSnSpectra.isEmpty()) {
+                            Score score = new Score(selectedMSnSpectra, line, scoreName, ptmFactory, linker, fragMode, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, massWindow, isBranching);
+                            Future future = excService.submit(score);
+                            futureList.add(future);
+                        }
+                    }
+                }
+            }
+//            if (!selectedMSnSpectra.isEmpty()) {
+//                Score score = new Score(selectedMSnSpectra, line, scoreName, ptmFactory, linker, fragMode, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, massWindow, isBranching);
+//                Future future = excService.submit(score);
+//                futureList.add(future);
+//            }
+
+            // regular approach
+//            for (int i = 0; i < specAndInfo.size(); i++) {
+//                double precMass = specAndInfo.get(i).getPrecursorMass(),
+//                        tmpDiff = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass);
+//                if (tmpDiff <= ms1Err) {
+//                    selectedMSnSpectra.add(specAndInfo.get(i).getMS());
+//                    // Leave the loop because precursor mass is much far from precursor mass tolerance
+//                } else if (theoMass < precMass && (tmpDiff >= (5 * ms1Err))) {
+//                    i = specAndInfo.size();
+//                }
+//            }
+        }
+        LOGGER.info("Scoring starts now!");
+        return futureList;
     }
 
     /**
@@ -531,7 +678,7 @@ public class Start {
                 varModPepB = getPTMName(cPeptide.getPeptideB().getModificationMatches(), true);
         int linkerPosPepA = cPeptide.getLinker_position_on_peptideA(),
                 linkerPosPepB = cPeptide.getLinker_position_on_peptideB();
-        double mass = cPeptide.getTheoreticalXLinkedMass();
+        double mass = cPeptide.getTheoretical_xlinked_mass();
         StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
                 + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
         return sb;
