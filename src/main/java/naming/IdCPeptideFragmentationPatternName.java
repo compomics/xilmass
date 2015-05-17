@@ -14,9 +14,20 @@ public enum IdCPeptideFragmentationPatternName {
 
     ALLOVER, // both peptides were linked and so there are ions from 4 arms of a cross linked peptides...
     
-    LINEAR_PEPA, // Only ion series from PeptideA 
-    LINEAR_PEPB, // Only ion series from PeptideB
-
+    LEFT_LINEAR_PEPA, // Only ion series from PeptideA on the left
+    LEFT_LINEAR_PEPB, // Only ion series from PeptideB on the left
+    RIGHT_LINEAR_PEPA, // Only ion series from PeptideA on the right
+    RIGHT_LINEAR_PEPB, // Only ion series from PeptideB on the right
+    
+    LINEAR_PEPA, // Only ion series from PeptideA from both
+    LINEAR_PEPB, // Only ion series from PeptideB from both
+    
+    ATTACHEDTOPEPA_FROM_NODEPEPB,// node from peptide B is linked to peptideA
+    ATTACHEDTOPEPB_FROM_NODEPEPA,// node from peptide A is linked to peptideB
+    
+//    LINEAR_PEPA, // Only ion series from PeptideA 
+//    LINEAR_PEPB, // Only ion series from PeptideB
+    
     MONOLINKED_PEPA, // Ion series from one PeptideA linked but not attached to a peptideB-monolink
     MONOLINKED_PEPB, // Ion series from one PeptideB linked but not attached to a peptideA-monolink
 
