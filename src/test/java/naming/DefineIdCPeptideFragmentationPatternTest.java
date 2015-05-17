@@ -609,6 +609,19 @@ public class DefineIdCPeptideFragmentationPatternTest {
         expResult = IdCPeptideFragmentationPatternName.RIGHT_U;
         result = instance.getName();
         assertEquals(expResult, result);
+        
+        matchedCPepPeaks = new ArrayList<CPeptidePeak>();
+        matchedCPepPeaks.add(new CPeptidePeak(228.1342, 100, 1, "doublyCharged_pepA_x10"));
+        matchedCPepPeaks.add(new CPeptidePeak(147.1128, 100, 1, "doublyCharged_pepA_y11"));
+        linkerPosA = 2;
+        linkerPosB = 2;
+        pepALen = 13;
+        pepBLen = 12;
+        instance = new DefineIdCPeptideFragmentationPattern(matchedCPepPeaks, linkerPosA, linkerPosB, pepALen, pepBLen);
+        expResult = IdCPeptideFragmentationPatternName.LINEAR_PEPA;
+        result = instance.getName();
+        assertEquals(expResult, result);
+        
 
     }
 }
