@@ -51,7 +51,7 @@ public class MonoLinkedPeptidesTest {
     public void testGetTheoretical_xlinked_mass() {
         System.out.println("getTheoretical_xlinked_mass");
         Peptide peptide = new Peptide("AKLMR", new ArrayList<ModificationMatch>());
-        MonoLinkedPeptides instance = new MonoLinkedPeptides(peptide, "test", 1, new DSS(), FragmentationMode.HCD_all, true, CrossLinkingType.MONOLINK);
+        MonoLinkedPeptides instance = new MonoLinkedPeptides(peptide, "test", 1, new DSS(), FragmentationMode.HCD_all, true);
         double expResult = 773.38;
         double result = instance.getTheoretical_xlinked_mass();
         assertEquals(expResult, result, 0.1);
@@ -64,7 +64,7 @@ public class MonoLinkedPeptidesTest {
     public void testGetTheoretical_ions() {
         System.out.println("getTheoretical_ions");
         Peptide peptide = new Peptide("AKLMR", new ArrayList<ModificationMatch>());
-        MonoLinkedPeptides instance = new MonoLinkedPeptides(peptide, "test", 1, new DSS(), FragmentationMode.CID, true, CrossLinkingType.MONOLINK);
+        MonoLinkedPeptides instance = new MonoLinkedPeptides(peptide, "test", 1, new DSS(), FragmentationMode.CID, true);
         HashSet<CPeptideIon> result = instance.getTheoretical_ions();
         assertEquals(8, result.size());
 
