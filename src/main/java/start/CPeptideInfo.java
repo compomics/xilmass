@@ -8,6 +8,9 @@ package start;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import java.util.ArrayList;
 import theoretical.CPeptides;
+import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinkingType;
+import theoretical.MonoLinkedPeptides;
 
 /**
  *
@@ -22,24 +25,41 @@ public class CPeptideInfo {
      * @param cPeptide
      * @return
      */
-    public static StringBuilder getInfo(CPeptides cPeptide) {
-        String proteinA = cPeptide.getProteinA(),
-                proteinB = cPeptide.getProteinB(),
-                peptideA = cPeptide.getPeptideA().getSequence(),
-                peptideB = cPeptide.getPeptideB().getSequence(),
-                fixedModPepA = getPTMName(cPeptide.getPeptideA().getModificationMatches(), false),
-                fixedModPepB = getPTMName(cPeptide.getPeptideB().getModificationMatches(), false),
-                varModPepA = getPTMName(cPeptide.getPeptideA().getModificationMatches(), true),
-                varModPepB = getPTMName(cPeptide.getPeptideB().getModificationMatches(), true);
-        int linkerPosPepA = cPeptide.getLinker_position_on_peptideA(),
-                linkerPosPepB = cPeptide.getLinker_position_on_peptideB();
-        double mass = cPeptide.getTheoreticalXLinkedMass();
-        StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
-                + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
-        return sb;
+    public static StringBuilder getInfo(CrossLinkedPeptides cPeptide) {
+        if (cPeptide.getLinkingType() == CrossLinkingType.CROSSLINK) {
+            CPeptides cp = (CPeptides) cPeptide;
+            String proteinA = cp.getProteinA(),
+                    proteinB = cp.getProteinB(),
+                    peptideA = cp.getPeptideA().getSequence(),
+                    peptideB = cp.getPeptideB().getSequence(),
+                    fixedModPepA = getPTMName(cp.getPeptideA().getModificationMatches(), false),
+                    fixedModPepB = getPTMName(cp.getPeptideB().getModificationMatches(), false),
+                    varModPepA = getPTMName(cp.getPeptideA().getModificationMatches(), true),
+                    varModPepB = getPTMName(cp.getPeptideB().getModificationMatches(), true);
+            int linkerPosPepA = cp.getLinker_position_on_peptideA(),
+                    linkerPosPepB = cp.getLinker_position_on_peptideB();
+            double mass = cp.getTheoretical_xlinked_mass();
+            StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
+                    + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
+            return sb;
+        } else {
+            MonoLinkedPeptides mp = (MonoLinkedPeptides) cPeptide;
+            String proteinA = mp.getProtein(),
+                    proteinB = "-",
+                    peptideA = mp.getPeptide().getSequence(),
+                    peptideB = "-",
+                    fixedModPepA = getPTMName(mp.getPeptide().getModificationMatches(), false),
+                    fixedModPepB = "-",
+                    varModPepA = getPTMName(mp.getPeptide().getModificationMatches(), true),
+                    varModPepB = "-";
+            int linkerPosPepA = mp.getLinker_position();
+            double mass = cPeptide.getTheoretical_xlinked_mass();
+            StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
+                    + linkerPosPepA + "\t" + "-" + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
+            return sb;
+        }
     }
-    
-    
+
     /**
      * This method returns a PTM name from a given ModificationMatches from a
      * peptide
