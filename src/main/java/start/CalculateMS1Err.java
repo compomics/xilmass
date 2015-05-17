@@ -15,10 +15,9 @@ public class CalculateMS1Err {
         double error = 0;
         if (isPPM) {
             double diff = Math.abs(theoreticalPrecursorMass - measuredPrecusorMass);
-            // TODO this might be either relative or absolute mass error
-           double ppm_error = (diff) / measuredPrecusorMass;
-           ppm_error = ppm_error * 1000000;
-           error = ppm_error;
+            double ppm_error = (diff) / measuredPrecusorMass;
+            ppm_error = ppm_error * 1000000;
+            error = ppm_error;
         } else {
             double mz_error = Math.abs(theoreticalPrecursorMass - measuredPrecusorMass);
             error = mz_error;
