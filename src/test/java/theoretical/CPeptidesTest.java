@@ -386,6 +386,25 @@ public class CPeptidesTest extends TestCase {
 //        assertEquals(0, redundant_linked_ions.size());
 //    }
 //    
+      /**
+     * Test of getTheoterical_ions method, of class CPeptides.
+     */
+    public void testGetTheoterical_ions2() throws FileNotFoundException, IOException {
+        System.out.println("getTheoterical_ions2");
+
+        String peptideA_str = "KMK",
+                peptideB_str = "KLEYLLGDAIIRK";
+        ArrayList<String> parent_proteins_test = new ArrayList<String>();
+        parent_proteins_test.add("Pro1");
+        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+        Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
+                peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
+        CrossLinker linker = new DSS();
+        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false);
+        HashSet<CPeptideIon> result = o.getTheoretical_ions();
+
+    }
+
     public class TestIon {
 
         private double mz;
