@@ -23,7 +23,10 @@ import scoringFunction.ScoreName;
 import start.GetPTMs;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
+import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
+import theoretical.MonoLinkedPeptides;
 
 /**
  *
@@ -32,7 +35,7 @@ import theoretical.FragmentationMode;
 public class Score implements Callable<ArrayList<Result>> {
 
     private ArrayList<MSnSpectrum> selectedSpectra; // all selected CPeptides objects
-    private CPeptides cPeptide; // a MSnSpectrum compared to CPeptides object
+    private CrossLinkedPeptides cPeptide; // a MSnSpectrum compared to CPeptides object
     private ScoreName scoreName; // a ScoreName
     private double fragTol, // fragment tolerance, requiring for MatchAndScore instantiation.
             massWindow; // mass window, requiring for MatchAndScore instantiation.
@@ -44,7 +47,7 @@ public class Score implements Callable<ArrayList<Result>> {
     private FragmentationMode fragMode;
     private PTMFactory ptmFactory;
     private boolean isBranching;
-    
+
     // A constructor for multithreading
     public Score(ArrayList<MSnSpectrum> selectedSpectra, String line, ScoreName scoreName, PTMFactory ptmFactory, CrossLinker linker, FragmentationMode fragMode,
             double fragTol, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber, double massWindow, boolean isBranching) {
@@ -89,7 +92,8 @@ public class Score implements Callable<ArrayList<Result>> {
         return results;
     }
 
-    private CPeptides getCPeptides() throws XmlPullParserException, IOException {
+    private CrossLinkedPeptides getCPeptides() throws XmlPullParserException, IOException {
+        CrossLinkedPeptides selected = null;
         String[] split = line.split("\t");
         String proteinA = split[0],
                 proteinB = split[1],
@@ -100,24 +104,39 @@ public class Score implements Callable<ArrayList<Result>> {
                 variableModA = split[8],
                 variableModB = split[9];
         // linker positions...
-        Integer linkerPosPeptideA = Integer.parseInt(split[4]),
-                linkerPosPeptideB = Integer.parseInt(split[5]);
-        ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false),
-                fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModB, false);
-        // Start putting them on a list which will contain also variable PTMs
-        ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA),
-                ptms_peptideB = new ArrayList<ModificationMatch>(fixedPTM_peptideB);
-        // Add variable PTMs and also a list of several fixed PTMs
-        ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true),
-                variablePTM_peptideB = GetPTMs.getPTM(ptmFactory, variableModB, true);
-        ptms_peptideA.addAll(variablePTM_peptideA);
-        ptms_peptideB.addAll(variablePTM_peptideB);
-        // First peptideA
-        Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA),
-                peptideB = new Peptide(peptideBseqFile, ptms_peptideB);
-        // now generate peptide...
-        CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
-        return tmpCpeptide;
+        if (!proteinB.equals("-")) {
+            Integer linkerPosPeptideA = Integer.parseInt(split[4]),
+                    linkerPosPeptideB = Integer.parseInt(split[5]);
+            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false),
+                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModB, false);
+            // Start putting them on a list which will contain also variable PTMs
+            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA),
+                    ptms_peptideB = new ArrayList<ModificationMatch>(fixedPTM_peptideB);
+            // Add variable PTMs and also a list of several fixed PTMs
+            ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true),
+                    variablePTM_peptideB = GetPTMs.getPTM(ptmFactory, variableModB, true);
+            ptms_peptideA.addAll(variablePTM_peptideA);
+            ptms_peptideB.addAll(variablePTM_peptideB);
+            // First peptideA
+            Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA),
+                    peptideB = new Peptide(peptideBseqFile, ptms_peptideB);
+            // now generate peptide...
+            CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+            selected = tmpCpeptide;
+        } else {
+            Integer linkerPosPeptideA = Integer.parseInt(split[4]);
+            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
+            // Start putting them on a list which will contain also variable PTMs
+            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA);
+            // Add variable PTMs and also a list of several fixed PTMs
+            ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true);
+            ptms_peptideA.addAll(variablePTM_peptideA);
+            // First peptideA
+            Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA);
+            MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, linker, fragMode, isBranching);
+            selected = mP;
+        }
+        return selected;
     }
 
     /**
