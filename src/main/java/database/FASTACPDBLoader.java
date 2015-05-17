@@ -24,7 +24,9 @@ import start.CPeptideInfo;
 import start.CalculateMS1Err;
 import start.GetPTMs;
 import theoretical.CPeptides;
+import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
+import theoretical.MonoLinkedPeptides;
 
 /**
  * This class is used to load
@@ -162,8 +164,8 @@ public class FASTACPDBLoader {
 
     /**
      * This method generates a list of CPeptides with always a fixed
-     * Modification and all possible variable modifications..
-     * Write each CPeptide object on a given BufferedWriter
+     * Modification and all possible variable modifications.. Write each
+     * CPeptide object on a given BufferedWriter
      *
      *
      * @param bw
@@ -210,11 +212,11 @@ public class FASTACPDBLoader {
             int linkerPosPeptideA = writen_linkerPositionPeptideA - 1,
                     linkerPosPeptideB = writen_linkerPositionPeptideB - 1;
             // now get protein names
-            String[] headerSplit = header.substring(0).split("_");           
+            String[] headerSplit = header.substring(0).split("_");
             String proteinBStr = headerSplit[2];
-            if(pepBIndex!=3){
-                proteinBStr+="_"+"inverted";
-            }            
+            if (pepBIndex != 3) {
+                proteinBStr += "_" + "inverted";
+            }
             proteinA = new StringBuilder(headerSplit[0]);
             proteinB = new StringBuilder(proteinBStr);
             // and now peptide sequences..
@@ -234,11 +236,9 @@ public class FASTACPDBLoader {
                 for (Peptide pB : peptideBs) {
                     if (!isCPeptidesObjConstructed) {
                         cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
-                        mass = cPeptide.getTheoreticalXLinkedMass();
-                        isCPeptidesObjConstructed = true;
+                        mass = cPeptide.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                         bw.write(info + "\n");
-
                     } else {
                         cPeptide.setProteinA(proteinA.toString());
                         cPeptide.setProteinB(proteinB.toString());
@@ -246,10 +246,11 @@ public class FASTACPDBLoader {
                         cPeptide.setPeptideB(pB);
                         cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
                         cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
-                        mass = cPeptide.getTheoreticalXLinkedMass();
+                        mass = cPeptide.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                         bw.write(info + "\n");
                     }
+                    isCPeptidesObjConstructed = true;
                 }
             }
         }
@@ -282,4 +283,111 @@ public class FASTACPDBLoader {
         Peptide p = new Peptide(peptideSeq, ptms);
         return p;
     }
+    
+    
+    /**
+     * This method generates a list of CPeptides with always a fixed
+     * Modification and all possible variable modifications.. Write each
+     * CPeptide object on a given BufferedWriter
+     *
+     *
+     * @param bw
+     * @param header_sequence a list of crosslinked header and their
+     * corresponding sequences
+     * @param ptmFactory is already instantiated PTMFactory
+     * @param fixedModifications is a list of given fixed Modifications.
+     * @param variableModifications is a list of given variable modifications
+     * @param linker a CrossLinker object to construct CPeptides objects
+     * @param fragMode fragmentation mode
+     * @param isBranching true:is branching/false:attaching
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
+    public static void generate_peptide_mass_index_monoLink(
+            BufferedWriter bw,
+            HashMap<String, String> header_sequence,
+            PTMFactory ptmFactory,
+            ArrayList<String> fixedModifications,
+            ArrayList<String> variableModifications,
+            CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+        boolean isMonoLinkedPeptideObjConstructed = false;
+        StringBuilder proteinA,
+                proteinB,
+                peptideAseq,
+                peptideBseq;
+        MonoLinkedPeptides mPeptides = null;
+        double mass = 0;
+        // Read each header to construct CrossLinkedPeptide object
+        for (String header : header_sequence.keySet()) {
+            String[] split = header.split("_");
+            int pepAIndex = 1,
+                    pepBIndex = 3;
+            if (split[pepAIndex].equals("inverted")) {
+                pepBIndex++;
+                pepAIndex++;
+            }
+            if (split[pepBIndex].equals("inverted")) {
+                pepBIndex++;
+            }
+            int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
+                    writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
+            // indices for linker positions necessary for constructing a CrossLinkedPeptide object...
+            int linkerPosPeptideA = writen_linkerPositionPeptideA - 1,
+                    linkerPosPeptideB = writen_linkerPositionPeptideB - 1;
+            // now get protein names
+            String[] headerSplit = header.substring(0).split("_");
+            String proteinBStr = headerSplit[2];
+            if (pepBIndex != 3) {
+                proteinBStr += "_" + "inverted";
+            }
+            proteinA = new StringBuilder(headerSplit[0]);
+            proteinB = new StringBuilder(proteinBStr);
+            // and now peptide sequences..
+            peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
+            peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
+            // First, find fixed variable modifications to construct a Peptide object!
+            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false),
+                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false);
+            // Then, get all variable PTMs locations for a given Peptide sequence
+            ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
+                    possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
+            // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
+            ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA),
+                    peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB);
+            // fill all monolinked peptides here...
+            for (Peptide pA : peptideAs) {
+                if (!isMonoLinkedPeptideObjConstructed) {
+                    mPeptides = new MonoLinkedPeptides(pA, proteinA.toString(), linkerPosPeptideA, linker, fragMode, isBranching);
+                    mass = mPeptides.getTheoretical_xlinked_mass();
+                    StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                    bw.write(info + "\n");
+                } else {
+                    mPeptides.setPeptide(pA);
+                    mPeptides.setProtein(proteinA.toString());
+                    mPeptides.setLinker_position(linkerPosPeptideA);
+                    mass = mPeptides.getTheoretical_xlinked_mass();
+                    StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                    bw.write(info + "\n");
+                }
+            }
+            isMonoLinkedPeptideObjConstructed = true;
+            for (Peptide pB : peptideBs) {
+                if (!isMonoLinkedPeptideObjConstructed) {
+                    isMonoLinkedPeptideObjConstructed = true;
+                    mPeptides = new MonoLinkedPeptides(pB, proteinB.toString(), linkerPosPeptideB, linker, fragMode, isBranching);
+                    mass = mPeptides.getTheoretical_xlinked_mass();
+                    StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                    bw.write(info + "\n");
+                } else {
+                    mPeptides.setPeptide(pB);
+                    mPeptides.setProtein(proteinB.toString());
+                    mPeptides.setLinker_position(linkerPosPeptideB);
+                    mass = mPeptides.getTheoretical_xlinked_mass();
+                    StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                    bw.write(info + "\n");
+                }
+            }
+        }
+    }
 }
+
