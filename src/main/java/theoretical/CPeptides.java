@@ -31,7 +31,7 @@ public class CPeptides extends CrossLinkedPeptides {
     private int linker_position_on_peptideA,
             linker_position_on_peptideB;
     private HashMap<Integer, ArrayList<Ion>> product_ions_peptideA,
-            product_ions_peptideB; 
+            product_ions_peptideB;
 
     /* Constructor */
     public CPeptides(String proteinA, String proteinB,
@@ -113,7 +113,7 @@ public class CPeptides extends CrossLinkedPeptides {
     public void setFragmentation_mode(FragmentationMode fragmentation_mode) {
         this.fragmentation_mode = fragmentation_mode;
     }
-    
+
     public void setIs_Branching(boolean is_Branching) {
         this.is_Branching = is_Branching;
     }
@@ -144,7 +144,7 @@ public class CPeptides extends CrossLinkedPeptides {
     public HashMap<Integer, ArrayList<Ion>> getProduct_ions_peptideB() {
         return product_ions_peptideB;
     }
-    
+
     @Override
     public double getTheoretical_xlinked_mass() {
         if (!isMassCalculated) {
@@ -229,8 +229,6 @@ public class CPeptides extends CrossLinkedPeptides {
         }
         return backbones;
     }
-
-    
 
     /**
      * This method constructs linked fragment ions for a peptide.
@@ -337,8 +335,9 @@ public class CPeptides extends CrossLinkedPeptides {
             double mass_fragment_ion = LinkedPeptideFragmentIon.getMassDiff(fragmentIonType) + linkedIon.getTheoreticMass();
             linkedIon = new PeptideFragmentIon(fragmentIonType, 0, mass_fragment_ion, new ArrayList<NeutralLoss>());
             double mono_linked_ion_mass = linker.getMassShift_Type0() + mass_fragment_ion;
-            int index_to_show = linker_position_of_linkedPeptide + 1;
-            String name = lepName + "_" + "monoLink_" + abbrIonType + index_to_show;
+            int index_to_show_for_linked = linker_position_of_linkedPeptide + 1,
+                    index_to_show_for_backbone = linker_location_of_product_ions + 1;
+            String name = pepName + "_" + abbrIonType + index_to_show_for_backbone + "_" + lepName + "_" + "monolink_" + abbrIonType + index_to_show_for_linked;
             CPeptideIon cPepIonMonoLink = new CPeptideIon(intensity, mono_linked_ion_mass, cPeptideIonType, fragmentIonType, name);
             linked_ions.add(cPepIonMonoLink);
         }
