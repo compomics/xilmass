@@ -30,8 +30,7 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
     public MonoLinkedPeptides(Peptide peptide, String protein,
             int linkerPosition,
             CrossLinker linker,
-            FragmentationMode fragmentation_mode, boolean is_Branching_Approach,
-            CrossLinkingType linkingType) {
+            FragmentationMode fragmentation_mode, boolean is_Branching_Approach) {
         this.protein = protein;
         this.peptide = peptide;
         super.linker = linker;
@@ -39,9 +38,39 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
         this.fragmentation_mode = fragmentation_mode;
         product_ions = fragmentFactory.getFragmentIons(peptide).get(0); // only peptide fragment ions
         super.is_Branching = is_Branching_Approach;
-        super.linkingType = linkingType;
+        super.linkingType = CrossLinkingType.MONOLINK;
     }
 
+    public Peptide getPeptide() {
+        return peptide;
+    }
+
+    public String getProtein() {
+        return protein;
+    }
+
+    public int getLinker_position() {
+        return linker_position;
+    }
+
+    public void setPeptide(Peptide peptide) {
+        this.peptide = peptide;
+        product_ions = fragmentFactory.getFragmentIons(peptide).get(0);
+        isMassCalculated=false;
+    }
+
+    public void setProtein(String protein) {
+        isMassCalculated=false;
+        this.protein = protein;
+    }
+
+    public void setLinker_position(int linker_position) {
+        isMassCalculated=false;
+        this.linker_position = linker_position;
+    }
+
+     
+    
     @Override
     public double getTheoretical_xlinked_mass() {
         if (!isMassCalculated) {
