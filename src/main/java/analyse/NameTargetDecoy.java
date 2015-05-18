@@ -160,18 +160,18 @@ public class NameTargetDecoy {
             if (!line.startsWith("Spect")) {
                 String[] split = line.split("\t");
                 String specName = split[spectrum_name_index];
-                double score = Double.parseDouble(split[score_index]);
+                double tmpScore = Double.parseDouble(split[score_index]);
                 if (spectrum_and_score.containsKey(specName)) {
-                    double tmpScore = spectrum_and_score.get(specName);
-                    if (tmpScore < score) {
+                    double storedScore = spectrum_and_score.get(specName);
+                    if (storedScore < tmpScore) {
                         spectrum_and_line.remove(specName);
                         spectrum_and_score.remove(specName);
                         spectrum_and_line.put(specName, line);
-                        spectrum_and_score.put(specName, score);
+                        spectrum_and_score.put(specName, tmpScore);
                     }
                 } else {
                     spectrum_and_line.put(specName, line);
-                    spectrum_and_score.put(specName, score);
+                    spectrum_and_score.put(specName, tmpScore);
                 }
             } else if (!isTitleWritten) {
                 bw.write(line + "\t" + "IndexProteinA" + "\t" + "IndexProteinB" + "\t" + "Target_Decoy" + "\n");
