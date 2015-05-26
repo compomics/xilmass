@@ -129,7 +129,8 @@ public class Start {
                 doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
                 isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
-                searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink");
+                searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
+                has_decoy = ConfigHolder.getInstance().getBoolean("decoy");
         // A CrossLinker object, required for constructing theoretical spectra
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled);
         // Parameters for searching against experimental spectrum 
@@ -182,7 +183,8 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled); //
+                    isLabeled,
+                    has_decoy); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
 
             // first write down a cross-linked peptide database
@@ -214,7 +216,8 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled); //
+                    isLabeled,
+                    has_decoy); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             BufferedWriter bw = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw,
@@ -321,21 +324,25 @@ public class Start {
                                     // write a result line..
                                     bw.write(specInfo + runningInfo);
                                     // now write all matched peaks..
-                                    for (Peak p : matchedPLists) {
-                                        bw.write(p.mz + " ");
-                                    }
-                                    bw.write("\t");
-                                    // now write all matched theoretical peaks...
-                                    for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
-                                        bw.write(tmpCPeak.toString() + " ");
-                                    }
-                                    // if necessary, write fragmentation pattern for each found CPeptides object..
-                                    if (doesKeepCPeptideFragmPattern) {
-                                        DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
-                                                linkerPositionOnPeptideA, linkerPositionOnPeptideB,
-                                                tmpCpeptide.getPeptideA().getSequence().length(), tmpCpeptide.getPeptideB().getSequence().length());
-                                        p.getName();
-                                        bw.write("\t" + p.getName());
+                                    if (!matchedPLists.isEmpty()) {
+                                        for (Peak p : matchedPLists) {
+                                            bw.write(p.mz + " ");
+                                        }
+                                        bw.write("\t");
+                                        // now write all matched theoretical peaks...
+                                        for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                            bw.write(tmpCPeak.toString() + " ");
+                                        }
+                                        // if necessary, write fragmentation pattern for each found CPeptides object..
+                                        if (doesKeepCPeptideFragmPattern) {
+                                            DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
+                                                    linkerPositionOnPeptideA, linkerPositionOnPeptideB,
+                                                    tmpCpeptide.getPeptideA().getSequence().length(), tmpCpeptide.getPeptideB().getSequence().length());
+                                            p.getName();
+                                            bw.write("\t" + p.getName());
+                                        }
+                                    } else {
+                                        bw.write("-" + "\t" + "-" + "\t" + "-");
                                     }
                                     bw.newLine();
                                 }
