@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
+import start.ShuffledDecoy;
 
 /**
  *
@@ -56,10 +57,12 @@ public class CreateDatabase {
             maxLen_for_combined = 50; // How many amino acids are on one cross linked peptides
     private File inputProteinFile,
             inSilicoPeptideDB;
-    private boolean does_a_peptide_link_to_itself = false; // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
+    private boolean does_a_peptide_link_to_itself = false, // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
+            has_shuffled_decoy_as_concatenated;
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
+    private HashMap<String, String> proteinaccessionAndshuffled = new HashMap<String, String>();
 
     public CreateDatabase(String givenDBName,
             String inSilicoPeptideDBName,
@@ -68,10 +71,11 @@ public class CreateDatabase {
             String crossLinkedProteinTypes, // crossLinking strategy
             String enzymeName, String enzymeFileName, String misclevaged, // enzyme related parameters
             String lowMass, String highMass, // filtering of in silico peptides on peptide masses
-            int minLen, 
+            int minLen,
             int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
             boolean does_link_to_itself,
-            boolean isLabeled // T: heavy labeled protein, F:no labeled
+            boolean isLabeled, // T: heavy labeled protein, F:no labeled
+            boolean has_shuffled_decoy_as_concatenated
     ) throws Exception {
         // db related parameters
         inputProteinFileName = givenDBName;
@@ -90,6 +94,7 @@ public class CreateDatabase {
         this.maxLen_for_combined = maxLen_for_combined;
         this.does_a_peptide_link_to_itself = does_link_to_itself;
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
+        this.has_shuffled_decoy_as_concatenated = has_shuffled_decoy_as_concatenated;
     }
 
     // getter and setter methods    
@@ -200,6 +205,11 @@ public class CreateDatabase {
     public void construct() throws UnknownDBFormatException, IOException, Exception {
         digest_insilico();
         // read in silico digested pepti file and generate cross linked peptides
+        // first generate shuffles
+        if (has_shuffled_decoy_as_concatenated) {
+            shuffle();
+        }
+        // now generate cross linked ones..
         create_crossLinkedPeptides();
     }
 
@@ -243,8 +253,7 @@ public class CreateDatabase {
                 // Get the props for the AutoDBLoader...
                 Properties p = null;
                 try {
-                    InputStream is = EnzymeDigest.class
-                            .getClassLoader().getResourceAsStream("DBLoaders.properties");
+                    InputStream is = EnzymeDigest.class.getClassLoader().getResourceAsStream("DBLoaders.properties");
                     p = new Properties();
                     if (is != null) {
                         p.load(is);
@@ -421,6 +430,44 @@ public class CreateDatabase {
      * After doing in silico digestion, this method generates all possible
      * cross-linked peptides based on given criteria
      *
+     * Make sure that this part was actually created via
+     *
+     * @throws IOException
+     * @throws Exception
+     */
+    private void shuffle() throws IOException, Exception {
+        DBLoader loader = DBLoaderLoader.loadDB(inSilicoPeptideDB);
+        Protein protein = null;
+        ShuffledDecoy r = null;
+        proteinaccessionAndshuffled = new HashMap<String, String>();
+        // get a crossLinkerName object        
+        while ((protein = loader.nextProtein()) != null) {
+            String sequence = protein.getSequence().getSequence();
+            while ((protein = loader.nextProtein()) != null) {
+                String tmpStartAccession = protein.getHeader().getAccession(),
+                        startSequence = protein.getSequence().getSequence();
+                int iStart_StartProtein = protein.getHeader().getStartLocation(),
+                        iEnd_StartProtein = protein.getHeader().getEndLocation();
+                String header_to_put = tmpStartAccession.replace(" ", "") + "(" + iStart_StartProtein + "_" + iEnd_StartProtein + ")";
+
+                // check the first condition
+                if (proteinaccessionAndshuffled.isEmpty()) {
+                    r = new ShuffledDecoy(sequence);
+                    proteinaccessionAndshuffled.put(header_to_put, r.getShuffled().toString());
+                } else {
+                    r.setTarget(sequence);
+                    r.getShuffled();
+                    proteinaccessionAndshuffled.put(header_to_put, r.getShuffled().toString());
+                }
+            }
+        }
+        LOGGER.info("Shuffles for each sequence were generated!" + proteinaccessionAndshuffled.size());
+    }
+
+    /**
+     * After doing in silico digestion, this method generates all possible
+     * cross-linked peptides based on given criteria
+     *
      * @throws IOException
      * @throws Exception
      */
@@ -430,11 +477,11 @@ public class CreateDatabase {
         Protein startProtein = null,
                 nextProtein = null;
         // get a crossLinkerName object        
-        while ((startProtein = loader.nextProtein()) != null) {          
+        while ((startProtein = loader.nextProtein()) != null) {
             String tmpStartAccession = startProtein.getHeader().getAccession(),
                     startHeader = startProtein.getHeader().getAccession(),
                     startSequence = startProtein.getSequence().getSequence();
-                     // check if a header comes from a generic! 
+            // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                 tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
@@ -473,9 +520,26 @@ public class CreateDatabase {
         LOGGER.info("Cross linked peptide combinations are constructed!");
     }
 
-    public void generate_peptide_combinations(Protein startProtein, boolean is_start_sequence_reversed, Protein nextProtein, String possible_linked_aa_startSeq, int index_linked_aa_startSeq) throws IOException {
+    /**
+     * Note that this class is not generating any concatenation for shuffled
+     * decoys! TODO: Apply this if necessary!
+     *
+     * @param startProtein
+     * @param is_start_sequence_reversed
+     * @param nextProtein
+     * @param possible_linked_aa_startSeq
+     * @param index_linked_aa_startSeq
+     * @throws IOException
+     */
+    public void generate_peptide_combinations(Protein startProtein, boolean is_start_sequence_reversed,
+            Protein nextProtein, String possible_linked_aa_startSeq, int index_linked_aa_startSeq) throws IOException {
         String startSequence = startProtein.getSequence().getSequence(),
                 nextSequence = nextProtein.getSequence().getSequence();
+        // target-target
+        generate_xlinked_ones(startSequence, nextSequence, nextProtein, startProtein, index_linked_aa_startSeq, is_start_sequence_reversed, possible_linked_aa_startSeq);
+    }
+
+    private void generate_xlinked_ones(String startSequence, String nextSequence, Protein nextProtein, Protein startProtein, int index_linked_aa_startSeq, boolean is_start_sequence_reversed, String possible_linked_aa_startSeq) throws IOException {
         int totalLen = startSequence.length() + nextSequence.length();
         // check the condition - next sequence needs be to larger than minLen and also a cross linked peptide needs to be shorter than maxLen
         if (nextSequence.length() >= minLen && totalLen <= maxLen_for_combined) {
@@ -485,8 +549,8 @@ public class CreateDatabase {
                     for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
                         ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                         for (Integer next_index : next_indices_liked_aas) {
-                            generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-                            generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+                            generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
+                            generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
 
                         }
                     }//                      
@@ -497,8 +561,8 @@ public class CreateDatabase {
                             if (next_linked_aa.equals("D") || next_linked_aa.equals("S")) {
                                 ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                                 for (Integer next_index : next_indices_liked_aas) {
-                                    generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-                                    generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+                                    generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
+                                    generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
                                 }
                             }
                         }
@@ -510,8 +574,8 @@ public class CreateDatabase {
                                 if (next_linked_aa.equals("K")) {
                                     ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                                     for (Integer next_index : next_indices_liked_aas) {
-                                        generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-                                        generate_header_and_sequence(startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+                                        generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
+                                        generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
                                     }
                                 }
                             }
@@ -533,10 +597,11 @@ public class CreateDatabase {
         System.exit(1);
     }
 
-    private void generate_header_and_sequence(Protein startProtein, Protein nextProtein, int index_linked_aa_startSeq, Integer next_index, boolean is_inverted, boolean is_start_sequence_reversed) throws IOException {
-        String startSequence = startProtein.getSequence().getSequence(),
-                nextSequence = nextProtein.getSequence().getSequence(),
-                mod_startSeq = startSequence.substring(0, index_linked_aa_startSeq + 1) + "*" + startSequence.substring(index_linked_aa_startSeq + 1),
+    private void generate_header_and_sequence(String startSequence, String nextSequence,
+            Protein startProtein, Protein nextProtein,
+            int index_linked_aa_startSeq, int next_index,
+            boolean is_inverted, boolean is_start_sequence_reversed) throws IOException {
+        String mod_startSeq = startSequence.substring(0, index_linked_aa_startSeq + 1) + "*" + startSequence.substring(index_linked_aa_startSeq + 1),
                 info_if_nextSeq_reversed = "",
                 info_if_startSeq_reversed = "",
                 mod_nextSeq = "";
