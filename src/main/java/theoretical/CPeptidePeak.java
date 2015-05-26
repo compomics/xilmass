@@ -5,6 +5,7 @@
  */
 package theoretical;
 
+import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.Comparator;
 
 /**
@@ -23,6 +24,7 @@ public class CPeptidePeak {
     private int charge;
     private boolean isFound = false;
     private String name;
+    private Peak matchedPeak;
 
     public CPeptidePeak(double mz, double intensity, int charge, String name) {
         this.mz = mz;
@@ -66,6 +68,15 @@ public class CPeptidePeak {
         this.diff = diff;
     }
 
+    public Peak getMatchedPeak() {
+        return matchedPeak;
+    }
+
+    public void setMatchedPeak(Peak matchedPeak) {
+        this.matchedPeak = matchedPeak;
+    }
+
+    
     public int getCharge() {
         return charge;
     }
@@ -131,4 +142,15 @@ public class CPeptidePeak {
                 }
             };
 
+    
+     /**
+     * To sort CPeptidePeak in a ascending m/z order
+     */
+    public static final Comparator<CPeptidePeak> Diff_ASC_order
+            = new Comparator<CPeptidePeak>() {
+                @Override
+                public int compare(CPeptidePeak o1, CPeptidePeak o2) {
+                    return o1.getDiff() < o2.getDiff() ? -1 : o1.getDiff() == o2.getDiff() ? 0 : 1;
+                }
+            };
 }
