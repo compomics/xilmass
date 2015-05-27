@@ -58,7 +58,8 @@ public class CreateDatabase {
     private File inputProteinFile,
             inSilicoPeptideDB;
     private boolean does_a_peptide_link_to_itself = false, // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
-            has_shuffled_decoy_as_concatenated;
+            has_shuffled_decoy_as_concatenated,
+            isInvertedPeptides;
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
@@ -75,7 +76,8 @@ public class CreateDatabase {
             int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
             boolean does_link_to_itself,
             boolean isLabeled, // T: heavy labeled protein, F:no labeled
-            boolean has_shuffled_decoy_as_concatenated
+            boolean has_shuffled_decoy_as_concatenated,
+            boolean isInvertedPeptides
     ) throws Exception {
         // db related parameters
         inputProteinFileName = givenDBName;
@@ -93,6 +95,7 @@ public class CreateDatabase {
         this.minLen = minLen;
         this.maxLen_for_combined = maxLen_for_combined;
         this.does_a_peptide_link_to_itself = does_link_to_itself;
+        this.isInvertedPeptides = isInvertedPeptides;
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
         this.has_shuffled_decoy_as_concatenated = has_shuffled_decoy_as_concatenated;
     }
@@ -550,7 +553,7 @@ public class CreateDatabase {
                         ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                         for (Integer next_index : next_indices_liked_aas) {
                             generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-                            generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+//InvertedPeptides            generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
 
                         }
                     }//                      
@@ -562,7 +565,7 @@ public class CreateDatabase {
                                 ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                                 for (Integer next_index : next_indices_liked_aas) {
                                     generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-                                    generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+//InvertedPeptides                    generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
                                 }
                             }
                         }
@@ -575,7 +578,7 @@ public class CreateDatabase {
                                     ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                                     for (Integer next_index : next_indices_liked_aas) {
                                         generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-                                        generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
+//InvertedPeptides                        generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
                                     }
                                 }
                             }

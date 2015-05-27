@@ -130,7 +130,8 @@ public class Start {
                 isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
                 searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
-                has_decoy = ConfigHolder.getInstance().getBoolean("decoy");
+                has_decoy = ConfigHolder.getInstance().getBoolean("decoy"),
+                isInvertedPeptides = ConfigHolder.getInstance().getBoolean("isInverted");
         // A CrossLinker object, required for constructing theoretical spectra
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled);
         // Parameters for searching against experimental spectrum 
@@ -184,7 +185,8 @@ public class Start {
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
                     isLabeled,
-                    has_decoy); //
+                    has_decoy,
+                    isInvertedPeptides); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
 
             // first write down a cross-linked peptide database
@@ -217,7 +219,8 @@ public class Start {
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
                     isLabeled,
-                    has_decoy); //
+                    has_decoy,
+                    isInvertedPeptides); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             BufferedWriter bw = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw,
