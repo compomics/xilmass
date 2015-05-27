@@ -21,10 +21,8 @@ import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.ICombinatoricsVector;
 import org.xmlpull.v1.XmlPullParserException;
 import start.CPeptideInfo;
-import start.CalculateMS1Err;
 import start.GetPTMs;
 import theoretical.CPeptides;
-import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 
@@ -64,6 +62,10 @@ public class FASTACPDBLoader {
                         fixedModB = split[7],
                         variableModA = split[8],
                         variableModB = split[9];
+                boolean isPeptideBInverted = false;
+                if (proteinB.contains("inverted")) {
+                    isPeptideBInverted = true;
+                }
                 // linker positions...
                 Integer linkerPosPeptideA = Integer.parseInt(split[4]),
                         linkerPosPeptideB = Integer.parseInt(split[5]);
@@ -82,7 +84,7 @@ public class FASTACPDBLoader {
                 Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA),
                         peptideB = new Peptide(peptideBseq, ptms_peptideB);
                 // now generate peptide...
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
                 cPeptides_Masses.put(cPeptide, mass);
             }
         }
@@ -111,13 +113,15 @@ public class FASTACPDBLoader {
             PTMFactory ptmFactory,
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
-            CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+            CrossLinker linker, FragmentationMode fragMode,
+            boolean isBranching) throws XmlPullParserException, IOException {
 
         ArrayList<CPeptides> cPeptides = new ArrayList<CPeptides>();
         StringBuilder proteinA,
                 proteinB,
                 peptideAseq,
                 peptideBseq;
+        boolean isPeptideBInverted = false;
         // Read each header to construct CrossLinkedPeptide object
         for (String header : header_sequence.keySet()) {
             String[] split = header.split("_");
@@ -129,6 +133,7 @@ public class FASTACPDBLoader {
             }
             if (split[pepBIndex].equals("inverted")) {
                 pepBIndex++;
+                isPeptideBInverted = true;
             }
             int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                     writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
@@ -154,7 +159,7 @@ public class FASTACPDBLoader {
             // fill all possible modified peptides here...
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
-                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
                     cPeptides.add(cPeptide);
                 }
             }
@@ -192,6 +197,7 @@ public class FASTACPDBLoader {
                 proteinB,
                 peptideAseq,
                 peptideBseq;
+        boolean isPeptideBInverted = false;
         CPeptides cPeptide = null;
         double mass = 0;
         // Read each header to construct CrossLinkedPeptide object
@@ -205,6 +211,7 @@ public class FASTACPDBLoader {
             }
             if (split[pepBIndex].equals("inverted")) {
                 pepBIndex++;
+                isPeptideBInverted = true;
             }
             int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                     writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
@@ -235,7 +242,7 @@ public class FASTACPDBLoader {
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
                     if (!isCPeptidesObjConstructed) {
-                        cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                        cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
                         mass = cPeptide.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                         bw.write(info + "\n");
@@ -246,6 +253,7 @@ public class FASTACPDBLoader {
                         cPeptide.setPeptideB(pB);
                         cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
                         cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
+                        cPeptide.setIsInvertedPeptideB(isPeptideBInverted);
                         mass = cPeptide.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                         bw.write(info + "\n");
@@ -283,8 +291,7 @@ public class FASTACPDBLoader {
         Peptide p = new Peptide(peptideSeq, ptms);
         return p;
     }
-    
-    
+
     /**
      * This method generates a list of CPeptides with always a fixed
      * Modification and all possible variable modifications.. Write each
@@ -390,4 +397,3 @@ public class FASTACPDBLoader {
         }
     }
 }
-

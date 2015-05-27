@@ -32,12 +32,14 @@ public class CPeptides extends CrossLinkedPeptides {
             linker_position_on_peptideB;
     private HashMap<Integer, ArrayList<Ion>> product_ions_peptideA,
             product_ions_peptideB;
+    private boolean isInvertedPeptideB;
 
     /* Constructor */
     public CPeptides(String proteinA, String proteinB,
             Peptide peptideA, Peptide peptideB,
             CrossLinker linker, int linker_position_on_peptideA, int linker_position_on_peptideB,
-            FragmentationMode fragmentation_mode, boolean is_Branching_Approach) {
+            FragmentationMode fragmentation_mode, boolean is_Branching_Approach,
+            boolean isInvertedPeptideB) {
         this.proteinA = proteinA;
         this.proteinB = proteinB;
         this.peptideA = peptideA;
@@ -50,6 +52,7 @@ public class CPeptides extends CrossLinkedPeptides {
         product_ions_peptideB = fragmentFactory.getFragmentIons(peptideB).get(0);
         super.is_Branching = is_Branching_Approach;
         super.linkingType = CrossLinkingType.CROSSLINK;
+        this.isInvertedPeptideB = isInvertedPeptideB;
     }
 
     /* getters and setters */
@@ -117,6 +120,15 @@ public class CPeptides extends CrossLinkedPeptides {
     public void setIs_Branching(boolean is_Branching) {
         this.is_Branching = is_Branching;
     }
+
+    public boolean isIsInvertedPeptideB() {
+        return isInvertedPeptideB;
+    }
+
+    public void setIsInvertedPeptideB(boolean isInvertedPeptideB) {
+        this.isInvertedPeptideB = isInvertedPeptideB;
+    }
+    
 
     /**
      * This method returns theoretical spectrum.

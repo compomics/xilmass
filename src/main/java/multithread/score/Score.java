@@ -104,7 +104,12 @@ public class Score implements Callable<ArrayList<Result>> {
                 variableModA = split[8],
                 variableModB = split[9];
         // linker positions...
+        // This means a cross linked peptide is here...
         if (!proteinB.equals("-")) {
+            boolean isPeptideBInverted = false;
+            if (proteinB.contains("inverted")) {
+                isPeptideBInverted = true;
+            }
             Integer linkerPosPeptideA = Integer.parseInt(split[4]),
                     linkerPosPeptideB = Integer.parseInt(split[5]);
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false),
@@ -121,8 +126,9 @@ public class Score implements Callable<ArrayList<Result>> {
             Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA),
                     peptideB = new Peptide(peptideBseqFile, ptms_peptideB);
             // now generate peptide...
-            CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+            CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
             selected = tmpCpeptide;
+            // This means only monolinked peptide...
         } else {
             Integer linkerPosPeptideA = Integer.parseInt(split[4]);
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
