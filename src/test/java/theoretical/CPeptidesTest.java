@@ -72,7 +72,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
                 peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false, false);
+        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();
 
         File test_theoSpec = new File("Data/Test/theoretical/MLSDAK_AIKNK_by_theo.txt");
@@ -116,7 +116,7 @@ public class CPeptidesTest extends TestCase {
         // PepA=AILVNFKAR	 PepB=KMRPEVR	 at 6	0
         peptideA = new Peptide("AILVNFKAR", parent_proteins_test, modifications_test);
         peptideB = new Peptide("KMRPEVR", parent_proteins_test, modifications_test);
-        o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false, false);
+        o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false);
         result = o.getTheoretical_ions();
 //        assertEquals(60, result.size());
 
@@ -149,7 +149,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide("MLSDA", parent_proteins_test, modifications_test),
                 peptideB = new Peptide("AIKN", parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true, false);
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true);
 
         double expResult = 535.2385 + 444.2769 + 138.0681000;
         double result = instance.getTheoretical_xlinked_mass();
@@ -170,7 +170,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideAstr, parent_proteins_test, modifications_test),
                 peptideB = new Peptide(peptideBstr, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true, false);
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true);
 
         // First get N-termini ones!!
         HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
@@ -250,7 +250,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideAstr, modifications_test),
                 peptideB = new Peptide(peptideBstr, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false, false);
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         // First get N-termini one with LinkedPeptideA!!
         int fragmentIonType = PeptideFragmentIon.B_ION;
@@ -336,7 +336,7 @@ public class CPeptidesTest extends TestCase {
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
         Peptide peptideB = new Peptide("AIKNK", modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false, false);
+        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
         assertEquals(7, product_ions.get(0).size());
@@ -400,7 +400,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
                 peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false, false);
+        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();
 
     }
