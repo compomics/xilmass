@@ -28,7 +28,6 @@ public abstract class CrossLinkedPeptides {
     protected double intensity = 100,
             theoretical_xlinked_mass = 0;
     protected CrossLinkingType linkingType;
-    
 
     public CrossLinker getLinker() {
         return linker;
@@ -93,7 +92,7 @@ public abstract class CrossLinkedPeptides {
             double ion_mass = ion.getTheoreticMass();
             if (index > linked_index && linkingType.equals(CrossLinkingType.CROSSLINK)) { // from a linker index on a peptide, shift remaining ions with a mass of a linkedPeptide       
                 ion_mass += mass_shift + linker.getMassShift_Type2();
-            } else if (index>=linked_index && linkingType.equals(CrossLinkingType.MONOLINK)){
+            } else if (index >= linked_index && linkingType.equals(CrossLinkingType.MONOLINK)) {
                 ion_mass += mass_shift;
             }
             int index_to_show = index + 1;
@@ -116,7 +115,5 @@ public abstract class CrossLinkedPeptides {
         }
         return backbones;
     }
-    
-    
-    
+
 }

@@ -61,11 +61,7 @@ public class FASTACPDBLoader {
                         fixedModA = split[6],
                         fixedModB = split[7],
                         variableModA = split[8],
-                        variableModB = split[9];
-                boolean isPeptideBInverted = false;
-                if (proteinB.contains("inverted")) {
-                    isPeptideBInverted = true;
-                }
+                        variableModB = split[9];              
                 // linker positions...
                 Integer linkerPosPeptideA = Integer.parseInt(split[4]),
                         linkerPosPeptideB = Integer.parseInt(split[5]);
@@ -84,7 +80,7 @@ public class FASTACPDBLoader {
                 Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA),
                         peptideB = new Peptide(peptideBseq, ptms_peptideB);
                 // now generate peptide...
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
                 cPeptides_Masses.put(cPeptide, mass);
             }
         }
@@ -121,7 +117,6 @@ public class FASTACPDBLoader {
                 proteinB,
                 peptideAseq,
                 peptideBseq;
-        boolean isPeptideBInverted = false;
         // Read each header to construct CrossLinkedPeptide object
         for (String header : header_sequence.keySet()) {
             String[] split = header.split("_");
@@ -133,7 +128,6 @@ public class FASTACPDBLoader {
             }
             if (split[pepBIndex].equals("inverted")) {
                 pepBIndex++;
-                isPeptideBInverted = true;
             }
             int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                     writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
@@ -159,7 +153,7 @@ public class FASTACPDBLoader {
             // fill all possible modified peptides here...
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
-                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
+                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
                     cPeptides.add(cPeptide);
                 }
             }
@@ -197,7 +191,6 @@ public class FASTACPDBLoader {
                 proteinB,
                 peptideAseq,
                 peptideBseq;
-        boolean isPeptideBInverted = false;
         CPeptides cPeptide = null;
         double mass = 0;
         // Read each header to construct CrossLinkedPeptide object
@@ -211,7 +204,6 @@ public class FASTACPDBLoader {
             }
             if (split[pepBIndex].equals("inverted")) {
                 pepBIndex++;
-                isPeptideBInverted = true;
             }
             int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                     writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
@@ -242,7 +234,7 @@ public class FASTACPDBLoader {
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
                     if (!isCPeptidesObjConstructed) {
-                        cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isPeptideBInverted);
+                        cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
                         mass = cPeptide.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                         bw.write(info + "\n");
@@ -253,7 +245,6 @@ public class FASTACPDBLoader {
                         cPeptide.setPeptideB(pB);
                         cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
                         cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
-                        cPeptide.setIsInvertedPeptideB(isPeptideBInverted);
                         mass = cPeptide.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                         bw.write(info + "\n");
