@@ -5,10 +5,14 @@
  */
 package matching;
 
+import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
+import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import crossLinker.CrossLinker;
+import crossLinker.type.DSS;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,6 +32,7 @@ import theoretical.CPeptideIonType;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.CrossLinkedPeptides;
+import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -59,8 +64,8 @@ public class MatchAndScoreTest extends TestCase {
     /**
      * Test of getMatchedPeak method, of class MatchAndScore.
      */
-    public void testGetMatchedPeakProblem() throws IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException {
-        System.out.println("getMatchedPeak");
+    public void testGetMatchedPeakProblemLessAccurate() throws IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException {
+        System.out.println("testGetMatchedPeakProblemLessAccurate-Only one peak...");
         String expMGF = "Data\\Test\\matching/problem.mgf",
                 expMGFFolder = "Data\\Test\\matching/";
         MSnSpectrum first_problem_ms = null,
@@ -403,19 +408,6 @@ public class MatchAndScoreTest extends TestCase {
     }
 
     /**
-     * Test of fill method, of class MatchAndScore.
-     */
-    @Test
-    public void testFill() {
-        System.out.println("fill");
-        HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = null;
-        MatchAndScore instance = null;
-        instance.fill(peak_and_matchedPeak);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of getIntensities method, of class MatchAndScore.
      */
     @Test
@@ -423,7 +415,7 @@ public class MatchAndScoreTest extends TestCase {
         System.out.println("getIntensities");
         ArrayList<Peak> filteredPeaks = new ArrayList<Peak>();
         filteredPeaks.add(new Peak(10, 10));
-                filteredPeaks.add(new Peak(11, 20));
+        filteredPeaks.add(new Peak(11, 20));
         filteredPeaks.add(new Peak(13, 70));
         filteredPeaks.add(new Peak(12, 100));
 
@@ -433,5 +425,92 @@ public class MatchAndScoreTest extends TestCase {
         assertEquals(expResult, result, 0.0);
     }
 
-    
+    /**
+     * Test of getTheoreticalCXPeaks method, of class MatchAndScore.
+     */
+    @Test
+    public void testGetTheoreticalCXPeaks() throws ClassNotFoundException, IOException, MzMLUnmarshallerException {
+        System.out.println("getTheoreticalCXPeaks");
+        String expMGF = "Data\\Test\\matching/problem.mgf",
+                expMGFFolder = "Data\\Test\\matching/";
+        MSnSpectrum first_problem_ms = null,
+                second_problem_ms = null,
+                third_problem_ms = null,
+                fourth_problem_ms = null;
+
+        for (File mgf : new File(expMGFFolder).listFiles()) {
+            if (mgf.getName().endsWith("problem.mgf")) {
+                System.out.println(mgf.getName());
+                SpectrumFactory fct = SpectrumFactory.getInstance();
+                fct.addSpectra(mgf);
+                for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                    if (title.equals("problem_stupid_uniform_testing_mgf")) {
+                        System.out.println(title);
+                        first_problem_ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                    }
+                    if (title.equals("problem2_stupid_uniform_testing_mgf")) {
+                        System.out.println(title);
+                        second_problem_ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                    }
+                    if (title.equals("problem3_stupid_uniform_testing_mgf")) {
+                        System.out.println(title);
+                        third_problem_ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                    }
+                    if (title.equals("File2235 Spectrum1957 scans: 3770")) {
+                        fourth_problem_ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                    }
+                }
+            }
+        }
+
+        double fragTol = 0.5;
+        HashSet<CPeptideIon> theoCMS2ions = new HashSet<CPeptideIon>();
+        CPeptideIon cpi_1 = new CPeptideIon(100, 129.56, CPeptideIonType.Backbone_PepA, 0, "1"); // singly charged peak is 130.56
+        theoCMS2ions.add(cpi_1);
+
+        ArrayList<ModificationMatch> modifications = new ArrayList<ModificationMatch>();
+        Peptide p1 = new Peptide("EAFSLFDKDGDGTITTK", modifications),
+                p2 = new Peptide("AKELLEK", modifications);
+        CrossLinker linker = new DSS();
+        CPeptides c = new CPeptides("proA", "proB", p1, p2, linker, 7, 1, FragmentationMode.HCD_all, false);
+
+        MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100);
+        instance.getTheoreticalCXPeaks();
+        instance.getCXPSMScore();
+
+        HashSet<CPeptidePeak> expResult = null;
+        HashSet<CPeptidePeak> result = instance.getTheoreticalCXPeaks();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of getExplainedIntensities method, of class MatchAndScore.
+     */
+    @Test
+    public void testGetExplainedIntensities() {
+        System.out.println("getExplainedIntensities");
+        HashSet<Peak> matchedPeaks = null;
+        double expResult = 0.0;
+        double result = MatchAndScore.getExplainedIntensities(matchedPeaks);
+        assertEquals(expResult, result, 0.0);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of fillForClosestPeak method, of class
+ MatchAndScore.
+     */
+    @Test
+    public void testFill_doesFindMatchedPeaksLessPrecise() {
+        System.out.println("fill_doesFindMatchedPeaksLessPrecise");
+        HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = null;
+        MatchAndScore instance = null;
+        instance.fillForClosestPeak(peak_and_matchedPeak);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
 }
