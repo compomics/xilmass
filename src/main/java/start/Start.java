@@ -262,7 +262,8 @@ public class Start {
                 + "ModificationPeptideA" + "\t" + "ModificationPeptideB" + "\t"
                 + "LinkerPositionOnPeptideA" + "\t" + "LinkerPositionOnPeptideB" + "\t"
                 + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t"
-                + "MatchedPeakList" + "\t" + "TheoreticalPeakList");
+                + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\t"
+                + "numTheoAs" + "\t" + "numTheoBs");
         if (doesKeepCPeptideFragmPattern) {
             fileTitle.append("\t").append("CPeptideFragPatternName");
         }
@@ -332,10 +333,16 @@ public class Start {
                                             bw.write(p.mz + " ");
                                         }
                                         bw.write("\t");
-                                        // now write all matched theoretical peaks...
+                                        // now write all matched theoretical peaks...                                        
+                                        int numTheoPepAs = 0,
+                                                numTheoPepBs = 0;
                                         for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
                                             bw.write(tmpCPeak.toString() + " ");
+                                            int[] vals = check(tmpCPeak.toString(), numTheoPepAs, numTheoPepBs);
+                                            numTheoPepAs = vals[0];
+                                            numTheoPepBs = vals[1];
                                         }
+                                        bw.write("\t" + numTheoPepAs + "\t" + numTheoPepBs);
                                         // if necessary, write fragmentation pattern for each found CPeptides object..
                                         if (doesKeepCPeptideFragmPattern) {
                                             DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
@@ -742,5 +749,25 @@ public class Start {
             hasEnoughPeaks = true;
         }
         return hasEnoughPeaks;
+    }
+
+    public static int[] check(String tmpName, int theoreticalPepA, int theoreticalPepB) {
+        String split[] = tmpName.split("_");
+        int[] vals = new int[2];
+        for (int i = 0; i < split.length; i++) {
+            if (split[i].equals("pepA")) {
+                theoreticalPepA++;
+            } else if (split[i].equals("pepB")) {
+                theoreticalPepB++;
+            } else if (split[i].equals("lepA") && !split[i + 1].startsWith("mono")) {
+                theoreticalPepA++;
+            } else if (split[i].equals("lepB") && !split[i + 1].startsWith("mono")) {
+                theoreticalPepB++;
+            }
+
+        }
+        vals[0] = theoreticalPepA;
+        vals[1] = theoreticalPepB;
+        return vals;
     }
 }
