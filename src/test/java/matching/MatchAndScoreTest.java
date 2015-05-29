@@ -105,6 +105,7 @@ public class MatchAndScoreTest extends TestCase {
 
         CPeptides c = null;
         MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100);
+        instance.setDoesFindAllMatchedPeaks(false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.getCXPSMScore();
 
@@ -120,6 +121,7 @@ public class MatchAndScoreTest extends TestCase {
 
         instance = new MatchAndScore(second_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
+        instance.setDoesFindAllMatchedPeaks(false);
         instance.getCXPSMScore();
 
         result = new ArrayList<Peak>(instance.getMatchedPeaks());
@@ -138,6 +140,7 @@ public class MatchAndScoreTest extends TestCase {
         theoCMS2ions.add(new CPeptideIon(100, second, CPeptideIonType.Backbone_PepA, 0, "1"));
 
         instance = new MatchAndScore(fourth_problem_ms, ScoreName.AndromedaD, c, 0.01, 0, 1, 11, 100);
+        instance.setDoesFindAllMatchedPeaks(false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.getCXPSMScore();
 
@@ -147,6 +150,7 @@ public class MatchAndScoreTest extends TestCase {
 
         // 4th problematic scenario -doublyCharged_pepA_a1_lepB_monolink_a2_mz=129.0966 singlyCharged_pepA_b1_mz=129.1022 with higher fragment tolerance...
         instance = new MatchAndScore(fourth_problem_ms, ScoreName.AndromedaD, c, 0.5, 0, 1, 11, 100);
+        instance.setDoesFindAllMatchedPeaks(false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.getCXPSMScore();
 
@@ -475,14 +479,13 @@ public class MatchAndScoreTest extends TestCase {
         CPeptides c = new CPeptides("proA", "proB", p1, p2, linker, 7, 1, FragmentationMode.HCD_all, false);
 
         MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100);
+        instance.setDoesFindAllMatchedPeaks(false);
         instance.getTheoreticalCXPeaks();
         instance.getCXPSMScore();
 
         HashSet<CPeptidePeak> expResult = null;
         HashSet<CPeptidePeak> result = instance.getTheoreticalCXPeaks();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -511,6 +514,39 @@ public class MatchAndScoreTest extends TestCase {
         instance.fillForClosestPeak(peak_and_matchedPeak);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of fillForClosestPeak method, of class MatchAndScore.
+     */
+    @Test
+    public void testFillForClosestPeak() {
+        System.out.println("fillForClosestPeak");
+        HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = null;
+        MatchAndScore instance = null;
+        instance.fillForClosestPeak(peak_and_matchedPeak);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of getWeightedExplainedIntensities method, of class MatchAndScore.
+     */
+    @Test
+    public void testGetWeightedExplainedIntensities() {
+        System.out.println("getWeightedExplainedIntensities");
+        CPeptidePeak cp = new CPeptidePeak(304.18,100, 1,"name");
+        MatchedPeak m1 = new MatchedPeak(new Peak(304.16177 ,100 ), null, 0.2),
+                m2 = new MatchedPeak(new Peak(304.19131 ,120 ), null, 0.3);
+        ArrayList<MatchedPeak> ms = new ArrayList<MatchedPeak>();
+        ms.add(m1);
+        ms.add(m2);
+        HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks = new HashMap<CPeptidePeak, ArrayList<MatchedPeak>>();
+        matched_theoretical_and_matched_peaks.put(cp,ms);
+        MatchAndScore instance = null;
+        double expResult = 54;
+        double result = instance.getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks,0.5);
+        assertEquals(expResult, result, 0.0);
     }
 
 }
