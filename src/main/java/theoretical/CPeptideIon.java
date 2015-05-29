@@ -24,7 +24,6 @@ public class CPeptideIon {
     private CPeptideIonType type;
     private String name;
 
-
     public CPeptideIon(double intensity, double mass, CPeptideIonType type, int fragmentIonType, String name) {
         this.intensity = intensity;
         this.type = type;
@@ -104,7 +103,9 @@ public class CPeptideIon {
      * @return a theoretical m/z
      */
     public double get_theoretical_mz(int chargeValue) {
-        return (monoisotopic_mass + chargeValue * ElementaryIon.proton.getTheoreticMass()) / chargeValue;
+        double mz = (monoisotopic_mass + (chargeValue * ElementaryIon.proton.getTheoreticMass())) / (double) chargeValue;
+        double rounded_mz = Math.floor(mz * 1000000) / 1000000;
+        return rounded_mz;
     }
 
     @Override
@@ -147,7 +148,6 @@ public class CPeptideIon {
         }
         return true;
     }
-    
 
     @Override
     public String toString() {
