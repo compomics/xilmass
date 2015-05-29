@@ -161,6 +161,16 @@ public class MatchAndScore {
         return fragTol;
     }
 
+    public boolean isDoesFindAllMatchedPeaks() {
+        return doesFindAllMatchedPeaks;
+    }
+
+    public void setDoesFindAllMatchedPeaks(boolean doesFindAllMatchedPeaks) {
+        this.doesFindAllMatchedPeaks = doesFindAllMatchedPeaks;
+    }
+    
+    
+
     /**
      * Returns which scoring function is selected to calculate CXPSMs score.
      *
@@ -274,7 +284,7 @@ public class MatchAndScore {
                     explainedIntensities = getExplainedIntensities(matchedPeaks); // sum up all intensities from matched experimental peaks
                 } else {
                     fillForAllFoundPeaks(matched_theoretical_and_matched_peaks);
-                    explainedIntensities = getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks);
+                    explainedIntensities = getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks, fragTol);
                 }
                 n = matchedPeaks.size();
                 // MSAmanda_derived with expertimentatl spectrum
@@ -505,7 +515,7 @@ public class MatchAndScore {
      *
      * @param matched_theoretical_and_matched_peaks
      */
-    private void fillForAllFoundPeaks(HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks) {
+    public void fillForAllFoundPeaks(HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks) {
         for (CPeptidePeak cp : matched_theoretical_and_matched_peaks.keySet()) {
             matchedTheoXLPeaks.add(cp);
             for (MatchedPeak mp : matched_theoretical_and_matched_peaks.get(cp)) {
@@ -526,7 +536,7 @@ public class MatchAndScore {
      * @param matched_theoretical_and_matched_peaks
      * @return
      */
-    private double getWeightedExplainedIntensities(HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks) {
+    public static double getWeightedExplainedIntensities(HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks, double fragTol) {
         double expInt = 0;
         for (CPeptidePeak cp : matched_theoretical_and_matched_peaks.keySet()) {
             ArrayList<MatchedPeak> mps = matched_theoretical_and_matched_peaks.get(cp);
