@@ -39,7 +39,8 @@ public class MatchAndScore {
     private ArrayList<CPeptidePeak> theoXLPeaksAL = new ArrayList<CPeptidePeak>();
     private double fragTol, // fragment tolerance to select 
             cXPSMScore = 0, // A CX-PSM Score 
-            massWindow = 100; // Mass window to filter out peaks from a given MSnSpectrum
+            massWindow = 100, // Mass window to filter out peaks from a given MSnSpectrum
+            weight = 0; // for andromeda - (numFoundTheoPeak/allTheoPeak)PepA*(numFoundTheoPeak/allTheoPeak)PepB
     private int intensityOptionForMSAmandaDerived = 0,
             minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)            
             maxFPeaks; // Maximum number of filtered peaks per 100Da mass window.. (To test)
@@ -68,6 +69,18 @@ public class MatchAndScore {
     /* getters and setters */
     public MSnSpectrum getExpMS2() {
         return expMS2;
+    }
+
+    /**
+     * Weight calculated as
+     * (numFoundTheoPeak/allTheoPeak)PepA*(numFoundTheoPeak/allTheoPeak)PepB for
+     * AndromedaWeighted scoring Make sure that MatchAndScore method has been
+     * called before!
+     *
+     * @return
+     */
+    public double getWeight() {
+        return weight;
     }
 
     /**
@@ -168,8 +181,6 @@ public class MatchAndScore {
     public void setDoesFindAllMatchedPeaks(boolean doesFindAllMatchedPeaks) {
         this.doesFindAllMatchedPeaks = doesFindAllMatchedPeaks;
     }
-    
-    
 
     /**
      * Returns which scoring function is selected to calculate CXPSMs score.
@@ -302,6 +313,16 @@ public class MatchAndScore {
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
+                } else if (scoreName.equals(ScoreName.AndromedaDWeighted)) {
+                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL);
+                    Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
+                    double tmp_score = object.getScore();
+                    scores.add(tmp_score);
+                } else if (scoreName.equals(ScoreName.TheoMSAmandaDWeighted)) {
+                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL);
+                    MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
+                    double tmp_score = object.getScore();
+                    scores.add(tmp_score);
                 }
             }
             isFoundAndMatched = true;
@@ -418,12 +439,12 @@ public class MatchAndScore {
 
     /**
      * This method returns a list of CPeptidePeak with singly and doubly charged
-     * ions. Peaks with the same m/z may come from the different ions
-     * (due to different charge state) and so such peaks are collapsed into one
-     * single peak with combined/updated name
+     * ions. Peaks with the same m/z may come from the different ions (due to
+     * different charge state) and so such peaks are collapsed into one single
+     * peak with combined/updated name
      *
-     * So it returns a hashset named theoXLPeaks containing mz values
-     * for all singly and doubly charged theoretical CXIons
+     * So it returns a hashset named theoXLPeaks containing mz values for all
+     * singly and doubly charged theoretical CXIons
      *
      *
      * @return
@@ -477,7 +498,7 @@ public class MatchAndScore {
         double expIntensities = 0;
         for (Peak p : matchedPeaks) {
             expIntensities += p.getIntensity();
-        }
+            }
         return expIntensities;
     }
 
@@ -490,8 +511,8 @@ public class MatchAndScore {
     public static double getIntensities(ArrayList<Peak> filteredPeaks) {
         double intensities = 0;
         for (Peak p : filteredPeaks) {
-            intensities += p.intensity;
-        }
+                intensities += p.intensity;
+            }
         return intensities;
     }
 
@@ -534,6 +555,7 @@ public class MatchAndScore {
      *
      *
      * @param matched_theoretical_and_matched_peaks
+     * @param fragTol fragment tolerance to calculate weight for explained intensity 
      * @return
      */
     public static double getWeightedExplainedIntensities(HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks, double fragTol) {
@@ -552,6 +574,64 @@ public class MatchAndScore {
             }
         }
         return expInt;
+    }
+
+    /**
+     * This method calculates weight based on found theoretical peaks from each
+     * peptide
+     *
+     * @param matchedTheoXLPeaks list of matched theoretical peaks from both
+     * peptides
+     * @param theoXLPeaksAL list of all theoretical peaks from both peptides
+     * @return
+     */
+    public static double calculateWeightForAndromeda(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL) {
+        int matchedTheoPepAs = 0,
+                matchedTheoPepBs = 0;
+        for (CPeptidePeak tmpCPeak : matchedTheoXLPeaks) {
+            int[] vals = check(tmpCPeak.toString(), matchedTheoPepAs, matchedTheoPepBs);
+            matchedTheoPepAs = vals[0];
+            matchedTheoPepBs = vals[1];
+        }
+        int theoPepAs = 0,
+                theoPepBs = 0;
+        for (CPeptidePeak tmpCPeak : theoXLPeaksAL) {
+            int[] vals = check(tmpCPeak.toString(), theoPepAs, theoPepBs);
+            theoPepAs = vals[0];
+            theoPepBs = vals[1];
+        }
+        double weight = ((double) matchedTheoPepAs / (double) theoPepAs) * ((double) matchedTheoPepBs / (double) theoPepBs);
+        return weight;
+    }
+
+    /**
+     * This method check a given theoretical peak to determine whether belongs
+     * to peptideA or peptideB
+     *
+     * @param theoreticalPeakName
+     * @param numTheoPeaksPepA
+     * @param numTheoPeaksPepB
+     * @return a integer array of the first element with numTheoPeaksPepA and
+     * the second element with numTheoPeaksPepB
+     */
+    public static int[] check(String theoreticalPeakName, int numTheoPeaksPepA, int numTheoPeaksPepB) {
+        String split[] = theoreticalPeakName.split("_");
+        int[] vals = new int[2];
+        for (int i = 0; i < split.length; i++) {
+            if (split[i].equals("pepA")) {
+                numTheoPeaksPepA++;
+            } else if (split[i].equals("pepB")) {
+                numTheoPeaksPepB++;
+            } else if (split[i].equals("lepA") && !split[i + 1].startsWith("mono")) {
+                numTheoPeaksPepA++;
+            } else if (split[i].equals("lepB") && !split[i + 1].startsWith("mono")) {
+                numTheoPeaksPepB++;
+            }
+
+        }
+        vals[0] = numTheoPeaksPepA;
+        vals[1] = numTheoPeaksPepB;
+        return vals;
     }
 
 }
