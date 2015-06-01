@@ -34,11 +34,21 @@ import java.util.logging.Logger;
  */
 public class Andromeda_derived extends CumulativeBinomialProbabilityBasedScoring {
 
+    private double weight = -1; // making sure that weight is not used if it is not changed-found theoretical peaks weight for each peptide
+
     public Andromeda_derived(double p, int N, int n) {
         super.p = p; // probability=m/windowSize (windowSize=100Da default)m=[1- 10] peaks
         super.N = N; // N: All theoretical peaks at a theoretical spectrum (on Andromeda_derived)
         super.n = n; // n: Matched peaks is number of matched peaks on theoretical spectrum  
         super.name = ScoreName.AndromedaD;
+    }
+
+    public Andromeda_derived(double p, int N, int n, double weight) {
+        super.p = p; // probability=m/windowSize (windowSize=100Da default)m=[1- 10] peaks
+        super.N = N; // N: All theoretical peaks at a theoretical spectrum (on Andromeda_derived)
+        super.n = n; // n: Matched peaks is number of matched peaks on theoretical spectrum  
+        super.name = ScoreName.AndromedaD;
+        this.weight = weight;
     }
 
     @Override
@@ -49,7 +59,10 @@ public class Andromeda_derived extends CumulativeBinomialProbabilityBasedScoring
                 score = 0;
             } else {
                 score = - 10 * (Math.log10(probability_based_score));
-            }
+            }           
+            if (weight != -1 && weight!=0) {                
+                score = score + Math.abs(score *Math.log10(1/(double)weight));
+            } 
             isCalculated = true;
         } catch (Exception ex) {
             Logger.getLogger(Andromeda_derived.class.getName()).log(Level.SEVERE, null, ex);

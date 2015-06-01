@@ -41,7 +41,8 @@ import java.util.logging.Logger;
 public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring {
 
     private double intensity, // sum of all intensities from every picked peak
-            explainedIntensity; // sum of all intensities from matched picked peak
+            explainedIntensity, // sum of all intensities from matched picked peak
+            weight = -1;
     private int intensityOption; // 0:SQRT(IP), 1:IP
 
     /**
@@ -65,6 +66,17 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
         this.explainedIntensity = explainedIntensity;
         this.intensityOption = intesityOption;
         this.name = name;
+    }
+
+    public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption, ScoreName name, double weight) {
+        super.p = p;
+        super.N = N;
+        super.n = n;
+        this.intensity = intensity;
+        this.explainedIntensity = explainedIntensity;
+        this.intensityOption = intesityOption;
+        this.name = name;
+        this.weight = weight;
     }
 
     /**
@@ -96,9 +108,11 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
                 if (probability_based_score == 0) {
                     score = 0;
                 } else {
-                    tmp = - 10 * (Math.log10(probability_based_score));
-                    score = tmp * (Math.log10(1/intensity_part));
+                    score = -10 * (Math.log10(probability_based_score / intensity_part));
                 }
+            }
+            if (weight != -1 && weight != 0) {               
+                score = score + (score * Math.log(1 / (double) weight));
             }
             isCalculated = true;
         } catch (Exception ex) {

@@ -13,5 +13,7 @@ package scoringFunction;
 public enum ScoreName {
     AndromedaD, // Andromeda derive - cumulative binomial probability derived function/only number of peak/N=theoretical peaks 
     MSAmandaD, // MSAmanda derive - cumulative binomial probability derived function/number of peak and explained intensities/N=matched experimental peaks 
-    TheoMSAmandaD // (Theoretical)MSAmanda derive - cumulative binomial probability derived function/number of peak and explained intensities/N=theoretical experimental peaks 
+    TheoMSAmandaD, // (Theoretical)MSAmanda derive - cumulative binomial probability derived function/number of peak and explained intensities/N=theoretical experimental peaks 
+    AndromedaDWeighted,
+    TheoMSAmandaDWeighted
 }
