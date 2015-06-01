@@ -27,6 +27,7 @@ public class Result {
     private ScoreName scoreName; // a name of scoring function
     private HashSet<Peak> matchedPeaks; // list of matched peaks on an experimental spectrum 
     private HashSet<CPeptidePeak> matchedCTheoPeaks; // list of theoretical peaks matched on a theoretical spectrum
+    private double weight; // weight for andromeda...
 
     /**
      *
@@ -37,13 +38,14 @@ public class Result {
      * @param matchedPeaks matched experimental peaks
      * @param matchedCTheoPeaks matched theoretical peaks
      */
-    public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks) {
+    public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks, double weight) {
         this.msms = msms;
         this.cp = cp;
         this.score = score;
         this.scoreName = scoreName;
         this.matchedCTheoPeaks = matchedCTheoPeaks;
         this.matchedPeaks = matchedPeaks;
+        this.weight = weight;
     }
 
     /* Getter and setter method for Result information */
@@ -53,6 +55,14 @@ public class Result {
 
     public void setMsms(MSnSpectrum msms) {
         this.msms = msms;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
     }
 
     public CrossLinkedPeptides getCp() {

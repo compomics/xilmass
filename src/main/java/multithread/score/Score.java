@@ -82,10 +82,11 @@ public class Score implements Callable<ArrayList<Result>> {
             synchronized (tmpMSMS) {
                 // First generate CPeptides object.  
                 MatchAndScore obj = new MatchAndScore(tmpMSMS, scoreName, cPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow);
-                double tmpScore = obj.getCXPSMScore();
+                double tmpScore = obj.getCXPSMScore(),
+                        weight = obj.getWeight();
                 HashSet<Peak> matchedPeaks = obj.getMatchedPeaks();
                 HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalCPeaks();
-                Result r = new Result(tmpMSMS, cPeptide, scoreName, tmpScore, matchedPeaks, matchedTheoreticalCPeaks);
+                Result r = new Result(tmpMSMS, cPeptide, scoreName, tmpScore, matchedPeaks, matchedTheoreticalCPeaks, weight);
                 results.add(r);
             }
         }
