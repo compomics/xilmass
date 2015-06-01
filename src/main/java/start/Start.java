@@ -107,6 +107,10 @@ public class Start {
             scoreName = ScoreName.MSAmandaD;
         } else if (scoring.equals("TheoMSAmandaDerived")) {
             scoreName = ScoreName.TheoMSAmandaD;
+        } else if (scoring.equals("AndromedaWeightedDerived")) {
+            scoreName = ScoreName.AndromedaDWeighted;
+        } else if (scoring.equals("TheoMSAmandaWeightedDerived")) {
+            scoreName = ScoreName.TheoMSAmandaDWeighted;
         }
         // Get fixed modification and variable modification names...
         ArrayList<String> fixedModifications = getModificationsName(fixedModificationNames),
@@ -123,7 +127,7 @@ public class Start {
                 peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch");
 
         // more cross linking option..;
-        boolean does_link_to_itself = false,
+        boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("hasInterPeptide"),
                 isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
                 doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
@@ -131,7 +135,9 @@ public class Start {
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
                 searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
                 has_decoy = ConfigHolder.getInstance().getBoolean("decoy"),
-                isInvertedPeptides = ConfigHolder.getInstance().getBoolean("isInverted");
+                isInvertedPeptides = ConfigHolder.getInstance().getBoolean("isInverted"),
+                doesKeepWeights = true;
+
         // A CrossLinker object, required for constructing theoretical spectra
         CrossLinker linker = GetCrossLinker.getCrossLinker(crossLinkerName, isLabeled);
         // Parameters for searching against experimental spectrum 
@@ -267,6 +273,9 @@ public class Start {
         if (doesKeepCPeptideFragmPattern) {
             fileTitle.append("\t").append("CPeptideFragPatternName");
         }
+        if (doesKeepWeights) {
+            fileTitle.append("\t").append("Weight");
+        }
         bw.write(fileTitle.toString());
         bw.newLine();
 
@@ -351,8 +360,17 @@ public class Start {
                                             p.getName();
                                             bw.write("\t" + p.getName());
                                         }
+                                        if (doesKeepWeights) {
+                                            bw.write("\t" + res.getWeight());
+                                        }
                                     } else {
-                                        bw.write("-" + "\t" + "-" + "\t" + "-");
+                                        bw.write("-" + "\t" + "-" + "\t" + "-" + "\t" + "-");
+                                        if (doesKeepCPeptideFragmPattern) {
+                                            bw.write("\t" + "-");
+                                        }
+                                        if (doesKeepWeights) {
+                                            bw.write("\t" + "-");
+                                        }
                                     }
                                     bw.newLine();
                                 }
@@ -405,6 +423,9 @@ public class Start {
                                     // if necessary, write fragmentation pattern for each found CPeptides object..
                                     if (doesKeepCPeptideFragmPattern) {
                                         bw.write("\t" + "MONOLINK_FOUND");
+                                    }
+                                    if (doesKeepWeights) {
+                                        bw.write("\t" + res.getWeight());
                                     }
                                     bw.newLine();
                                 }
@@ -565,7 +586,8 @@ public class Start {
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 isBranching = ConfigHolder.getInstance().getString("isBranching"),
-                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined");
+                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
+                hasInterPeptide = ConfigHolder.getInstance().getString("hasInterPeptide");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         bw.write("Settings file" + "\n");
@@ -591,6 +613,7 @@ public class Start {
         bw.write("minLen" + "\t" + minLen + "\n");
         bw.write("maxLenCombined" + "\t" + maxLenCombined + "\n");
         bw.write("isBranching" + "\t" + isBranching + "\n");
+        bw.write("hasInterPeptide" + "\t" + hasInterPeptide + "\n");
         bw.close();
     }
 
@@ -616,7 +639,8 @@ public class Start {
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
-                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined");
+                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
+                hasInterPeptide = ConfigHolder.getInstance().getString("hasInterPeptide");
         int control = 0;
         boolean isSame = false;
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
@@ -640,7 +664,9 @@ public class Start {
                 control++;
             } else if ((line.startsWith("fixedModification")) && (line.split("\t")[1].equals(fixedModification))) {
                 control++;
-            } else if ((line.startsWith("variableModification")) && (line.split("\t")[1].equals(variableModification))) {
+            } else if ((line.startsWith("variableModification")) && line.split("\t").length > 1 && (line.split("\t")[1].equals(variableModification))) {
+                control++;
+            } else if ((line.startsWith("variableModification")) && line.split("\t").length == 1) {
                 control++;
             } else if ((line.startsWith("isLabeled")) && (line.split("\t")[1].equals(isLabeled))) {
                 control++;
@@ -650,9 +676,11 @@ public class Start {
                 control++;
             } else if ((line.startsWith("isBranching")) && (line.split("\t")[1].equals(isBranching))) {
                 control++;
+            } else if ((line.startsWith("hasInterPeptide")) && (line.split("\t")[1].equals(hasInterPeptide))) {
+                control++;
             }
         }
-        if (control == 14) {
+        if (control == 15) {
             isSame = true;
         }
         return isSame;
