@@ -127,7 +127,7 @@ public class Start {
                 peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch");
 
         // more cross linking option..;
-        boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("hasInterPeptide"),
+        boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("doesLinkToItself_InterPeptide"),
                 isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
                 doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
