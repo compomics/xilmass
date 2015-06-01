@@ -37,7 +37,7 @@ public class CPeptides extends CrossLinkedPeptides {
     public CPeptides(String proteinA, String proteinB,
             Peptide peptideA, Peptide peptideB,
             CrossLinker linker, int linker_position_on_peptideA, int linker_position_on_peptideB,
-            FragmentationMode fragmentation_mode, 
+            FragmentationMode fragmentation_mode,
             boolean is_Branching_Approach) {
         this.proteinA = proteinA;
         this.proteinB = proteinB;
@@ -183,7 +183,7 @@ public class CPeptides extends CrossLinkedPeptides {
         theoretical_ions = new HashSet<CPeptideIon>(theoretical_ions_al);
     }
 
-   public HashSet<CPeptideIon> getBackbone(HashMap<Integer, ArrayList<Ion>> product_ions, boolean isPeptideA) {
+    public HashSet<CPeptideIon> getBackbone(HashMap<Integer, ArrayList<Ion>> product_ions, boolean isPeptideA) {
         HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
         // prepare for naming
         String pepName = "pepA";
@@ -493,6 +493,13 @@ public class CPeptides extends CrossLinkedPeptides {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return peptideA.getSequenceWithLowerCasePtms() + "_" + peptideA.getSequence().length() + "_" + proteinA + "_"
+                + peptideB.getSequenceWithLowerCasePtms() + "_" + peptideB.getSequence().length() + "_" + proteinB + "_"
+                + linker_position_on_peptideA + "_" + linker_position_on_peptideB + "\t" + peptideA.getSequence().length() + "\t" + peptideB.getSequence().length();
     }
 
 }
