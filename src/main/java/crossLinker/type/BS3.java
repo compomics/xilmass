@@ -37,7 +37,7 @@ public class BS3 extends CrossLinker {
                 deuterium_mass = Atom.H.getIsotopeMass(1);
         if (isLabeled) {
             this.name = CrossLinkerName.BS3d4;
-            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass) + (4 * deuterium_mass);
+            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (8 * hydrogen_mass) + (4 * deuterium_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
         } else {
