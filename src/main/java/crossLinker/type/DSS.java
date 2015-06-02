@@ -11,8 +11,10 @@ import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
 
 /**
- * Disuccinimidyl suberate C16H20N2O8 TODO: Ask about these Type0 and Type2
- * reactions!
+ * Disuccinimidyl suberate C16-H20-N2-O8 Heavy labeled C16-D12-H8-N2-O8 Light
+ * labeled C16-H20-N2-O8
+ *
+ * Doublet-signal of 12.07Da between heavy and light labeled DSS
  *
  *
  * @author Sule
@@ -28,8 +30,8 @@ public class DSS extends CrossLinker {
     }
 
     /**
-     * Here is isLabeled option introduced to return DSSd12.
-     * Otherwise DSSd0 is returned
+     * Here is isLabeled option introduced to return DSSd12. Otherwise DSSd0 is
+     * returned
      *
      * @param isLabeled
      */
@@ -41,7 +43,7 @@ public class DSS extends CrossLinker {
             this.name = CrossLinkerName.DSSd12;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * deuterium_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
-            super.massShift_Type2 = moleculeMass - (2 * deuterium_mass);
+            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
         } else {
             this.name = CrossLinkerName.DSSd0;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
