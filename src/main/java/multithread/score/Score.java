@@ -5,7 +5,6 @@
  */
 package multithread.score;
 
-import multithread.score.Result;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
@@ -23,8 +22,8 @@ import scoringFunction.ScoreName;
 import start.GetPTMs;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
+import theoretical.Contaminant;
 import theoretical.CrossLinkedPeptides;
-import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 
@@ -128,7 +127,7 @@ public class Score implements Callable<ArrayList<Result>> {
             CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
             selected = tmpCpeptide;
             // This means only monolinked peptide...
-        } else {
+        } else if (!proteinA.startsWith("contaminant")) {
             Integer linkerPosPeptideA = Integer.parseInt(split[4]);
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
             // Start putting them on a list which will contain also variable PTMs
@@ -139,6 +138,17 @@ public class Score implements Callable<ArrayList<Result>> {
             // First peptideA
             Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA);
             MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, linker, fragMode, isBranching);
+            selected = mP;
+        } else if (proteinA.startsWith("contaminant")) {
+            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
+            // Start putting them on a list which will contain also variable PTMs
+            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA);
+            // Add variable PTMs and also a list of several fixed PTMs
+            ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true);
+            ptms_peptideA.addAll(variablePTM_peptideA);
+            // First peptideA
+            Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA);
+            Contaminant mP = new Contaminant(peptideA, proteinA, fragMode, isBranching);
             selected = mP;
         }
         return selected;
