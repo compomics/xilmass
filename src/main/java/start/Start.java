@@ -5,7 +5,9 @@
  */
 package start;
 
+import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
+import com.compomics.dbtoolkit.io.interfaces.DBLoader;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
@@ -14,6 +16,7 @@ import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
+import com.compomics.util.protein.Protein;
 import config.ConfigHolder;
 import crossLinker.CrossLinker;
 import crossLinker.GetCrossLinker;
@@ -43,13 +46,13 @@ import org.apache.log4j.Logger;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
+import theoretical.Contaminant;
 import theoretical.CrossLinkedPeptides;
 import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
- * TODO: Remove in silico digested FASTA file...
  *
  * @author Sule
  */
@@ -71,6 +74,7 @@ public class Start {
         // STEP 1: DATABASE GENERATIONS! 
         HashSet<File> indexFiles = new HashSet<File>();
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
+                contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
                 inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
@@ -194,7 +198,13 @@ public class Start {
                     has_decoy,
                     isInvertedPeptides); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
-
+            // in silico digested contaminant database
+            if (!contaminantDBName.isEmpty()) {
+                EnzymeDigest o = new EnzymeDigest();                
+                String cdb = contaminantDBName + "_insilico";
+                o.main(cdb, enzymeFileName, enzymeName, contaminantDBName, null, lowMass, highMass, null, misclevaged);
+                addHeaders(headers_sequences, cdb);
+            }
             // first write down a cross-linked peptide database
             WriteCXDB.writeCXDB(headers_sequences, cxDBName);
             LOGGER.info("A CX database is now ready!");
@@ -374,7 +384,7 @@ public class Start {
                                     }
                                     bw.newLine();
                                 }
-                            } else {
+                            } else if (res.getCp() instanceof MonoLinkedPeptides) {
                                 // MONOLINKED FOUND...
                                 MonoLinkedPeptides tmpCpeptide = (MonoLinkedPeptides) res.getCp();
                                 String modification = getModificationInfo(tmpCpeptide.getPeptide());
@@ -426,6 +436,67 @@ public class Start {
                                     }
                                     if (doesKeepWeights) {
                                         bw.write("\t" + res.getWeight());
+                                    }
+                                    bw.newLine();
+                                }
+                            } else if (res.getCp() instanceof Contaminant) {
+                                // CONTAMINANT FOUND...
+                                Contaminant tmpCpeptide = (Contaminant) res.getCp();
+                                String modification = getModificationInfo(tmpCpeptide.getPeptide());
+                                // analyze matchedPeaks!
+                                HashSet<Peak> matchedPeaks = res.getMatchedPeaks();
+                                HashSet<CPeptidePeak> matchedCTheoPeaks = res.getMatchedCTheoPeaks();
+                                // Sort them to write down on a result file
+                                ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
+                                Collections.sort(matchedPLists, Peak.ASC_mz_order);
+                                ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
+                                Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
+                                boolean hasEnoughPeaks = false;
+                                if (peakRequiredForImprovedSearch > 0) {
+                                    hasEnoughPeaks = hasEnoughPeaks(matchedCTheoPLists, peakRequiredForImprovedSearch);
+                                }
+                                if ((peakRequiredForImprovedSearch == 0) || hasEnoughPeaks) {
+                                    // select precursor mass, theoretical mass and MS1 error
+                                    ArrayList<Charge> possibleCharges = res.getMsms().getPrecursor().getPossibleCharges();
+                                    Charge charge = possibleCharges.get(possibleCharges.size() - 1);
+                                    double precMass = CalculatePrecursorMass.getPrecursorMass(res.getMsms()),
+                                            theoMass = res.getCp().getTheoretical_xlinked_mass(),
+                                            tmpMS1Err = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass),
+                                            precMZ = res.getMsms().getPrecursor().getMz();
+                                    // Result line..
+                                    String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
+                                    String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
+                                            + scoreName + "\t" + res.getScore() + "\t"
+                                            + tmpCpeptide.getProtein() + "\t" + "-" + "\t"
+                                            + tmpCpeptide.getPeptide().getSequence() + "\t" + "-" + "\t"
+                                            + modification + "\t" + "-" + "\t"
+                                            + "-" + "\t" + "-" + "\t"
+                                            + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
+                                    // write a result line..
+                                    bw.write(specInfo + runningInfo);
+                                    if (matchedPLists.isEmpty()) {
+                                        bw.write("-");
+                                    }
+                                    // now write all matched peaks..
+                                    for (Peak p : matchedPLists) {
+                                        bw.write(p.mz + " ");
+                                    }
+                                    bw.write("\t");
+
+                                    if (matchedCTheoPLists.isEmpty()) {
+                                        bw.write("-");
+                                    }
+                                    // now write all matched theoretical peaks...
+                                    for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
+                                        bw.write(tmpCPeak.toString() + " ");
+                                    }
+                                    bw.write("\t" + "-" + "\t" + "-");
+                                    // if necessary, write fragmentation pattern for each found CPeptides object..
+                                    if (doesKeepCPeptideFragmPattern) {
+                                        bw.write("\t" + "CONTAMINANT");
+                                    }
+                                    if (doesKeepWeights) {
+                                        bw.write("\t" + "-");
                                     }
                                     bw.newLine();
                                 }
@@ -583,11 +654,11 @@ public class Start {
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
                 hasInterPeptide = ConfigHolder.getInstance().getString("hasInterPeptide");
+        boolean isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         bw.write("Settings file" + "\n");
@@ -636,13 +707,14 @@ public class Start {
                 highMass = ConfigHolder.getInstance().getString("higherMass"),
                 variableModification = ConfigHolder.getInstance().getString("variableModification"),
                 fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
                 isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
                 hasInterPeptide = ConfigHolder.getInstance().getString("hasInterPeptide");
         int control = 0;
-        boolean isSame = false;
+        boolean isSame = false,
+                isLabeled = ConfigHolder.getInstance().getBoolean("isLabeled");
+
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
         String line = "";
         while ((line = br.readLine()) != null) {
@@ -797,5 +869,23 @@ public class Start {
         vals[0] = theoreticalPepA;
         vals[1] = theoreticalPepB;
         return vals;
+    }
+
+    private static void addHeaders(HashMap<String, String> headers_sequences, String cdb) throws IOException {
+       File contaminant = new File(cdb);
+        DBLoader loader = DBLoaderLoader.loadDB(contaminant);
+        Protein startProtein = null;
+        // get a crossLinkerName object        
+        while ((startProtein = loader.nextProtein()) != null) {
+            String startHeader = startProtein.getHeader().getAccession(),
+                    startSequence = startProtein.getSequence().getSequence(),
+                    tmpStartAccession = "";
+            // check if a header comes from a generic! 
+            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
+                tmpStartAccession = "contaminant_" + startHeader.substring(0, startHeader.indexOf("("));
+            }
+            headers_sequences.put(tmpStartAccession, startSequence);
+        }
+        contaminant.deleteOnExit();        
     }
 }
