@@ -94,6 +94,8 @@ public abstract class CrossLinkedPeptides {
                 ion_mass += mass_shift + linker.getMassShift_Type2();
             } else if (index >= linked_index && linkingType.equals(CrossLinkingType.MONOLINK)) {
                 ion_mass += mass_shift;
+            } else {
+                
             }
             int index_to_show = index + 1;
             String ionName = rootName + index_to_show;
