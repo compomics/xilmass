@@ -68,7 +68,7 @@ public class CPeptideInfo {
      * @param isVariable true:Variable/false:Fixed
      * @return
      */
-    private static String getPTMName(ArrayList<ModificationMatch> ptms_peptide, boolean isVariable) {
+    public static String getPTMName(ArrayList<ModificationMatch> ptms_peptide, boolean isVariable) {
         String tmp_ptm = "";
         for (ModificationMatch m : ptms_peptide) {
             if (m.isVariable() == isVariable) {
