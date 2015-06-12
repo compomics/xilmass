@@ -7,6 +7,7 @@ package database;
 
 import playground.EnzymeDigest;
 import com.compomics.dbtoolkit.gui.workerthreads.ProcessThread;
+import com.compomics.dbtoolkit.gui.workerthreads.ShuffleDBThread;
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.EnzymeLoader;
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
@@ -440,6 +441,10 @@ public class CreateDatabase {
      */
     private void shuffle() throws IOException, Exception {
         DBLoader loader = DBLoaderLoader.loadDB(inSilicoPeptideDB);
+        // Use randomizing class from DBToolKit!
+        ShuffleDBThread sdt = new ShuffleDBThread(inSilicoPeptideDB);
+        sdt.shuffle();
+        
         Protein protein = null;
         ShuffledDecoy r = null;
         proteinaccessionAndshuffled = new HashMap<String, String>();
