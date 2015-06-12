@@ -503,8 +503,7 @@ public class MatchAndScoreTest extends TestCase {
     }
 
     /**
-     * Test of fillForClosestPeak method, of class
- MatchAndScore.
+     * Test of fillForClosestPeak method, of class MatchAndScore.
      */
     @Test
     public void testFill_doesFindMatchedPeaksLessPrecise() {
@@ -535,17 +534,99 @@ public class MatchAndScoreTest extends TestCase {
     @Test
     public void testGetWeightedExplainedIntensities() {
         System.out.println("getWeightedExplainedIntensities");
-        CPeptidePeak cp = new CPeptidePeak(304.18,100, 1,"name");
-        MatchedPeak m1 = new MatchedPeak(new Peak(304.16177 ,100 ), null, 0.2),
-                m2 = new MatchedPeak(new Peak(304.19131 ,120 ), null, 0.3);
+        CPeptidePeak cp = new CPeptidePeak(304.18, 100, 1, "name");
+        MatchedPeak m1 = new MatchedPeak(new Peak(304.16177, 100), null, 0.2),
+                m2 = new MatchedPeak(new Peak(304.19131, 120), null, 0.3);
         ArrayList<MatchedPeak> ms = new ArrayList<MatchedPeak>();
         ms.add(m1);
         ms.add(m2);
         HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks = new HashMap<CPeptidePeak, ArrayList<MatchedPeak>>();
-        matched_theoretical_and_matched_peaks.put(cp,ms);
+        matched_theoretical_and_matched_peaks.put(cp, ms);
         MatchAndScore instance = null;
         double expResult = 54;
-        double result = instance.getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks,0.5);
+        double result = instance.getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks, 0.5);
+        assertEquals(expResult, result, 0.0);
+    }
+
+    /**
+     * Test of isDoesFindAllMatchedPeaks method, of class MatchAndScore.
+     */
+    @Test
+    public void testIsDoesFindAllMatchedPeaks() {
+        System.out.println("isDoesFindAllMatchedPeaks");
+        MatchAndScore instance = null;
+        boolean expResult = false;
+        boolean result = instance.isDoesFindAllMatchedPeaks();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of setDoesFindAllMatchedPeaks method, of class MatchAndScore.
+     */
+    @Test
+    public void testSetDoesFindAllMatchedPeaks() {
+        System.out.println("setDoesFindAllMatchedPeaks");
+        boolean doesFindAllMatchedPeaks = false;
+        MatchAndScore instance = null;
+        instance.setDoesFindAllMatchedPeaks(doesFindAllMatchedPeaks);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of fillForAllFoundPeaks method, of class MatchAndScore.
+     */
+    @Test
+    public void testFillForAllFoundPeaks() {
+        System.out.println("fillForAllFoundPeaks");
+        HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks = null;
+        MatchAndScore instance = null;
+        instance.fillForAllFoundPeaks(matched_theoretical_and_matched_peaks);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of calculateWeightForAndromeda method, of class MatchAndScore.
+     */
+    @Test
+    public void testCalculateWeightForAndromeda() {
+        System.out.println("calculateWeightForAndromeda");
+        HashSet<CPeptidePeak> tmps = new HashSet<CPeptidePeak>();
+        tmps.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
+        tmps.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b1_mz=129.1022"));
+        tmps.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y1_pepB_y1_mz=147.1128"));
+        tmps.add(new CPeptidePeak(4, 1, 1, "doublyCharged_pepB_a3_lepA_monolink_a1_mz=242.6601"));
+        tmps.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
+        tmps.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
+        tmps.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
+
+       // 6-FoundA and 4-FoundB
+        ArrayList<CPeptidePeak> alls = new ArrayList<CPeptidePeak>();
+        alls.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
+        alls.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b1_mz=129.1022"));
+        alls.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y1_pepB_y1_mz=147.1128"));
+        alls.add(new CPeptidePeak(4, 1, 1, "doublyCharged_pepB_a3_lepA_monolink_a1_mz=242.6601"));
+        alls.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
+        alls.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
+        alls.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
+        
+        alls.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a2_lepB_monolink_a3_mz=129.0966"));
+        alls.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b2_mz=129.1022"));
+        alls.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y2_pepB_y2_mz=147.1128"));
+        alls.add(new CPeptidePeak(4, 1, 1, "doublyCharged_pepB_a4_lepA_monolink_a2_mz=242.6601"));
+        alls.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a5_lepB_monolink_a2_mz=257.1859"));
+        alls.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b5_lepB_b2_mz=368.2418"));
+        alls.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y7_lepB_y6_mz=576.8655"));
+        
+        
+       // 6-FoundA and 4-FoundB 12-AllA 8-AllB
+        // 6/12*4/8= 0.25 = 
+
+        double expResult = 0.25;
+        double result = MatchAndScore.calculateWeightForAndromeda(tmps, alls, true);
         assertEquals(expResult, result, 0.0);
     }
 
