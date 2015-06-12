@@ -149,6 +149,51 @@ public class Start {
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
                 massWindow = ConfigHolder.getInstance().getDouble("massWindow");    // mass window to make window on a given MSnSpectrum for FILTERING 
 
+        // This part is due to Checking decoy strategy..
+        // args[0] - labeled:True, or else noLabeled:False
+        // args[1] - full path of fasta file
+        // args[2] - full path of a folder containing a given fasta file
+        // args[3] - full path of a result file.
+        if (args.length == 4) {
+            String isHeavyLabeled = args[0];
+            if (isHeavyLabeled.equals("labeled")) {
+                isLabeled = true;
+            } else {
+                isLabeled = false;
+            }
+            // update ConfigHolder property for isLabeled...
+            ConfigHolder.getInstance().clearProperty("isLabeled");
+            ConfigHolder.getInstance().setProperty("isLabeled", isLabeled);
+
+            // Change database settings
+            // Start with database...
+            String fasta = args[1];
+            givenDBName = fasta;
+            inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta";
+            // update ConfigHolder property for fasta file
+            ConfigHolder.getInstance().clearProperty("givenDBName");
+            ConfigHolder.getInstance().setProperty("givenDBName", givenDBName);
+
+            // now name XLinked DB such as cam_plectin_equal_2Pfus_cxm_both
+            cxDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_cxm_both";
+            ConfigHolder.getInstance().clearProperty("cxDBName");
+            ConfigHolder.getInstance().setProperty("cxDBName", cxDBName);
+
+            // Now set an index file...            
+            cxDBNameIndexFile = cxDBName + ".index";
+            monoLinkFile = cxDBName + "_monoLink.index";
+
+            // Check dbFolder now....
+            dbFolder = args[2];
+            ConfigHolder.getInstance().clearProperty("folder");
+            ConfigHolder.getInstance().setProperty("folder", dbFolder);
+
+            // change a result file now...
+            resultFile = args[3];
+            ConfigHolder.getInstance().clearProperty("resultFile");
+            ConfigHolder.getInstance().setProperty("resultFile", resultFile);
+        }
+
         LOGGER.info("Parameters are ready!");
         LOGGER.info("CX database is checking!");
 
