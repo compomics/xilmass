@@ -27,14 +27,14 @@ public class Merge {
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         File input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_prediction.txt"),
-                output = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_prediction_uniprot.txt");
+                output = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_prediction_uniprot2.txt");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(output));
         BufferedReader br = new BufferedReader(new FileReader(input));
 
         String line = "";
         while ((line = br.readLine()) != null) {
-            if (line.startsWith("File")) {
+            if (line.startsWith("PDB")) {
                 // write title
                 bw.write(line + "\t" + "uniprotAccProtein1" + "\t" + "uniprotIndexProtein1" + "\t" + "uniprotAccProtein2" + "\t" + "uniprotIndexProtein2" + "\n");
 
@@ -43,7 +43,7 @@ public class Merge {
                 String[] split = line.split("\t");
                 String structureName = split[0],
                         atom1Info = split[1],
-                        atom2Info = split[2];
+                        atom2Info = split[4];
                 // parse information to decide uniprot based info
                 String[] resAtom1 = getRes(structureName, atom1Info),
                         resAtom2 = getRes(structureName, atom2Info);
@@ -74,6 +74,7 @@ public class Merge {
                 uniprotIndex = pdbIndex;
         String proteinAcc = "P62158";
         // Calmodulin - P62158
+        structure = structure.replace(" ", "");
         if (structure.equals("2F3Y.pdb")) {
             uniprotIndex++;
         }
