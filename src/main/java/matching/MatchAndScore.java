@@ -47,9 +47,10 @@ public class MatchAndScore {
     private ScoreName scoreName;// 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmandaD (MSAmanda_derived with N=AllTheoPeaks)
     private boolean isTheoXLPeaksReady = false,
             isFoundAndMatched = false,
-            doesFindAllMatchedPeaks = true; // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
-
+            doesFindAllMatchedPeaks = true, // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
+            isCPeptide = false;
     /* Constructor */
+
     public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow) {
         this.expMS2 = expMS2;
         this.scoreName = scoreName;
@@ -58,6 +59,9 @@ public class MatchAndScore {
             theoXLMS2ions = cPeptides.getTheoretical_ions();
             theoXLPeaks = getTheoreticalCXPeaks();
             isTheoXLPeaksReady = true;
+        }
+        if (cPeptides instanceof CPeptides) {
+            isCPeptide = true;
         }
         this.fragTol = fragTol;
         this.intensityOptionForMSAmandaDerived = intensityOption;
@@ -314,12 +318,12 @@ public class MatchAndScore {
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.AndromedaDWeighted)) {
-                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL);
+                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
                     Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.TheoMSAmandaDWeighted)) {
-                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL);
+                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL,isCPeptide);
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
@@ -498,7 +502,7 @@ public class MatchAndScore {
         double expIntensities = 0;
         for (Peak p : matchedPeaks) {
             expIntensities += p.getIntensity();
-            }
+        }
         return expIntensities;
     }
 
@@ -511,8 +515,8 @@ public class MatchAndScore {
     public static double getIntensities(ArrayList<Peak> filteredPeaks) {
         double intensities = 0;
         for (Peak p : filteredPeaks) {
-                intensities += p.intensity;
-            }
+            intensities += p.intensity;
+        }
         return intensities;
     }
 
@@ -555,7 +559,8 @@ public class MatchAndScore {
      *
      *
      * @param matched_theoretical_and_matched_peaks
-     * @param fragTol fragment tolerance to calculate weight for explained intensity 
+     * @param fragTol fragment tolerance to calculate weight for explained
+     * intensity
      * @return
      */
     public static double getWeightedExplainedIntensities(HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks, double fragTol) {
@@ -585,7 +590,10 @@ public class MatchAndScore {
      * @param theoXLPeaksAL list of all theoretical peaks from both peptides
      * @return
      */
-    public static double calculateWeightForAndromeda(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL) {
+    public static double calculateWeightForAndromeda(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL, boolean isCPeptides) {
+       if(!isCPeptides){
+           return -1;
+       }
         int matchedTheoPepAs = 0,
                 matchedTheoPepBs = 0;
         for (CPeptidePeak tmpCPeak : matchedTheoXLPeaks) {
