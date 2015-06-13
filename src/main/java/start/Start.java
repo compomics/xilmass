@@ -128,7 +128,8 @@ public class Start {
                 minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
                 maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
                 threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
-                peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch");
+                peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch"),
+                max_mods_per_peptide = ConfigHolder.getInstance().getInt("max_mods_per_peptide");
 
         // more cross linking option..;
         boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("doesLinkToItself_InterPeptide"),
@@ -262,7 +263,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching);
+                    linker, fragMode, isBranching,max_mods_per_peptide);
             bw.close();
             indexFiles.add(indexMonoLinkFile);
             LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
@@ -288,7 +289,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching);
+                    linker, fragMode, isBranching,max_mods_per_peptide);
             bw.close();
             indexFiles.add(indexMonoLinkFile);
 
@@ -301,7 +302,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching);
+                    linker, fragMode, isBranching,max_mods_per_peptide);
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
             indexFiles.add(indexFile);

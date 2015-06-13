@@ -111,7 +111,8 @@ public class FASTACPDBLoader {
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
-            boolean isBranching) throws XmlPullParserException, IOException {
+            boolean isBranching,
+            int max_mods_per_peptide) throws XmlPullParserException, IOException {
 
         ArrayList<CPeptides> cPeptides = new ArrayList<CPeptides>();
         StringBuilder proteinA,
@@ -149,8 +150,8 @@ public class FASTACPDBLoader {
             ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
                     possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
             // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
-            ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA),
-                    peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB);
+            ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA,max_mods_per_peptide),
+                    peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB,max_mods_per_peptide);
             // fill all possible modified peptides here...
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
@@ -186,7 +187,8 @@ public class FASTACPDBLoader {
             PTMFactory ptmFactory,
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
-            CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+            CrossLinker linker, FragmentationMode fragMode, boolean isBranching,
+            int max_mods_per_peptide) throws XmlPullParserException, IOException {
         boolean isCPeptidesObjConstructed = false;
         StringBuilder proteinA,
                 proteinB,
@@ -230,8 +232,8 @@ public class FASTACPDBLoader {
                 ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
                         possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
                 // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
-                ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA),
-                        peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB);
+                ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA,max_mods_per_peptide),
+                        peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB,max_mods_per_peptide);
                 // fill all possible modified peptides here...
                 for (Peptide pA : peptideAs) {
                     for (Peptide pB : peptideBs) {
@@ -259,7 +261,7 @@ public class FASTACPDBLoader {
                 String contaminant_seq = header_sequence.get(header);
                 ArrayList<ModificationMatch> fixedPTM_contaminant = GetPTMs.getPTM(ptmFactory, fixedModifications, contaminant_seq, false);
                 ArrayList<GetPTMs.PTMNameIndex> possiblePTMsContaminant = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, contaminant_seq, true);
-                ArrayList<Peptide> contaminantAs = getPeptidesVarPTMs(possiblePTMsContaminant, new StringBuilder(contaminant_seq), fixedPTM_contaminant);
+                ArrayList<Peptide> contaminantAs = getPeptidesVarPTMs(possiblePTMsContaminant, new StringBuilder(contaminant_seq), fixedPTM_contaminant,max_mods_per_peptide);
                 for (Peptide c : contaminantAs) {
                     String fixedModPepB = getPTMName(c.getModificationMatches(), false),
                             varModPep = getPTMName(c.getModificationMatches(), true);
@@ -273,18 +275,21 @@ public class FASTACPDBLoader {
 
     /**
      *
-     * @param possibleDetailedVariablePTMs
-     * @param peptideSeq
-     * @param fixedPTM
+     * @param possibleDetailedVariablePTMs a list of possible variable PTMs
+     * @param peptideSeq a peptide sequence
+     * @param fixedPTM a list of max_modifications PTMs
+     * @param max_mods_per_peptide - how many variable modifications are allowed on top
      * @return
      */
-    private static ArrayList<Peptide> getPeptidesVarPTMs(ArrayList<GetPTMs.PTMNameIndex> possibleDetailedVariablePTMs, StringBuilder peptideSeq, ArrayList<ModificationMatch> fixedPTM) {
+    private static ArrayList<Peptide> getPeptidesVarPTMs(ArrayList<GetPTMs.PTMNameIndex> possibleDetailedVariablePTMs, StringBuilder peptideSeq, ArrayList<ModificationMatch> fixedPTM, int max_modifications) {
         ArrayList<Peptide> peptides = new ArrayList<Peptide>();
         ICombinatoricsVector<GetPTMs.PTMNameIndex> varMods = Factory.createVector(possibleDetailedVariablePTMs);
         Generator<GetPTMs.PTMNameIndex> gen = Factory.createSubSetGenerator(varMods);
         for (ICombinatoricsVector<GetPTMs.PTMNameIndex> tmpVarMods : gen) {
-            Peptide pep = constructPeptideVarMods(peptideSeq.toString(), fixedPTM, tmpVarMods);
-            peptides.add(pep);
+            if (tmpVarMods.getSize() <= max_modifications) {
+                Peptide pep = constructPeptideVarMods(peptideSeq.toString(), fixedPTM, tmpVarMods);
+                peptides.add(pep);
+            }
         }
         return peptides;
     }
@@ -323,7 +328,8 @@ public class FASTACPDBLoader {
             PTMFactory ptmFactory,
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
-            CrossLinker linker, FragmentationMode fragMode, boolean isBranching) throws XmlPullParserException, IOException {
+            CrossLinker linker, FragmentationMode fragMode, boolean isBranching,
+            int max_mods_per_peptide) throws XmlPullParserException, IOException {
         boolean isMonoLinkedPeptideObjConstructed = false;
         StringBuilder proteinA,
                 proteinB,
@@ -366,8 +372,8 @@ public class FASTACPDBLoader {
             ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
                     possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
             // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
-            ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA),
-                    peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB);
+            ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA,max_mods_per_peptide),
+                    peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB,max_mods_per_peptide);
             // fill all monolinked peptides here...
             for (Peptide pA : peptideAs) {
                 if (!isMonoLinkedPeptideObjConstructed) {
