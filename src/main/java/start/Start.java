@@ -129,7 +129,7 @@ public class Start {
                 maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
                 threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
                 peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch"),
-                max_mods_per_peptide = ConfigHolder.getInstance().getInt("max_mods_per_peptide");
+                maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
 
         // more cross linking option..;
         boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("doesLinkToItself_InterPeptide"),
@@ -263,7 +263,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching,max_mods_per_peptide);
+                    linker, fragMode, isBranching,maxModsPerPeptide);
             bw.close();
             indexFiles.add(indexMonoLinkFile);
             LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
@@ -289,7 +289,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching,max_mods_per_peptide);
+                    linker, fragMode, isBranching,maxModsPerPeptide);
             bw.close();
             indexFiles.add(indexMonoLinkFile);
 
@@ -302,7 +302,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching,max_mods_per_peptide);
+                    linker, fragMode, isBranching,maxModsPerPeptide);
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
             indexFiles.add(indexFile);
