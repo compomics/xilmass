@@ -9,84 +9,71 @@ import java.io.IOException;
 
 /**
  * This class holds cross linking site information from validated pLink results
- * 
+ *
  * @author Sule
  */
 public class PLinkResult extends Outcome {
 
-    private double pLinkScore,
-            calc_m,
-            delta_m,
-            ppm;
     private String spectrumTitle,
             spectrumFileName,
-            peptide_pairs,
+            label,
             peptideA,
+            alphaProtein,
+            modLocationAlpha,
+            modNameAlpha,
             peptideB,
-            modifications,
-            xlinkedProteins;
+            betaProtein,
+            modLocationBeta,
+            modNameBeta;
+    private int charge,
+            xlinkPos1,
+            xlinkPos2;
+    private double intensity,
+            ms1errPPM,
+            experimentalMZ,
+            pLinkScore,
+            eValue,
+            alphaEValue,
+            betaEValue,
+            matchedIntensity,
+            unMatchedIntensity,
+            xlinkedMass;
 
-    public PLinkResult(double pLinkScore, double calc_m, double delta_m, double ppm, String spectrumTitle, String spectrumFileName, String peptide_pairs, String modifications, String xlinkedProteins, String []targets) throws IOException {
-        this.pLinkScore = pLinkScore;
-        this.calc_m = calc_m;
-        this.delta_m = delta_m;
-        this.ppm = ppm;
+      
+    public PLinkResult(String spectrumTitle, String spectrumFileName, String label, 
+            String peptideA, String alphaProtein, String modLocationAlpha, String modNameAlpha,
+            String peptideB, String betaProtein, String modLocationBeta, String modNameBeta, 
+            int charge, 
+            int xlinkPos1, int xlinkPos2, 
+            double intensity, double ms1errPPM,             double experimentalMZ, 
+            double pLinkScore, double eValue, double alphaEValue, double betaEValue, 
+            double matchedIntensity, double unMatchedIntensity, 
+            double mass, String []target_names) {
         this.spectrumTitle = spectrumTitle;
         this.spectrumFileName = spectrumFileName;
-        this.peptide_pairs = peptide_pairs;
-        this.modifications = modifications;
-        this.xlinkedProteins = xlinkedProteins;
-        super.target_proteins = targets;
-        // prepare accessions
-        String[] splitProteins = xlinkedProteins.split("\\|");
-        accessProteinA = splitProteins[1].replace(" ", "");
-        accessProteinB = splitProteins[3].replace(" ", "");
-        System.out.println(accessProteinA);
-        System.out.println(accessProteinB);
-        crossLinkedSitePro1 = Integer.parseInt(splitProteins[2].substring(splitProteins[2].lastIndexOf("(")+1, splitProteins[2].lastIndexOf(")")));
-        crossLinkedSitePro2 = Integer.parseInt(splitProteins[4].substring(splitProteins[4].lastIndexOf("(")+1, splitProteins[4].lastIndexOf(")")));
-
-        System.out.println(peptide_pairs.split("-")[0]);
-        String[] split = peptide_pairs.split("-");
-        peptideA = split[0].substring(0, split[0].indexOf("("));
-        peptideB = split[1].substring(0, split[1].indexOf("("));
-        label = "light";
-        int labelOption = Integer.parseInt(peptide_pairs.split(":")[1]);
-        if (labelOption == 1) {
-            label = "heavy";
-        }
-    }
-
-    public double getpLinkScore() {
-        return pLinkScore;
-    }
-
-    public void setpLinkScore(double pLinkScore) {
+        super.label = label;
+        this.peptideA = peptideA;
+        super.accessProteinA = alphaProtein;
+        this.modLocationAlpha = modLocationAlpha;
+        this.modNameAlpha = modNameAlpha;
+        this.peptideB = peptideB;
+        super.accessProteinB = betaProtein;
+        this.modLocationBeta = modLocationBeta;
+        this.modNameBeta = modNameBeta;
+        this.charge = charge;
+        super.crossLinkedSitePro1 = xlinkPos1;
+        super.crossLinkedSitePro2 = xlinkPos2;
+        this.intensity = intensity;
+        this.ms1errPPM = ms1errPPM;
+        this.experimentalMZ = experimentalMZ;
         this.pLinkScore = pLinkScore;
-    }
-
-    public double getCalc_m() {
-        return calc_m;
-    }
-
-    public void setCalc_m(double calc_m) {
-        this.calc_m = calc_m;
-    }
-
-    public double getDelta_m() {
-        return delta_m;
-    }
-
-    public void setDelta_m(double delta_m) {
-        this.delta_m = delta_m;
-    }
-
-    public double getPpm() {
-        return ppm;
-    }
-
-    public void setPpm(double ppm) {
-        this.ppm = ppm;
+        this.eValue = eValue;
+        this.alphaEValue = alphaEValue;
+        this.betaEValue = betaEValue;
+        this.matchedIntensity = matchedIntensity;
+        this.unMatchedIntensity = unMatchedIntensity;
+        this.xlinkedMass = mass;
+        super.target_proteins = target_names;
     }
 
     public String getSpectrumTitle() {
@@ -105,20 +92,28 @@ public class PLinkResult extends Outcome {
         this.spectrumFileName = spectrumFileName;
     }
 
-    public String getPeptide_pairs() {
-        return peptide_pairs;
-    }
-
-    public void setPeptide_pairs(String peptide_pairs) {
-        this.peptide_pairs = peptide_pairs;
-    }
-
     public String getPeptideA() {
         return peptideA;
     }
 
     public void setPeptideA(String peptideA) {
         this.peptideA = peptideA;
+    }
+
+    public String getModLocationAlpha() {
+        return modLocationAlpha;
+    }
+
+    public void setModLocationAlpha(String modLocationAlpha) {
+        this.modLocationAlpha = modLocationAlpha;
+    }
+
+    public String getModNameAlpha() {
+        return modNameAlpha;
+    }
+
+    public void setModNameAlpha(String modNameAlpha) {
+        this.modNameAlpha = modNameAlpha;
     }
 
     public String getPeptideB() {
@@ -129,20 +124,143 @@ public class PLinkResult extends Outcome {
         this.peptideB = peptideB;
     }
 
-    public String getModifications() {
-        return modifications;
+   
+
+    public String getModLocationBeta() {
+        return modLocationBeta;
     }
 
-    public void setModifications(String modifications) {
-        this.modifications = modifications;
+    public void setModLocationBeta(String modLocationBeta) {
+        this.modLocationBeta = modLocationBeta;
     }
 
-    public String getXlinkedProteins() {
-        return xlinkedProteins;
+    public String getModNameBeta() {
+        return modNameBeta;
     }
 
-    public void setXlinkedProteins(String xlinkedProteins) {
-        this.xlinkedProteins = xlinkedProteins;
+    public void setModNameBeta(String modNameBeta) {
+        this.modNameBeta = modNameBeta;
+    }
+
+    public int getCharge() {
+        return charge;
+    }
+
+    public void setCharge(int charge) {
+        this.charge = charge;
+    }
+
+    public int getXlinkPos1() {
+        return xlinkPos1;
+    }
+
+    public void setXlinkPos1(int xlinkPos1) {
+        this.xlinkPos1 = xlinkPos1;
+    }
+
+    public int getXlinkPos2() {
+        return xlinkPos2;
+    }
+
+    public void setXlinkPos2(int xlinkPos2) {
+        this.xlinkPos2 = xlinkPos2;
+    }
+
+    public double getIntensity() {
+        return intensity;
+    }
+
+    public void setIntensity(double intensity) {
+        this.intensity = intensity;
+    }
+
+    public String getAlphaProtein() {
+        return alphaProtein;
+    }
+
+    public void setAlphaProtein(String alphaProtein) {
+        this.alphaProtein = alphaProtein;
+    }
+
+    public String getBetaProtein() {
+        return betaProtein;
+    }
+
+    public void setBetaProtein(String betaProtein) {
+        this.betaProtein = betaProtein;
+    }
+
+    public double getMH() {
+        return ms1errPPM;
+    }
+
+    public void setMs1errPPM(double ms1errPPM) {
+        this.ms1errPPM = ms1errPPM;
+    }
+
+    public double getExperimentalMZ() {
+        return experimentalMZ;
+    }
+
+    public void setExperimentalMZ(double experimentalMZ) {
+        this.experimentalMZ = experimentalMZ;
+    }
+
+
+    public double getpLinkScore() {
+        return pLinkScore;
+    }
+
+    public void setpLinkScore(double pLinkScore) {
+        this.pLinkScore = pLinkScore;
+    }
+
+    public double geteValue() {
+        return eValue;
+    }
+
+    public void seteValue(double eValue) {
+        this.eValue = eValue;
+    }
+
+    public double getAlphaEValue() {
+        return alphaEValue;
+    }
+
+    public void setAlphaEValue(double alphaEValue) {
+        this.alphaEValue = alphaEValue;
+    }
+
+    public double getBetaEValue() {
+        return betaEValue;
+    }
+
+    public void setBetaEValue(double betaEValue) {
+        this.betaEValue = betaEValue;
+    }
+
+    public double getMatchedIntensity() {
+        return matchedIntensity;
+    }
+
+    public void setMatchedIntensity(double matchedIntensity) {
+        this.matchedIntensity = matchedIntensity;
+    }
+
+    public double getUnMatchedIntensity() {
+        return unMatchedIntensity;
+    }
+
+    public void setUnMatchedIntensity(double unMatchedIntensity) {
+        this.unMatchedIntensity = unMatchedIntensity;
+    }
+
+    public double getXlinkedMass() {
+        return xlinkedMass;
+    }
+
+    public void setMass(double mass) {
+        this.xlinkedMass = mass;
     }
 
 }
