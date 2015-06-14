@@ -24,7 +24,31 @@
                     <debug>true</debug>
                 </configuration>
             </plugin>
-            
+            <!-- Resources plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-package-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/${project.artifactId}-${project.version}/resources
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/resources</directory>                                  
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>                   
+                </executions>
+            </plugin>           
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -33,7 +57,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>gui.MainGUI</mainClass>
+                            <mainClass>analyse.CheckRobustnessDecoyApproach</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>
@@ -83,6 +107,13 @@
     
    
     <dependencies>
+        
+        <dependency>
+            <groupid>org.apache.poi</groupid>
+            <artifactid>poi</artifactid>
+            <version>3.8</version>
+        </dependency>
+
         <dependency>
             <groupId>com.googlecode.combinatoricslib</groupId>
             <artifactId>combinatoricslib</artifactId>
