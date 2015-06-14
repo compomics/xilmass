@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analyse.XPSM;
+package analyse.XPSM.outcome;
 
 
 /**
@@ -14,11 +14,20 @@ public abstract class Outcome {
 
     protected String[] target_proteins;
     protected String accessProteinA,
-            accessProteinB;
+            accessProteinB,
+            label;
     protected boolean hasTraditionalDecoy = false;
     protected int crossLinkedSitePro1,
             crossLinkedSitePro2;
 
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+    
     public String[] getTarget_proteins() {
         return target_proteins;
     }

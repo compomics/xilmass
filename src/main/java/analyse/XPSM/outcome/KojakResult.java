@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analyse.XPSM;
+package analyse.XPSM.outcome;
 
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.interfaces.DBLoader;
@@ -33,8 +33,7 @@ public class KojakResult extends Outcome {
             peptide1,
             peptide2,
             modPeptide1,
-            modPeptide2,
-            label;
+            modPeptide2;
     private File fasta = new File("C:/Users/Sule/Documents/PhD/XLinked/databases/cam_plectin_equal_2Pfus.fasta");
     private ArrayList<Protein> proteins = new ArrayList<Protein>();
 
@@ -99,9 +98,9 @@ public class KojakResult extends Outcome {
 
     /**
      * Returns a peptide sequence without modification on a string itself
-     * 
+     *
      * @param pep
-     * @return 
+     * @return
      */
     public String getSeqNoMod(String pep) {
         String tmpPep = "";
@@ -214,14 +213,6 @@ public class KojakResult extends Outcome {
 
     public void setPeptide2(String peptide2) {
         this.peptide2 = peptide2;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
     }
 
     public File getFasta() {

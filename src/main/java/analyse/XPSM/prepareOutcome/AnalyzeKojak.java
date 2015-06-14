@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analyse.XPSM;
+package analyse.XPSM.prepareOutcome;
 
+import analyse.XPSM.outcome.KojakResult;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,7 +35,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
         super.prediction_file = prediction_file;
         this.output = output;
         this.kojakResultFolder = kojakResultFolder;
-        super.psms_contaminant = new File("C:/Users/Sule/Documents/PhD/XLinked/XLinkData_Freiburg/1_Cleaning/SGRunsHCD_identification/velos_orbitra_elite/hcd_orbi_elite_crap_10psmFDR_psms_validated.txt");
+        super.psms_contaminant = psms_contaminant;
     }
 
     @Override
@@ -110,7 +111,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                         }
                     } else if (line.startsWith("Scan") && !wasTitleWritten) {
                         wasTitleWritten = true;
-                        bw.write("SpectrumFile" + "\t" + line + "\t" + "labeled" + "\t" + "Target_Decoy+" + "\t" + "Predicted" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)" + "\n");
+                        bw.write("SpectrumFile" + "\t" + line + "\t" + "labeled" + "\t" + "Target_Decoy" + "\t" + "Predicted" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)" + "\n");
                     }
                 }
             }
@@ -122,7 +123,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                 bw.write(tmpMGF + "\t" + kj.getScanNumber() + "\t" + kj.getObsMass() + "\t" + kj.getCharge() + "\t" + kj.getPsms_mass() + "\t" + kj.getPpmErr() + "\t" + kj.getScore() + "\t"
                         + kj.getdScore() + "\t" + kj.getPepDiff() + "\t" + kj.getPeptide1() + "\t" + kj.getCrossLinkedSitePro1() + "\t" + kj.getAccessProteinA() + "\t"
                         + kj.getPeptide2() + "\t" + kj.getCrossLinkedSitePro2() + "\t" + kj.getAccessProteinB() + "\t" + kj.getLinkerMass() + "\t" + kj.getLabel() + "\t"
-                        + kj.getTargetDecoy() + "\t" + assetTrueLinking(kj.accessProteinA, kj.accessProteinB, kj.crossLinkedSitePro1, kj.crossLinkedSitePro2) + "\n");
+                        + kj.getTargetDecoy() + "\t" + assetTrueLinking(kj.getAccessProteinA(), kj.getAccessProteinB(), kj.getCrossLinkedSitePro1(), kj.getCrossLinkedSitePro2()) + "\n");
             }
         }
         bw.close();

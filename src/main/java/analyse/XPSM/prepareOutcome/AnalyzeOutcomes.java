@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analyse.XPSM;
+package analyse.XPSM.prepareOutcome;
 
 import analyse.xwalk_uniprot.TrueLinking;
 import java.io.BufferedReader;
@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -28,6 +27,7 @@ public abstract class AnalyzeOutcomes {
     protected boolean hasTraditionalDecoy = false; // false: Pfu is decoy, true:target/decoy (reversed or shuffled) approach
     private boolean areContaminantMSMSReady = false; // to fill out a list of validated contaminant peptides
 
+   
     /**
      * This method analyze a given PSM list for a software
      *
@@ -52,7 +52,7 @@ public abstract class AnalyzeOutcomes {
         if (trueLinkings.isEmpty()) {
             prepareTrueLinkings();
         }
-        String res = "Not-predicted" + "\t" + "-";
+        String res = "Not-predicted" + "\t" + "-" + "\t" + "-";
         for (TrueLinking tl : trueLinkings) {
             if (tl.getProteinA().equals(uniprotProAacces)
                     && tl.getProteinB().equals(uniprotProBacces)
@@ -107,7 +107,7 @@ public abstract class AnalyzeOutcomes {
             String line = "";
 
             while ((line = br.readLine()) != null) {
-                if (!line.startsWith("Spect")) {
+                if (!line.startsWith("Protein")) {
                     String[] split = line.split("\t");
                     String spectrumFile = split[7], //Probe2_v_x1_top15HCD-precolumn-1.mgf
                             specTitle = split[8], //File2244 Spectrum3004 scans: 4650
