@@ -60,6 +60,12 @@ public abstract class AnalyzeOutcomes {
                     && tl.getIndexB() == uniprotLinkingSiteB) {
                 res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
             }
+            if (tl.getProteinA().equals(uniprotProBacces)
+                    && tl.getProteinB().equals(uniprotProAacces)
+                    && tl.getIndexA() == uniprotLinkingSiteB
+                    && tl.getIndexB() == uniprotLinkingSiteA) {
+                res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
+            }
         }
         return res;
     }
@@ -80,8 +86,8 @@ public abstract class AnalyzeOutcomes {
             while ((line = br.readLine()) != null) {
                 if (!line.startsWith("Spect")) {
                     String[] split = line.split("\t");
-                    String specName = split[8];
-                    contaminants.add(specName);
+                    String spectrumTitle = split[8];
+                    contaminants.add(spectrumTitle);
                 }
             }
             areContaminantMSMSReady = true;
@@ -105,7 +111,6 @@ public abstract class AnalyzeOutcomes {
         if (!areContaminantMSMSReady) {
             BufferedReader br = new BufferedReader(new FileReader(psms_contaminant));
             String line = "";
-
             while ((line = br.readLine()) != null) {
                 if (!line.startsWith("Protein")) {
                     String[] split = line.split("\t");
@@ -188,7 +193,6 @@ public abstract class AnalyzeOutcomes {
                         uniprotAcc1Index = split[9],
                         uniprotAcc2 = split[10],
                         uniprotAcc2Index = split[11];
-
                 int indexA = Integer.parseInt(uniprotAcc1Index),
                         indexB = Integer.parseInt(uniprotAcc2Index);
                 double betaMeasuredDistance = Double.parseDouble(betaMeasuredDistanceStr),
