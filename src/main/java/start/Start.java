@@ -246,7 +246,7 @@ public class Start {
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             // in silico digested contaminant database
             if (!contaminantDBName.isEmpty()) {
-                EnzymeDigest o = new EnzymeDigest();                
+                EnzymeDigest o = new EnzymeDigest();
                 String cdb = contaminantDBName + "_insilico";
                 o.main(cdb, enzymeFileName, enzymeName, contaminantDBName, null, lowMass, highMass, null, misclevaged);
                 addHeaders(headers_sequences, cdb);
@@ -263,7 +263,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching,maxModsPerPeptide);
+                    linker, fragMode, isBranching, maxModsPerPeptide);
             bw.close();
             indexFiles.add(indexMonoLinkFile);
             LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
@@ -289,7 +289,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching,maxModsPerPeptide);
+                    linker, fragMode, isBranching, maxModsPerPeptide);
             bw.close();
             indexFiles.add(indexMonoLinkFile);
 
@@ -302,7 +302,7 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    linker, fragMode, isBranching,maxModsPerPeptide);
+                    linker, fragMode, isBranching, maxModsPerPeptide);
             bw.close();
             LOGGER.info("An index (peptide-mass index) file bas been created!");
             indexFiles.add(indexFile);
@@ -320,12 +320,13 @@ public class Start {
         StringBuilder fileTitle = new StringBuilder("SpectrumIndex" + "\t" + "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t"
                 + "PrecursorMZ" + "\t" + "PrecursorCharge" + "\t" + "PrecursorMass" + "\t" + "TheoreticalMass" + "\t" + "MS1Err(PPM)" + "\t"
                 + "ScoringFunction" + "\t" + "Score" + "\t"
-                + "ProteinA" + "\t" + "ProteinB" + "\t" + "PeptideSequenceA" + "\t" + "PeptideSequenceB" + "\t"
-                + "ModificationPeptideA" + "\t" + "ModificationPeptideB" + "\t"
-                + "LinkerPositionOnPeptideA" + "\t" + "LinkerPositionOnPeptideB" + "\t"
+                + "AlphaProtein" + "\t" + "BetaProtein" + "\t"
+                + "AlhpaPeptideSeq" + "\t" + "BetaPeptideSeq" + "\t"
+                + "ModificationAlphaPeptide" + "\t" + "ModificationBetaPeptide" + "\t"
+                + "LinkerPositionOnAlphaPeptide" + "\t" + "LinkerPositionOnBetaPeptide" + "\t"
                 + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t"
                 + "MatchedPeakList" + "\t" + "TheoreticalPeakList" + "\t"
-                + "numTheoAs" + "\t" + "numTheoBs");
+                + "numTheoIonsAlpha" + "\t" + "numTheoIonsBeta");
         if (doesKeepCPeptideFragmPattern) {
             fileTitle.append("\t").append("CPeptideFragPatternName");
         }
@@ -382,13 +383,34 @@ public class Start {
                                             tmpMS1Err = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass),
                                             precMZ = res.getMsms().getPrecursor().getMz();
                                     // Result line..
+                                    int pepALen = tmpCpeptide.getPeptideA().getSequence().length(),
+                                            pepBLen = tmpCpeptide.getPeptideB().getSequence().length();
+                                    String proteinAlpha = tmpCpeptide.getProteinA(),
+                                            proteinBeta = tmpCpeptide.getProteinB(),
+                                            peptideAlpha = tmpCpeptide.getPeptideA().getSequence(),
+                                            peptideBeta = tmpCpeptide.getPeptideB().getSequence(),
+                                            modificationAlpha = modificationA,
+                                            modificationBeta = modificationB;
+                                    int linkerAlpha = linkerPositionOnPeptideA,
+                                            linkerBeta = linkerPositionOnPeptideB;
+                                    // Correcting for Alpha-Beta peptides (Alpha is longer peptide whereas beta is shorter one)
+                                    if (pepALen < pepBLen) {
+                                        proteinBeta = tmpCpeptide.getProteinA();
+                                        proteinAlpha = tmpCpeptide.getProteinB();
+                                        peptideBeta = tmpCpeptide.getPeptideA().getSequence();
+                                        peptideAlpha = tmpCpeptide.getPeptideB().getSequence();
+                                        modificationBeta = modificationA;
+                                        modificationAlpha = modificationB;
+                                        linkerAlpha = linkerPositionOnPeptideB;
+                                        linkerBeta = linkerPositionOnPeptideA;
+                                    }
                                     String specInfo = counting + "\t" + res.getMsms().getFileName() + "\t" + res.getMsms().getSpectrumTitle() + "\t" + precMZ + "\t";
                                     String runningInfo = charge + "\t" + precMass + "\t" + theoMass + "\t" + tmpMS1Err + "\t"
                                             + scoreName + "\t" + res.getScore() + "\t"
-                                            + tmpCpeptide.getProteinA() + "\t" + tmpCpeptide.getProteinB() + "\t"
-                                            + tmpCpeptide.getPeptideA().getSequence() + "\t" + tmpCpeptide.getPeptideB().getSequence() + "\t"
-                                            + modificationA + "\t" + modificationB + "\t"
-                                            + linkerPositionOnPeptideA + "\t" + linkerPositionOnPeptideB + "\t"
+                                            + proteinAlpha + "\t" + proteinBeta + "\t"
+                                            + peptideAlpha + "\t" + peptideBeta + "\t"
+                                            + modificationAlpha + "\t" + modificationBeta + "\t"
+                                            + linkerAlpha + "\t" + linkerBeta + "\t"
                                             + matchedPeaks.size() + "\t" + matchedCTheoPeaks.size() + "\t";
                                     // write a result line..
                                     bw.write(specInfo + runningInfo);
@@ -398,7 +420,7 @@ public class Start {
                                             bw.write(p.mz + " ");
                                         }
                                         bw.write("\t");
-                                        // now write all matched theoretical peaks...                                        
+                                        // now write all matched theoretical peaks..                                        
                                         int numTheoPepAs = 0,
                                                 numTheoPepBs = 0;
                                         for (CPeptidePeak tmpCPeak : matchedCTheoPLists) {
@@ -406,8 +428,13 @@ public class Start {
                                             int[] vals = check(tmpCPeak.toString(), numTheoPepAs, numTheoPepBs);
                                             numTheoPepAs = vals[0];
                                             numTheoPepBs = vals[1];
+                                            if (pepALen < pepBLen) {
+                                                numTheoPepAs = vals[1];
+                                                numTheoPepBs = vals[0];
+                                            }
                                         }
                                         bw.write("\t" + numTheoPepAs + "\t" + numTheoPepBs);
+
                                         // if necessary, write fragmentation pattern for each found CPeptides object..
                                         if (doesKeepCPeptideFragmPattern) {
                                             DefineIdCPeptideFragmentationPattern p = new DefineIdCPeptideFragmentationPattern(matchedCTheoPLists,
@@ -918,7 +945,7 @@ public class Start {
     }
 
     private static void addHeaders(HashMap<String, String> headers_sequences, String cdb) throws IOException {
-       File contaminant = new File(cdb);
+        File contaminant = new File(cdb);
         DBLoader loader = DBLoaderLoader.loadDB(contaminant);
         Protein startProtein = null;
         // get a crossLinkerName object        
@@ -932,6 +959,6 @@ public class Start {
             }
             headers_sequences.put(tmpStartAccession, startSequence);
         }
-        contaminant.deleteOnExit();        
+        contaminant.deleteOnExit();
     }
 }
