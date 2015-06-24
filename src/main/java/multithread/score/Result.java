@@ -27,7 +27,9 @@ public class Result {
     private ScoreName scoreName; // a name of scoring function
     private HashSet<Peak> matchedPeaks; // list of matched peaks on an experimental spectrum 
     private HashSet<CPeptidePeak> matchedCTheoPeaks; // list of theoretical peaks matched on a theoretical spectrum
-    private double weight; // weight for andromeda...
+    private double weight; // weight for scoring...
+    private int matchedTheoA, // matched theoretical peaks from peptideA
+            matchedTheoB; // matched theoretical peaks from peptideB
 
     /**
      *
@@ -37,8 +39,12 @@ public class Result {
      * @param score calculated score
      * @param matchedPeaks matched experimental peaks
      * @param matchedCTheoPeaks matched theoretical peaks
+     * @param weight
+     * @param matchedTheoA matched theoretical peaks from peptideA
+     * @param matchedTheoB matched theoretical peaks from peptideB
      */
-    public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks, double weight) {
+    public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks, 
+            double weight, int matchedTheoA, int matchedTheoB) {
         this.msms = msms;
         this.cp = cp;
         this.score = score;
@@ -46,6 +52,8 @@ public class Result {
         this.matchedCTheoPeaks = matchedCTheoPeaks;
         this.matchedPeaks = matchedPeaks;
         this.weight = weight;
+        this.matchedTheoA =matchedTheoA ;
+        this.matchedTheoB = matchedTheoB;
     }
 
     /* Getter and setter method for Result information */
@@ -105,4 +113,20 @@ public class Result {
         this.matchedCTheoPeaks = matchedCTheoPeaks;
     }
 
+    public int getMatchedTheoA() {
+        return matchedTheoA;
+    }
+
+    public void setMatchedTheoA(int matchedTheoA) {
+        this.matchedTheoA = matchedTheoA;
+    }
+
+    public int getMatchedTheoB() {
+        return matchedTheoB;
+    }
+
+    public void setMatchedTheoB(int matchedTheoB) {
+        this.matchedTheoB = matchedTheoB;
+    }
+       
 }
