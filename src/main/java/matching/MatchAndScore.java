@@ -37,21 +37,23 @@ public class MatchAndScore {
             // TODO: Need to see the performance in terms of object generation!
             matchedTheoXLPeaks = new HashSet<CPeptidePeak>(); // Matched theoretical cross linked peaks
     private ArrayList<CPeptidePeak> theoXLPeaksAL = new ArrayList<CPeptidePeak>();
-    private double fragTol, // fragment tolerance to select 
-            cXPSMScore = 0, // A CX-PSM Score 
+    private double fragTol, // fragment tolerance to select
+            cXPSMScore = 0, // A CX-PSM Score
             massWindow = 100, // Mass window to filter out peaks from a given MSnSpectrum
             weight = 0; // for andromeda - (numFoundTheoPeak/allTheoPeak)PepA*(numFoundTheoPeak/allTheoPeak)PepB
     private int intensityOptionForMSAmandaDerived = 0,
-            minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)            
-            maxFPeaks; // Maximum number of filtered peaks per 100Da mass window.. (To test)
+            minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)
+            maxFPeaks, // Maximum number of filtered peaks per 100Da mass window.. (To test)
+            matchedTheoPepAs, // matched theoretical peaks from peptideA
+            matchedTheoPepBs; // matched theoretical peaks from peptideB
     private ScoreName scoreName;// 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmandaD (MSAmanda_derived with N=AllTheoPeaks)
     private boolean isTheoXLPeaksReady = false,
             isFoundAndMatched = false,
-            doesFindAllMatchedPeaks = true, // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
+            doesFindAllMatchedPeaks = false, // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
             isCPeptide = false;
     /* Constructor */
 
-    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow) {
+    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow, boolean doesFindAllMatchedPeaks) {
         this.expMS2 = expMS2;
         this.scoreName = scoreName;
         this.cPeptides = cPeptides;
@@ -68,6 +70,7 @@ public class MatchAndScore {
         this.minFPeaks = minFPeakNum;
         this.maxFPeaks = maxFPeakNum;
         this.massWindow = massWindow;
+        this.doesFindAllMatchedPeaks = doesFindAllMatchedPeaks;
     }
 
     /* getters and setters */
@@ -230,7 +233,7 @@ public class MatchAndScore {
                             double theoMz = tmpCPeak.getMz(),
                                     expMz = p.getMz(),
                                     tmp_diff = Math.abs(expMz - theoMz);
-                            // A theoretical peak which is closest to an experimental peak is selected! 
+                            // A theoretical peak which is closest to an experimental peak is selected!
                             // if two peaks are selected and two theoretical peaks withing fragment tolerance, only closest theoretical peak is selected
                             // In case that a peak has matched to two theoretical peaks with the mass tolerance, only the left one is selected
                             if (tmp_diff <= diff && !doesFindAllMatchedPeaks) {
@@ -318,12 +321,12 @@ public class MatchAndScore {
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.AndromedaDWeighted)) {
-                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
+                    weight = calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
                     Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.TheoMSAmandaDWeighted)) {
-                    weight = calculateWeightForAndromeda(matchedTheoXLPeaks, theoXLPeaksAL,isCPeptide);
+                    weight = calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL,isCPeptide);
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
@@ -590,11 +593,11 @@ public class MatchAndScore {
      * @param theoXLPeaksAL list of all theoretical peaks from both peptides
      * @return
      */
-    public static double calculateWeightForAndromeda(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL, boolean isCPeptides) {
+    public  double calculateWeightForTheoPeaks(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL, boolean isCPeptides) {
        if(!isCPeptides){
            return -1;
        }
-        int matchedTheoPepAs = 0,
+         matchedTheoPepAs = 0;
                 matchedTheoPepBs = 0;
         for (CPeptidePeak tmpCPeak : matchedTheoXLPeaks) {
             int[] vals = check(tmpCPeak.toString(), matchedTheoPepAs, matchedTheoPepBs);
@@ -612,7 +615,24 @@ public class MatchAndScore {
         return weight;
     }
 
-    /**
+    public int getMatchedTheoPepAs() {
+        return matchedTheoPepAs;
+    }
+
+    public void setMatchedTheoPepAs(int matchedTheoPepAs) {
+        this.matchedTheoPepAs = matchedTheoPepAs;
+    }
+
+    public int getMatchedTheoPepBs() {
+        return matchedTheoPepBs;
+    }
+
+    public void setMatchedTheoPepBs(int matchedTheoPepBs) {
+        this.matchedTheoPepBs = matchedTheoPepBs;
+    }
+
+
+   /**
      * This method check a given theoretical peak to determine whether belongs
      * to peptideA or peptideB
      *
