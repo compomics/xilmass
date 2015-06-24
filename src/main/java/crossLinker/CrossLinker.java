@@ -20,8 +20,21 @@ public abstract class CrossLinker {
     protected double massShift_Type2, // when a linker connected to both peptides - intra protein
             massShift_Type0; // when a linker only connected to one peptide - monolink/dead end
     protected CrossLinkerType type; // either homobifunctional or heterobifunctional
-    protected boolean isLabeled; // TODO: For the future, if we also consider labelled cross linker
+    protected boolean isLabeled; 
+    
+    
+    /**
+     * Return true if a cross linker is labeled
+     * @return 
+     */
+    public boolean isIsLabeled() {
+        return isLabeled;
+    }
 
+    public void setIsLabeled(boolean isLabeled) {
+        this.isLabeled = isLabeled;
+    }
+    
     /**
      * This method returns a theoretical mz happens by cross linking
      *
