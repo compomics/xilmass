@@ -36,6 +36,7 @@ public class DSS extends CrossLinker {
      * @param isLabeled
      */
     public DSS(boolean isLabeled) {
+        super.isLabeled = isLabeled;
         this.type = CrossLinkerType.homobifunctional; // K-K     
         double hydrogen_mass = Atom.H.getMonoisotopicMass(),
                 deuterium_mass = Atom.H.getIsotopeMass(1);

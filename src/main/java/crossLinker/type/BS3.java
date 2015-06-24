@@ -32,6 +32,7 @@ public class BS3 extends CrossLinker {
      * @param isLabeled 
      */
     public BS3(boolean isLabeled) {
+        super.isLabeled = isLabeled;
         this.type = CrossLinkerType.homobifunctional; // K-K     
         double hydrogen_mass = Atom.H.getMonoisotopicMass(),
                 deuterium_mass = Atom.H.getIsotopeMass(1);
