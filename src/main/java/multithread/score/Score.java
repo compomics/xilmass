@@ -45,11 +45,14 @@ public class Score implements Callable<ArrayList<Result>> {
     private CrossLinker linker;
     private FragmentationMode fragMode;
     private PTMFactory ptmFactory;
-    private boolean isBranching;
+    private boolean isBranching,
+            isContrastLinkedAttachmentOn,
+            doesFindAllMatchedPeaks;
 
     // A constructor for multithreading
     public Score(ArrayList<MSnSpectrum> selectedSpectra, String line, ScoreName scoreName, PTMFactory ptmFactory, CrossLinker linker, FragmentationMode fragMode,
-            double fragTol, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber, double massWindow, boolean isBranching) {
+            double fragTol, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber, double massWindow,
+            boolean isBranching, boolean isContrastLinkedAttachmentOn, boolean doesFindAllMatchedPeaks) {
         this.selectedSpectra = selectedSpectra;
         this.line = line;
         this.scoreName = scoreName;
@@ -62,6 +65,8 @@ public class Score implements Callable<ArrayList<Result>> {
         this.maxFilteredPeakNumber = maxFilteredPeakNumber;
         this.massWindow = massWindow;
         this.isBranching = isBranching;
+        this.isContrastLinkedAttachmentOn = isContrastLinkedAttachmentOn;
+        this.doesFindAllMatchedPeaks = doesFindAllMatchedPeaks;
     }
 
     /**
@@ -80,12 +85,14 @@ public class Score implements Callable<ArrayList<Result>> {
             MSnSpectrum tmpMSMS = (MSnSpectrum) iteratorCPeptides.iter.next();
             synchronized (tmpMSMS) {
                 // First generate CPeptides object.  
-                MatchAndScore obj = new MatchAndScore(tmpMSMS, scoreName, cPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow);
+                MatchAndScore obj = new MatchAndScore(tmpMSMS, scoreName, cPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow, doesFindAllMatchedPeaks);
                 double tmpScore = obj.getCXPSMScore(),
                         weight = obj.getWeight();
                 HashSet<Peak> matchedPeaks = obj.getMatchedPeaks();
                 HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalCPeaks();
-                Result r = new Result(tmpMSMS, cPeptide, scoreName, tmpScore, matchedPeaks, matchedTheoreticalCPeaks, weight);
+                int matchedTheoA = obj.getMatchedTheoPepAs(),
+                        matchedTheoB = obj.getMatchedTheoPepBs();
+                Result r = new Result(tmpMSMS, cPeptide, scoreName, tmpScore, matchedPeaks, matchedTheoreticalCPeaks, weight, matchedTheoA, matchedTheoB);
                 results.add(r);
             }
         }
@@ -124,7 +131,7 @@ public class Score implements Callable<ArrayList<Result>> {
             Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA),
                     peptideB = new Peptide(peptideBseqFile, ptms_peptideB);
             // now generate peptide...
-            CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+            CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isContrastLinkedAttachmentOn);
             selected = tmpCpeptide;
             // This means only monolinked peptide...
         } else if (!proteinA.startsWith("contaminant")) {

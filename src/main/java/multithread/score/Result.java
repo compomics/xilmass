@@ -10,7 +10,6 @@ import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.HashSet;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
-import theoretical.CPeptides;
 import theoretical.CrossLinkedPeptides;
 
 /**
