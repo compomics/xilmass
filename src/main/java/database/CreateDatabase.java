@@ -46,7 +46,7 @@ public class CreateDatabase {
     private String inputProteinFileName, // input fasta file
             inSilicoPeptideDBName, // in silico digested fasta file
             crossLinkerName, // a cross linker name 
-            crossLinkedProteinTypes = "Both", // "Intra"(Different proteins), "Inter" (Same proteins) "Both" (Same and different proteins)           
+            crossLinkedProteinTypes = "both", // "intra"(Different proteins), "inter" (Same proteins) "both" (Same and different proteins)           
             enzymeName = "Trypsin",
             enzymeFileName, // an enzyme file from DBToolKit
             miscl = "2", // miscleaveged number - Important to create combination, but if it is higher, search space is drastically increased
@@ -511,12 +511,12 @@ public class CreateDatabase {
                             }
                             if (tmpNextAccession.equals(tmpStartAccession)) {
                                 // put a control to find either inter or intra proteins
-                                if (crossLinkedProteinTypes.equals("Intra") || crossLinkedProteinTypes.equals("Both")) {
+                                if (crossLinkedProteinTypes.equals("intra") || crossLinkedProteinTypes.equals("both")) {
                                     // header and sequence
                                     generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
                                 }
                             } else {
-                                if (crossLinkedProteinTypes.equals("Inter") || crossLinkedProteinTypes.equals("Both")) {
+                                if (crossLinkedProteinTypes.equals("inter") || crossLinkedProteinTypes.equals("both")) {
                                     generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
                                 }
                             }
