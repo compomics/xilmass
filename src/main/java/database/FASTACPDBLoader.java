@@ -43,11 +43,13 @@ public class FASTACPDBLoader {
      * @param linker
      * @param fragMode
      * @param isBranching
+     * @param isContrastLinkedAttachmentOn
      * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static HashMap<CPeptides, Double> readFiletoGetCPeptideTheoMass(File file, PTMFactory ptmFactory, CrossLinker linker, FragmentationMode fragMode, boolean isBranching)
+    public static HashMap<CPeptides, Double> readFiletoGetCPeptideTheoMass(File file, PTMFactory ptmFactory, CrossLinker linker, 
+            FragmentationMode fragMode, boolean isBranching, boolean isContrastLinkedAttachmentOn)
             throws XmlPullParserException, IOException {
         HashMap<CPeptides, Double> cPeptides_Masses = new HashMap<CPeptides, Double>();
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -81,7 +83,7 @@ public class FASTACPDBLoader {
                 Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA),
                         peptideB = new Peptide(peptideBseq, ptms_peptideB);
                 // now generate peptide...
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isContrastLinkedAttachmentOn);
                 cPeptides_Masses.put(cPeptide, mass);
             }
         }
@@ -101,6 +103,8 @@ public class FASTACPDBLoader {
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
      * @param isBranching true:is branching/false:attaching
+     * @param isContrastLinkedAttachmentOn
+     * @param max_mods_per_peptide
      * @return
      * @throws XmlPullParserException
      * @throws IOException
@@ -112,6 +116,7 @@ public class FASTACPDBLoader {
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
             boolean isBranching,
+            boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
 
         ArrayList<CPeptides> cPeptides = new ArrayList<CPeptides>();
@@ -155,7 +160,8 @@ public class FASTACPDBLoader {
             // fill all possible modified peptides here...
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
-                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                    CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, 
+                            linkerPosPeptideB, fragMode, isBranching,isContrastLinkedAttachmentOn);
                     cPeptides.add(cPeptide);
                 }
             }
@@ -178,6 +184,8 @@ public class FASTACPDBLoader {
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
      * @param isBranching true:is branching/false:attaching
+     * @param isContrastLinkedAttachmentOn
+     * @param max_mods_per_peptide
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -187,7 +195,8 @@ public class FASTACPDBLoader {
             PTMFactory ptmFactory,
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
-            CrossLinker linker, FragmentationMode fragMode, boolean isBranching,
+            CrossLinker linker, FragmentationMode fragMode,
+            boolean isBranching, boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
         boolean isCPeptidesObjConstructed = false;
         StringBuilder proteinA,
@@ -198,7 +207,8 @@ public class FASTACPDBLoader {
         double mass = 0;
         // Read each header to construct CrossLinkedPeptide object
         for (String header : header_sequence.keySet()) {
-            if (!header.startsWith("contaminant")) {
+            if (!header.startsWith("contaminant") && !header.isEmpty()) {
+//                System.out.println("header"+header);
                 String[] split = header.split("_");
                 int pepAIndex = 1,
                         pepBIndex = 3;
@@ -238,7 +248,8 @@ public class FASTACPDBLoader {
                 for (Peptide pA : peptideAs) {
                     for (Peptide pB : peptideBs) {
                         if (!isCPeptidesObjConstructed) {
-                            cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching);
+                            cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB,
+                                    fragMode, isBranching, isContrastLinkedAttachmentOn);
                             mass = cPeptide.getTheoretical_xlinked_mass();
                             StringBuilder info = CPeptideInfo.getInfo(cPeptide);
                             bw.write(info + "\n");
@@ -257,7 +268,7 @@ public class FASTACPDBLoader {
                     }
                 }
                 // This part for Contaminant sequence
-            } else {
+            } else if(!header.isEmpty()){
                 String contaminant_seq = header_sequence.get(header);
                 ArrayList<ModificationMatch> fixedPTM_contaminant = GetPTMs.getPTM(ptmFactory, fixedModifications, contaminant_seq, false);
                 ArrayList<GetPTMs.PTMNameIndex> possiblePTMsContaminant = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, contaminant_seq, true);
@@ -319,6 +330,7 @@ public class FASTACPDBLoader {
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
      * @param isBranching true:is branching/false:attaching
+     * @param max_mods_per_peptide
      * @throws XmlPullParserException
      * @throws IOException
      */
