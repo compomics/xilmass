@@ -13,7 +13,6 @@ import com.compomics.util.gui.spectrum.SpectrumPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,10 +23,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.CellEditor;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 import org.apache.commons.lang.NumberUtils;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
@@ -91,10 +88,9 @@ public final class Visualize extends javax.swing.JFrame {
                         columnNames[0] = "index";
                         // write names of other columns
                         for (int i = 0; i < split.length; i++) {
-                            columnNames[i + 1] = split[i];
-
+                                columnNames[i + 1] = split[i];
+                            }
                         }
-                    }
                     // prepare data
                     if (control != 0) {
                         if (!split[0].equals(split[1])) {
@@ -138,30 +134,39 @@ public final class Visualize extends javax.swing.JFrame {
             resultFilejTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             // set widths.
             resultFilejTable.getColumnModel().getColumn(0).setPreferredWidth(880);  // index            
-            resultFilejTable.getColumnModel().getColumn(1).setPreferredWidth(7000); // spectrum index
-            resultFilejTable.getColumnModel().getColumn(2).setPreferredWidth(15000); // spectrum file           
-            resultFilejTable.getColumnModel().getColumn(3).setPreferredWidth(15000); // spectrum title 
-            resultFilejTable.getColumnModel().getColumn(4).setPreferredWidth(5300); // precursor mz
-            resultFilejTable.getColumnModel().getColumn(5).setPreferredWidth(1500); // precursor charg
-            resultFilejTable.getColumnModel().getColumn(6).setPreferredWidth(5800); // precursor mass            
-            resultFilejTable.getColumnModel().getColumn(7).setPreferredWidth(5800); // theoretical mass
-            resultFilejTable.getColumnModel().getColumn(8).setPreferredWidth(3000); // MS1mass error
-            resultFilejTable.getColumnModel().getColumn(9).setPreferredWidth(3500); // Scoring funcion
-            resultFilejTable.getColumnModel().getColumn(10).setPreferredWidth(6600); // Score
-            resultFilejTable.getColumnModel().getColumn(11).setPreferredWidth(5500); // proteinA name
-            resultFilejTable.getColumnModel().getColumn(12).setPreferredWidth(5500); //proteinB name
-            resultFilejTable.getColumnModel().getColumn(13).setPreferredWidth(9400);  // peptide sequence A
-            resultFilejTable.getColumnModel().getColumn(14).setPreferredWidth(9400); // peptide sequence B
+            resultFilejTable.getColumnModel().getColumn(1).setPreferredWidth(7000); // spectrum file
+            resultFilejTable.getColumnModel().getColumn(2).setPreferredWidth(1500); // spectrum title           
+            resultFilejTable.getColumnModel().getColumn(3).setPreferredWidth(2000); // precursor mz             
+            resultFilejTable.getColumnModel().getColumn(4).setPreferredWidth(1500); // precursor charge
 
-            resultFilejTable.getColumnModel().getColumn(15).setPreferredWidth(9400);  // modification peptide seq A
-            resultFilejTable.getColumnModel().getColumn(16).setPreferredWidth(9400); // modification peptide seq B
-
-            resultFilejTable.getColumnModel().getColumn(17).setPreferredWidth(900); // linker position peptideA
-            resultFilejTable.getColumnModel().getColumn(18).setPreferredWidth(900); // linker position peptideB
-            resultFilejTable.getColumnModel().getColumn(19).setPreferredWidth(2000); // #matched peaks
-            resultFilejTable.getColumnModel().getColumn(20).setPreferredWidth(2000); // #matched theoretical peaks
-            resultFilejTable.getColumnModel().getColumn(21).setPreferredWidth(60000); // matched peak list
-            resultFilejTable.getColumnModel().getColumn(22).setPreferredWidth(135000); // theoretical matched peak list
+////            resultFilejTable.getColumnModel().getColumn(5).setPreferredWidth(5800); // precursor mass             
+////            resultFilejTable.getColumnModel().getColumn(6).setPreferredWidth(5800); // theoretical mass    
+//            resultFilejTable.getColumnModel().getColumn(5).setPreferredWidth(2000); // MS1mass error
+////            resultFilejTable.getColumnModel().getColumn(8).setPreferredWidth(30); // Scoring funcion
+//            resultFilejTable.getColumnModel().getColumn(6).setPreferredWidth(2500); // Score
+//            resultFilejTable.getColumnModel().getColumn(7).setPreferredWidth(3500); // proteinA name
+//            resultFilejTable.getColumnModel().getColumn(8).setPreferredWidth(3500); // proteinB name
+//            resultFilejTable.getColumnModel().getColumn(9).setPreferredWidth(9400);  //peptideA 
+//            resultFilejTable.getColumnModel().getColumn(10).setPreferredWidth(9400);  // peptideB
+//            resultFilejTable.getColumnModel().getColumn(11).setPreferredWidth(6000); // modification peptide seq A
+//            resultFilejTable.getColumnModel().getColumn(12).setPreferredWidth(6000);  // modification peptide seq B
+//
+//            resultFilejTable.getColumnModel().getColumn(13).setPreferredWidth(900); // linker position peptideA
+//            resultFilejTable.getColumnModel().getColumn(14).setPreferredWidth(900); // linker position peptideB
+//
+//            resultFilejTable.getColumnModel().getColumn(15).setPreferredWidth(4000); // #matched peaks
+//            resultFilejTable.getColumnModel().getColumn(16).setPreferredWidth(4000); // #matched theoretical peaks
+//
+//            resultFilejTable.getColumnModel().getColumn(17).setPreferredWidth(64000); // matched theoretical peaks
+//
+//            resultFilejTable.getColumnModel().getColumn(18).setPreferredWidth(2000); // #num alpha ion
+//            resultFilejTable.getColumnModel().getColumn(19).setPreferredWidth(2000); // #num beta ion
+//
+//            resultFilejTable.getColumnModel().getColumn(20).setPreferredWidth(6000); // CPeptideFragmentation
+//            resultFilejTable.getColumnModel().getColumn(21).setPreferredWidth(2500);  // Labeled
+//            resultFilejTable.getColumnModel().getColumn(22).setPreferredWidth(4500); // Predicted
+//            resultFilejTable.getColumnModel().getColumn(23).setPreferredWidth(6000);  // Euclidean distance beta
+//            resultFilejTable.getColumnModel().getColumn(24).setPreferredWidth(6000); // Euclidean distance alpga
 
             // Fill information on data.
             int number = 0;
@@ -172,7 +177,7 @@ public final class Visualize extends javax.swing.JFrame {
                     number++;
                     resultFilejTable.setValueAt(number, arr, 0);
                     for (int i = 0; i < strArr.length; i++) {
-                        if (i == 3 || i == 5 || i == 6 || i == 7 || i == 9) {
+                        if (i == 2 || i == 4 || i == 5 || i == 6 || i == 8) {
                             double value_to_show = Math.floor(new Double(strArr[i]) * 10000) / 10000;
                             resultFilejTable.setValueAt(value_to_show, arr, i + 1);
                         } else {
@@ -196,8 +201,9 @@ public final class Visualize extends javax.swing.JFrame {
             Dimension size = new Dimension(resultFilejTable.getColumnModel().getTotalColumnWidth() + 2700, resultFilejTable.getRowCount() * resultFilejTable.getRowHeight());
             resultFilejTable.setPreferredSize(size);
             resultFilejTable.setPreferredScrollableViewportSize(size);
-            String spectrumFileName = (String) resultFilejTable.getValueAt(1, 2),
-                    spectrumTitle = (String) resultFilejTable.getValueAt(1, 3);
+
+            String spectrumFileName = (String) resultFilejTable.getValueAt(1, 1),
+                    spectrumTitle = (String) resultFilejTable.getValueAt(1, 2);
             setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
             annotateSpectrum();
 
@@ -343,8 +349,8 @@ public final class Visualize extends javax.swing.JFrame {
 
     private void resultFilejTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resultFilejTableMouseClicked
         int selectedRow = resultFilejTable.getSelectedRow();
-        String spectrumFileName = (String) resultFilejTable.getValueAt(selectedRow, 2),
-                spectrumTitle = (String) resultFilejTable.getValueAt(selectedRow, 3);
+        String spectrumFileName = (String) resultFilejTable.getValueAt(selectedRow, 1),
+                spectrumTitle = (String) resultFilejTable.getValueAt(selectedRow, 2);
         try {
             setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
         } catch (IOException ex) {
@@ -405,7 +411,6 @@ public final class Visualize extends javax.swing.JFrame {
                 charge, // String precursor charge
                 name); // String spectrum file name  
 
-        // TODO: Make sure about these annotations!
         // set up the peak annotations!!!
         List<SpectrumAnnotation> peakAnnotation = getAnnotatedPeaks();
         System.out.println("Annotated peaks=" + peakAnnotation.size());
@@ -436,7 +441,7 @@ public final class Visualize extends javax.swing.JFrame {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if ("System".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
@@ -476,15 +481,23 @@ public final class Visualize extends javax.swing.JFrame {
     private List<SpectrumAnnotation> getAnnotatedPeaks() {
         List<SpectrumAnnotation> annotations = new ArrayList<SpectrumAnnotation>();
         int selectedRow = resultFilejTable.getSelectedRow();
-        String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, 22);
+        String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, 21);
         String[] splittedAnnotatedPeaksStr = annotatedPeaksStr.split(" ");
         Color lightBlue = Color.getHSBColor(0.56f, 0.3f, 1f),
                 lightPink = Color.getHSBColor(0.92f, 0.3f, 1f),
                 lightYellow = Color.getHSBColor(0.16f, 0.4f, 1f),
                 purple = Color.getHSBColor(0.76f, 0.4f, 1f),
+                prussian_blue = new Color(0, 51, 102),
+                navy_blue = new Color(0, 0, 102),
+                midnight_blue = new Color(0, 0, 51),
+                burnt_sienna = new Color(102, 0, 0),
+                burnt_umber = new Color(51, 0, 0),
+                kashmir_green = new Color(0, 51, 0),
+                forest_green = new Color(0, 102, 0),
                 selectedColor = null;
         for (String splittedAnnotatedPeak : splittedAnnotatedPeaksStr) {
             if (!splittedAnnotatedPeak.isEmpty()) {
+                System.out.println(splittedAnnotatedPeak);
                 String[] annotationInfo = splittedAnnotatedPeak.split("_");
                 String chargeState = annotationInfo[0],
                         ionNameAndIndex = splittedAnnotatedPeak.substring(splittedAnnotatedPeak.indexOf("_") + 1, splittedAnnotatedPeak.lastIndexOf("_")),
@@ -495,17 +508,17 @@ public final class Visualize extends javax.swing.JFrame {
                 }
                 ionNameAndIndex = "(" + ionNameAndIndex + ")" + chInfo;
                 if (ionNameAndIndex.contains("lepA")) {
-                    selectedColor = purple;
+                    selectedColor = navy_blue;
                 } else if (ionNameAndIndex.contains("lepB")) {
-                    selectedColor = lightBlue;
+                    selectedColor = forest_green;
                 } else if (ionNameAndIndex.contains("pepA")) {
-                    selectedColor = Color.ORANGE;
+                    selectedColor = midnight_blue;
                 } else if (ionNameAndIndex.contains("pepB")) {
-                    selectedColor = Color.BLUE;
+                    selectedColor = kashmir_green;
                 }
                 DefaultSpectrumAnnotation defaultSpecAn = new DefaultSpectrumAnnotation(
                         new Double(mz), // the mz value to annotate
-                        0.0068229, // the mz error margin
+                        0.5, // the mz error margin
                         selectedColor, // the annotation color
                         ionNameAndIndex); // the annotation label-like y1+
                 annotations.add(defaultSpecAn);
