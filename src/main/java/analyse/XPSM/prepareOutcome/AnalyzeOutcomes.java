@@ -141,22 +141,16 @@ public abstract class AnalyzeOutcomes {
      * @param isTraditionalDecoy
      * @return
      */
-    protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names, boolean isTraditionalDecoy) {
+    protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names) {
         String first_target_name = target_names[0],
                 second_target_name = target_names[1];
         String type = "";
-        if (isTraditionalDecoy) {
-            if (hasTraditionalDecoy) {
-                System.err.println("NOT WORKING8");
-//            type = "half-decoy";
-//            if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
-//                type = "target";
-//            } else if ((!proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
-//                type = "td";
-//            } else if ((proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
-//                type = "td";
-//            } else if ((proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
-//                type = "decoy";
+        if (hasTraditionalDecoy) {
+            type = "half-decoy";
+            if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
+                type = "target";
+            } else if ((proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
+                type = "decoy";
             }
         } else {
             type = "half-decoy";

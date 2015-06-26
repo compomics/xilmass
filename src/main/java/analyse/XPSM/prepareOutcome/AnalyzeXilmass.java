@@ -25,8 +25,8 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
 
     private File lightLabeledFile,
             heavyLabeledFile,
+            xilmassFile,
             output;
-
     private int indAccProA = 10,
             indAccProB = 11,
             linkedIndexA = 16,
@@ -36,21 +36,23 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
 
     HashSet<String> contaminant_MSMS = new HashSet<String>();
 
-    public AnalyzeXilmass(File lightLabeledFile, File heavyLabeledFile, File output, File prediction_file, File psms_contaminant, String[] target_names) throws IOException {
+    public AnalyzeXilmass(File lightLabeledFile, File heavyLabeledFile, File output, File prediction_file, File psms_contaminant, String[] target_names, boolean hasTraditionalDecoy) throws IOException {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
         super.prediction_file = prediction_file;
+        super.hasTraditionalDecoy = hasTraditionalDecoy;
         this.lightLabeledFile = lightLabeledFile;
         this.heavyLabeledFile = heavyLabeledFile;
         this.output = output;
         contaminant_MSMS = getContaminant_MSMS();
     }
 
-    public AnalyzeXilmass(File lightLabeledFile, File output, File prediction_file, File psms_contaminant, String[] target_names) throws IOException {
+    public AnalyzeXilmass(File xilmassFile, File output, File prediction_file, File psms_contaminant, String[] target_names, boolean hasTraditionalDecoy) throws IOException {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
         super.prediction_file = prediction_file;
-        this.lightLabeledFile = lightLabeledFile;
+        super.hasTraditionalDecoy = hasTraditionalDecoy;
+        this.xilmassFile = xilmassFile;
         this.output = output;
         contaminant_MSMS = getContaminant_MSMS();
     }
@@ -68,21 +70,26 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         BufferedWriter bw = new BufferedWriter(new FileWriter(output));
         HashMap<String, Double> spectrum_and_score = new HashMap<String, Double>();
         HashMap<String, ArrayList<String>> spectrum_and_line = new HashMap<String, ArrayList<String>>();
+        if (xilmassFile != null) {
+            fillHashSets(xilmassFile, spectrum_and_score, spectrum_and_line, bw);
+        }
         // read first input one and fill hashset
-        readFile_fillHashSets(lightLabeledFile, spectrum_and_score, spectrum_and_line, false, bw, false);
+        if (lightLabeledFile != null) {
+            readFile_fillHashSets(lightLabeledFile, spectrum_and_score, spectrum_and_line, false, bw, false);
+        }
         // read second input and fill hashset -
         if (heavyLabeledFile != null) {
             readFile_fillHashSets(heavyLabeledFile, spectrum_and_score, spectrum_and_line, true, bw, true);
         }
         // now write up..
         for (String name : spectrum_and_line.keySet()) {
-            for (String line : spectrum_and_line.get(name)) {               
+            for (String line : spectrum_and_line.get(name)) {
                 String[] split = line.split("\t");
                 String proteinAInfo = split[indAccProA],
                         proteinBInfo = split[indAccProB],
                         proteinAAccession = proteinAInfo.substring(0, proteinAInfo.indexOf("(")),
                         proteinBAccession = proteinBInfo.substring(0, proteinBInfo.indexOf("(")),
-                        targetType = getTargetType(proteinAAccession, proteinBAccession, target_names, hasTraditionalDecoy),
+                        targetType = getTargetType(proteinAAccession, proteinBAccession, target_names),
                         indexProteinA = proteinAInfo.substring(proteinAInfo.indexOf("(") + 1, proteinAInfo.indexOf(")")),
                         indexProteinB = proteinBInfo.substring(proteinBInfo.indexOf("(") + 1, proteinBInfo.indexOf(")"));
                 int tmplinkedIndexA = Integer.parseInt(split[linkedIndexA]),
@@ -103,6 +110,18 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         bw.close();
     }
 
+    /**
+     * To merge light and heavy labeled output files
+     *
+     * @param input
+     * @param spectrum_and_score
+     * @param spectrum_and_line
+     * @param isTitleWritten
+     * @param bw
+     * @param isInputLabeled
+     * @throws NumberFormatException
+     * @throws IOException
+     */
     private void readFile_fillHashSets(File input,
             HashMap<String, Double> spectrum_and_score, HashMap<String, ArrayList<String>> spectrum_and_line,
             boolean isTitleWritten, BufferedWriter bw,
@@ -142,8 +161,8 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
                     }
                 }
             } else if (!isTitleWritten) {
-                bw.write(line.substring(line.indexOf("SpectrumFile")) + "\t" + "Labeled" + "\t" + "IndexProteinA" + "\t" + "IndexProteinB" + "\t" 
-                        + "Target_Decoy" + "\t" + "Predicted" + "\t" + "Euclidean_distance alpha(A)" + "\t" + "Euclidean_distance beta(A)" + "\n");
+                bw.write(line.substring(line.indexOf("SpectrumFile")) +"\t" + "IndexProteinA" + "\t" + "IndexProteinB" + "\t"
+                        + "Target_Decoy" + "\t" + "Predicted" + "\t" + "Euclidean_distance beta(A)" + "\t" + "Euclidean_distance alpha(A)" + "\n");
             }
         }
     }
@@ -151,6 +170,43 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
     @Override
     public void run() throws FileNotFoundException, IOException {
         merge_select_top_scored();
+    }
+
+    private void fillHashSets(File xilmassFile, HashMap<String, Double> spectrum_and_score, HashMap<String, ArrayList<String>> spectrum_and_line, BufferedWriter bw) throws FileNotFoundException, IOException {
+        BufferedReader br = new BufferedReader(new FileReader(xilmassFile));
+        String line = "";
+        boolean isTitleWritten = false;
+        while ((line = br.readLine()) != null) {
+            if (!line.startsWith("Spect")) {
+                String[] split = line.split("\t");
+                String specTitle = split[spectrum_title_index];
+                double tmpScore = Double.parseDouble(split[score_index]);
+                if (!contaminant_MSMS.contains(specTitle)) {
+                    if (spectrum_and_score.containsKey(specTitle)) {
+                        double storedScore = spectrum_and_score.get(specTitle);
+                        if (storedScore < tmpScore) {
+                            spectrum_and_line.remove(specTitle);
+                            spectrum_and_score.remove(specTitle);
+                            ArrayList<String> infos = new ArrayList<String>();
+                            infos.add(line);
+                            spectrum_and_line.put(specTitle, infos);
+                            spectrum_and_score.put(specTitle, tmpScore);
+                        } else if (storedScore == tmpScore) {
+                            spectrum_and_line.get(specTitle).add(line);
+                        }
+                    } else if (!spectrum_and_score.containsKey(specTitle)) {
+                        ArrayList<String> infos = new ArrayList<String>();
+                        infos.add(line);
+                        spectrum_and_line.put(specTitle, infos);
+                        spectrum_and_score.put(specTitle, tmpScore);
+                    }
+                }
+            } else if (!isTitleWritten) {
+                bw.write(line.substring(line.indexOf("SpectrumFile")) +  "\t" + "IndexProteinA" + "\t" + "IndexProteinB" + "\t"
+                        + "Target_Decoy" + "\t" + "Predicted" + "\t" + "Euclidean_distance beta(A)" + "\t" + "Euclidean_distance alpha(A)" + "\n");
+                isTitleWritten = true;
+            }
+        }
     }
 
 }

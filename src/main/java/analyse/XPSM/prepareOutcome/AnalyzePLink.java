@@ -91,7 +91,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
                         isContaminant = false;
                         isBetaDecoy = false;
                     }
-                    if (line.startsWith("Input")) {
+                    if (line.startsWith("Input=")) {
                         spectrumTitle = line.split("=")[1];
                     }
                     if (line.startsWith("Charge")) {
@@ -151,6 +151,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
                         alphaProtein = line.split("\\|")[1];
                         if (line.contains("REVERSE")) {
                             isAlphaDecoy = true;
+                            alphaProtein = "decoy" + alphaProtein;
                         }
                     }
                     if (line.startsWith("NO1_Alpha_Modify_Pos")) {
@@ -170,6 +171,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
                         betaProtein = line.split("\\|")[1];
                         if (line.contains("REVERSE")) {
                             isBetaDecoy = true;
+                            betaProtein = "decoy" + betaProtein;
                         }
                     }
                     if (line.startsWith("NO1_Beta_Modify_Pos")) {
@@ -186,7 +188,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
                                 }
                             }
                         }
-                        if (!isContaminant && !isAlphaDecoy && !isBetaDecoy) {
+                        if (!isContaminant) {
                             PLinkResult r = new PLinkResult(spectrumTitle, spectrumFile, label,
                                     alphaSeq, alphaProtein, modLocationAlpha, modNameAlpha,
                                     betaSeq, betaProtein, modLocationBeta, modNameBeta,
@@ -210,7 +212,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
                 + "Charge" + "\t" + "Intensity" + "\t" + "ExperimentalMZ" + "\t" + "MH" + "\t"
                 + "PLinkScore" + "\t" + "E-value" + "\t" + "AlphaE-value" + "\t" + "BetaE-value" + "\t"
                 + "MatchedIntensity" + "\t" + "UnmatchedIntensity" + "\t" + "XLinkedMass" + "\t"
-                + "Labeled"+"\t"
+                + "Labeled" + "\t"
                 + "ProteinAlpha_Accession" + "\t" + "ModNameAlpha" + "\t" + "ModLocsAlpha" + "\t" + "PeptideAlpha" + "\t" + "LinkedSiteAlpha" + "\t"
                 + "ProteinBeta_Accession" + "\t" + "ModNameBeta" + "\t" + "ModLocsBeta" + "\t" + "PeptideBeta" + "\t" + "LinkedSiteBeta" + "\t"
                 + "Target_Decoy" + "\t"

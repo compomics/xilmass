@@ -111,7 +111,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                         }
                     } else if (line.startsWith("Scan") && !wasTitleWritten) {
                         wasTitleWritten = true;
-                        bw.write("SpectrumFile" + "\t" + line
+                        bw.write("SpectrumFile" + "\t" + line + "\t"
                                 + "modPepA" + "\t" + "modPepB" + "\t"
                                 + "labeled" + "\t" + "Target_Decoy" + "\t" + "Predicted" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)" + "\n");
                     }
@@ -125,7 +125,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                 bw.write(tmpMGF + "\t" + kj.getScanNumber() + "\t" + kj.getObsMass() + "\t" + kj.getCharge() + "\t" + kj.getPsms_mass() + "\t" + kj.getPpmErr() + "\t" + kj.getScore() + "\t"
                         + kj.getdScore() + "\t" + kj.getPepDiff() + "\t" + kj.getPeptide1() + "\t" + kj.getCrossLinkedSitePro1() + "\t" + kj.getAccessProteinA() + "\t"
                         + kj.getPeptide2() + "\t" + kj.getCrossLinkedSitePro2() + "\t" + kj.getAccessProteinB() + "\t" + kj.getLinkerMass() + "\t"
-                        + kj.getModPeptide1() + "\t" + kj.getModPeptide2()
+                        + kj.getModPeptide1() + "\t" + kj.getModPeptide2() +"\t"
                         + kj.getLabel() + "\t"
                         + kj.getTargetDecoy() + "\t" + assetTrueLinking(kj.getAccessProteinA(), kj.getAccessProteinB(), kj.getCrossLinkedSitePro1(), kj.getCrossLinkedSitePro2()) + "\n");
             }
