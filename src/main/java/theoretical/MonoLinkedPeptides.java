@@ -56,21 +56,19 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
     public void setPeptide(Peptide peptide) {
         this.peptide = peptide;
         product_ions = fragmentFactory.getFragmentIons(peptide).get(0);
-        isMassCalculated=false;
+        isMassCalculated = false;
     }
 
     public void setProtein(String protein) {
-        isMassCalculated=false;
+        isMassCalculated = false;
         this.protein = protein;
     }
 
     public void setLinker_position(int linker_position) {
-        isMassCalculated=false;
+        isMassCalculated = false;
         this.linker_position = linker_position;
     }
 
-     
-    
     @Override
     public double getTheoretical_xlinked_mass() {
         if (!isMassCalculated) {
@@ -185,6 +183,14 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toPrint() {
+        return peptide.getSequenceWithLowerCasePtms() + "\t" + protein + "\t" + getModificationInfo(peptide) + "\t"
+                + "-" + "\t" + "-" + "\t" + "-" + "\t"
+                + linker_position + "\t" + "-" + "\t"
+                + "MonoLinked";
     }
 
 }
