@@ -19,9 +19,10 @@ public abstract class CumulativeBinomialProbabilityBasedScoring {
     protected double p; // probability of success on a single trial
     protected int N, // number of trials
             n;// number of successes
-    protected double score = 0; // cumulative bionominal probability based score for given N,n,p.
+    protected double score = 0.0; // cumulative bionominal probability based score for given N,n,p.
     protected boolean isCalculated = false; //  To make sure that a score is not calculated over and over while calling getter method
     protected ScoreName name;
+
     /**
      * To calculate cumulative binominal probability score
      *

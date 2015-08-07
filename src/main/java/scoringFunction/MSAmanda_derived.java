@@ -89,31 +89,21 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
             double tmp = 0;
             double probability_based_score = super.calculateCumulativeBinominalProbability(),
                     intensity_part = (double) explainedIntensity / (double) intensity;
-            if (intensityOption == 0) {
-                if (probability_based_score == 0) {
-                    score = 0;
-                } else {
-                    tmp = -10 * (Math.log10(probability_based_score));
-                    intensity_part = (Math.sqrt(intensity_part));
-                    score = tmp * intensity_part;
-                }
-            } else if (intensityOption == 1) {
-                if (probability_based_score == 0) {
-                    score = 0;
-                } else {
-                    tmp = - 10 * (Math.log10(probability_based_score));
-                    score = tmp * intensity_part;
-                }
-            } else if (intensityOption == 2) {
-                if (probability_based_score == 0) {
-                    score = 0;
-                } else {
-                    score = -10 * (Math.log10(probability_based_score / intensity_part));
-                }
+            if (intensityOption == 0 && probability_based_score != 0) {
+                tmp = -10 * (Math.log10(probability_based_score));
+                intensity_part = (Math.sqrt(intensity_part));
+                score = tmp * intensity_part;
+            } else if (intensityOption == 1 && probability_based_score != 0) {
+                tmp = - 10 * (Math.log10(probability_based_score));
+                score = tmp * intensity_part;
+            } else if (intensityOption == 2 && probability_based_score != 0) {
+                score = -10 * (Math.log10(probability_based_score / intensity_part));
             }
-            if (weight != -1 && weight != 0) {               
+            if (weight != -1 && weight != 0) {
                 score = score + (score * Math.log(1 / (double) weight));
             }
+            // to eliminate obtaining -0 values..
+            score += 0.0;
             isCalculated = true;
         } catch (Exception ex) {
             Logger.getLogger(MSAmanda_derived.class.getName()).log(Level.SEVERE, null, ex);

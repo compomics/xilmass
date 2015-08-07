@@ -55,14 +55,14 @@ public class Andromeda_derived extends CumulativeBinomialProbabilityBasedScoring
     protected void calculateScore() {
         try {
             double probability_based_score = super.calculateCumulativeBinominalProbability();
-            if (probability_based_score == 0) {
-                score = 0;
-            } else {
+            if (probability_based_score != 0) {
                 score = - 10 * (Math.log10(probability_based_score));
-            }           
-            if (weight != -1 && weight!=0) {                
-                score = score + Math.abs(score *Math.log10(1/(double)weight));
-            } 
+            }
+            if (weight != -1 && weight != 0) {
+                score = score + Math.abs(score * Math.log10(1 / (double) weight));
+            }
+            // to eliminate obtaining -0 values..
+            score += 0.0;
             isCalculated = true;
         } catch (Exception ex) {
             Logger.getLogger(Andromeda_derived.class.getName()).log(Level.SEVERE, null, ex);
