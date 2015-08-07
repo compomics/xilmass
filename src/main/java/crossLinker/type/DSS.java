@@ -53,4 +53,21 @@ public class DSS extends CrossLinker {
         }
     }
 
+    @Override
+    protected void calculateMassShifts(boolean isLabeled) {
+        double hydrogen_mass = Atom.H.getMonoisotopicMass(),
+                deuterium_mass = Atom.H.getIsotopeMass(1);
+        if (isLabeled) {
+            this.name = CrossLinkerName.DSSd12;
+            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * deuterium_mass);
+            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
+            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
+        } else {
+            this.name = CrossLinkerName.DSSd0;
+            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
+            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
+            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
+        }
+    }
+
 }

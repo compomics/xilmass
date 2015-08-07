@@ -11,9 +11,8 @@ import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
 
 /**
- * Glutaraldehyde
- * OHC(CH2)3CHO 
- * 
+ * Glutaraldehyde OHC(CH2)3CHO
+ *
  * @author Sule
  */
 public class GA extends CrossLinker {
@@ -25,5 +24,10 @@ public class GA extends CrossLinker {
                 waterMass = (2 * Atom.H.getMonoisotopicMass()) + Atom.O.getMonoisotopicMass();
         super.massShift_Type0 = moleculeMass - waterMass;
         super.massShift_Type2 = moleculeMass - (2 * waterMass);
+    }
+
+    @Override
+    protected void calculateMassShifts(boolean isLabeled) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
