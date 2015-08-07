@@ -144,4 +144,13 @@ public class Contaminant extends CrossLinkedPeptides {
         return backbones;
     }
 
+    @Override
+    public String toPrint() {
+        return peptide.getSequence() + "\t" + protein + "\t" + getModificationInfo(peptide) + "\t"
+                + "-" + "\t" + "-" + "\t" + "-" + "\t"
+                + "-" + "\t" + "-" + "\t"
+                + "-" + "\t" + "-" + "\t"
+                + "contaminant";
+    }
+
 }
