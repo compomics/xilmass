@@ -40,7 +40,7 @@ public class CPeptideInfo {
                     linkerPosPepB = cp.getLinker_position_on_peptideB();
             double mass = cp.getTheoretical_xlinked_mass();
             StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
-                    + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
+                    + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass + "\t" + "CROSSLINK");
             return sb;
         } else {
             MonoLinkedPeptides mp = (MonoLinkedPeptides) cPeptide;
@@ -56,6 +56,11 @@ public class CPeptideInfo {
             double mass = cPeptide.getTheoretical_xlinked_mass();
             StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
                     + linkerPosPepA + "\t" + "-" + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass);
+            if (cPeptide.getLinkingType() == CrossLinkingType.MONOLINK) {
+                sb.append("\t").append("MONOLINK");
+            } else if (cPeptide.getLinkingType() == CrossLinkingType.CONTAMINANT) {
+                sb.append("\t").append("CONTAMINANT");
+            }
             return sb;
         }
     }
