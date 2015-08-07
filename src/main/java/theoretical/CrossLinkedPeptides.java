@@ -7,6 +7,8 @@ package theoretical;
 
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
+import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,7 +97,7 @@ public abstract class CrossLinkedPeptides {
             } else if (index >= linked_index && linkingType.equals(CrossLinkingType.MONOLINK)) {
                 ion_mass += mass_shift;
             } else {
-                
+
             }
             int index_to_show = index + 1;
             String ionName = rootName + index_to_show;
@@ -118,4 +120,29 @@ public abstract class CrossLinkedPeptides {
         return backbones;
     }
 
+    public abstract String toPrint();
+
+    /**
+     * This method returns modification info derived from a given peptide. It
+     * only returns variable modifications
+     *
+     * @param peptide
+     * @return
+     */
+    public static String getModificationInfo(Peptide peptide) {
+        ArrayList<ModificationMatch> modificationMatches = peptide.getModificationMatches();
+        String info = "";
+        boolean isModificationFound = false;
+        for (ModificationMatch m : modificationMatches) {
+            if (m.isVariable()) {
+                String tmp = "[" + m.getTheoreticPtm() + "_" + m.getModificationSite() + "]";
+                info += tmp + ";";
+                isModificationFound = true;
+            }
+        }
+        if (!isModificationFound) {
+            info = "-";
+        }
+        return info;
+    }
 }
