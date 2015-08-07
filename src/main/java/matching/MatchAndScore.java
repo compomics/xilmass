@@ -5,6 +5,7 @@
  */
 package matching;
 
+import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
@@ -15,6 +16,8 @@ import java.util.HashSet;
 import scoringFunction.Andromeda_derived;
 import scoringFunction.MSAmanda_derived;
 import scoringFunction.ScoreName;
+import start.CalculateMS1Err;
+import start.CalculatePrecursorMass;
 import theoretical.CPeptideIon;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
@@ -40,20 +43,26 @@ public class MatchAndScore {
     private double fragTol, // fragment tolerance to select
             cXPSMScore = 0, // A CX-PSM Score
             massWindow = 100, // Mass window to filter out peaks from a given MSnSpectrum
-            weight = 0; // for andromeda - (numFoundTheoPeak/allTheoPeak)PepA*(numFoundTheoPeak/allTheoPeak)PepB
+            fracIonTheoPepA = 0, //numFoundTheoPeak/allTheoPeak)PepA
+            fracIonTheoPepB = 0, //numFoundTheoPeak/allTheoPeak)PepB
+            weight = 0, // for andromeda - (numFoundTheoPeak/allTheoPeak)PepA*(numFoundTheoPeak/allTheoPeak)PepB
+            observedMass = 0, // singly charged precursor ion mass of an experimental MS2 spectrum
+            ms1Err = 0, // difference between calculated and observed mass
+            absMS1Err = 0; // absolute difference between calculated and observed mass
     private int intensityOptionForMSAmandaDerived = 0,
             minFPeaks, // Minimum number of filtered peaks per 100Da mass window.. (To test here)
             maxFPeaks, // Maximum number of filtered peaks per 100Da mass window.. (To test)
-            matchedTheoPepAs, // matched theoretical peaks from peptideA
-            matchedTheoPepBs; // matched theoretical peaks from peptideB
+            matchedTheoPeaksPepA, // matched theoretical peaks from peptideA
+            matchedTheoPeaksPepB; // matched theoretical peaks from peptideB
     private ScoreName scoreName;// 0-MSAmanda_derived (MSAmanda_derived with N=AllPickedPeaks), 1-Andromeda_derived, 2-TheoMSAmandaD (MSAmanda_derived with N=AllTheoPeaks)
     private boolean isTheoXLPeaksReady = false,
             isFoundAndMatched = false,
             doesFindAllMatchedPeaks = false, // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
-            isCPeptide = false;
+            isCPeptide = false,
+            isPPM = false;
     /* Constructor */
 
-    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow, boolean doesFindAllMatchedPeaks) {
+    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides, double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum, double massWindow, boolean doesFindAllMatchedPeaks, boolean isPPM) {
         this.expMS2 = expMS2;
         this.scoreName = scoreName;
         this.cPeptides = cPeptides;
@@ -71,6 +80,7 @@ public class MatchAndScore {
         this.maxFPeaks = maxFPeakNum;
         this.massWindow = massWindow;
         this.doesFindAllMatchedPeaks = doesFindAllMatchedPeaks;
+        this.isPPM = isPPM;
     }
 
     /* getters and setters */
@@ -88,6 +98,46 @@ public class MatchAndScore {
      */
     public double getWeight() {
         return weight;
+    }
+
+    public double getFracIonTheoPepAs() {
+        return fracIonTheoPepA;
+    }
+
+    public void setFracIonTheoPepAs(double fracIonTheoPepAs) {
+        this.fracIonTheoPepA = fracIonTheoPepAs;
+    }
+
+    public double getFracIonTheoPepBs() {
+        return fracIonTheoPepB;
+    }
+
+    public void setFracIonTheoPepBs(double fracIonTheoPepBs) {
+        this.fracIonTheoPepB = fracIonTheoPepBs;
+    }
+
+    public double getObservedMass() {
+        return observedMass;
+    }
+
+    public void setObservedMass(double observedMass) {
+        this.observedMass = observedMass;
+    }
+
+    public double getMs1Err() {
+        return ms1Err;
+    }
+
+    public void setMs1Err(double ms1Err) {
+        this.ms1Err = ms1Err;
+    }
+
+    public double getAbsMS1Err() {
+        return absMS1Err;
+    }
+
+    public void setAbsMS1Err(double absMS1Err) {
+        this.absMS1Err = absMS1Err;
     }
 
     /**
@@ -321,12 +371,12 @@ public class MatchAndScore {
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.AndromedaDWeighted)) {
-                    weight = calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
+                    calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
                     Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.TheoMSAmandaDWeighted)) {
-                    weight = calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL,isCPeptide);
+                    calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
                     double tmp_score = object.getScore();
                     scores.add(tmp_score);
@@ -334,6 +384,11 @@ public class MatchAndScore {
             }
             isFoundAndMatched = true;
             cXPSMScore = Collections.max(scores);
+            // now calculate observed mass and mass error
+            observedMass = calculateObservedMass(expMS2);
+            // now calculates MS1 error with precursor mass and theoretical mass of crosslinked peptide
+            ms1Err = calculateMS1Err(isPPM, CalculatePrecursorMass.getPrecursorMass(expMS2), cPeptides.getTheoretical_xlinked_mass());
+            absMS1Err = Math.abs(ms1Err);
         }
         return cXPSMScore;
     }
@@ -593,16 +648,16 @@ public class MatchAndScore {
      * @param theoXLPeaksAL list of all theoretical peaks from both peptides
      * @return
      */
-    public  double calculateWeightForTheoPeaks(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL, boolean isCPeptides) {
-       if(!isCPeptides){
-           return -1;
-       }
-         matchedTheoPepAs = 0;
-                matchedTheoPepBs = 0;
+    public double calculateWeightForTheoPeaks(HashSet<CPeptidePeak> matchedTheoXLPeaks, ArrayList<CPeptidePeak> theoXLPeaksAL, boolean isCPeptides) {
+        if (!isCPeptides) {
+            return -1;
+        }
+        matchedTheoPeaksPepA = 0;
+        matchedTheoPeaksPepB = 0;
         for (CPeptidePeak tmpCPeak : matchedTheoXLPeaks) {
-            int[] vals = check(tmpCPeak.toString(), matchedTheoPepAs, matchedTheoPepBs);
-            matchedTheoPepAs = vals[0];
-            matchedTheoPepBs = vals[1];
+            int[] vals = check(tmpCPeak.toString(), matchedTheoPeaksPepA, matchedTheoPeaksPepB);
+            matchedTheoPeaksPepA = vals[0];
+            matchedTheoPeaksPepB = vals[1];
         }
         int theoPepAs = 0,
                 theoPepBs = 0;
@@ -611,28 +666,29 @@ public class MatchAndScore {
             theoPepAs = vals[0];
             theoPepBs = vals[1];
         }
-        double weight = ((double) matchedTheoPepAs / (double) theoPepAs) * ((double) matchedTheoPepBs / (double) theoPepBs);
+        fracIonTheoPepA = (double) matchedTheoPeaksPepA / (double) theoPepAs;
+        fracIonTheoPepB = (double) matchedTheoPeaksPepB / (double) theoPepBs;
+        weight = (fracIonTheoPepA * fracIonTheoPepB);
         return weight;
     }
 
-    public int getMatchedTheoPepAs() {
-        return matchedTheoPepAs;
+    public int getMatchedTheoPeaksPepA() {
+        return matchedTheoPeaksPepA;
     }
 
-    public void setMatchedTheoPepAs(int matchedTheoPepAs) {
-        this.matchedTheoPepAs = matchedTheoPepAs;
+    public void setMatchedTheoPeaksPepA(int matchedTheoPeaksPepA) {
+        this.matchedTheoPeaksPepA = matchedTheoPeaksPepA;
     }
 
-    public int getMatchedTheoPepBs() {
-        return matchedTheoPepBs;
+    public int getMatchedTheoPeaksPepB() {
+        return matchedTheoPeaksPepB;
     }
 
-    public void setMatchedTheoPepBs(int matchedTheoPepBs) {
-        this.matchedTheoPepBs = matchedTheoPepBs;
+    public void setMatchedTheoPeaksPepB(int matchedTheoPeaksPepB) {
+        this.matchedTheoPeaksPepB = matchedTheoPeaksPepB;
     }
 
-
-   /**
+    /**
      * This method check a given theoretical peak to determine whether belongs
      * to peptideA or peptideB
      *
@@ -660,6 +716,34 @@ public class MatchAndScore {
         vals[0] = numTheoPeaksPepA;
         vals[1] = numTheoPeaksPepB;
         return vals;
+    }
+
+    /**
+     * This method calculates singly charged precursor mass of given expMS2
+     * spectrum
+     *
+     * @param expMS2
+     * @return
+     */
+    private double calculateObservedMass(MSnSpectrum expMS2) {
+        double precMass = CalculatePrecursorMass.getPrecursorMass(expMS2),
+                protonMass = ElementaryIon.proton.getTheoreticMass(),
+                observedMass = precMass + protonMass;
+        return observedMass;
+    }
+
+    /**
+     * This method calculates difference between an observed and calculated
+     * mass.
+     *
+     * @param isPPM true: ms1Err is in PPM
+     * @param observedMass
+     * @param calculatedMass
+     * @return
+     */
+    private double calculateMS1Err(boolean isPPM, double observedMass, double calculatedMass) {
+        double mS1Err = CalculateMS1Err.getMS1Err(isPPM, observedMass, calculatedMass);
+        return mS1Err;
     }
 
 }
