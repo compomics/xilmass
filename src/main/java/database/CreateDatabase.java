@@ -444,7 +444,7 @@ public class CreateDatabase {
         // Use randomizing class from DBToolKit!
         ShuffleDBThread sdt = new ShuffleDBThread(inSilicoPeptideDB);
         sdt.shuffle();
-        
+
         Protein protein = null;
         ShuffledDecoy r = null;
         proteinaccessionAndshuffled = new HashMap<String, String>();
@@ -509,16 +509,12 @@ public class CreateDatabase {
                             if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                                 tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
                             }
-                            if (tmpNextAccession.equals(tmpStartAccession)) {
-                                // put a control to find either inter or intra proteins
-                                if (crossLinkedProteinTypes.equals("intra") || crossLinkedProteinTypes.equals("both")) {
-                                    // header and sequence
-                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                                }
-                            } else {
-                                if (crossLinkedProteinTypes.equals("inter") || crossLinkedProteinTypes.equals("both")) {
-                                    generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                                }
+                            if (tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.equals("intra") || crossLinkedProteinTypes.equals("both"))) {
+                                // put a control to find either inter or intra proteins                              
+                                // header and sequence
+                                generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
+                            } else if (!tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.equals("inter") || crossLinkedProteinTypes.equals("both"))) {
+                                generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
                             }
                         }
                     }
@@ -613,10 +609,6 @@ public class CreateDatabase {
                 info_if_nextSeq_reversed = "",
                 info_if_startSeq_reversed = "",
                 mod_nextSeq = "";
-        int iStart_StartProtein = startProtein.getHeader().getStartLocation(),
-                iEnd_StartProtein = startProtein.getHeader().getEndLocation(),
-                iStart_NextProtein = nextProtein.getHeader().getStartLocation(),
-                iEnd_NextProtein = nextProtein.getHeader().getEndLocation();
         if (is_inverted) {
             nextSequence = new StringBuilder(nextSequence).reverse().toString();
             next_index = nextSequence.length() - next_index - 1;
@@ -628,19 +620,22 @@ public class CreateDatabase {
         // Make sure that a linked amino acid on an inverted sequence is not at the last index
         if (next_index != nextSequence.length() - 1) {
             mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-            String tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
-            String tmp_header = startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")"
-                    + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
-                    + nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")"
-                    + info_if_nextSeq_reversed + "_" + (next_index + 1);
-
-            String prev_tmp_header = nextProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_NextProtein + "-" + iEnd_NextProtein + ")"
-                    + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
-                    + startProtein.getHeader().getAccession().replace(" ", "") + "(" + iStart_StartProtein + "-" + iEnd_StartProtein + ")"
-                    + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
-            if (!header_sequence.containsKey(prev_tmp_header)) {
-                header_sequence.put(tmp_header, tmp_linked_sequence);
+            String tmp_linked_sequence = "",
+                    tmp_header = "";
+            if (mod_nextSeq.length() <= mod_startSeq.length()) {
+                tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
+                tmp_header = startProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
+                        + nextProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_nextSeq_reversed + "_" + (next_index + 1);
+            } else {
+                tmp_linked_sequence = mod_nextSeq + "|" + mod_startSeq;
+                tmp_header = nextProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
+                        + startProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
             }
+            header_sequence.put(tmp_header, tmp_linked_sequence);
         }
     }
 
