@@ -27,9 +27,14 @@ public class CPeptides extends CrossLinkedPeptides {
     private Peptide peptideA,// first occured peptide on a database
             peptideB;// second occured peptide on a database
     private String proteinA,
-            proteinB;
+            proteinB,
+            proteinA_acc,
+            proteinB_acc,
+            type;
     private int linker_position_on_peptideA,
-            linker_position_on_peptideB;
+            linker_position_on_peptideB,
+            linker_position_on_proteinA,
+            linker_position_on_proteinB;
     private HashMap<Integer, ArrayList<Ion>> product_ions_peptideA,
             product_ions_peptideB;
     private boolean isContrastLinkedAttachmentOn;
@@ -44,6 +49,18 @@ public class CPeptides extends CrossLinkedPeptides {
         this.isContrastLinkedAttachmentOn = isContrastLinkedAttachmentOn;
         this.proteinA = proteinA;
         this.proteinB = proteinB;
+
+        proteinA_acc = proteinA.substring(0, proteinA.indexOf("("));
+        proteinB_acc = proteinB.substring(0, proteinB.indexOf("("));
+
+        linker_position_on_proteinA = Integer.parseInt(proteinA.substring(proteinA.indexOf("(") + 1, proteinA.indexOf("-"))) + linker_position_on_peptideA;
+        linker_position_on_proteinB = Integer.parseInt(proteinB.substring(proteinB.indexOf("(") + 1, proteinB.indexOf("-"))) + linker_position_on_peptideB;
+
+        if (proteinA_acc.equals(proteinB_acc)) {
+            type = "intraProtein";
+        } else {
+            type = "interProtein";
+        }
         this.peptideA = peptideA;
         this.peptideB = peptideB;
         super.linker = linker;
@@ -151,13 +168,13 @@ public class CPeptides extends CrossLinkedPeptides {
 
     @Override
     public double getTheoretical_xlinked_mass() {
-        if (!isMassCalculated) {
-            double tmp_mass_peptideA = peptideA.getMass(),
-                    tmp_mass_peptideB = peptideB.getMass(),
-                    tmp_mass_linker = linker.getMassShift_Type2();
-            theoretical_xlinked_mass = tmp_mass_peptideA + tmp_mass_peptideB + tmp_mass_linker;
-            isMassCalculated = true;
-        }
+//        if (!isMassCalculated && ) {
+        double tmp_mass_peptideA = peptideA.getMass(),
+                tmp_mass_peptideB = peptideB.getMass(),
+                tmp_mass_linker = linker.getMassShift_Type2();
+        theoretical_xlinked_mass = tmp_mass_peptideA + tmp_mass_peptideB + tmp_mass_linker;
+        isMassCalculated = true;
+//        }
         return theoretical_xlinked_mass;
     }
 
@@ -524,6 +541,21 @@ public class CPeptides extends CrossLinkedPeptides {
         return peptideA.getSequenceWithLowerCasePtms() + "_" + peptideA.getSequence().length() + "_" + proteinA + "_"
                 + peptideB.getSequenceWithLowerCasePtms() + "_" + peptideB.getSequence().length() + "_" + proteinB + "_"
                 + linker_position_on_peptideA + "_" + linker_position_on_peptideB + "\t" + peptideA.getSequence().length() + "\t" + peptideB.getSequence().length();
+    }
+
+    @Override
+    public String toPrint() {
+
+        int linker_position_on_peptideAtoPrint = linker_position_on_peptideA + 1,
+                linker_position_on_peptideBtoPrint = linker_position_on_peptideB + 1;
+
+        String toPrint = peptideA.getSequence() + "\t" + proteinA + "\t" + getModificationInfo(peptideA) + "\t"
+                + peptideB.getSequence() + "\t" + proteinB + "\t" + getModificationInfo(peptideB) + "\t"
+                + linker_position_on_peptideAtoPrint + "\t" + linker_position_on_peptideBtoPrint + "\t"
+                + linker_position_on_proteinA + "\t" + linker_position_on_proteinB + "\t"
+                + type;
+
+        return toPrint;
     }
 
 }
