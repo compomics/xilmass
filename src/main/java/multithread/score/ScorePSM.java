@@ -76,8 +76,8 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                         absDeltaMass = obj.getAbsMS1Err();
                 HashSet<Peak> matchedPeaks = obj.getMatchedPeaks();
                 HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalCPeaks();
-                int matchedTheoA = obj.getMatchedTheoPepAs(),
-                        matchedTheoB = obj.getMatchedTheoPepBs();
+                int matchedTheoA = obj.getMatchedTheoPeaksPepA(),
+                        matchedTheoB = obj.getMatchedTheoPeaksPepB();
                 Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta, observedMass, deltaMass, absDeltaMass, 0, matchedTheoA, matchedTheoB, doesKeepPattern, doesKeepWeight);
                 results.add(r);
             }
