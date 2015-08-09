@@ -124,7 +124,7 @@ public class AnalyseXPSMsTest {
                 second = new RetrievepLinkValidateds(validatedPLinkInput); // the second information list...
         ArrayList<Information> firstValidateds = first.getValidateds(0.0500, true),
                 secondValidateds = second.getRetrievedInfo(); // Here there are only validated hits 
-        HashMap<CrossLinkingSite, Integer> result = AnalyseXPSMs.getSharedXLinkingSites(firstValidateds, secondValidateds);
+        HashMap<CrossLinkingSite, String> result = AnalyseXPSMs.getSharedXLinkingSites(firstValidateds, secondValidateds);
         assertEquals(1, result.size());
     }
 
@@ -140,7 +140,7 @@ public class AnalyseXPSMsTest {
                 second = new RetrievepLinkValidateds(validatedPLinkInput); // the second information list...
         ArrayList<Information> firstValidateds = first.getValidateds(0.0500, true),
                 secondValidateds = second.getRetrievedInfo(); // Here there are only validated hits 
-        HashMap<CrossLinkingSite, Integer> sharedXLinkingSites = AnalyseXPSMs.getSharedXLinkingSites(firstValidateds, secondValidateds);
+        HashMap<CrossLinkingSite, String> sharedXLinkingSites = AnalyseXPSMs.getSharedXLinkingSites(firstValidateds, secondValidateds);
         ArrayList<Information> validateds = first.getValidateds(0.05000, true);
         HashMap<CrossLinkingSite, Integer> firstXlinkingSite = RetrieveValidatedList.getXLinkingSites(validateds);
 

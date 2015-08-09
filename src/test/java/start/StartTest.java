@@ -13,8 +13,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static start.Start.check;
-import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 
 /**
@@ -68,19 +66,7 @@ public class StartTest {
         fail("The test case is a prototype.");
     }
 
-    /**
-     * Test of getInfo method, of class Start.
-     */
-    @Test
-    public void testGetInfo() {
-        System.out.println("getInfo");
-        CPeptides cPeptide = null;
-        StringBuilder expResult = null;
-        StringBuilder result = Start.getInfo(cPeptide);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+ 
 
     /**
      * Test of check method, of class Start.
@@ -99,7 +85,7 @@ public class StartTest {
 
         int[] result = {0, 0};
         for (String tmp : tmps) {
-            result = Start.check(tmp, result[0], result[1]);
+//            result = Start.check(tmp, result[0], result[1]);
         }
         assertEquals(6, result[0]);
         assertEquals(4, result[1]);
