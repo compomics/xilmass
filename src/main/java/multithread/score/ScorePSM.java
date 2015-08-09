@@ -89,46 +89,45 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
     }
 
     /**
-     * This method calculates delta score for the best result
+     * This method calculates delta score for the best result and set its score and lnNumSpec. 
+     * It also removes any other ranked results from a given list
      *
      * @param results
      * @param lnNumSp
      */
-    private void updateResults(ArrayList<Result> results, double lnNumSp) {
+    public static void updateResults(ArrayList<Result> results, double lnNumSp) {
         // if there is only one element on a results list, delta score equals to score!
         if (results.size() == 1) {
             results.get(0).setLnNumSpec(lnNumSp);
             results.get(0).setDeltaScore(results.get(0).getScore());
-        }
-        Collections.sort(results, Result.ScoreDESC);
-        double deltaScore = 0;
-        boolean isCalculated = false;
-        int till = 0;
-        for (int i = 0; i < results.size() - 2; i++) {
-            Result r = results.get(i);
-            double score = r.getScore();
-            for (int j = i + 1; j < results.size() - 1; j++) {
+        } else {
+            Collections.sort(results, Result.ScoreDESC);
+            double deltaScore = 0;
+            int till = 0;
+            Result best = results.get(0); // the first score is the best one..
+            double score = best.getScore();
+            for (int j = 1; j < results.size(); j++) {
                 double nextBestScore = results.get(j).getScore();
                 if (score != nextBestScore) {
-                    deltaScore = score - nextBestScore;
-                    isCalculated = true;
                     till = j;
-                }
-                if (isCalculated) {
-                    j = results.size() - 1;
+                    deltaScore = score - nextBestScore;
+                    break;
                 }
             }
-            if (isCalculated) {
-                i = results.size() - 2;
+            if (till == 0) {
+                till = results.size() - 1; // because apparently all elements have the same score..
             }
-        }
-        for (int i = 0; i < till; i++) {
-            Result r = results.get(i);
-            r.setDeltaScore(deltaScore);
-            results.get(0).setLnNumSpec(lnNumSp);
-        }
-        for (int i = till + 1; i < results.size(); i++) {
-            results.remove(i);
+            ArrayList<Result> toRemove = new ArrayList<Result>();
+            for (int i = 0; i < results.size(); i++) {
+                Result r = results.get(i);
+                if (i < till) {
+                    r.setDeltaScore(deltaScore);
+                    r.setLnNumSpec(lnNumSp);
+                } else {
+                    toRemove.add(r);
+                }
+            }
+            results.removeAll(toRemove);
         }
     }
 
