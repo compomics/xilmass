@@ -36,7 +36,7 @@ public class Result {
             lnNumSpec, // natural logarithm of number of matched peptides on DB for a selected MSnSpectrum
             deltaScore, // difference in score between the best ranked score and next best match for a selected MSnSpectrum
             ionFracA, // fraction of found theoretical ion over all theoretical ions for PeptideAlpha
-            ionFacB, // fraction of found theoretical ion over all theoretical ions for PeptideBeta
+            ionFracB, // fraction of found theoretical ion over all theoretical ions for PeptideBeta
             observedMass, // singly charged precursor ion of a selected MSnSpectrum
             deltaMass, // difference in mass between the calculated and observed spectra in ppm
             absDeltaMass; // absolute difference in mass between the calculated and observed spectra in ppm
@@ -44,6 +44,8 @@ public class Result {
             matchedTheoB; // matched theoretical peaks from peptideB
     private boolean doesKeepPattern,
             doesKeepWeight;
+    private String scanNum = "-",
+            charge="";
 
     /**
      * @param msms MSnSpectrum object
@@ -77,7 +79,7 @@ public class Result {
         this.matchedCTheoPeaks = matchedCTheoPeaks;
         this.weight = weight;
         this.ionFracA = ionFracA;
-        this.ionFacB = ionFacB;
+        this.ionFracB = ionFacB;
         this.observedMass = observedMass;
         this.deltaMass = deltaMass;
         this.absDeltaMass = absDeltaMass;
@@ -85,6 +87,12 @@ public class Result {
         this.matchedTheoB = matchedTheoB;
         this.doesKeepPattern = doesKeepPattern;
         this.doesKeepWeight = doesKeepWeight;
+        if (!msms.getScanNumber().isEmpty()) {
+            scanNum = msms.getScanNumber();
+        } else if (msms.getSpectrumTitle().contains("scan")) {
+            scanNum = msms.getSpectrumTitle().substring(msms.getSpectrumTitle().indexOf("scan=") + 5, msms.getSpectrumTitle().length() - 1);
+        }
+        charge = msms.getPrecursor().getPossibleChargesAsString().replace("+", "") ;
     }
 
     /* Getter and setter method for Result information */
@@ -96,6 +104,14 @@ public class Result {
         this.msms = msms;
     }
 
+    public String getScanNum() {
+        return scanNum;
+    }
+
+    public String getCharge() {
+        return charge;
+    }
+ 
     public double getWeight() {
         return weight;
     }
@@ -184,12 +200,12 @@ public class Result {
         this.ionFracA = ionFracA;
     }
 
-    public double getIonFacB() {
-        return ionFacB;
+    public double getIonFracB() {
+        return ionFracB;
     }
 
-    public void setIonFacB(double ionFacB) {
-        this.ionFacB = ionFacB;
+    public void setIonFracB(double ionFracB) {
+        this.ionFracB = ionFracB;
     }
 
     public double getObservedMass() {
@@ -234,14 +250,9 @@ public class Result {
 
     public String toPrint() {
 
-        String scanNum = "-",
-                specTitle = msms.getSpectrumTitle();
+        String specTitle = msms.getSpectrumTitle();
         double rt = msms.getPrecursor().getRt();
-        if (!msms.getScanNumber().isEmpty()) {
-            scanNum = msms.getScanNumber();
-        } else if (specTitle.contains("scan")) {
-            scanNum = specTitle.substring(specTitle.indexOf("scan=") + 5, specTitle.length() - 1);
-        }
+
         // Sort them to write down on a result file
         ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
         Collections.sort(matchedPLists, Peak.ASC_mz_order);
@@ -249,13 +260,13 @@ public class Result {
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
 
         String result = msms.getFileName() + "\t" + msms.getSpectrumTitle() + "\t" + scanNum + "\t" + rt + "\t"
-                + observedMass + "\t" + msms.getPrecursor().getPossibleChargesAsString().replace("+", "") + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
+                + observedMass + "\t" + charge+ "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
                 + score + "\t" + deltaScore + "\t" + scoreName + "\t"
                 + lnNumSpec + "\t"
                 + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"
                 + matchedTheoA + "\t" + matchedTheoB + "\t"
-                + ionFracA + "\t" + ionFacB + "\t"
+                + ionFracA + "\t" + ionFracB + "\t"
                 + printPeaks(matchedPLists) + "\t"
                 + printCPeaks(matchedCTheoPLists) + "\t";
 
