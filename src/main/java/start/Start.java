@@ -17,6 +17,7 @@ import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.protein.Protein;
 import config.ConfigHolder;
 import crossLinker.CrossLinker;
+import crossLinker.CrossLinkerType;
 import crossLinker.GetCrossLinker;
 import database.CreateDatabase;
 import database.FASTACPDBLoader;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,6 +46,7 @@ import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.Contaminant;
 import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
@@ -140,7 +143,8 @@ public class Start {
                 isInvertedPeptides = ConfigHolder.getInstance().getBoolean("isInverted"),
                 doesKeepWeights = true,
                 isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
-                doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("doesFindAllMatchedPeaks");
+                doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("doesFindAllMatchedPeaks"),
+                isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked");
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
@@ -293,11 +297,21 @@ public class Start {
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! (all MS2 spectra)
         LOGGER.info("Getting experimental spectra and calculating PCXMs");
-        // List required for multithreading...
-
+        // Title for percolator-input
+        String percolatorInputTitle = writePercolatorTitle();
         for (File mgf : new File(mgfs).listFiles()) {
             if (mgf.getName().endsWith(".mgf")) {
-                // write them output file
+                // prepare percolator inputs
+                HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                File percolatorIntra = new File(resultFile + "_" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_intra_percolator" + ".txt"),
+                        percolatorInter = new File(resultFile + "_" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_inter_percolator" + ".txt");
+
+                BufferedWriter bw_intra = new BufferedWriter(new FileWriter(percolatorIntra)),
+                        bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
+                bw_intra.write(percolatorInputTitle + "\n");
+                bw_inter.write(percolatorInputTitle + "\n");
+
+                // write results on output file for each mgf
                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "_" + mgf.getName() + ".txt"));
                 StringBuilder title = prepareTitle(doesKeepCPeptideFragmPattern, doesKeepWeights);
                 bw.write(title + "\n");
@@ -307,21 +321,38 @@ public class Start {
                 System.out.println("FutureList=" + futureList.size());
                 for (Future<ArrayList<Result>> future : futureList) {
                     try {
-                        // Here are RESULTS!!!!
+                        // Write each result on an output file...
                         ArrayList<Result> results = future.get();
                         for (Result res : results) {
                             double tmpScore = res.getScore();
-                            if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
-
+                            // making sure that only crosslinked ones are written, neither monolinks nor contaminants.
+                            if (((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) && res.getCp().getLinkingType().equals(CrossLinkingType.CROSSLINK)) {
                                 boolean hasEnoughPeaks = false;
-                                if (peakRequiredForImprovedSearch > 0) {
+                                if (peakRequiredForImprovedSearch > 0 && !isPercolatorAsked) {
                                     hasEnoughPeaks = hasEnoughPeaks(new ArrayList<CPeptidePeak>(res.getMatchedCTheoPeaks()), peakRequiredForImprovedSearch);
+                                    if (hasEnoughPeaks) {
+                                        bw.write(res.toPrint());
+                                        bw.newLine();
+                                    }
+                                }
+                                if (peakRequiredForImprovedSearch > 0 && isPercolatorAsked) {
+                                    hasEnoughPeaks = hasEnoughPeaks(new ArrayList<CPeptidePeak>(res.getMatchedCTheoPeaks()), peakRequiredForImprovedSearch);
+                                    if (hasEnoughPeaks) {
+                                        bw.write(res.toPrint());
+                                        bw.newLine();
+                                        // write also percolator input
+                                        write(res, bw_inter, bw_intra, ids);
+                                    }
+                                }
+                                if (peakRequiredForImprovedSearch == 0 && !isPercolatorAsked) {
                                     bw.write(res.toPrint());
                                     bw.newLine();
                                 }
-                                if ((peakRequiredForImprovedSearch == 0) || hasEnoughPeaks) {
+                                if (peakRequiredForImprovedSearch == 0 && isPercolatorAsked) {
                                     bw.write(res.toPrint());
                                     bw.newLine();
+                                    // write also percolator input
+                                    write(res, bw_inter, bw_intra, ids);
                                 }
                             }
                         }
@@ -331,6 +362,8 @@ public class Start {
                     }
                 }
                 bw.close();
+                bw_intra.close();
+                bw_inter.close();
             }
         }
         LOGGER.info("Cross linked database search is done!");
@@ -704,4 +737,84 @@ public class Start {
         }
         return selected;
     }
+
+    /**
+     * This method prepare title for each percolator inputs
+     *
+     * @return
+     * @throws IOException
+     */
+    private static String writePercolatorTitle() throws IOException {
+        String title = "SpecID" + "\t" + "Label" + "\t" + "scannr" + "\t"
+                + "score" + "\t" + "deltaScore" + "\t"
+                + "charge" + "\t" + "observedMass_Da" + "\t" + "massDelta_ppm" + "\t" + "absMassDelta_ppm" + "\t"
+                + "retentionTime" + "\t"
+                + "lenPepA" + "\t" + "lenPepB" + "\t" + "sumLen" + "\t"
+                + "ionFracA" + "\t" + "ionFracB" + "\t"
+                + "lnNumSp" + "\t";
+        return (title);
+    }
+
+    /**
+     * This method writes down each Result for percolator-inputs
+     */
+    private static void write(Result res, CPeptides c, BufferedWriter bw_percolator_input, HashSet<String> ids) throws IOException {
+        String id = "",
+                scn = res.getScanNum(),
+                target = "";
+        int label = -1,
+                pepALen = c.getPeptideA().getSequence().length(),
+                pepBLen = c.getPeptideB().getSequence().length(),
+                sumLen = pepALen + pepBLen;
+        boolean isProteinAdecoy = false,
+                isProteinBdecoy = false;
+        if (c.getProteinA().contains("REVERSED") || c.getProteinA().contains("SHUFFLED") || c.getProteinA().contains("DECOY")) {
+            isProteinAdecoy = true;
+        }
+        if (c.getProteinB().contains("REVERSED") || c.getProteinB().contains("SHUFFLED") || c.getProteinB().contains("DECOY")) {
+            isProteinBdecoy = true;
+        }
+        if (!isProteinAdecoy && !isProteinBdecoy) {
+            label = 1;
+            target = "T-";
+        } else {
+            target = "D-";
+        }
+        id = target + scn;
+        if (ids.contains(id)) {
+            int i = 2;
+            while (ids.contains(id)) {
+                id = target + scn + "-" + i;
+                i++;
+            }
+        }
+        ids.add(id);
+        String input = id + "\t" + label + "\t" + scn + "\t"
+                + res.getScore() + "\t" + res.getDeltaScore() + "\t"
+                + res.getCharge() + "\t" + res.getObservedMass() + "\t" + res.getDeltaMass() + "\t" + res.getAbsDeltaMass() + "\t"
+                + res.getMsms().getPrecursor().getRt() + "\t"
+                + pepALen + "\t" + pepBLen + "\t" + sumLen + "\t"
+                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
+                + res.getLnNumSpec();
+        bw_percolator_input.write(input + "\n");
+    }
+
+    /**
+     * This method allows writing down results for either intra-proteins or
+     * inter-proteins
+     */
+    private static void write(Result res, BufferedWriter bw_inter, BufferedWriter bw_intra, HashSet<String> ids) throws IOException {
+        if (res.getCp() instanceof CPeptides) {
+            CPeptides c = (CPeptides) res.getCp();
+            if (c.getType().equals("interProtein")) {
+                // write to bw_inter
+                write(res, c, bw_inter, ids);
+
+            } else {
+                // write to bw_intra
+                write(res, c, bw_intra, ids);
+            }
+        }
+    }
+
 }
