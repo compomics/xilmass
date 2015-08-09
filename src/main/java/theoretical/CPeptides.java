@@ -139,6 +139,14 @@ public class CPeptides extends CrossLinkedPeptides {
         this.is_Branching = is_Branching;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     /**
      * This method returns theoretical spectrum.
      *
