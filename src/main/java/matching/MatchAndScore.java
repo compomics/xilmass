@@ -260,6 +260,9 @@ public class MatchAndScore {
      * binomial probability based scoring_type based on three different
      * approaches
      *
+     * TODO: Future - Instead of weight calculation after finding matched peaks,
+     * count each matched peak while finding any match in order to speed up
+     *
      * @return
      */
     public double getCXPSMScore() {
