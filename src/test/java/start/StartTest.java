@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import theoretical.CPeptides;
 
 /**
  *
@@ -47,7 +46,7 @@ public class StartTest {
     public void testMain() throws Exception {
         System.out.println("main");
         String[] args = null;
-        Start.main(args);
+//        Start.main(args);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -65,8 +64,6 @@ public class StartTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-
- 
 
     /**
      * Test of check method, of class Start.
@@ -90,6 +87,26 @@ public class StartTest {
         assertEquals(6, result[0]);
         assertEquals(4, result[1]);
 
+    }
+
+    /**
+     * Test of getRange method, of class Start.
+     */
+    @Test
+    public void testGetRange() {
+        System.out.println("getRange");
+        double precMass = 100;
+        boolean isPPM = false;
+        double precTol = 10;
+        double[] expResult = {90, 110};
+        double[] result = Start.getRange(precMass, precTol, isPPM);
+        assertEquals(90, result[0], 0.01);
+        assertEquals(110, result[1], 0.01);
+        
+        isPPM=true;
+        result = Start.getRange(precMass, precTol, isPPM);
+        assertEquals(99.99, result[0], 0.01);
+        assertEquals(100.01, result[1], 0.01);
     }
 
 }
