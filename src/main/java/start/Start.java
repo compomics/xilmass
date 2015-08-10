@@ -9,15 +9,12 @@ import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
 import com.compomics.dbtoolkit.io.interfaces.DBLoader;
 import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.protein.Protein;
 import config.ConfigHolder;
 import crossLinker.CrossLinker;
-import crossLinker.CrossLinkerType;
 import crossLinker.GetCrossLinker;
 import database.CreateDatabase;
 import database.FASTACPDBLoader;
@@ -42,13 +39,12 @@ import multithread.score.ScorePSM;
 import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 import scoringFunction.ScoreName;
+import start.lucene.LuceneIndexSearch;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
-import theoretical.Contaminant;
 import theoretical.CrossLinkedPeptides;
 import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
-import theoretical.MonoLinkedPeptides;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -293,6 +289,10 @@ public class Start {
         File f = new File(inSilicoPeptideDBName);
         f.delete();
 
+        // here load db entries to memory for Lucene indexing search
+        File folder = new File(indexFile.getParentFile().getPath() + File.separator + "lucene");
+        LuceneIndexSearch search = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, crossLinkerName);
+
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! (all MS2 spectra)
@@ -315,9 +315,8 @@ public class Start {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "_" + mgf.getName() + ".txt"));
                 StringBuilder title = prepareTitle(doesKeepCPeptideFragmPattern, doesKeepWeights);
                 bw.write(title + "\n");
-                List<Future<ArrayList<Result>>> futureList = fillFutures(mgf, indexFile, ms1Err, isPPM, scoreName, ptmFactory,
-                        crossLinkerName, fragMode, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                        massWindow, isBranching, isContrastLinkedAttachmentOn, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepWeights, excService);
+                List<Future<ArrayList<Result>>> futureList = fillFutures(mgf, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                        massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepWeights, excService, search);
                 System.out.println("FutureList=" + futureList.size());
                 for (Future<ArrayList<Result>> future : futureList) {
                     try {
@@ -419,23 +418,18 @@ public class Start {
      *
      */
     private static List<Future<ArrayList<Result>>> fillFutures(File mgf,
-            File indexFile,
-            double ms1Err, boolean isPPM,
+            double precTol, boolean isPPM,
             ScoreName scoreName,
-            PTMFactory ptmFactory,
-            String crossLinkerName,
-            FragmentationMode fragMode,
             double fragTol,
             int intensity_option,
             int minFPeakNumPerWindow,
             int maxFPeakNumPerWindow,
             double massWindow,
-            boolean isBranching,
-            boolean isContrastLinkedAttachmentOn,
             boolean doesFindAllMatchedPeaks,
             boolean doesKeepCPeptideFragmPattern,
             boolean doesKeepWeight,
-            ExecutorService excService) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
+            ExecutorService excService,
+            LuceneIndexSearch search) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
 
         List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
 
@@ -445,24 +439,13 @@ public class Start {
             fct.addSpectra(mgf, new WaitingHandlerCLIImpl());
             for (String title : fct.getSpectrumTitles(mgf.getName())) {
                 MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                // now get query range..
                 double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
-                ArrayList<CrossLinkedPeptides> selectedCPeptides = new ArrayList<CrossLinkedPeptides>();
-                String line = "";
-                BufferedReader br = new BufferedReader(new FileReader(indexFile));
-                while ((line = br.readLine()) != null) {
-                    String[] split = line.split("\t");
-                    double theoMass = Double.parseDouble(split[10]);
-                    //Select spectra if fits to given MS1Err diff
-                    double tmpDiff = CalculateMS1Err.getMS1Err(isPPM, theoMass, precMass);
-                    if (Math.abs(tmpDiff) <= ms1Err) {
-                        CrossLinker linker = null;
-                        if (line.contains("CROSSLINK")) {
-                            linker = GetCrossLinker.getCrossLinker(crossLinkerName, Boolean.parseBoolean(split[12]));
-                        }
-                        CrossLinkedPeptides cp = Start.getCPeptides(line, ptmFactory, linker, fragMode, isBranching, isContrastLinkedAttachmentOn);
-                        selectedCPeptides.add(cp);
-                    }
-                }
+                double[] from_to = getRange(precMass, precTol, isPPM);
+                double from = from_to[0],
+                        to = from_to[1];
+//                System.out.println(precTol+"\t"+from+"\t"+to);
+                ArrayList<CrossLinkedPeptides> selectedCPeptides = search.getQuery(from, to);
                 if (!selectedCPeptides.isEmpty()) {
                     ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks, isPPM, doesKeepCPeptideFragmPattern, doesKeepWeight);
                     Future future = excService.submit(score);
@@ -658,87 +641,6 @@ public class Start {
     }
 
     /**
-     * This method generates a CPeptides object after reading a file
-     *
-     * @param line
-     * @param ptmFactory
-     * @param linker
-     * @param fragMode
-     * @param isBranching
-     * @param isContrastLinkedAttachmentOn
-     * @return
-     * @throws XmlPullParserException
-     * @throws IOException
-     */
-    private static CrossLinkedPeptides getCPeptides(String line, PTMFactory ptmFactory, CrossLinker linker, FragmentationMode fragMode,
-            boolean isBranching, boolean isContrastLinkedAttachmentOn) throws XmlPullParserException, IOException {
-        CrossLinkedPeptides selected = null;
-        String[] split = line.split("\t");
-        String proteinA = split[0],
-                proteinB = split[1],
-                peptideAseqFile = split[2],
-                peptideBseqFile = split[3],
-                fixedModA = split[6],
-                fixedModB = split[7],
-                variableModA = split[8],
-                variableModB = split[9];
-        // linker positions...
-        // This means a cross linked peptide is here...
-        if (!proteinB.equals("-")) {
-
-            linker.setIsLabeled(Boolean.parseBoolean(split[12]));
-            Integer linkerPosPeptideA = Integer.parseInt(split[4]),
-                    linkerPosPeptideB = Integer.parseInt(split[5]);
-            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false),
-                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModB, false);
-            // Start putting them on a list which will contain also variable PTMs
-            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA),
-                    ptms_peptideB = new ArrayList<ModificationMatch>(fixedPTM_peptideB);
-            // Add variable PTMs and also a list of several fixed PTMs
-            ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true),
-                    variablePTM_peptideB = GetPTMs.getPTM(ptmFactory, variableModB, true);
-            ptms_peptideA.addAll(variablePTM_peptideA);
-            ptms_peptideB.addAll(variablePTM_peptideB);
-            // First peptideA
-            Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA),
-                    peptideB = new Peptide(peptideBseqFile, ptms_peptideB);
-            if (peptideA.getSequence().length() > peptideB.getSequence().length()) {
-                // now generate peptide...
-                CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isContrastLinkedAttachmentOn);
-                selected = tmpCpeptide;
-            } else {
-                CPeptides tmpCpeptide = new CPeptides(proteinB, proteinA, peptideB, peptideA, linker, linkerPosPeptideB, linkerPosPeptideA, fragMode, isBranching, isContrastLinkedAttachmentOn);
-                selected = tmpCpeptide;
-            }
-        } // This means only monolinked peptide...    
-        else if (!proteinA.startsWith("contaminant")) {
-            Integer linkerPosPeptideA = Integer.parseInt(split[4]);
-            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
-            // Start putting them on a list which will contain also variable PTMs
-            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA);
-            // Add variable PTMs and also a list of several fixed PTMs
-            ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true);
-            ptms_peptideA.addAll(variablePTM_peptideA);
-            // First peptideA
-            Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA);
-            MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, linker, fragMode, isBranching);
-            selected = mP;
-        } else if (proteinA.startsWith("contaminant")) {
-            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
-            // Start putting them on a list which will contain also variable PTMs
-            ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA);
-            // Add variable PTMs and also a list of several fixed PTMs
-            ArrayList<ModificationMatch> variablePTM_peptideA = GetPTMs.getPTM(ptmFactory, variableModA, true);
-            ptms_peptideA.addAll(variablePTM_peptideA);
-            // First peptideA
-            Peptide peptideA = new Peptide(peptideAseqFile, ptms_peptideA);
-            Contaminant mP = new Contaminant(peptideA, proteinA, fragMode, isBranching);
-            selected = mP;
-        }
-        return selected;
-    }
-
-    /**
      * This method prepare title for each percolator inputs
      *
      * @return
@@ -751,7 +653,9 @@ public class Start {
                 + "retentionTime" + "\t"
                 + "lenPepA" + "\t" + "lenPepB" + "\t" + "sumLen" + "\t"
                 + "ionFracA" + "\t" + "ionFracB" + "\t"
-                + "lnNumSp" + "\t";
+                + "lnNumSp" + "\t"
+                + "Peptide" + "\t"
+                + "Protein";
         return (title);
     }
 
@@ -789,13 +693,19 @@ public class Start {
             }
         }
         ids.add(id);
+        // because only cross linked peptides are selected for scoring!
+        CPeptides cp = (CPeptides) res.getCp();
         String input = id + "\t" + label + "\t" + scn + "\t"
                 + res.getScore() + "\t" + res.getDeltaScore() + "\t"
                 + res.getCharge() + "\t" + res.getObservedMass() + "\t" + res.getDeltaMass() + "\t" + res.getAbsDeltaMass() + "\t"
                 + res.getMsms().getPrecursor().getRt() + "\t"
                 + pepALen + "\t" + pepBLen + "\t" + sumLen + "\t"
                 + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
-                + res.getLnNumSpec();
+                + res.getLnNumSpec() + "\t"
+                + "-." + cp.getPeptideA().getSequence() + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
+                + cp.getPeptideB().getSequence() + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part
+                + "\t"
+                + cp.getProteinA() + "-" + cp.getProteinB();
         bw_percolator_input.write(input + "\n");
     }
 
@@ -815,6 +725,33 @@ public class Start {
                 write(res, c, bw_intra, ids);
             }
         }
+    }
+
+    /**
+     * This method getRange of theoretical masses for a given precursorTolerance
+     */
+    /**
+     * This method getRange of theoretical masses for a given precursorTolerance
+     *
+     * @param precMass observed precursor mass
+     * @param isPPM true: ms1Err is on ppm, false: ms1Err is Da
+     * @param precTol precursor tolerance
+     * @return an array of lower (O.value) and upper (1.value) mass range
+     */
+    public static double[] getRange(double precMass, double precTol, boolean isPPM) {
+        double[] from_to = new double[2];
+        double from = precMass - precTol,
+                to = precMass + precTol;
+        if (isPPM) {
+            double mass = (precMass * 1000000),
+                    shiftDown = (1000000 + precTol),
+                    shiftUp = (1000000 - precTol);
+            from = mass / shiftDown;
+            to = mass / shiftUp;
+        }
+        from_to[0] = from;
+        from_to[1] = to;
+        return from_to;
     }
 
 }
