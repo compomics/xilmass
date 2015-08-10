@@ -46,7 +46,7 @@ public class CalculateMS1ErrTest {
         boolean isPPM = true;
         double theoreticalMass = 1000.000000;
         double precursorMass = 999.999876;
-        double expResult = 0.1240000000279906;
+        double expResult = -0.1240000000279906;
         double result = CalculateMS1Err.getMS1Err(isPPM, theoreticalMass, precursorMass);
         assertEquals(expResult, result, 0.001);
 
