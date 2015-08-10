@@ -5,8 +5,6 @@
  */
 package start.lucene;
 
-import com.compomics.util.experiment.biology.PTMFactory;
-import crossLinker.CrossLinker;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,11 +21,10 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.xmlpull.v1.XmlPullParserException;
-import theoretical.CrossLinkedPeptides;
-import theoretical.FragmentationMode;
 
 /**
- *
+ * To index for Lucene
+ * 
  * @author Sule
  */
 public class CPeptidesIndex {
@@ -58,7 +55,6 @@ public class CPeptidesIndex {
         // read each entry on a file to store on an index
         BufferedReader br = new BufferedReader(new FileReader(indexFile));
         String line = "";
-        CrossLinkedPeptides cp = null;
         while ((line = br.readLine()) != null) {
             getEachIndex(line);
         }
@@ -102,7 +98,5 @@ public class CPeptidesIndex {
         doc.add(new TextField("content", fullSearchableText, Field.Store.NO)); // FieldStore _ to save index space
         getIndexWriter().addDocument(doc);
     }
-
-   
 
 }

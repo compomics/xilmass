@@ -38,6 +38,8 @@ import org.apache.lucene.store.FSDirectory;
  * hotelName = doc.get("name"); ... }
  * 
  * range: [] inclusive {} exclusive
+ * 
+ * TUTORIAL:http://oak.cs.ucla.edu/cs144/projects/lucene/
  *
  * @author Sule
  */
