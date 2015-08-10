@@ -30,15 +30,16 @@ import theoretical.MonoLinkedPeptides;
 
 /**
  * This class first checks if there are index files constructed before. If these
- * were not constructed before, it creates index files by construction of CPeptidesIndex object and calling writeIndexFile() method.
- * After making sure that there are index files, by Search object to call query to select CPeptides
+ * were not constructed before, it creates index files by construction of
+ * CPeptidesIndex object and calling writeIndexFile() method. After making sure
+ * that there are index files, by Search object to call query to select
+ * CPeptides
  *
  * @author Sule
  */
 public class LuceneIndexSearch {
 
     private static final Logger LOGGER = Logger.getLogger(LuceneIndexSearch.class);
-    private File indexFile; // a crosslinked peptide-mass index file
     private CPeptideSearch cpSearch; // A searching class to run queries
     private PTMFactory ptmFactory;
     private FragmentationMode fragMode;
@@ -49,11 +50,12 @@ public class LuceneIndexSearch {
 
     /**
      *
-     * @param indexFile an index file with given protein mass, sequences to construct CPeptides objects
+     * @param indexFile a crosslinked peptide-mass index file an index file with given protein mass, sequences to
+     * construct CPeptides objects
      * @param ptmFactory
      * @param linkerName - just name of linker to create both heavy and light
      * labeled versions
-     * @param fragMode 
+     * @param fragMode
      * @param folder
      * @param isBranching
      * @param isContrastLinkedAttachmentOn
@@ -62,7 +64,6 @@ public class LuceneIndexSearch {
      */
     public LuceneIndexSearch(File indexFile, File folder, PTMFactory ptmFactory, FragmentationMode fragMode,
             boolean isBranching, boolean isContrastLinkedAttachmentOn, String linkerName) throws IOException, Exception {
-        this.indexFile = indexFile;
         // check if index files exist on given folder
         boolean reader = DirectoryReader.indexExists(FSDirectory.open(folder));
         // if it is not, then write index files
@@ -77,10 +78,6 @@ public class LuceneIndexSearch {
         this.isContrastLinkedAttachmentOn = isContrastLinkedAttachmentOn;
         heavyLinker = GetCrossLinker.getCrossLinker(linkerName, true);
         lightLinker = GetCrossLinker.getCrossLinker(linkerName, false);
-    }
-
-    public File getIndexFile() {
-        return indexFile;
     }
 
     public CPeptideSearch getCpSearch() {
