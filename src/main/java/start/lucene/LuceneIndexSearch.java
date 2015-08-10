@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
 import org.xmlpull.v1.XmlPullParserException;
 import start.GetPTMs;
 import theoretical.CPeptides;
@@ -27,6 +29,9 @@ import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 
 /**
+ * This class first checks if there are index files constructed before. If these
+ * were not constructed before, it creates index files by construction of CPeptidesIndex object and calling writeIndexFile() method.
+ * After making sure that there are index files, by Search object to call query to select CPeptides
  *
  * @author Sule
  */
@@ -44,22 +49,28 @@ public class LuceneIndexSearch {
 
     /**
      *
-     * @param indexFile
+     * @param indexFile an index file with given protein mass, sequences to construct CPeptides objects
      * @param ptmFactory
      * @param linkerName - just name of linker to create both heavy and light
      * labeled versions
-     * @param fragMode
+     * @param fragMode 
+     * @param folder
      * @param isBranching
      * @param isContrastLinkedAttachmentOn
      * @throws IOException
      * @throws Exception
      */
-    public LuceneIndexSearch(File indexFile, PTMFactory ptmFactory, FragmentationMode fragMode,
+    public LuceneIndexSearch(File indexFile, File folder, PTMFactory ptmFactory, FragmentationMode fragMode,
             boolean isBranching, boolean isContrastLinkedAttachmentOn, String linkerName) throws IOException, Exception {
         this.indexFile = indexFile;
-        CPeptidesIndex obj = new CPeptidesIndex(indexFile);
-        obj.writeIndexFile();
-        cpSearch = new CPeptideSearch(indexFile);
+        // check if index files exist on given folder
+        boolean reader = DirectoryReader.indexExists(FSDirectory.open(folder));
+        // if it is not, then write index files
+        if (!reader) {
+            CPeptidesIndex obj = new CPeptidesIndex(indexFile, folder);
+            obj.writeIndexFile();
+        }
+        cpSearch = new CPeptideSearch(folder);
         this.ptmFactory = ptmFactory;
         this.fragMode = fragMode;
         this.isBranching = isBranching;
@@ -204,14 +215,15 @@ public class LuceneIndexSearch {
      */
     public static void main(String[] args) throws IOException, Exception {
         File indexFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\databases\\test\\lucene/target_Rdecoy_cam_plectin_cxm_both_index.txt"),
-                modsFile = new File("C:/Users/Sule/Documents/NetBeansProjects/CrossLinkedPeptides/src/resources/mods.xml");
+                modsFile = new File("C:/Users/Sule/Documents/NetBeansProjects/CrossLinkedPeptides/src/resources/mods.xml"),
+                folder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\databases\\test\\lucene/lucene");
         PTMFactory ptmFactory = PTMFactory.getInstance();
         ptmFactory.importModifications(modsFile, false);
         FragmentationMode fragMode = FragmentationMode.HCD;
         boolean isBranching = false,
                 isContrastLinkedAttachmentOn = false;
 
-        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, "DSS");
+        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, "DSS");
         ArrayList<CrossLinkedPeptides> query = o.getQuery(1500, 1700);
         for (CrossLinkedPeptides q : query) {
             System.out.println(q.toPrint());
