@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -23,29 +24,32 @@ import org.apache.lucene.util.Version;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- * To index for Lucene
- * 
+ * To index for Lucene searching
+ *
  * @author Sule
  */
 public class CPeptidesIndex {
 
     private IndexWriter indexWriter;
     private File indexFile,
-            indexDirectory; // a directory which contains all indexFiles
-   
-    private boolean isConstructed = false;
+            indexDirectory; // a directory which contains all indexFiles   
+    private boolean isConstructed = true;
 
-    public CPeptidesIndex(File indexFile) {
-        this.indexFile = indexFile;
-        indexDirectory= indexFile.getParentFile();      
+    public CPeptidesIndex(File index, File folder) {
+        this.indexFile = index;
+        indexDirectory = folder;
     }
 
     public IndexWriter getIndexWriter() throws IOException {
         if (!isConstructed || indexWriter == null) {
-            Directory indexDir = FSDirectory.open(indexDirectory);
+            Directory indexDir = FSDirectory.open(indexDirectory); 
+            Analyzer a = new StandardAnalyzer();
             // vairous types of analyzers
-            IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, new StandardAnalyzer());
+            IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, a);
+            // now each index file is reconstructed from scrath
+            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             indexWriter = new IndexWriter(indexDir, config);
+            indexWriter.getConfig().setUseCompoundFile(false);
             isConstructed = true;
         }
         return indexWriter;
