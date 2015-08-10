@@ -11,6 +11,7 @@ import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -145,4 +146,20 @@ public abstract class CrossLinkedPeptides {
         }
         return info;
     }
+    
+     
+    /**
+     * To sort CrossLinkedPeptides objects in a ascending order of theoretical mass 
+     */
+    public static final Comparator<CrossLinkedPeptides> CPeptides_ASC_mass_order
+            = new Comparator<CrossLinkedPeptides>() {
+                @Override
+                public int compare(CrossLinkedPeptides o1, CrossLinkedPeptides o2) {
+                    return o1.getTheoretical_xlinked_mass() < o2.getTheoretical_xlinked_mass() ? -1 : o1.getTheoretical_xlinked_mass() == o2.getTheoretical_xlinked_mass() ? 0 : 1;
+                }
+            };
+
+   
+
+    
 }
