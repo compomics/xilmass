@@ -50,10 +50,12 @@ public class CPeptideSearch {
 
     public CPeptideSearch(File indexFile) throws IOException {
         // first creat this indexSearcher
-        searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexFile.getParent()))));
+        DirectoryReader reader = DirectoryReader.open(FSDirectory.open(indexFile));
+        searcher = new IndexSearcher(reader);        
         // CPeptidesIndex were constructed with search field called "content", therefore call content
         // Analyzer type needs to be specified while indexing and searching and must be THE SAME!
         parser = new QueryParser("content", new StandardAnalyzer());
+        
     }
 
     /**
