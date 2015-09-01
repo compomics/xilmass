@@ -13,6 +13,7 @@ import crossLinker.GetCrossLinker;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -62,13 +63,13 @@ public class LuceneIndexSearch {
      * @throws IOException
      * @throws Exception
      */
-    public LuceneIndexSearch(File indexFile, File folder, PTMFactory ptmFactory, FragmentationMode fragMode,
+    public LuceneIndexSearch(HashSet<StringBuilder> headers, File folder, PTMFactory ptmFactory, FragmentationMode fragMode,
             boolean isBranching, boolean isContrastLinkedAttachmentOn, String linkerName) throws IOException, Exception {
         // check if index files exist on given folder
         boolean reader = DirectoryReader.indexExists(FSDirectory.open(folder));
         // if it is not, then write index files
         if (!reader) {
-            CPeptidesIndex obj = new CPeptidesIndex(indexFile, folder);
+            CPeptidesIndex obj = new CPeptidesIndex(headers, folder);
             obj.writeIndexFile();
         }
         cpSearch = new CPeptideSearch(folder);
@@ -115,6 +116,10 @@ public class LuceneIndexSearch {
             // to select only cross-linked objects
             CrossLinkedPeptides cp = getCPeptides(doc);
             if (cp instanceof CPeptides) {
+                selected.add(cp);
+            }
+            // also add Contaminant-derived objects
+            if(cp instanceof Contaminant){
                 selected.add(cp);
             }
         }
@@ -220,11 +225,11 @@ public class LuceneIndexSearch {
         boolean isBranching = false,
                 isContrastLinkedAttachmentOn = false;
 
-        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, "DSS");
-        ArrayList<CrossLinkedPeptides> query = o.getQuery(1500, 1700);
-        for (CrossLinkedPeptides q : query) {
-            System.out.println(q.toPrint());
-        }
+//        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, "DSS");
+//        ArrayList<CrossLinkedPeptides> query = o.getQuery(1500, 1700);
+//        for (CrossLinkedPeptides q : query) {
+//            System.out.println(q.toPrint());
+//        }
 
     }
 }

@@ -5,11 +5,10 @@
  */
 package start.lucene;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -31,18 +30,19 @@ import org.xmlpull.v1.XmlPullParserException;
 public class CPeptidesIndex {
 
     private IndexWriter indexWriter;
-    private File indexFile,
-            indexDirectory; // a directory which contains all indexFiles   
+    private File indexDirectory; // a directory which contains all indexFiles   
     private boolean isConstructed = true;
+    private HashSet<StringBuilder> headers;
 
-    public CPeptidesIndex(File index, File folder) {
-        this.indexFile = index;
+    public CPeptidesIndex(HashSet<StringBuilder> headers, File folder) {
+//        this.indexFile = index;
         indexDirectory = folder;
+        this.headers = headers;
     }
 
     public IndexWriter getIndexWriter() throws IOException {
         if (!isConstructed || indexWriter == null) {
-            Directory indexDir = FSDirectory.open(indexDirectory); 
+            Directory indexDir = FSDirectory.open(indexDirectory);
             Analyzer a = new StandardAnalyzer();
             // vairous types of analyzers
             IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, a);
@@ -56,20 +56,15 @@ public class CPeptidesIndex {
     }
 
     public void writeIndexFile() throws FileNotFoundException, IOException, XmlPullParserException {
-        // read each entry on a file to store on an index
-        BufferedReader br = new BufferedReader(new FileReader(indexFile));
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            getEachIndex(line);
+        for (StringBuilder h : headers) {
+            getEachIndex(h);
         }
-        // now close the writer
         getIndexWriter().close();
     }
 
-    public void getEachIndex(String line) throws IOException {
-
+    public void getEachIndex(StringBuilder line) throws IOException {
         Document doc = new Document();
-        String[] sp = line.split("\t");
+        String[] sp = line.toString().split("\t");
         doc.add(new StringField("proteinA", sp[0], Field.Store.YES)); // proteinA name
         doc.add(new StringField("proteinB", sp[1], Field.Store.YES)); // proteinB name
 
