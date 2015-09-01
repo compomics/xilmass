@@ -35,6 +35,17 @@ public class ConfigHolder extends PropertiesConfiguration {
         return ourInstance;
     }
 
+    /**
+     * Gets the PropertiesConfiguration instance
+     *
+     * @return the PropertiesConfigurationHolder instance
+     */
+    public static ConfigHolder getTargetDecoyAnalyzeInstance() throws ConfigurationException, IOException {
+        Resource propertiesResource = ResourceUtils.getResourceByRelativePath("TargetDecoy.properties");
+        ourInstance = new ConfigHolder(propertiesResource);
+        return ourInstance;
+    }
+
     private ConfigHolder(Resource propertiesResource) throws ConfigurationException, IOException {
         super(propertiesResource.getURL());
     }
