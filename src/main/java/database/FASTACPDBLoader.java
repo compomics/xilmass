@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.paukov.combinatorics.Factory;
 import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.ICombinatoricsVector;
@@ -186,10 +187,11 @@ public class FASTACPDBLoader {
      * @param isBranching true:is branching/false:attaching
      * @param isContrastLinkedAttachmentOn
      * @param max_mods_per_peptide
+     * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static void generate_peptide_mass_index(
+    public static HashSet<StringBuilder> generate_peptide_mass_index(
             BufferedWriter bw,
             HashMap<String, String> header_sequence,
             PTMFactory ptmFactory,
@@ -198,6 +200,7 @@ public class FASTACPDBLoader {
             CrossLinker linker, FragmentationMode fragMode,
             boolean isBranching, boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
+        HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
         boolean isCPeptidesObjConstructed = false;
         StringBuilder proteinA,
                 proteinB,
@@ -248,8 +251,12 @@ public class FASTACPDBLoader {
                         if (!isCPeptidesObjConstructed) {
                             cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB,
                                     fragMode, isBranching, isContrastLinkedAttachmentOn);
-                            StringBuilder info = CPeptideInfo.getInfo(cPeptide);
-                            bw.write(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n");
+                            StringBuilder info = CPeptideInfo.getInfo(cPeptide, true),
+                                    rInfo = CPeptideInfo.getInfo(cPeptide, false);
+                            if (!headers.contains(info) && !header.contains(rInfo)) {
+                                headers.add(new StringBuilder(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n"));
+                                bw.write(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n");
+                            }
                         } else {
                             cPeptide.setProteinA(proteinA.toString());
                             cPeptide.setProteinB(proteinB.toString());
@@ -257,17 +264,22 @@ public class FASTACPDBLoader {
                             cPeptide.setPeptideB(pB);
                             cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
                             cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
-                            StringBuilder info = CPeptideInfo.getInfo(cPeptide);
-                            bw.write(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n");
+                             StringBuilder info = CPeptideInfo.getInfo(cPeptide, true),
+                                    rInfo = CPeptideInfo.getInfo(cPeptide, false);
+                            if (!headers.contains(info) && !header.contains(rInfo)) {
+                                headers.add(new StringBuilder(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n"));
+                                bw.write(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n");
+                            }
                         }
                         isCPeptidesObjConstructed = true;
                     }
                 }
             }
         }
+        return headers;
     }
 
-    public static void generate_peptide_mass_index_for_contaminants(
+    public static HashSet<StringBuilder> generate_peptide_mass_index_for_contaminants(
             BufferedWriter bw,
             HashMap<String, String> header_sequence,
             PTMFactory ptmFactory,
@@ -277,6 +289,8 @@ public class FASTACPDBLoader {
             boolean isBranching, boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
         // This part for Contaminant sequence
+        HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
+
         for (String header : header_sequence.keySet()) {
             if (!header.isEmpty() && header.startsWith("contaminant")) {
                 String contaminant_seq = header_sequence.get(header);
@@ -287,11 +301,13 @@ public class FASTACPDBLoader {
                     String fixedModPepB = getPTMName(c.getModificationMatches(), false),
                             varModPep = getPTMName(c.getModificationMatches(), true);
                     double mass = c.getMass();
-                    String sb = header + "\t" + "-" + "\t" + contaminant_seq + "\t" + "-" + "\t" + "-" + "\t" + "-" + "\t" + fixedModPepB + "\t" + "-" + "\t" + varModPep + "\t" + "-" + "\t" + mass;
+                    StringBuilder sb = new StringBuilder(header + "\t" + "-" + "\t" + contaminant_seq + "\t" + "-" + "\t" + "-" + "\t" + "-" + "\t" + fixedModPepB + "\t" + "-" + "\t" + varModPep + "\t" + "-" + "\t" + mass);
                     bw.write(sb + "\n");
+                    headers.add(sb);
                 }
             }
         }
+        return headers;
     }
 
     /**
@@ -345,7 +361,7 @@ public class FASTACPDBLoader {
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static void generate_peptide_mass_index_monoLink(
+    public static HashSet<String> generate_peptide_mass_index_monoLink(
             BufferedWriter bw,
             HashMap<String, String> header_sequence,
             PTMFactory ptmFactory,
@@ -353,6 +369,7 @@ public class FASTACPDBLoader {
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode, boolean isBranching,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
+        HashSet<String> headers = new HashSet<String>();
         boolean isMonoLinkedPeptideObjConstructed = false;
         StringBuilder proteinA,
                 proteinB,
@@ -403,15 +420,23 @@ public class FASTACPDBLoader {
                     if (!isMonoLinkedPeptideObjConstructed) {
                         mPeptides = new MonoLinkedPeptides(pA, proteinA.toString(), linkerPosPeptideA, linker, fragMode, isBranching);
                         mass = mPeptides.getTheoretical_xlinked_mass();
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
+                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
+                        if(!headers.contains(info) && !header.contains(rInfo)){
+                        headers.add(info + "\n");
                         bw.write(info + "\n");
+                        }
                     } else {
                         mPeptides.setPeptide(pA);
                         mPeptides.setProtein(proteinA.toString());
                         mPeptides.setLinker_position(linkerPosPeptideA);
                         mass = mPeptides.getTheoretical_xlinked_mass();
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                       StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
+                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
+                        if(!headers.contains(info) && !header.contains(rInfo)){
+                        headers.add(info + "\n");
                         bw.write(info + "\n");
+                        }
                     }
                 }
                 isMonoLinkedPeptideObjConstructed = true;
@@ -420,18 +445,27 @@ public class FASTACPDBLoader {
                         isMonoLinkedPeptideObjConstructed = true;
                         mPeptides = new MonoLinkedPeptides(pB, proteinB.toString(), linkerPosPeptideB, linker, fragMode, isBranching);
                         mass = mPeptides.getTheoretical_xlinked_mass();
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                       StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
+                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
+                        if(!headers.contains(info) && !header.contains(rInfo)){
+                        headers.add(info + "\n");
                         bw.write(info + "\n");
+                        }
                     } else {
                         mPeptides.setPeptide(pB);
                         mPeptides.setProtein(proteinB.toString());
                         mPeptides.setLinker_position(linkerPosPeptideB);
                         mass = mPeptides.getTheoretical_xlinked_mass();
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides);
+                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
+                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
+                        if(!headers.contains(info) && !header.contains(rInfo)){
+                        headers.add(info + "\n");
                         bw.write(info + "\n");
+                        }
                     }
                 }
             }
         }
+        return headers;
     }
 }

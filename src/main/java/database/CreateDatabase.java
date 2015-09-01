@@ -214,6 +214,7 @@ public class CreateDatabase {
             shuffle();
         }
         // now generate cross linked ones..
+        LOGGER.info("create_crossLinkedPeptides");
         create_crossLinkedPeptides();
     }
 
@@ -621,21 +622,33 @@ public class CreateDatabase {
         if (next_index != nextSequence.length() - 1) {
             mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
             String tmp_linked_sequence = "",
-                    tmp_header = "";
+                    tmp_header = "",
+                    rTmpHeader = "";
+
             if (mod_nextSeq.length() <= mod_startSeq.length()) {
                 tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
                 tmp_header = startProtein.getHeader().getAccession().replace(" ", "")
                         + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
                         + nextProtein.getHeader().getAccession().replace(" ", "")
                         + info_if_nextSeq_reversed + "_" + (next_index + 1);
+                rTmpHeader = nextProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
+                        + startProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
             } else {
                 tmp_linked_sequence = mod_nextSeq + "|" + mod_startSeq;
                 tmp_header = nextProtein.getHeader().getAccession().replace(" ", "")
                         + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
                         + startProtein.getHeader().getAccession().replace(" ", "")
                         + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
+                rTmpHeader = startProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
+                        + nextProtein.getHeader().getAccession().replace(" ", "")
+                        + info_if_nextSeq_reversed + "_" + (next_index + 1);
             }
-            header_sequence.put(tmp_header, tmp_linked_sequence);
+            if (!header_sequence.containsKey(rTmpHeader)) {
+                header_sequence.put(tmp_header, tmp_linked_sequence);
+            }
         }
     }
 
