@@ -23,9 +23,10 @@ public class CPeptideInfo {
      * object and also to write them on a cache file with their masses
      *
      * @param cPeptide
+     * @param isReversed True; first B then A (in reversed order of peptide)
      * @return
      */
-    public static StringBuilder getInfo(CrossLinkedPeptides cPeptide) {
+    public static StringBuilder getInfo(CrossLinkedPeptides cPeptide, boolean isReversed) {
         if (cPeptide.getLinkingType() == CrossLinkingType.CROSSLINK) {
             CPeptides cp = (CPeptides) cPeptide;
             String proteinA = cp.getProteinA(),
@@ -41,6 +42,10 @@ public class CPeptideInfo {
             double mass = cp.getTheoretical_xlinked_mass();
             StringBuilder sb = new StringBuilder(proteinA + "\t" + proteinB + "\t" + peptideA + "\t" + peptideB + "\t"
                     + linkerPosPepA + "\t" + linkerPosPepB + "\t" + fixedModPepA + "\t" + fixedModPepB + "\t" + varModPepA + "\t" + varModPepB + "\t" + mass + "\t" + "CROSSLINK");
+            if(isReversed){
+                sb = new StringBuilder(proteinB + "\t" + proteinA + "\t" + peptideB + "\t" + peptideA + "\t"
+                    + linkerPosPepB + "\t" + linkerPosPepA + "\t" + fixedModPepB + "\t" + fixedModPepA + "\t" + varModPepB + "\t" + varModPepA + "\t" + mass + "\t" + "CROSSLINK");
+            }            
             return sb;
         } else {
             MonoLinkedPeptides mp = (MonoLinkedPeptides) cPeptide;
