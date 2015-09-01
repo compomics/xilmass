@@ -7,9 +7,11 @@ package theoretical;
 
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -146,10 +148,37 @@ public abstract class CrossLinkedPeptides {
         }
         return info;
     }
-    
-     
+
+    public String getSequenceWithPtms(Peptide peptide, PTMFactory ptmFactory) {
+        StringBuilder alteredPeptideSequence = new StringBuilder();
+        ArrayList<ModificationMatch> modificationMatches = peptide.getModificationMatches();
+        DecimalFormat df = new DecimalFormat("#.00");
+        for (int i = 0; i < peptide.getSequence().length(); i++) {
+            boolean modified = false;
+            for (int j = 0; j < modificationMatches.size() && !modified; j++) {
+                ModificationMatch m = modificationMatches.get(j);
+                if (m.getModificationSite() == (i + 1)) {                   
+                    String modName = "";
+                    if (m.isVariable()) {
+                         modified = true;
+                        double mass = ptmFactory.getPTM(m.getTheoreticPtm()).getMass();
+                        String format = df.format(mass);
+                        modName = "[" + format + "]";
+                    }
+                    alteredPeptideSequence.append(peptide.getSequence().charAt(i));
+                    alteredPeptideSequence.append(modName);
+                }
+            }
+            if (!modified) {
+                alteredPeptideSequence.append(peptide.getSequence().charAt(i));
+            }
+        }
+        return alteredPeptideSequence.toString();
+    }
+
     /**
-     * To sort CrossLinkedPeptides objects in a ascending order of theoretical mass 
+     * To sort CrossLinkedPeptides objects in a ascending order of theoretical
+     * mass
      */
     public static final Comparator<CrossLinkedPeptides> CPeptides_ASC_mass_order
             = new Comparator<CrossLinkedPeptides>() {
@@ -159,7 +188,4 @@ public abstract class CrossLinkedPeptides {
                 }
             };
 
-   
-
-    
 }

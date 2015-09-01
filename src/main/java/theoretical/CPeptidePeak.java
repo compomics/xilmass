@@ -11,7 +11,7 @@ import java.util.Comparator;
 /**
  * This class holds m/z, intensity and name information derived from CPeptideIon
  * object It is used during finding a matched peaks while considering singly and
- * doubly charged peaks.
+ * doubly charged peaks (if precursor charge is bigger than one).
  *
  *
  * @author Sule
