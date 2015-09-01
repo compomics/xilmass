@@ -104,7 +104,7 @@ public class MatchAndScoreTest extends TestCase {
         theoCMS2ions.add(cpi_1);
 
         CPeptides c = null;
-        MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100,false,false);
+        MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100, false, false, false);
         instance.setDoesFindAllMatchedPeaks(false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.getCXPSMScore();
@@ -119,7 +119,7 @@ public class MatchAndScoreTest extends TestCase {
         theoCMS2ions.add(new CPeptideIon(100, 287.203, CPeptideIonType.Backbone_PepA, 0, "1"));
         theoCMS2ions.add(new CPeptideIon(100, 287.648, CPeptideIonType.Backbone_PepA, 0, "2"));
 
-        instance = new MatchAndScore(second_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100,false,false);
+        instance = new MatchAndScore(second_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100, false, false, false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.setDoesFindAllMatchedPeaks(false);
         instance.getCXPSMScore();
@@ -139,7 +139,7 @@ public class MatchAndScoreTest extends TestCase {
         theoCMS2ions.add(new CPeptideIon(100, first, CPeptideIonType.Backbone_PepA, 0, "1"));
         theoCMS2ions.add(new CPeptideIon(100, second, CPeptideIonType.Backbone_PepA, 0, "1"));
 
-        instance = new MatchAndScore(fourth_problem_ms, ScoreName.AndromedaD, c, 0.01, 0, 1, 11, 100,false,false);
+        instance = new MatchAndScore(fourth_problem_ms, ScoreName.AndromedaD, c, 0.01, 0, 1, 11, 100, false, false, false);
         instance.setDoesFindAllMatchedPeaks(false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.getCXPSMScore();
@@ -149,7 +149,7 @@ public class MatchAndScoreTest extends TestCase {
         assertEquals(129.10219, result.get(0).mz, 0.001);
 
         // 4th problematic scenario -doublyCharged_pepA_a1_lepB_monolink_a2_mz=129.0966 singlyCharged_pepA_b1_mz=129.1022 with higher fragment tolerance...
-        instance = new MatchAndScore(fourth_problem_ms, ScoreName.AndromedaD, c, 0.5, 0, 1, 11, 100,false,false);
+        instance = new MatchAndScore(fourth_problem_ms, ScoreName.AndromedaD, c, 0.5, 0, 1, 11, 100, false, false, false);
         instance.setDoesFindAllMatchedPeaks(false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
         instance.getCXPSMScore();
@@ -196,7 +196,7 @@ public class MatchAndScoreTest extends TestCase {
         theoCMS2ions.add(cpi_5);
 
         CPeptides c = null;
-        MatchAndScore instance = new MatchAndScore(ms, ScoreName.MSAmandaD, c, fragTol, 0, 1, 11, 100,false,false);
+        MatchAndScore instance = new MatchAndScore(ms, ScoreName.MSAmandaD, c, fragTol, 0, 1, 11, 100, false, false, false);
         instance.setTheoreticalCXMS2ions(theoCMS2ions);
 
         ArrayList<Peak> result = new ArrayList<Peak>(instance.getMatchedPeaks());
@@ -476,9 +476,9 @@ public class MatchAndScoreTest extends TestCase {
         Peptide p1 = new Peptide("EAFSLFDKDGDGTITTK", modifications),
                 p2 = new Peptide("AKELLEK", modifications);
         CrossLinker linker = new DSS();
-        CPeptides c = new CPeptides("proA", "proB", p1, p2, linker, 7, 1, FragmentationMode.HCD_all, false,false);
+        CPeptides c = new CPeptides("proA", "proB", p1, p2, linker, 7, 1, FragmentationMode.HCD_all, false, false);
 
-        MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100,false,false);
+        MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100, false, false, false);
         instance.setDoesFindAllMatchedPeaks(false);
         instance.getTheoreticalCXPeaks();
         instance.getCXPSMScore();
@@ -603,7 +603,7 @@ public class MatchAndScoreTest extends TestCase {
         tmps.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
         tmps.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
 
-       // 6-FoundA and 4-FoundB
+        // 6-FoundA and 4-FoundB
         ArrayList<CPeptidePeak> alls = new ArrayList<CPeptidePeak>();
         alls.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
         alls.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b1_mz=129.1022"));
@@ -612,7 +612,7 @@ public class MatchAndScoreTest extends TestCase {
         alls.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
         alls.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
         alls.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
-        
+
         alls.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a2_lepB_monolink_a3_mz=129.0966"));
         alls.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b2_mz=129.1022"));
         alls.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y2_pepB_y2_mz=147.1128"));
@@ -620,11 +620,9 @@ public class MatchAndScoreTest extends TestCase {
         alls.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a5_lepB_monolink_a2_mz=257.1859"));
         alls.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b5_lepB_b2_mz=368.2418"));
         alls.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y7_lepB_y6_mz=576.8655"));
-        
-        
-       // 6-FoundA and 4-FoundB 12-AllA 8-AllB
-        // 6/12*4/8= 0.25 = 
 
+        // 6-FoundA and 4-FoundB 12-AllA 8-AllB
+        // 6/12*4/8= 0.25 = 
         double expResult = 0.25;
 //        double result = MatchAndScore.calculateWeightForTheoPeaks(tmps, alls, true);
 //        assertEquals(expResult, result, 0.0);
