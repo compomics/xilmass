@@ -112,8 +112,6 @@ public class Start {
             scoreName = ScoreName.AndromedaDWeighted;
         } else if (scoring.equals("TheoMSAmandaWeightedDerived")) {
             scoreName = ScoreName.TheoMSAmandaDWeighted;
-        } else if (scoring.equals("AndromedaWeightedDerived_Partial")) {
-            scoreName = ScoreName.AndromedaD;
         }
         // Get fixed modification and variable modification names...
         ArrayList<String> fixedModifications = getModificationsName(fixedModificationNames),
@@ -144,8 +142,7 @@ public class Start {
                 doesKeepWeights = true,
                 isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
                 doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("doesFindAllMatchedPeaks"),
-                isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
-                isPartialAndromeda = ConfigHolder.getInstance().getBoolean("isPartialAndromeda");
+                isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked");
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
@@ -335,7 +332,7 @@ public class Start {
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
                         List<Future<ArrayList<Result>>> futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepWeights, excService, search, isPartialAndromeda);
+                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepWeights, excService, search);
                         for (Future<ArrayList<Result>> future : futureList) {
                             try {
                                 // Write each result on an output file...
@@ -412,13 +409,12 @@ public class Start {
                 + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t"
                 + "#TheoIonA" + "\t" + "#TheoIonB" + "\t"
                 + "IonFracA" + "\t" + "IonFracB" + "\t"
-                + "MatchedPeakList" + "\t" + "TheoMatchedPeakList" + "\t"
-        );
+                + "MatchedPeakList" + "\t" + "TheoMatchedPeakList");
         if (doesKeepCPeptideFragmPattern) {
             fileTitle.append("\t").append("CPeptideFragPatternName");
         }
         if (doesKeepWeights) {
-            fileTitle.append("\t").append("Weight");
+            fileTitle.append("\t").append("IonWeight");
         }
         fileTitle.append("\t" + "isLabeled");
         return fileTitle;
@@ -458,8 +454,7 @@ public class Start {
             boolean doesKeepCPeptideFragmPattern,
             boolean doesKeepWeight,
             ExecutorService excService,
-            LuceneIndexSearch search,
-            boolean isPartialAndromeda) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
+            LuceneIndexSearch search) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
         List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
         // now check all spectra to collect all required calculations...
         // now get query range..
@@ -472,7 +467,7 @@ public class Start {
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
-                    isPPM, doesKeepCPeptideFragmPattern, doesKeepWeight, isPartialAndromeda);
+                    isPPM, doesKeepCPeptideFragmPattern, doesKeepWeight);
             Future future = excService.submit(score);
             futureList.add(future);
         }
