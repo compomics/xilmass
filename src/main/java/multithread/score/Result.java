@@ -45,7 +45,7 @@ public class Result {
     private boolean doesKeepPattern,
             doesKeepWeight;
     private String scanNum = "-",
-            charge="";
+            charge = "";
 
     /**
      * @param msms MSnSpectrum object
@@ -92,7 +92,7 @@ public class Result {
         } else if (msms.getSpectrumTitle().contains("scan")) {
             scanNum = msms.getSpectrumTitle().substring(msms.getSpectrumTitle().indexOf("scan=") + 5, msms.getSpectrumTitle().length() - 1);
         }
-        charge = msms.getPrecursor().getPossibleChargesAsString().replace("+", "") ;
+        charge = msms.getPrecursor().getPossibleChargesAsString().replace("+", "");
     }
 
     /* Getter and setter method for Result information */
@@ -111,7 +111,7 @@ public class Result {
     public String getCharge() {
         return charge;
     }
- 
+
     public double getWeight() {
         return weight;
     }
@@ -238,31 +238,21 @@ public class Result {
 
     public void setDoesKeepPattern(boolean doesKeepPattern) {
         this.doesKeepPattern = doesKeepPattern;
-    }
-
-    public static final Comparator<Result> ScoreDESC
-            = new Comparator<Result>() {
-                @Override
-                public int compare(Result o1, Result o2) {
-                    return o2.getScore() < o1.getScore() ? -1 : o2.getScore() == o1.getScore() ? 0 : 1;
-                }
-            };
+    }   
 
     public String toPrint() {
-
         String specTitle = msms.getSpectrumTitle();
         double rt = msms.getPrecursor().getRt();
-
         // Sort them to write down on a result file
         ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
         Collections.sort(matchedPLists, Peak.ASC_mz_order);
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
 
-        String result = msms.getFileName() + "\t" + msms.getSpectrumTitle() + "\t" + scanNum + "\t" + rt + "\t"
-                + observedMass + "\t" + charge+ "\t" + deltaMass + "\t" + absDeltaMass + "\t"
+        String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"
+                + observedMass + "\t" + charge + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
-                + score + "\t" 
+                + score + "\t"
                 // + deltaScore + "\t" 
                 + scoreName + "\t"
                 + lnNumSpec + "\t"
@@ -270,7 +260,7 @@ public class Result {
                 + matchedTheoA + "\t" + matchedTheoB + "\t"
                 + ionFracA + "\t" + ionFracB + "\t"
                 + printPeaks(matchedPLists) + "\t"
-                + printCPeaks(matchedCTheoPLists) + "\t";
+                + printCPeaks(matchedCTheoPLists);
 
         if (doesKeepPattern) {
             IdCPeptideFragmentationPatternName name = null;
@@ -293,7 +283,12 @@ public class Result {
             result += "\t" + weight;
         }
         if (cp instanceof CPeptides) {
-            result += "\t" + cp.getLinker().isIsLabeled();
+            boolean isHeavyLabel = cp.getLinker().isIsLabeled();
+            if (isHeavyLabel) {
+                result += "\t" + "Heavy_Labeled_Linker";
+            } else {
+                result += "\t" + "Light_Labeled_Linker";
+            }
         } else {
             result += "\t" + "-";
         }
@@ -327,5 +322,16 @@ public class Result {
 
         return info;
     }
+       
+    /**
+     * To compare Results with a score in a descending order
+     */
+     public static final Comparator<Result> ScoreDESC
+            = new Comparator<Result>() {
+                @Override
+                public int compare(Result o1, Result o2) {
+                    return o2.getScore() < o1.getScore() ? -1 : o2.getScore() == o1.getScore() ? 0 : 1;
+                }
+            };
 
 }

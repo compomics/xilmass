@@ -36,7 +36,8 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
             doesKeepPattern,
             doesKeepWeight;
 
-    public ScorePSM(ArrayList<CrossLinkedPeptides> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName, double fragTol, double massWindow, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber,
+    public ScorePSM(ArrayList<CrossLinkedPeptides> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName, 
+            double fragTol, double massWindow, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber,
             boolean doesFindAllMatchedPeaks, boolean isPPM, boolean doesKeepPattern, boolean doesKeepWeight) {
         this.selectedCPeptides = selectedCPeptides;
         this.ms = ms;
