@@ -5,10 +5,13 @@
  */
 package analyse.runPercolator;
 
+import config.ConfigHolder;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.log4j.Logger;
 
 /**
  * To run Percolator for each given percolator-input files
@@ -17,21 +20,24 @@ import java.io.InputStreamReader;
  */
 public class RunPercolator {
 
+    private static final Logger LOGGER = Logger.getLogger(ConfigHolder.class);
+
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
+     * @throws java.lang.InterruptedException
+     * @throws org.apache.commons.configuration.ConfigurationException
      */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        //File input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\percolator_inputs\\elite\\test"),
-        //        resultFolder= new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\percolator_inputs\\elite\\r");
-        File input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\mc4_TMSAm_HCD_contaminants\\t"),
-                resultFolder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\mc4_TMSAm_HCD_contaminants\\r");
+    public static void main(String[] args) throws IOException, InterruptedException, ConfigurationException {
+        File input = new File(ConfigHolder.getPercolatorRunInstance().getString("input")),
+                resultFolder = new File(ConfigHolder.getPercolatorRunInstance().getString("resultFolder"));
         for (File f : input.listFiles()) {
-            System.out.println("Running.." + f.getPath());
+            LOGGER.info("Running.." + f.getPath());
             Runtime rt = Runtime.getRuntime();
             String res = resultFolder + File.separator + f.getName().substring(0, f.getName().length() - 4) + "_output.txt";
-            System.out.println(res);
+            LOGGER.info(res);
             String callAndArgs = "cmd /c percolator " + f.getPath() + " >" + res;
-            System.out.println("before");
+            LOGGER.info("before");
             Process p = rt.exec(callAndArgs);
             BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String s;
@@ -39,9 +45,9 @@ public class RunPercolator {
                 //nothing or print
                 p.waitFor();
                 p.wait();
-                System.out.println(s);
-                System.out.println(p.getInputStream().toString());
-                System.out.println(p.getOutputStream().toString());
+                LOGGER.info(s);
+                LOGGER.info(p.getInputStream().toString());
+                LOGGER.info(p.getOutputStream().toString());
             }
             stdOut.close();
             System.out.println("after");
