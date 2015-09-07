@@ -139,7 +139,7 @@ public class Start {
                 searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
                 has_decoy = ConfigHolder.getInstance().getBoolean("decoy"),
                 isInvertedPeptides = ConfigHolder.getInstance().getBoolean("isInverted"),
-                doesKeepWeights = true,
+                doesKeepIonWeights = true,
                 isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
                 doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("doesFindAllMatchedPeaks"),
                 isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked");
@@ -322,7 +322,7 @@ public class Start {
 
                 // write results on output file for each mgf
                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmas" + ".txt"));
-                StringBuilder titleToWrite = prepareTitle(doesKeepCPeptideFragmPattern, doesKeepWeights);
+                StringBuilder titleToWrite = prepareTitle(isPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
                 bw.write(titleToWrite + "\n");
                 // now check all spectra to collect all required calculations...
                 SpectrumFactory fct = SpectrumFactory.getInstance();
@@ -332,7 +332,7 @@ public class Start {
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
                         List<Future<ArrayList<Result>>> futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepWeights, excService, search);
+                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search);
                         for (Future<ArrayList<Result>> future : futureList) {
                             try {
                                 // Write each result on an output file...
@@ -393,30 +393,36 @@ public class Start {
         excService.shutdown();
     }
 
-    private static StringBuilder prepareTitle(boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights) throws IOException {
+    private static StringBuilder prepareTitle(boolean isMS1PPM, boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights) throws IOException {
+        String ms1Err = "MS1Err(PPM)",
+                absMS1Err = "AbsMS1Err(PPM)";
+        if (!isMS1PPM) {
+            ms1Err = "MS1Err(Da)";
+            absMS1Err = "AbsMS1Err(Da)";
+        }
         StringBuilder fileTitle = new StringBuilder(
-                "SpectrumFile" + "\t" + "MSnSpectrumTitle" + "\t" + "scannr" + "\t" + "RetentionTime" + "\t"
-                + "ObservedMass" + "\t" + "PrecCharge" + "\t" + "MS1Err" + "\t" + "AbsMS1Err(PPM)" + "\t"
+                "File" + "\t" + "SpectrumTitle" + "\t" + "ScanNumber" + "\t" + "RetentionTime(Seconds)" + "\t"
+                + "ObservedMass(Da)" + "\t" + "PrecCharge" + "\t" + ms1Err + "\t" + absMS1Err + "\t"
                 + "PeptideA" + "\t" + "ProteinA" + "\t" + "ModA" + "\t"
                 + "PeptideB" + "\t" + "ProteinB" + "\t" + "ModB" + "\t"
                 + "LinkPeptideA" + "\t" + "LinkPeptideB" + "\t"
                 + "LinkProteinA" + "\t" + "LinkProteinB" + "\t"
-                + "Type" + "\t"
+                + "LinkingType" + "\t"
                 + "Score" + "\t"
                 // + "DeltaScore" + "\t" 
-                + "ScoringFunction" + "\t"
+                + "ScoringName" + "\t"
                 + "ln(NumSp)" + "\t"
-                + "#MatchedPeaks" + "\t" + "#MatchedTheoreticalPeaks" + "\t"
+                + "#MatchedPeaks" + "\t" + "#MatchedTheoPeaks" + "\t"
                 + "#TheoIonA" + "\t" + "#TheoIonB" + "\t"
                 + "IonFracA" + "\t" + "IonFracB" + "\t"
-                + "MatchedPeakList" + "\t" + "TheoMatchedPeakList");
+                + "MatchedPeakList" + "\t" + "MatchedTheoPeakList" + "\t"
+                + "Labeling");
         if (doesKeepCPeptideFragmPattern) {
             fileTitle.append("\t").append("CPeptideFragPatternName");
         }
         if (doesKeepWeights) {
-            fileTitle.append("\t").append("IonWeight");
+            fileTitle.append("\t").append("IntroducedIonWeight");
         }
-        fileTitle.append("\t" + "isLabeled");
         return fileTitle;
     }
 
@@ -462,7 +468,7 @@ public class Start {
         double[] from_to = getRange(precMass, precTol, isPPM);
         double from = from_to[0],
                 to = from_to[1];
-//                System.out.println(precTol+"\t"+from+"\t"+to);
+//        System.out.println(precMass + "\t" + precTol + "\t" + from + "\t" + to);
         ArrayList<CrossLinkedPeptides> selectedCPeptides = search.getQuery(from, to);
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
@@ -721,8 +727,8 @@ public class Start {
         ids.add(id);
         // because only cross linked peptides are selected for scoring!
         CPeptides cp = (CPeptides) res.getCp();
-        int linkerA = cp.getLinker_position_on_peptideA()+1,
-                linkerB = cp.getLinker_position_on_peptideB()+1;
+        int linkerA = cp.getLinker_position_on_peptideA() + 1,
+                linkerB = cp.getLinker_position_on_peptideB() + 1;
         String input = id + "\t" + label + "\t" + scn + "\t"
                 // + res.getMsms().getPrecursor().getRt() + "\t"
                 + res.getDeltaMass() + "\t"

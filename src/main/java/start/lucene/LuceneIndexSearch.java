@@ -51,8 +51,8 @@ public class LuceneIndexSearch {
 
     /**
      *
-     * @param indexFile a crosslinked peptide-mass index file an index file with given protein mass, sequences to
-     * construct CPeptides objects
+     * @param indexFile a crosslinked peptide-mass index file an index file with
+     * given protein mass, sequences to construct CPeptides objects
      * @param ptmFactory
      * @param linkerName - just name of linker to create both heavy and light
      * labeled versions
@@ -105,7 +105,7 @@ public class LuceneIndexSearch {
         TopDocs topDocs = cpSearch.performSearch(query, topSearch);
         ScoreDoc[] res = topDocs.scoreDocs;
         while (res.length == topSearch) {
-            topSearch += 100;
+            topSearch += 1;
             LOGGER.debug("indeed full.." + topSearch);
             topDocs = cpSearch.performSearch(query, topSearch);
             res = topDocs.scoreDocs;
@@ -119,7 +119,7 @@ public class LuceneIndexSearch {
                 selected.add(cp);
             }
             // also add Contaminant-derived objects
-            if(cp instanceof Contaminant){
+            if (cp instanceof Contaminant) {
                 selected.add(cp);
             }
         }
@@ -153,8 +153,8 @@ public class LuceneIndexSearch {
                 variableModA = doc.get("varModA"),
                 variableModB = doc.get("varModB");
         if (!proteinA.startsWith("contaminant")) {
-            boolean isHeavy = Boolean.parseBoolean(doc.get("label"));
-            if (isHeavy) {
+            String labelInfo = doc.get("label").replace("\n", "");
+            if (labelInfo.equalsIgnoreCase("heavyLabeled")) {
                 selectedLinker = heavyLinker;
             }
         }
@@ -230,6 +230,5 @@ public class LuceneIndexSearch {
 //        for (CrossLinkedPeptides q : query) {
 //            System.out.println(q.toPrint());
 //        }
-
     }
 }
