@@ -51,6 +51,7 @@ public class LuceneIndexSearch {
 
     /**
      *
+     * @param headers
      * @param indexFile a crosslinked peptide-mass index file an index file with
      * given protein mass, sequences to construct CPeptides objects
      * @param ptmFactory
@@ -154,8 +155,10 @@ public class LuceneIndexSearch {
                 variableModB = doc.get("varModB");
         if (!proteinA.startsWith("contaminant")) {
             String labelInfo = doc.get("label").replace("\n", "");
+//            System.out.println("labelInfo="+labelInfo);
             if (labelInfo.equalsIgnoreCase("heavyLabeled")) {
                 selectedLinker = heavyLinker;
+//                System.out.println(" yup inderdaad heavyLabeled linker");
             }
         }
         // linker positions...

@@ -84,7 +84,7 @@ public class CPeptidesIndex {
 
         if (sp.length > 11) {
             doc.add(new StringField("type", sp[11], Field.Store.YES)); //Type
-            doc.add(new TextField("label", sp[12].replace("\n", ""), Field.Store.YES)); // Labeling-true:Heavylabeled
+            doc.add(new TextField("label", sp[12], Field.Store.YES)); // Labeling-true:Heavylabeled
         }
         // I want full-text indexing
         String fullSearchableText = sp[0] + "_" + sp[1] + "_" + sp[2] + "_"

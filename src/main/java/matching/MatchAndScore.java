@@ -393,8 +393,9 @@ public class MatchAndScore {
             cXPSMScore = Collections.max(scores);
             // now calculate observed mass and mass error
             observedMass = calculateObservedMass(expMS2);
-            // now calculates MS1 error with precursor mass and theoretical mass of crosslinked peptide
-            ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), observedMass);
+            double protonMass = ElementaryIon.proton.getTheoreticMass();
+            // now calculates MS1 error with precursor mass and theoretical mass of crosslinked peptide-make sure that both masses are singly charged to calculate MS1Err
+            ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), (observedMass - protonMass));
             absMS1Err = Math.abs(ms1Err);
         }
         return cXPSMScore;
@@ -744,8 +745,8 @@ public class MatchAndScore {
     private double calculateObservedMass(MSnSpectrum expMS2) {
         double precMass = CalculatePrecursorMass.getPrecursorMass(expMS2),
                 protonMass = ElementaryIon.proton.getTheoreticMass(),
-                observedMass = precMass + protonMass;
-        return observedMass;
+                tmp_observed_mass = precMass + protonMass;
+        return tmp_observed_mass;
     }
 
     /**
@@ -757,7 +758,7 @@ public class MatchAndScore {
      * @param calculatedMass
      * @return
      */
-    private double calculateMS1Err(boolean isPPM, double observedMass, double calculatedMass) {
+    private double calculateMS1Err(boolean isPPM, double calculatedMass, double observedMass) {
         double mS1Err = CalculateMS1Err.getMS1Err(isPPM, calculatedMass, observedMass);
         return mS1Err;
     }

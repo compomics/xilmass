@@ -24,6 +24,7 @@ public class CalculateMS1Err {
      * @return ms1err
      */
     public static double getMS1Err(boolean isPPM, double theoreticalPrecursorMass, double measuredPrecusorMass) {
+//        System.out.println("isPPM="+isPPM+"\t and theorMass="+theoreticalPrecursorMass+"\t and measuredMass="+measuredPrecusorMass);
         double error = 0;        
         if (isPPM) {
             // This PPM calculation was from bioinformatics-for-proteomics
