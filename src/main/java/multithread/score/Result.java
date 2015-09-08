@@ -32,7 +32,7 @@ public class Result {
     private ScoreName scoreName; // a name of scoring function
     private HashSet<Peak> matchedPeaks; // list of matched peaks on an experimental spectrum 
     private HashSet<CPeptidePeak> matchedCTheoPeaks; // list of theoretical peaks matched on a theoretical spectrum
-    private double weight, // weight for scoring...
+    private double ionFrac, // ionFrac for scoring...
             lnNumSpec, // natural logarithm of number of matched peptides on DB for a selected MSnSpectrum
             deltaScore, // difference in score between the best ranked score and next best match for a selected MSnSpectrum
             ionFracA, // fraction of found theoretical ion over all theoretical ions for PeptideAlpha
@@ -42,8 +42,8 @@ public class Result {
             absDeltaMass; // absolute difference in mass between the calculated and observed spectra in ppm
     private int matchedTheoA, // matched theoretical peaks from peptideA
             matchedTheoB; // matched theoretical peaks from peptideB
-    private boolean doesKeepPattern,
-            doesKeepWeight;
+    private boolean doesContainCPeptidePattern,
+            doesContainIonFract;
     private String scanNum = "-",
             charge = "";
 
@@ -64,11 +64,12 @@ public class Result {
      * @param lnNumSpec
      * @param matchedTheoA matched theoretical peaks from peptideA
      * @param matchedTheoB matched theoretical peaks from peptideB
-     * @param doesKeepPattern
+     * @param doesContainCPeptidePattern true: there is a CPeptidePattern
+     * @param doesContainIonFrac - true: there is ion fraction
      */
     public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, double deltaScore, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks,
             double weight, double ionFracA, double ionFacB, double observedMass, double deltaMass, double absDeltaMass, double lnNumSpec, int matchedTheoA, int matchedTheoB,
-            boolean doesKeepPattern, boolean doesKeepWeight) {
+            boolean doesContainCPeptidePattern, boolean doesContainIonFrac) {
         this.msms = msms;
         this.cp = cp;
         this.score = score;
@@ -77,7 +78,7 @@ public class Result {
         this.scoreName = scoreName;
         this.matchedPeaks = matchedPeaks;
         this.matchedCTheoPeaks = matchedCTheoPeaks;
-        this.weight = weight;
+        this.ionFrac = weight;
         this.ionFracA = ionFracA;
         this.ionFracB = ionFacB;
         this.observedMass = observedMass;
@@ -85,8 +86,8 @@ public class Result {
         this.absDeltaMass = absDeltaMass;
         this.matchedTheoA = matchedTheoA;
         this.matchedTheoB = matchedTheoB;
-        this.doesKeepPattern = doesKeepPattern;
-        this.doesKeepWeight = doesKeepWeight;
+        this.doesContainCPeptidePattern = doesContainCPeptidePattern;
+        this.doesContainIonFract = doesContainIonFrac;
         if (!msms.getScanNumber().isEmpty()) {
             scanNum = msms.getScanNumber();
         } else if (msms.getSpectrumTitle().contains("scan")) {
@@ -113,11 +114,11 @@ public class Result {
     }
 
     public double getWeight() {
-        return weight;
+        return ionFrac;
     }
 
     public void setWeight(double weight) {
-        this.weight = weight;
+        this.ionFrac = weight;
     }
 
     public CrossLinkedPeptides getCp() {
@@ -232,13 +233,13 @@ public class Result {
         this.absDeltaMass = absDeltaMass;
     }
 
-    public boolean isDoesKeepPattern() {
-        return doesKeepPattern;
+    public boolean doesKeepPattern() {
+        return doesContainCPeptidePattern;
     }
 
     public void setDoesKeepPattern(boolean doesKeepPattern) {
-        this.doesKeepPattern = doesKeepPattern;
-    }   
+        this.doesContainCPeptidePattern = doesKeepPattern;
+    }
 
     public String toPrint() {
         String specTitle = msms.getSpectrumTitle();
@@ -262,7 +263,17 @@ public class Result {
                 + printPeaks(matchedPLists) + "\t"
                 + printCPeaks(matchedCTheoPLists);
 
-        if (doesKeepPattern) {
+        if (cp instanceof CPeptides) {
+            boolean isHeavyLabel = cp.getLinker().isIsLabeled();
+            if (isHeavyLabel) {
+                result += "\t" + "Heavy_Labeled_Linker";
+            } else {
+                result += "\t" + "Light_Labeled_Linker";
+            }
+        } else {
+            result += "\t" + "-";
+        }
+        if (doesContainCPeptidePattern) {
             IdCPeptideFragmentationPatternName name = null;
             if (cp instanceof CPeptides) {
                 CPeptides tmp = (CPeptides) cp;
@@ -274,23 +285,11 @@ public class Result {
                         linkerPositionPeptideA, linkerPositionPeptideB,
                         peptideALen, peptideBLen);
                 name = p.getName();
-            } else {
-                name = null;
-            }
+            } 
             result += "\t" + name;
         }
-        if (doesKeepWeight) {
-            result += "\t" + weight;
-        }
-        if (cp instanceof CPeptides) {
-            boolean isHeavyLabel = cp.getLinker().isIsLabeled();
-            if (isHeavyLabel) {
-                result += "\t" + "Heavy_Labeled_Linker";
-            } else {
-                result += "\t" + "Light_Labeled_Linker";
-            }
-        } else {
-            result += "\t" + "-";
+        if (doesContainIonFract) {
+            result += "\t" + ionFrac;
         }
         return result;
     }
@@ -322,11 +321,11 @@ public class Result {
 
         return info;
     }
-       
+
     /**
      * To compare Results with a score in a descending order
      */
-     public static final Comparator<Result> ScoreDESC
+    public static final Comparator<Result> ScoreDESC
             = new Comparator<Result>() {
                 @Override
                 public int compare(Result o1, Result o2) {
