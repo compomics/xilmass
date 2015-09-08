@@ -35,12 +35,13 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
     private double fdr;
     private HashSet<String> contaminant_MSMS = new HashSet<String>();
     private HashSet<XilmassResult> validatedPSMs = new HashSet<XilmassResult>();
-    private boolean isCPepFragmentKept, // to store CPeptideFragment info on the output
+    private boolean doesContainsCPeptidePattern, // to store CPeptideFragment info on the output
+            doesContainsIonWeight, // to store ion weights..
             isMS1PPM; // is MS1Err calculated with PPM... true:PPM false:Da - to write unit on the table
     private static final Logger LOGGER = Logger.getLogger(ConfigHolder.class);
 
     public AnalyzeXilmass(File xilmassFolder, File output, File prediction_file, File psms_contaminant,
-            String[] target_names, double fdr, boolean isConventionalFDR, boolean isMS1PPM) throws IOException {
+            String[] target_names, double fdr, boolean isConventionalFDR, boolean isMS1PPM, boolean doesContainsCPeptidePattern, boolean doesContainsIonWeight) throws IOException {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
         super.prediction_file = prediction_file;
@@ -50,6 +51,8 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         this.output = output;
         contaminant_MSMS = getContaminant_MSMS();
         this.isMS1PPM = isMS1PPM;
+        this.doesContainsCPeptidePattern = doesContainsCPeptidePattern;
+        this.doesContainsIonWeight = doesContainsIonWeight;
     }
 
     /**
@@ -112,12 +115,12 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         BufferedReader br = new BufferedReader(new FileReader(f));
         String line = "";
         while ((line = br.readLine()) != null) {
-            if (!line.startsWith("Spect")) {
+            if (!line.startsWith("File")) {
                 String[] split = line.split("\t");
                 String specTitle = split[spectrum_title_index],
                         proteinA = split[proteinAaccession];
                 if (!contaminant_MSMS.contains(specTitle) && !proteinA.contains("contaminant")) {
-                    res.add(new XilmassResult(line, isCPepFragmentKept));
+                    res.add(new XilmassResult(line, doesContainsCPeptidePattern, doesContainsIonWeight));
                 }
             }
         }
@@ -148,11 +151,13 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
                 + "LinkPeptideA" + "\t" + "LinkPeptideB" + "\t" + "LinkProteinA" + "\t" + "LinkProteinB" + "\t"
                 + "ScoringFunctionName" + "\t" + "Score" + "\t"
                 + "MatchedPeakList" + "\t" + "TheoMatchedPeakList" + "\t"
-                + "CPeptidePattern" + "\t"
                 + "lnNumSp" + "\t"
                 + "TargetDecoy" + "\t"
                 + "LinkerLabeling" + "\t"
                 + "Predicted" + "\t" + "EuclideanDistance(Carbon-betas-A)" + "\t" + "EuclideanDistance (Carbon alphas-A)";
+        if (doesContainsCPeptidePattern) {
+            title += "\t" + "CPeptidePattern";
+        }
         return title;
     }
 
