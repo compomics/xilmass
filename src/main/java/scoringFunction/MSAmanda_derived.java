@@ -57,6 +57,8 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
      * @param explainedIntensity sum of all intensities from matched picked peak
      * @param intesityOption 0-Intensities are squared, 1-No preprocessing on
      * intensity part
+     * @param name is ScoreName
+     *
      */
     public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption, ScoreName name) {
         super.p = p;
@@ -68,6 +70,22 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
         this.name = name;
     }
 
+    /**
+     *
+     * @param p probability=topN/windowSize, topN=[1- 10] peaks
+     * @param N Picked (filtered) peaks on an experimental spectrum (on MSAmanda
+     * derived but this equals to all peaks at a theoretical spectrum on
+     * Andromeda derived)
+     * @param n Matched peaks-is number of matched peaks against a theoretical
+     * spectrum
+     * @param intensity sum of all intensities from every picked peak
+     * @param explainedIntensity sum of all intensities from matched picked peak
+     * @param intesityOption 0-Intensities are squared, 1-No preprocessing on
+     * intensity part
+     * @param name is ScoreName
+     * @param weight introduced ion fraction based weight
+     *
+     */
     public MSAmanda_derived(double p, int N, int n, double intensity, double explainedIntensity, int intesityOption, ScoreName name, double weight) {
         super.p = p;
         super.N = N;
