@@ -251,11 +251,15 @@ public class FASTACPDBLoader {
                         if (!isCPeptidesObjConstructed) {
                             cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB,
                                     fragMode, isBranching, isContrastLinkedAttachmentOn);
+                            String labelInfo = "lightLabeled";
+                            if (cPeptide.getLinker().isIsLabeled()) {
+                                labelInfo = "heavyLabeled";
+                            }
                             StringBuilder info = CPeptideInfo.getInfo(cPeptide, true),
                                     rInfo = CPeptideInfo.getInfo(cPeptide, false);
                             if (!headers.contains(info) && !header.contains(rInfo)) {
-                                headers.add(new StringBuilder(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n"));
-                                bw.write(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n");
+                                headers.add(new StringBuilder(info + "\t" + labelInfo + "\n"));
+                                bw.write(info + "\t" + labelInfo + "\n");
                             }
                         } else {
                             cPeptide.setProteinA(proteinA.toString());
@@ -264,11 +268,15 @@ public class FASTACPDBLoader {
                             cPeptide.setPeptideB(pB);
                             cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
                             cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
-                             StringBuilder info = CPeptideInfo.getInfo(cPeptide, true),
+                            StringBuilder info = CPeptideInfo.getInfo(cPeptide, true),
                                     rInfo = CPeptideInfo.getInfo(cPeptide, false);
+                            String labelInfo = "lightLabeled";
+                            if (cPeptide.getLinker().isIsLabeled()) {
+                                labelInfo = "heavyLabeled";
+                            }
                             if (!headers.contains(info) && !header.contains(rInfo)) {
-                                headers.add(new StringBuilder(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n"));
-                                bw.write(info + "\t" + cPeptide.getLinker().isIsLabeled() + "\n");
+                                headers.add(new StringBuilder(info + "\t" + labelInfo + "\n"));
+                                bw.write(info + "\t" + labelInfo + "\n");
                             }
                         }
                         isCPeptidesObjConstructed = true;
@@ -422,20 +430,20 @@ public class FASTACPDBLoader {
                         mass = mPeptides.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if(!headers.contains(info) && !header.contains(rInfo)){
-                        headers.add(info + "\n");
-                        bw.write(info + "\n");
+                        if (!headers.contains(info) && !header.contains(rInfo)) {
+                            headers.add(info + "\n");
+                            bw.write(info + "\n");
                         }
                     } else {
                         mPeptides.setPeptide(pA);
                         mPeptides.setProtein(proteinA.toString());
                         mPeptides.setLinker_position(linkerPosPeptideA);
                         mass = mPeptides.getTheoretical_xlinked_mass();
-                       StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
+                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if(!headers.contains(info) && !header.contains(rInfo)){
-                        headers.add(info + "\n");
-                        bw.write(info + "\n");
+                        if (!headers.contains(info) && !header.contains(rInfo)) {
+                            headers.add(info + "\n");
+                            bw.write(info + "\n");
                         }
                     }
                 }
@@ -445,11 +453,11 @@ public class FASTACPDBLoader {
                         isMonoLinkedPeptideObjConstructed = true;
                         mPeptides = new MonoLinkedPeptides(pB, proteinB.toString(), linkerPosPeptideB, linker, fragMode, isBranching);
                         mass = mPeptides.getTheoretical_xlinked_mass();
-                       StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
+                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if(!headers.contains(info) && !header.contains(rInfo)){
-                        headers.add(info + "\n");
-                        bw.write(info + "\n");
+                        if (!headers.contains(info) && !header.contains(rInfo)) {
+                            headers.add(info + "\n");
+                            bw.write(info + "\n");
                         }
                     } else {
                         mPeptides.setPeptide(pB);
@@ -458,9 +466,9 @@ public class FASTACPDBLoader {
                         mass = mPeptides.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if(!headers.contains(info) && !header.contains(rInfo)){
-                        headers.add(info + "\n");
-                        bw.write(info + "\n");
+                        if (!headers.contains(info) && !header.contains(rInfo)) {
+                            headers.add(info + "\n");
+                            bw.write(info + "\n");
                         }
                     }
                 }
