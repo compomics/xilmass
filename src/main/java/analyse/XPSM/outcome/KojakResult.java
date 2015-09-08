@@ -11,6 +11,7 @@ import com.compomics.util.protein.Protein;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * This class holds all written information on Kojak result file
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 public class KojakResult extends Outcome {
 
     private int charge;
-
     private double obsMass,
             psms_mass,
             ppmErr,
@@ -33,12 +33,18 @@ public class KojakResult extends Outcome {
             peptide1,
             peptide2,
             modPeptide1,
-            modPeptide2;
-    private File fasta = new File("C:/Users/Sule/Documents/PhD/XLinked/databases/cam_plectin_equal_2Pfus.fasta");
+            modPeptide2,
+            trueCrossLinking = "", // info for cross-linking info (decision/euclidean distances)
+            target_decoy = ""; // TT/TD or DD
+
+    private File fasta;
+
     private ArrayList<Protein> proteins = new ArrayList<Protein>();
 
-    public KojakResult(String scanNumber, double obsMass, int charge, double psm_mass, double ppmErr, double score, double dScore, double pepDiff,
-            String peptide1, int link1, String protein1, String peptide2, int link2, String protein2, double linkerMass, String[] protein_names, boolean hasTraditionalDecoy) throws IOException {
+    public KojakResult(String spectrumFileName, String scanNumber, double obsMass, int charge, double psm_mass, double ppmErr, double score, double dScore, double pepDiff,
+            String peptide1, int link1, String protein1, String peptide2, int link2, String protein2, double linkerMass, String[] protein_names,
+            File databaseFile) throws IOException {
+        this.spectrumFileName = spectrumFileName;
         this.scanNumber = scanNumber;
         this.obsMass = obsMass;
         this.charge = charge;
@@ -47,14 +53,15 @@ public class KojakResult extends Outcome {
         this.score = score;
         this.dScore = dScore;
         this.pepDiff = pepDiff;
-        this.modPeptide1 = peptide1;
+        this.modPeptide1 = getMod(peptide1);
         super.crossLinkedSitePro1 = link1;
         this.accessProteinA = protein1;
-        this.modPeptide2 = peptide2;
+        this.modPeptide2 = getMod(peptide2);
         super.crossLinkedSitePro2 = link2;
         super.accessProteinB = protein2;
         this.linkerMass = linkerMass;
         this.target_proteins = protein_names;
+        fasta = databaseFile;
         label = "light";
         if (Math.abs(linkerMass - 150.143404) < 0.01 || Math.abs(linkerMass - 168.15393) < 0.01) {
             label = "heavy";
@@ -69,6 +76,7 @@ public class KojakResult extends Outcome {
         this.peptide1 = getSeqNoMod(peptide1);
         this.peptide2 = getSeqNoMod(peptide2);
 
+        //>sp|Q15149|175-400PlectinABDisoform1a(FromJakeSong)(33); - add 33 to the link..
         for (Protein p : proteins) {
             if (p.getHeader().getAccession().equals(accessProteinA)) {
                 crossLinkedSitePro1 += p.getSequence().getSequence().indexOf(this.peptide1);
@@ -77,7 +85,23 @@ public class KojakResult extends Outcome {
                 crossLinkedSitePro2 += p.getSequence().getSequence().indexOf(this.peptide2);
             }
         }
-        this.hasTraditionalDecoy = hasTraditionalDecoy;
+
+    }
+
+    public String getTrueCrossLinking() {
+        return trueCrossLinking;
+    }
+
+    public void setTrueCrossLinking(String trueCrossLinking) {
+        this.trueCrossLinking = trueCrossLinking;
+    }
+
+    public String getTarget_decoy() {
+        return target_decoy;
+    }
+
+    public void setTarget_decoy(String target_decoy) {
+        this.target_decoy = target_decoy;
     }
 
     public String getModPeptide1() {
@@ -114,6 +138,31 @@ public class KojakResult extends Outcome {
                 tmpPep += tmpCh;
             } else if (tmpCh == ']') {
                 control = false;
+            }
+        }
+        return tmpPep;
+    }
+
+    /**
+     * Returns a peptide sequence without modification on a string itself
+     *
+     * @param pep
+     * @return
+     */
+    public String getMod(String pep) {
+        String tmpPep = "";
+        boolean control = false;
+        for (int i = 0; i < pep.length(); i++) {
+            char tmpCh = pep.charAt(i);
+            if (tmpCh == '[') {
+                control = true;
+            }
+            if (control) {
+                if (tmpCh == ']') {
+                    control = false;
+                } else {
+                    tmpPep += tmpCh;
+                }
             }
         }
         return tmpPep;
@@ -230,5 +279,42 @@ public class KojakResult extends Outcome {
     public void setProteins(ArrayList<Protein> proteins) {
         this.proteins = proteins;
     }
+
+    public String toPrint() {
+
+        String title = "SpectrumFile" + "\t" + "ScanNr" + "\t"
+                + "ObservedMass(Da)" + "\t" + "PrecursorCharge" + "\t"
+                + "PSM_Mass" + "\t"
+                + "Score" + "\t" + "dScore" + "\t" + "PepDiff" + "\t"
+                + "PeptideA" + "\t" + "ProteinA" + "\t" + "ModA" + "\t"
+                + "PeptideB" + "\t" + "ProteinB" + "\t" + "ModB" + "\t"
+                + "LinkPeptideA" + "\t" + "LinkPeptideB" + "\t" + "LinkProteinA" + "\t" + "LinkProteinB" + "\t"
+                + "TargetDecoy" + "\t"
+                + "LinkerLabeling" + "\t"
+                + "Predicted" + "\t" + "EuclideanDistance(Carbon-betas-A)" + "\t" + "EuclideanDistance (Carbon alphas-A)";
+
+        String res = spectrumFileName + "\t" + scanNumber + "\t"
+                + obsMass + "\t" + charge + "\t"
+                + psms_mass + "\t"
+                + score + "\t" + dScore + "\t" + pepDiff + "\t"
+                + peptide1 + "\t" + accessProteinA + "\t" + modPeptide1 + "\t"
+                + peptide2 + "\t" + accessProteinB + "\t" + modPeptide2 + "\t"
+                + "-" + "\t" + "-" + "\t"
+                + super.crossLinkedSitePro1 + "\t" + super.crossLinkedSitePro2 + "\t"
+                + target_decoy + "\t"
+                + label + "\t"
+                + trueCrossLinking;
+
+        return res;
+
+    }
+
+    public static final Comparator<KojakResult> ScoreDSC
+            = new Comparator<KojakResult>() {
+                @Override
+                public int compare(KojakResult o1, KojakResult o2) {
+                    return o1.getScore() > o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
+                }
+            };
 
 }
