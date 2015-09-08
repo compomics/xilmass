@@ -24,10 +24,10 @@ public abstract class AnalyzeOutcomes {
             psms_contaminant; // a validated PSM list from PeptideShaker - default one, with spectrum index as 8
     protected String[] target_names; // target protein accession names
     protected HashSet<TrueLinking> trueLinkings = new HashSet<TrueLinking>(); // a list of predicted cross linking sites
-    protected boolean hasTraditionalDecoy = false; // false: Pfu is decoy, true:target/decoy (reversed or shuffled) approach
-    private boolean areContaminantMSMSReady = false; // to fill out a list of validated contaminant peptides
+    protected boolean areReversedDecoys = true, // true:target/decoy (reversed or shuffled) approach and false: Pfu is decoy ## TODO: for the future...
+            isConventionalFDR = false, //true: all_decoy/all_target false: (half_decoy-full_decoy)/all_target
+            areContaminantMSMSReady = false; // in order to fill out a list of validated contaminant peptide derived PSMs
 
-   
     /**
      * This method analyze a given PSM list for a software
      *
@@ -138,14 +138,13 @@ public abstract class AnalyzeOutcomes {
      * @param proteinAacess - uniprot accession number from ProteinA
      * @param proteinBasses - uniprot accession number from ProteinB
      * @param target_names - list of uniprot accession numbers for proteins
-     * @param isTraditionalDecoy
      * @return
      */
     protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names) {
         String first_target_name = target_names[0],
                 second_target_name = target_names[1];
         String type = "";
-        if (hasTraditionalDecoy) {
+        if (areReversedDecoys) {
             type = "half-decoy";
             if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
                 type = "target";
@@ -164,6 +163,33 @@ public abstract class AnalyzeOutcomes {
             }
         }
         return type;
+    }
+
+    /**
+     * It decided given two proteins are either target or full_decoy or
+     * half_decoy
+     *
+     * @param proteinA the accession number of proteinA
+     * @param proteinB the accession number of proteinB
+     * @return
+     */
+    protected String getTargetDecoy(String proteinA, String proteinB) {
+        boolean isProteinAdecoy = false,
+                isProteinBdecoy = false;
+        String targetName = "TD";
+        // First decide on a name
+        if (proteinA.contains("REVERSED") || proteinA.contains("SHUFFLED") || proteinA.contains("DECOY")) {
+            isProteinAdecoy = true;
+        }
+        if (proteinB.contains("REVERSED") || proteinB.contains("SHUFFLED") || proteinB.contains("DECOY")) {
+            isProteinBdecoy = true;
+        }
+        if (isProteinAdecoy && isProteinBdecoy) {
+            targetName = "DD";
+        } else if (!isProteinAdecoy && !isProteinBdecoy) {
+            targetName = "TT";
+        }
+        return targetName;
     }
 
     /**
