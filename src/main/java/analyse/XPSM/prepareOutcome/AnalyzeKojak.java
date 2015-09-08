@@ -27,15 +27,17 @@ import java.util.HashSet;
 public class AnalyzeKojak extends AnalyzeOutcomes {
 
     private File output,
-            kojakResultFolder;
+            kojakResultFolder,
+            database;
 
-    public AnalyzeKojak(File output, File kojakResultFolder, File prediction_file, File psms_contaminant, String[] target_names) {
+    public AnalyzeKojak(File output, File kojakResultFolder, File prediction_file, File psms_contaminant, File database, String[] target_names) {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
         super.prediction_file = prediction_file;
         this.output = output;
         this.kojakResultFolder = kojakResultFolder;
         super.psms_contaminant = psms_contaminant;
+        this.database = database;
     }
 
     @Override
@@ -79,7 +81,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                                 boolean isContaminantDerived = false;
                                 String index = mgfFileName + "AND" + scanNumber;
                                 KojakResult kr = new KojakResult(scanNumber, obsMass, charge, psmMass, ppmErr, score, dScore,
-                                        pepDiff, peptide1, link1, protein1, peptide2, link2, protein2, linkerMass, target_names, hasTraditionalDecoy);
+                                        pepDiff, peptide1, link1, protein1, peptide2, link2, protein2, linkerMass, target_names, areReversedDecoys, database);
                                 if (contaminant_MSMSMap.containsKey(mgfFileName)) {
                                     for (String tmpsScans : contaminant_MSMSMap.get(mgfFileName)) {
                                         if (tmpsScans.equals(scanNumber)) {
@@ -125,9 +127,9 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                 bw.write(tmpMGF + "\t" + kj.getScanNumber() + "\t" + kj.getObsMass() + "\t" + kj.getCharge() + "\t" + kj.getPsms_mass() + "\t" + kj.getPpmErr() + "\t" + kj.getScore() + "\t"
                         + kj.getdScore() + "\t" + kj.getPepDiff() + "\t" + kj.getPeptide1() + "\t" + kj.getCrossLinkedSitePro1() + "\t" + kj.getAccessProteinA() + "\t"
                         + kj.getPeptide2() + "\t" + kj.getCrossLinkedSitePro2() + "\t" + kj.getAccessProteinB() + "\t" + kj.getLinkerMass() + "\t"
-                        + kj.getModPeptide1() + "\t" + kj.getModPeptide2() +"\t"
+                        + kj.getModPeptide1() + "\t" + kj.getModPeptide2() + "\t"
                         + kj.getLabel() + "\t"
-                        + kj.getTargetDecoy() + "\t" + assetTrueLinking(kj.getAccessProteinA(), kj.getAccessProteinB(), kj.getCrossLinkedSitePro1(), kj.getCrossLinkedSitePro2()) + "\n");
+                        + getTargetDecoy(kj.getAccessProteinA(), kj.getAccessProteinB()) + "\t" + assetTrueLinking(kj.getAccessProteinA(), kj.getAccessProteinB(), kj.getCrossLinkedSitePro1(), kj.getCrossLinkedSitePro2()) + "\n");
             }
         }
         bw.close();
