@@ -115,7 +115,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         BufferedReader br = new BufferedReader(new FileReader(f));
         String line = "";
         while ((line = br.readLine()) != null) {
-            if (!line.startsWith("File")) {
+            if (!line.startsWith("File") && !line.startsWith("SpectrumFile")) {
                 String[] split = line.split("\t");
                 String specTitle = split[spectrum_title_index],
                         proteinA = split[proteinAaccession];
