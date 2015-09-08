@@ -7,7 +7,8 @@ package analyse.XPSM.outcome;
 
 
 /**
- *
+ * This class hold information from each Xlinking algorithms
+ * 
  * @author Sule
  */
 public abstract class Outcome {
@@ -16,7 +17,6 @@ public abstract class Outcome {
     protected String accessProteinA,
             accessProteinB,
             label;
-    protected boolean hasTraditionalDecoy = false;
     protected int crossLinkedSitePro1,
             crossLinkedSitePro2;
 
@@ -52,14 +52,6 @@ public abstract class Outcome {
         this.accessProteinB = accessProteinB;
     }
 
-    public boolean isHasTraditionalDecoy() {
-        return hasTraditionalDecoy;
-    }
-
-    public void setHasTraditionalDecoy(boolean hasTraditionalDecoy) {
-        this.hasTraditionalDecoy = hasTraditionalDecoy;
-    }
-
     public int getCrossLinkedSitePro1() {
         return crossLinkedSitePro1;
     }
@@ -75,39 +67,4 @@ public abstract class Outcome {
     public void setCrossLinkedSitePro2(int crossLinkedSitePro2) {
         this.crossLinkedSitePro2 = crossLinkedSitePro2;
     }
-
-//       
-//    public String assetTrueLinking(HashSet<TrueLinking> trueLinkings) {
-//        String res = "Not-predicted" + "\t" + "-";
-//        for (TrueLinking tl : trueLinkings) {
-//            if (tl.getProteinA().equals(accessProteinA)
-//                    && tl.getProteinB().equals(accessProteinB)
-//                    && tl.getIndexA() == crossLinkedSitePro1
-//                    && tl.getIndexB() == crossLinkedSitePro2) {
-//                res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
-//            }
-//        }
-//        return res;
-//    }
-
-    public String getTargetDecoy() {
-        String first_protein_name = target_proteins[0],
-                second_protein_name = target_proteins[1];
-        String type = "";
-        if (hasTraditionalDecoy) {
-            System.err.println("NOT WORKING8");
-        } else {
-            type = "half-decoy";
-            if ((accessProteinA.equals(first_protein_name) || accessProteinA.equals(second_protein_name))
-                    && (accessProteinB.equals(first_protein_name) || accessProteinB.equals(second_protein_name))) {
-                type = "target";
-            }
-            if ((!accessProteinA.equals(first_protein_name) && !accessProteinA.equals(second_protein_name))
-                    && (!accessProteinB.equals(first_protein_name) && !accessProteinB.equals(second_protein_name))) {
-                type = "decoy";
-            }
-        }
-        return type;
-    }
-
 }
