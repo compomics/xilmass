@@ -59,8 +59,8 @@ public class AnalyzeXilmassTest {
     @Test
     public void testGetValidatedPSMs() throws IOException {
         System.out.println("getValidatedPSMs");
-        File xilmassFolder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\xilmass_testing\\test_mc4_TMSAm_HCD_contaminants"),
-                output = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\xilmass_testing\\testing_output.txt"),
+        File xilmassFolder = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\Data\\Test\\analyze\\xilmass_validated_testing/test_mc4_TMSAm_HCD_contaminants"),
+                output = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\Data\\Test\\analyze\\xilmass_validated_testingtesting_output.txt"),
                 predictionFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_prediction_uniprot2.txt"),
                 psms_contaminant = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\1_Cleaning\\SGRunsHCD_identification\\10FDRPSMs/hcd_dss_elite_cleaning_fdr10PSMs.txt");
         double fdr = 0.05;
