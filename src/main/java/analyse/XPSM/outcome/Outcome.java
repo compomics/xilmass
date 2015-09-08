@@ -8,7 +8,7 @@ package analyse.XPSM.outcome;
 
 /**
  * This class hold information from each Xlinking algorithms
- * 
+ *
  * @author Sule
  */
 public abstract class Outcome {
@@ -27,7 +27,7 @@ public abstract class Outcome {
     public void setLabel(String label) {
         this.label = label;
     }
-    
+
     public String[] getTarget_proteins() {
         return target_proteins;
     }

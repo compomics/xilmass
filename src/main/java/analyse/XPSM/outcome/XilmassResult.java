@@ -30,7 +30,7 @@ public class XilmassResult extends Outcome {
             labeling = "", // heavy labeled or light labeled of a cross linker
             trueCrossLinking = "", // info for cross-linking info (decision/euclidean distances)
             target_decoy = "", // TT/TD or DD
-            ionWeight; // identified ion weights
+            ionWeight = ""; // identified ion weights
 
     private int scanNr, // scan number
             charge, // precursor charge
@@ -312,22 +312,6 @@ public class XilmassResult extends Outcome {
         this.lnNumSp = lnNumSp;
     }
 
-    public static final Comparator<XilmassResult> ScoreASC
-            = new Comparator<XilmassResult>() {
-                @Override
-                public int compare(XilmassResult o1, XilmassResult o2) {
-                    return o1.getScore() < o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
-                }
-            };
-
-    public static final Comparator<XilmassResult> ScoreDSC
-            = new Comparator<XilmassResult>() {
-                @Override
-                public int compare(XilmassResult o1, XilmassResult o2) {
-                    return o1.getScore() > o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
-                }
-            };
-
     @Override
     public int hashCode() {
         int hash = 3;
@@ -467,7 +451,10 @@ public class XilmassResult extends Outcome {
                 + labeling + "\t"
                 + trueCrossLinking + "\t";
         if (!cPeptidePattern.isEmpty()) {
-            toPrint += cPeptidePattern;
+            toPrint += cPeptidePattern + "\t";
+        }
+        if (!ionWeight.isEmpty()) {
+            toPrint += ionWeight + "\t";
         }
         return toPrint;
     }
@@ -490,5 +477,21 @@ public class XilmassResult extends Outcome {
                 + ", retentionTime=" + retentionTime
                 + ", observedMass=" + observedMass + ", ms1Err=" + ms1Err + ", absMS1err=" + absMS1err + ", score=" + score + ", lnNumSp=" + lnNumSp + '}';
     }
+
+    public static final Comparator<XilmassResult> ScoreASC
+            = new Comparator<XilmassResult>() {
+                @Override
+                public int compare(XilmassResult o1, XilmassResult o2) {
+                    return o1.getScore() < o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
+                }
+            };
+
+    public static final Comparator<XilmassResult> ScoreDSC
+            = new Comparator<XilmassResult>() {
+                @Override
+                public int compare(XilmassResult o1, XilmassResult o2) {
+                    return o1.getScore() > o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
+                }
+            };
 
 }
