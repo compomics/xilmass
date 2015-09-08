@@ -71,6 +71,7 @@ public class CPeptides extends CrossLinkedPeptides {
         product_ions_peptideB = fragmentFactory.getFragmentIons(peptideB).get(0);
         super.is_Branching = is_Branching_Approach;
         super.linkingType = CrossLinkingType.CROSSLINK;
+        super.linker.setIsLabeled(linker.isIsLabeled());
     }
 
     /* getters and setters */
