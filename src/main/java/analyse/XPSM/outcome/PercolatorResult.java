@@ -163,4 +163,70 @@ public class PercolatorResult {
         this.linkB = linkB;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + (this.mgfName != null ? this.mgfName.hashCode() : 0);
+        hash = 41 * hash + (this.peptideA != null ? this.peptideA.hashCode() : 0);
+        hash = 41 * hash + (this.peptideB != null ? this.peptideB.hashCode() : 0);
+        hash = 41 * hash + (this.proteinA != null ? this.proteinA.hashCode() : 0);
+        hash = 41 * hash + (this.proteinB != null ? this.proteinB.hashCode() : 0);
+        hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 41 * hash + (int) (Double.doubleToLongBits(this.score) ^ (Double.doubleToLongBits(this.score) >>> 32));
+        hash = 41 * hash + (int) (Double.doubleToLongBits(this.qvalue) ^ (Double.doubleToLongBits(this.qvalue) >>> 32));
+        hash = 41 * hash + (int) (Double.doubleToLongBits(this.posterior_error) ^ (Double.doubleToLongBits(this.posterior_error) >>> 32));
+        hash = 41 * hash + this.scan;
+        hash = 41 * hash + this.linkA;
+        hash = 41 * hash + this.linkB;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PercolatorResult other = (PercolatorResult) obj;
+        if ((this.mgfName == null) ? (other.mgfName != null) : !this.mgfName.equals(other.mgfName)) {
+            return false;
+        }
+        if ((this.peptideA == null) ? (other.peptideA != null) : !this.peptideA.equals(other.peptideA)) {
+            return false;
+        }
+        if ((this.peptideB == null) ? (other.peptideB != null) : !this.peptideB.equals(other.peptideB)) {
+            return false;
+        }
+        if ((this.proteinA == null) ? (other.proteinA != null) : !this.proteinA.equals(other.proteinA)) {
+            return false;
+        }
+        if ((this.proteinB == null) ? (other.proteinB != null) : !this.proteinB.equals(other.proteinB)) {
+            return false;
+        }
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.score) != Double.doubleToLongBits(other.score)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.qvalue) != Double.doubleToLongBits(other.qvalue)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.posterior_error) != Double.doubleToLongBits(other.posterior_error)) {
+            return false;
+        }
+        if (this.scan != other.scan) {
+            return false;
+        }
+        if (this.linkA != other.linkA) {
+            return false;
+        }
+        if (this.linkB != other.linkB) {
+            return false;
+        }
+        return true;
+    }
+
 }

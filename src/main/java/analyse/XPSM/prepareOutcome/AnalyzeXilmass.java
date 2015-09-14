@@ -5,6 +5,7 @@
  */
 package analyse.XPSM.prepareOutcome;
 
+import analyse.XPSM.outcome.Outcome;
 import analyse.XPSM.outcome.XilmassResult;
 import config.ConfigHolder;
 import java.io.BufferedReader;
@@ -45,7 +46,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
         super.prediction_file = prediction_file;
-        super.isConventionalFDR = isConventionalFDR;
+        super.isPIT = isConventionalFDR;
         this.xilmassFolder = xilmassFolder;
         this.fdr = fdr;
         this.output = output;
@@ -78,10 +79,20 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         ArrayList<XilmassResult> res = new ArrayList<XilmassResult>(psmsList);
         // sort filled list        
         Collections.sort(res, XilmassResult.ScoreDSC);
+        ArrayList<Outcome> res2  = new ArrayList<Outcome> ();
+        for(int i = 0 ; i<res.size(); i++){
+            res2.add(res.get(i));
+        }
         // select PSMs with a given FDR value
-        validatedPSMs = getValidatedPSMs(res, fdr);
-        // write validated PSMs
-        writeOutput(validatedPSMs, bw);
+        ArrayList<Outcome> validatedOutcome = getValidatedPSMs(res2, fdr);
+        // to fill validated PSMs list with XilmassResult objects
+        for (Outcome o : validatedOutcome) {
+            validatedPSMs.add((XilmassResult) o);
+        }
+        // sort filled list 
+        ArrayList<XilmassResult> validatedPSMSAL = new ArrayList<XilmassResult>(validatedPSMs);
+        Collections.sort(validatedPSMSAL, XilmassResult.ScoreDSC);
+        writeOutput(validatedPSMSAL, bw);
         bw.close();
     }
 
@@ -93,11 +104,15 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
      * @throws NumberFormatException
      * @throws IOException
      */
-    private void writeOutput(HashSet<XilmassResult> validatedPSMs, BufferedWriter bw) throws NumberFormatException, IOException {
+    private void writeOutput(ArrayList<XilmassResult> validatedPSMs, BufferedWriter bw) throws NumberFormatException, IOException {
         // now write up..
+        int size = 0;
         for (XilmassResult validatedPSM : validatedPSMs) {
             bw.write(validatedPSM.toPrint());
-            bw.newLine();
+            size++;
+            if (size != validatedPSMs.size()) {
+                bw.newLine();
+            }
         }
     }
 
@@ -120,7 +135,9 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
                 String specTitle = split[spectrum_title_index],
                         proteinA = split[proteinAaccession];
                 if (!contaminant_MSMS.contains(specTitle) && !proteinA.contains("contaminant")) {
-                    res.add(new XilmassResult(line, doesContainsCPeptidePattern, doesContainsIonWeight));
+                    XilmassResult r = new XilmassResult(line, doesContainsCPeptidePattern, doesContainsIonWeight);
+                    r.setTarget_decoy(getTargetDecoy(r.getProteinA(),r.getProteinB()));                   
+                    res.add(r);
                 }
             }
         }
@@ -159,57 +176,6 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
             title += "\t" + "CPeptidePattern";
         }
         return title;
-    }
-
-    /**
-     * This method selects the list of validated PSMs
-     *
-     * @param res a list of every PSM result from Xilmass
-     * @param fdr is given FDR value to select PSMs
-     * @return list of validated XilmassResult objects
-     *
-     * @throws IOException
-     */
-    private HashSet<XilmassResult> getValidatedPSMs(ArrayList<XilmassResult> res, double fdr) throws IOException {
-        HashSet<XilmassResult> tmpValidatedPSMlist = new HashSet<XilmassResult>();
-        double tmp_fdr = 0.00;
-        int targets = 0,
-                full_decoys = 0,
-                half_decoys = 0;
-        for (int i = 0; i < res.size(); i++) {
-            XilmassResult r = res.get(i);
-            // give a name now...
-            String proteinA = r.getProteinA(),
-                    proteinB = r.getProteinB();
-            String td = getTargetDecoy(proteinA, proteinB);
-            if (td.equals("TD")) {
-                half_decoys++;
-            } else if (td.equals("DD")) {
-                full_decoys++;
-            } else {
-                targets++;
-            }
-            // set target/decoy name on r..
-            r.setTarget_decoy(td);
-            // means any decoy divided by all target..
-            if (isConventionalFDR && (half_decoys > 0 || full_decoys > 0)) {
-                tmp_fdr = (double) (full_decoys + half_decoys) / (double) targets;
-                // means pLink based calculation..    
-            } else if (!isConventionalFDR && (half_decoys > 0 || full_decoys > 0)) {
-                tmp_fdr = (double) (half_decoys - full_decoys) / (double) targets;
-            }
-            // set true cross linking info 
-            String proteinAAccession = proteinA.substring(0, proteinA.indexOf("(")),
-                    proteinBAccession = proteinB.substring(0, proteinB.indexOf("("));
-            String trueCrossLinking = assetTrueLinking(proteinAAccession, proteinBAccession, r.getLinkProteinA(), r.getLinkProteinB());
-            // set a true cross-linking info
-            r.setTrueCrossLinking(trueCrossLinking);
-            // if the current FDR is smaller than given FDR..  select these PSMs into a lsit
-            if (fdr >= tmp_fdr && td.equals("TT")) {
-                tmpValidatedPSMlist.add(r);
-            }
-        }
-        return tmpValidatedPSMlist;
     }
 
     public HashSet<XilmassResult> getValidatedPSMs() {

@@ -5,7 +5,7 @@
  */
 package analyse.XPSM.outcome;
 
-import java.io.IOException;
+import java.util.Comparator;
 
 /**
  * This class holds cross linking site information from validated pLink results
@@ -14,20 +14,15 @@ import java.io.IOException;
  */
 public class PLinkResult extends Outcome {
 
-    private String spectrumTitle,
-            spectrumFileName,
-            label,
-            peptideA,
-            alphaProtein,
-            modLocationAlpha,
+    private String modLocationAlpha,
             modNameAlpha,
-            peptideB,
-            betaProtein,
             modLocationBeta,
             modNameBeta;
     private int charge,
             xlinkPos1,
-            xlinkPos2;
+            xlinkPos2,
+            validCandidate,
+            candidateTotal;
     private double intensity,
             ms1errPPM,
             experimentalMZ,
@@ -39,25 +34,25 @@ public class PLinkResult extends Outcome {
             unMatchedIntensity,
             xlinkedMass;
 
-      
-    public PLinkResult(String spectrumTitle, String spectrumFileName, String label, 
+    public PLinkResult(String spectrumTitle, String spectrumFileName, String scanNum, String label,
             String peptideA, String alphaProtein, String modLocationAlpha, String modNameAlpha,
-            String peptideB, String betaProtein, String modLocationBeta, String modNameBeta, 
-            int charge, 
-            int xlinkPos1, int xlinkPos2, 
-            double intensity, double ms1errPPM,             double experimentalMZ, 
-            double pLinkScore, double eValue, double alphaEValue, double betaEValue, 
-            double matchedIntensity, double unMatchedIntensity, 
-            double mass, String []target_names) {
-        this.spectrumTitle = spectrumTitle;
-        this.spectrumFileName = spectrumFileName;
+            String peptideB, String betaProtein, String modLocationBeta, String modNameBeta,
+            int charge,
+            int xlinkPos1, int xlinkPos2,
+            double intensity, double ms1errPPM, double experimentalMZ,
+            double pLinkScore, double eValue, double alphaEValue, double betaEValue,
+            double matchedIntensity, double unMatchedIntensity,
+            double mass, String[] target_names, int validCandidate,int candidateTotal) {
+        super.spectrumTitle = spectrumTitle;
+        super.spectrumFileName = spectrumFileName;
+        super.scanNumber = scanNum;
         super.label = label;
-        this.peptideA = peptideA;
-        super.accessProteinA = alphaProtein;
+        super.peptideA = peptideA;
+        super.accProteinA = alphaProtein;
         this.modLocationAlpha = modLocationAlpha;
         this.modNameAlpha = modNameAlpha;
-        this.peptideB = peptideB;
-        super.accessProteinB = betaProtein;
+        super.peptideB = peptideB;
+        super.accProteinB = betaProtein;
         this.modLocationBeta = modLocationBeta;
         this.modNameBeta = modNameBeta;
         this.charge = charge;
@@ -74,32 +69,21 @@ public class PLinkResult extends Outcome {
         this.unMatchedIntensity = unMatchedIntensity;
         this.xlinkedMass = mass;
         super.target_proteins = target_names;
+        super.target_decoy = "";
+        super.trueCrossLinking = "";
+        this.validCandidate = validCandidate;
+        this.candidateTotal = candidateTotal;
     }
 
-    public String getSpectrumTitle() {
-        return spectrumTitle;
+    public int getCandidateTotal() {
+        return candidateTotal;
     }
 
-    public void setSpectrumTitle(String spectrumTitle) {
-        this.spectrumTitle = spectrumTitle;
+    public void setCandidateTotal(int candidateTotal) {
+        this.candidateTotal = candidateTotal;
     }
 
-    public String getSpectrumFileName() {
-        return spectrumFileName;
-    }
-
-    public void setSpectrumFileName(String spectrumFileName) {
-        this.spectrumFileName = spectrumFileName;
-    }
-
-    public String getPeptideA() {
-        return peptideA;
-    }
-
-    public void setPeptideA(String peptideA) {
-        this.peptideA = peptideA;
-    }
-
+    
     public String getModLocationAlpha() {
         return modLocationAlpha;
     }
@@ -115,16 +99,6 @@ public class PLinkResult extends Outcome {
     public void setModNameAlpha(String modNameAlpha) {
         this.modNameAlpha = modNameAlpha;
     }
-
-    public String getPeptideB() {
-        return peptideB;
-    }
-
-    public void setPeptideB(String peptideB) {
-        this.peptideB = peptideB;
-    }
-
-   
 
     public String getModLocationBeta() {
         return modLocationBeta;
@@ -174,22 +148,6 @@ public class PLinkResult extends Outcome {
         this.intensity = intensity;
     }
 
-    public String getAlphaProtein() {
-        return alphaProtein;
-    }
-
-    public void setAlphaProtein(String alphaProtein) {
-        this.alphaProtein = alphaProtein;
-    }
-
-    public String getBetaProtein() {
-        return betaProtein;
-    }
-
-    public void setBetaProtein(String betaProtein) {
-        this.betaProtein = betaProtein;
-    }
-
     public double getMH() {
         return ms1errPPM;
     }
@@ -205,7 +163,6 @@ public class PLinkResult extends Outcome {
     public void setExperimentalMZ(double experimentalMZ) {
         this.experimentalMZ = experimentalMZ;
     }
-
 
     public double getpLinkScore() {
         return pLinkScore;
@@ -261,6 +218,47 @@ public class PLinkResult extends Outcome {
 
     public void setMass(double mass) {
         this.xlinkedMass = mass;
+    }
+
+    public int getValidCandidate() {
+        return validCandidate;
+    }
+
+    public void setValidCandidate(int validCandidate) {
+        this.validCandidate = validCandidate;
+    }
+   
+
+    public static final Comparator<PLinkResult> eValueASC
+            = new Comparator<PLinkResult>() {
+                @Override
+                public int compare(PLinkResult o1, PLinkResult o2) {
+                    return o1.geteValue() < o2.geteValue() ? -1 : o1.geteValue() == o2.geteValue() ? 0 : 1;
+                }
+            };
+
+    public static final Comparator<PLinkResult> pLinkScoreDSC
+            = new Comparator<PLinkResult>() {
+                @Override
+                public int compare(PLinkResult o1, PLinkResult o2) {
+                    return o1.getpLinkScore() > o2.getpLinkScore() ? -1 : o1.getpLinkScore() == o2.getpLinkScore() ? 0 : 1;
+                }
+            };
+
+    public static final Comparator<PLinkResult> pLinkScanDSC
+            = new Comparator<PLinkResult>() {
+                @Override
+                public int compare(PLinkResult o1, PLinkResult o2) {
+                    double scanNumA = Double.parseDouble(o1.getScanNumber()),
+                    scanNumB = Double.parseDouble(o2.getScanNumber());
+
+                    return scanNumA > scanNumA ? -1 : scanNumA == scanNumB ? 0 : 1;
+                }
+            };
+
+    @Override
+    public String toString() {
+        return "PLinkResult{" + "modLocationAlpha=" + modLocationAlpha + ", modNameAlpha=" + modNameAlpha + ", modLocationBeta=" + modLocationBeta + ", modNameBeta=" + modNameBeta + ", charge=" + charge + ", xlinkPos1=" + xlinkPos1 + ", xlinkPos2=" + xlinkPos2 + ", intensity=" + intensity + ", ms1errPPM=" + ms1errPPM + ", experimentalMZ=" + experimentalMZ + ", pLinkScore=" + pLinkScore + ", eValue=" + eValue + ", alphaEValue=" + alphaEValue + ", betaEValue=" + betaEValue + ", matchedIntensity=" + matchedIntensity + ", unMatchedIntensity=" + unMatchedIntensity + ", xlinkedMass=" + xlinkedMass + '}';
     }
 
 }

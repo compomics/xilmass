@@ -6,6 +6,7 @@
 package analyse.XPSM.prepareOutcome;
 
 import analyse.XPSM.outcome.KojakResult;
+import analyse.XPSM.outcome.Outcome;
 import config.ConfigHolder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -34,12 +35,12 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
             database;
     private static final Logger LOGGER = Logger.getLogger(ConfigHolder.class);
     private double fdr;
-    private ArrayList<KojakResult> validatedPSMs = new ArrayList<KojakResult>();
-    private boolean isValidatedPSMs = false,
-            isConventialFDR; //true: (full_decoy+half_decoy)/target and false:(half_decoy-full_decoy)/target
+    private HashSet<KojakResult> validatedPSMs = new HashSet<KojakResult>();
+    private boolean isValidatedPSMs = false;
+    //true: (full_decoy+half_decoy)/target and false:(half_decoy-full_decoy)/target
     private HashMap<String, HashSet<String>> contaminant_MSMSMap;
 
-    public AnalyzeKojak(File output, File kojakResultFolder, File prediction_file, File psms_contaminant, File database, String[] target_names, double fdr, boolean isConventialFDR) throws IOException {
+    public AnalyzeKojak(File output, File kojakResultFolder, File prediction_file, File psms_contaminant, File database, String[] target_names, double fdr, boolean isConventionalFDR) throws IOException {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
         super.prediction_file = prediction_file;
@@ -48,7 +49,8 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
         super.psms_contaminant = psms_contaminant;
         this.database = database;
         contaminant_MSMSMap = super.getContaminant_MSMSMap();
-        this.isConventialFDR = isConventialFDR;
+        super.isPIT = isConventionalFDR;
+        this.fdr = fdr;
     }
 
     @Override
@@ -66,11 +68,21 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
         ArrayList<KojakResult> res = new ArrayList<KojakResult>(psmsList);
         // sort filled list        
         Collections.sort(res, KojakResult.ScoreDSC);
+        ArrayList<Outcome> res2 = new ArrayList<Outcome>();
+        for (int i = 0; i < res.size(); i++) {
+            res2.add(res.get(i));
+        }
         // select PSMs with a given FDR value
-        validatedPSMs = getValidatedPSMs(res, fdr);
+        ArrayList<Outcome> validatedOutcome = getValidatedPSMs(res2, fdr);
+        for (Outcome o : validatedOutcome) {
+            if (o instanceof KojakResult) {
+                validatedPSMs.add((KojakResult) o);
+            }
+        }
         // write validated PSMs
-        Collections.sort(validatedPSMs, KojakResult.ScoreDSC);
-        writeOutput(validatedPSMs, bw);
+        ArrayList<KojakResult> validatedPSMSAL = new ArrayList<KojakResult>(validatedPSMs);
+        Collections.sort(validatedPSMSAL, KojakResult.ScoreDSC);
+        writeOutput(validatedPSMSAL, bw);
         bw.close();
         isValidatedPSMs = true;
     }
@@ -107,55 +119,15 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
         this.fdr = fdr;
     }
 
-    public ArrayList<KojakResult> getValidatedPSMs() throws IOException {
+    public HashSet<KojakResult> getValidatedPSMs() throws IOException {
         if (!isValidatedPSMs) {
             run();
         }
         return validatedPSMs;
     }
 
-    public void setValidatedPSMs(ArrayList<KojakResult> validatedPSMs) {
+    public void setValidatedPSMs(HashSet<KojakResult> validatedPSMs) {
         this.validatedPSMs = validatedPSMs;
-    }
-
-    private ArrayList<KojakResult> getValidatedPSMs(ArrayList<KojakResult> res, double fdr) throws IOException {
-        ArrayList<KojakResult> tmpValidatedPSMlist = new ArrayList<KojakResult>();
-        double tmp_fdr = 0.00;
-        int targets = 0,
-                full_decoys = 0,
-                half_decoys = 0;
-        for (int i = 0; i < res.size(); i++) {
-            KojakResult r = res.get(i);
-            // give a name now...
-            String proteinA = r.getAccessProteinA(),
-                    proteinB = r.getAccessProteinB();
-            String td = getTargetDecoy(proteinA, proteinB);
-            if (td.equals("TD")) {
-                half_decoys++;
-            } else if (td.equals("DD")) {
-                full_decoys++;
-            } else {
-                targets++;
-            }
-            // set target/decoy name on r..
-            r.setTarget_decoy(td);
-            // means any decoy divided by all target..
-            if (isConventionalFDR && (half_decoys > 0 || full_decoys > 0)) {
-                tmp_fdr = (double) (full_decoys + half_decoys) / (double) targets;
-                // means pLink based calculation..    
-            } else if (!isConventionalFDR && (half_decoys > 0 || full_decoys > 0)) {
-                tmp_fdr = (double) (half_decoys - full_decoys) / (double) targets;
-            }
-            // set true cross linking info 
-            String trueCrossLinking = assetTrueLinking(proteinA, proteinB, r.getCrossLinkedSitePro1(), r.getCrossLinkedSitePro2());
-            // set a true cross-linking info
-            r.setTrueCrossLinking(trueCrossLinking);
-            // if the current FDR is smaller than given FDR..  select these PSMs into a lsit
-            if (fdr >= tmp_fdr && td.equals("TT")) {
-                tmpValidatedPSMlist.add(r);
-            }
-        }
-        return tmpValidatedPSMlist;
     }
 
     private HashSet<KojakResult> read_and_fill(File f) throws FileNotFoundException, IOException {
@@ -184,13 +156,14 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                     int charge = Integer.parseInt(sp[2]),
                             link1 = Integer.parseInt(sp[9]),
                             link2 = Integer.parseInt(sp[12]);
+                    String td = getTargetDecoy(protein1, protein2);
                     // just keep cross linked pairs                    
                     if (link1 != -1 && link2 != -1) {
                         protein1 = protein1.split("\\|")[1];
                         protein2 = protein2.split("\\|")[1];
                         boolean isContaminantDerived = false;
                         KojakResult kr = new KojakResult(mgfFileName, scanNumber, obsMass, charge, psmMass, ppmErr, score, dScore,
-                                pepDiff, peptide1, link1, protein1, peptide2, link2, protein2, linkerMass, target_names, database);
+                                pepDiff, peptide1, link1, protein1, peptide2, link2, protein2, linkerMass, target_names, database, td);
                         if (contaminant_MSMSMap.containsKey(mgfFileName)) {
                             for (String tmpsScans : contaminant_MSMSMap.get(mgfFileName)) {
                                 if (tmpsScans.equals(scanNumber)) {

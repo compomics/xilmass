@@ -5,86 +5,95 @@
  */
 package analyse.XPSM;
 
-import analyse.XPSM.prepareOutcome.AnalyzeKojak;
-import analyse.XPSM.prepareOutcome.AnalyzeOutcomes;
-import analyse.XPSM.prepareOutcome.AnalyzePLink;
-import analyse.XPSM.prepareOutcome.AnalyzePLinkValidatedResult;
-import analyse.XPSM.prepareOutcome.AnalyzeXilmass;
+import analyse.XPSM.prepareOutcome.*;
+import com.compomics.util.experiment.identification.SequenceFactory;
+import config.ConfigHolder;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Set;
+import org.apache.commons.configuration.ConfigurationException;
 
 /**
- * This class select best scored XPSM for one spectrum. If analysis_option is
- * set to 1, first it merges two input files and then select the tops ones It
- * also checks true cross linking option based on predicted cross linkings
- *
- *
+ * This class selects the best scored XPSM for each spectrum.
  *
  * @author Sule
  */
 public class NameTargetDecoy {
 
     /**
-     * @param args the command line arguments
+     *
+     * @param args
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws IllegalArgumentException
+     * @throws InterruptedException
+     * @throws ClassNotFoundException
+     * @throws ConfigurationException
      */
-    public static void main(String[] args) throws IOException {
-        // heavy and light labeled Xilmass outputs
-        File xilmassResFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass/runs/dss_hcdElite_Both_Scr4_MinPeak0_rDecoy_allPeaks.txt"),
-                // contaminant files for each data set
-                psms_contaminant_elite = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\1_Cleaning\\SGRunsHCD_identification\\velos_orbitra_elite/hcd_orbi_elite_crap_10psmFDR_psms_validated.txt"),
-                psms_contaminant_qexactive = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\1_Cleaning\\SGRunsHCD_identification\\qExactive/hcd_orbi_qexactive_crap_10psmFDR_psms_validated.txt"),
+    public static void main(String[] args) throws IOException, FileNotFoundException, IllegalArgumentException, InterruptedException, ClassNotFoundException, ConfigurationException {
+
+        File xilmassResFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("xilmass.results.elite")),
                 // Xwalk predicted and manullay curated cross linking sites
-                prediction = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_prediction_uniprot2.txt"),
-                // competetive results...
-                kojakFolderElite = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\kojak_runs\\elite"),
-                pLinkFolderElite = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink\\pLink_run\\pLinkValidationBased\\pLink_DSS_HCD_elite_ONLYTARGET\\all_query"),
-                //pLinkCombValidatedFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink\\targetsAlso2Pfus/hcd_elite_inter_combine.spectra_targetsPfus.txt");
-                pLinkCombValidatedFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink\\pLink_run\\pLinkValidationBased\\pLink_DSS_HCD_elite_ONLYTARGET\\1.sample\\search\\hcd_elite_inter_combine/hcd_elite_inter_combine.spectra.xls");
-        
-        File psms = psms_contaminant_elite,
-                pLinkFolder = pLinkFolderElite,
-                kojakFolder = kojakFolderElite;
-        boolean isElite = true,
-                isValidatedResult = false;
+                prediction = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("prediction")),
+                // The validated PSM list from contaminants
+                psms_contamination = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("psms.contaminant.elite")),
+                pLinkCombValidatedFile = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLink.combined.validated.file.elite")),
+                pLinkFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLink.folder.elite")),
+                pLinkAllOutput = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLinkalloutput.elite")),
+                percolatorKojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.kojak.elite")),
+                percolatorXilmassFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.xilmass.elite")),
+                kojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("kojak.folder.elite")),
+                database = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("database.file"));
+        // get every protein entry on database with their accession numbers
+        HashMap<String, String> accs = getAccs(database);
+        String proteinA = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinA"),
+                proteinB = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinB");
+        String[] protein_names = {proteinA, proteinB};
+        boolean isElite = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.analyzing.elite"),
+                isPITFDR = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.PIT.FDR"),
+                isMS1ErrPPM = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.ms1Err.ppm"),
+                doesContainCPeptidePattern = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainCPeptidePattern"),
+                doesContainIonWeight = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainIonWeight");
+        double qvalue = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("qvalue"),
+                fdr_cutoff = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr");
+        int analysis = ConfigHolder.getTargetDecoyAnalyzeInstance().getInt("analysis"); // 1-Kojak/2-AllPLink 3-ValPLink 4-Xilmass 5-PercolatorKojak runs! 6-Percolator-Xilmass runs
 
         if (!isElite) {
-            psms = psms_contaminant_qexactive;
-            pLinkFolder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink\\pLink_run\\combined\\qexactive");
-            kojakFolder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\kojak_runs\\qexactive");
-            pLinkCombValidatedFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink\\onlyTargets/hcd_qexactive_inter_combine.spectra_only_Target_QExactive.txt");
+            psms_contamination = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("psms.contaminant.qexactive"));
+            xilmassResFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("xilmass.results.qexactive"));
+            pLinkFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLink.folder.qexactive"));
+            pLinkAllOutput = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLinkalloutput.qexactive"));
+            kojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("kojak.folder.qexactive "));
+            pLinkCombValidatedFile = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLink.combined.validated.file.qexactive"));
+            percolatorKojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.kojak.qexactive"));
+            percolatorXilmassFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.xilmass.qexactive"));
         }
 
-        File output = new File(
-                //                "C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\kojak_runs\\combined/kojak135_qexactive_co.txt");                
-                //                "C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink\\pLink_Validated_Elite_target2Pfus.txt");
-                //                "C:/Users/Sule/Documents/PhD/XLinked/XLinkData_Freiburg/competetives/xilmass/td_dss_hcdElite_Both_Scr4_MinPeak0_rDecoy_allPeaks.txt");
-                "C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\td_dss_hcdElite_Both_Scr4_MinPeak0_rDecoy_allPeaks.txt");
-        String[] protein_names = {"Q15149", "P62158"};
+        File output = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("output"));
 
         // NOW RUN!!!
-        int analysis = 4;
-        boolean hasTraditionalFDR = true;
-        if (analysis == 3) {
-            isValidatedResult = true;
-        }
-        HashMap<String, String> resultFileNameForSpectrumFile = prepare(isElite, isValidatedResult);
         AnalyzeOutcomes o = null;
+
         switch (analysis) {
             case 0:
-//                o = new AnalyzeXilmass(lightLabeledXilmass, heavyLabeledXilmass, output, prediction, psms, protein_names, hasTraditionalFDR);
+                o = new AnalyzeXilmass(xilmassResFolder, output, prediction, psms_contamination, protein_names, fdr_cutoff, isPITFDR, isMS1ErrPPM, doesContainCPeptidePattern, doesContainIonWeight);
                 break;
             case 1:
-                o = new AnalyzeKojak(output, kojakFolder, prediction, psms, protein_names);
+                o = new AnalyzeKojak(output, kojakFolder, prediction, psms_contamination, database, protein_names, fdr_cutoff, isPITFDR);
                 break;
             case 2:
-                o = new AnalyzePLink(pLinkFolder, output, resultFileNameForSpectrumFile, prediction, psms, protein_names);
+                o = new AnalyzePLink(pLinkFolder, pLinkAllOutput, output, prediction, psms_contamination, protein_names, fdr_cutoff, isPITFDR);
                 break;
             case 3:
-                o = new AnalyzePLinkValidatedResult(pLinkCombValidatedFile, output, resultFileNameForSpectrumFile, prediction, psms, protein_names);
+                o = new AnalyzePLinkValidatedResult(pLinkCombValidatedFile, output, prediction, psms_contamination, protein_names);
                 break;
             case 4:
-                o = new AnalyzeXilmass(xilmassResFile, output, prediction, psms, protein_names, hasTraditionalFDR);
+                o = new AnalyzePercolator(output, percolatorXilmassFolder, prediction, psms_contamination, protein_names, accs, true, qvalue);
+                break;
+            case 5:
+                o = new AnalyzePercolator(output, percolatorKojakFolder, prediction, psms_contamination, protein_names, accs, qvalue);
                 break;
         }
         o.run();
@@ -123,40 +132,18 @@ public class NameTargetDecoy {
         return hasPairs;
     }
 
-    /**
-     * This method matches pLink config file and corresponding mgf file
-     *
-     * @param isElite
-     * @return
-     */
-    private static HashMap<String, String> prepare(boolean isElite, boolean isValidatedResult) {
-        HashMap<String, String> map = new HashMap<String, String>();
-        if (!isValidatedResult) {
-            if (isElite) {
-                map.put("hcd_elite1_inter_qry.proteins.txt", "Probe2_v_mc1_top15HCD-1.mgf");
-                map.put("hcd_elite2_inter_qry.proteins.txt", "Probe2_v_mp1_top15HCD-1.mgf");
-                map.put("hcd_elite3_inter_qry.proteins.txt", "Probe2_v_x1_top15HCD-1.mgf");
-                map.put("hcd_elite4_inter_qry.proteins.txt", "Probe2_v_x1_top15HCD-precolumn-1.mgf");
-            } else {
-                map.put("hcd_qexactive1_inter_qry.proteins.txt", "Probe2_h_X1_run1.mgf");
-                map.put("hcd_qexactive2_inter_qry.proteins.txt", "Probe2_h_X1_run2.mgf");
-                map.put("hcd_qexactive3_inter_qry.proteins.txt", "Probe2_h_X2_excl3_500ms_run1.mgf");
-                map.put("hcd_qexactive4_inter_qry.proteins.txt", "Probe2_h_X2_excl3_500ms_run2.mgf");
-            }
-        } else {
-            if (isElite) {
-                map.put("File2235", "Probe2_v_mc1_top15HCD-1.mgf");
-                map.put("File2239", "Probe2_v_mp1_top15HCD-1.mgf");
-                map.put("File2241", "Probe2_v_x1_top15HCD-1.mgf");
-                map.put("File2244", "Probe2_v_x1_top15HCD-precolumn-1.mgf");
-            } else {
-                map.put("File202", "Probe2_h_X1_run1.mgf");
-                map.put("File203", "Probe2_h_X1_run2.mgf");
-                map.put("File204", "Probe2_h_X2_excl3_500ms_run1.mgf");
-                map.put("File205", "Probe2_h_X2_excl3_500ms_run2.mgf");
-            }
+    public static HashMap<String, String> getAccs(File fasta) throws IOException, FileNotFoundException, ClassNotFoundException, IOException, IllegalArgumentException, InterruptedException {
+        HashMap<String, String> acc_seq = new HashMap<String, String>();
+        SequenceFactory fct = SequenceFactory.getInstance();
+        System.out.println("A fasta file is being loaded..");
+        fct.loadFastaFile(fasta);
+        System.out.println("Accessions are being retrieved..");
+        Set<String> accession_original_db = fct.getAccessions();
+        for (String acc : accession_original_db) {
+            String proSeq = fct.getProtein(acc).getSequence();
+            acc_seq.put(acc, proSeq);
         }
-        return map;
+        return acc_seq;
     }
 
 }

@@ -14,11 +14,81 @@ package analyse.XPSM.outcome;
 public abstract class Outcome {
 
     protected String[] target_proteins;
-    protected String accessProteinA,
-            accessProteinB,
-            label;
+    
+    protected String accProteinA, // accession number of proteinA
+            accProteinB, // accession number of proteinB
+            
+            peptideA,
+            peptideB,
+            
+            label,
+            
+            target_decoy,
+            trueCrossLinking,
+            
+            scanNumber,
+            spectrumFileName,
+            spectrumTitle  ;
+    
     protected int crossLinkedSitePro1,
             crossLinkedSitePro2;
+    
+    
+    public String getSpectrumTitle() {
+        return spectrumTitle;
+    }
+
+    public void setSpectrumTitle(String spectrumTitle) {
+        this.spectrumTitle = spectrumTitle;
+    }
+
+    public String getPeptideA() {
+        return peptideA;
+    }
+
+    public void setPeptideA(String peptideA) {
+        this.peptideA = peptideA;
+    }
+
+    public String getPeptideB() {
+        return peptideB;
+    }
+
+    public void setPeptideB(String peptideB) {
+        this.peptideB = peptideB;
+    }
+
+    public String getScanNumber() {
+        return scanNumber;
+    }
+
+    public void setScanNumber(String scanNumber) {
+        this.scanNumber = scanNumber;
+    }
+
+    public String getSpectrumFileName() {
+        return spectrumFileName;
+    }
+
+    public void setSpectrumFileName(String spectrumFileName) {
+        this.spectrumFileName = spectrumFileName;
+    }
+
+    public String getTrueCrossLinking() {
+        return trueCrossLinking;
+    }
+
+    public void setTrueCrossLinking(String trueCrossLinking) {
+        this.trueCrossLinking = trueCrossLinking;
+    }
+
+    public String getTarget_decoy() {
+        return target_decoy;
+    }
+
+    public void setTarget_decoy(String target_decoy) {
+        this.target_decoy = target_decoy;
+    }
 
     public String getLabel() {
         return label;
@@ -36,20 +106,20 @@ public abstract class Outcome {
         this.target_proteins = target_proteins;
     }
 
-    public String getAccessProteinA() {
-        return accessProteinA;
+    public String getAccProteinA() {
+        return accProteinA;
     }
 
-    public void setAccessProteinA(String accessProteinA) {
-        this.accessProteinA = accessProteinA;
+    public void setAccProteinA(String accProteinA) {
+        this.accProteinA = accProteinA;
     }
 
-    public String getAccessProteinB() {
-        return accessProteinB;
+    public String getAccProteinB() {
+        return accProteinB;
     }
 
-    public void setAccessProteinB(String accessProteinB) {
-        this.accessProteinB = accessProteinB;
+    public void setAccProteinB(String accProteinB) {
+        this.accProteinB = accProteinB;
     }
 
     public int getCrossLinkedSitePro1() {

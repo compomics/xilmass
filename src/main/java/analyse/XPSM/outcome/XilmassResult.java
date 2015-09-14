@@ -14,12 +14,8 @@ import java.util.Comparator;
  */
 public class XilmassResult extends Outcome {
 
-    private String spectrumFile,
-            spectrumTitle,
-            peptideA, // a sequence of a linked peptideA
-            proteinA, // a protein derived from peptideA
+    private String proteinA, // a protein derived from peptideA
             modA, // PTMs found on peptideA
-            peptideB, // a sequence of a linked peptideB
             proteinB, // a protein derived from peptideB
             modB, // PTMs found on peptideB
             type, // linking type
@@ -28,17 +24,13 @@ public class XilmassResult extends Outcome {
             theoMatchedPeakList, // a list of theoretical matched peaks 
             cPeptidePattern = "",
             labeling = "", // heavy labeled or light labeled of a cross linker
-            trueCrossLinking = "", // info for cross-linking info (decision/euclidean distances)
-            target_decoy = "", // TT/TD or DD
             ionWeight = ""; // identified ion weights
-
     private int scanNr, // scan number
             charge, // precursor charge
             linkPeptideA, // linked index on peptideA
             linkPeptideB, // linked index on peptideB
             linkProteinA, // linked index on proteinA
             linkProteinB; // linked index on proteinB
-
     private double retentionTime, // retention time
             observedMass, // observed mass
             ms1Err, // precursor tolerance
@@ -48,19 +40,21 @@ public class XilmassResult extends Outcome {
 
     public XilmassResult(String line, boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights) {
         String[] sp = line.split("\t");
-        spectrumFile = sp[0];
-        spectrumTitle = sp[1];
+        super.spectrumFileName = sp[0];
+        super.spectrumTitle = sp[1];
         scanNr = Integer.parseInt(sp[2]);
         retentionTime = Double.parseDouble(sp[3]);
         observedMass = Double.parseDouble(sp[4]);
         charge = Integer.parseInt(sp[5]);
         ms1Err = Double.parseDouble(sp[6]);
         absMS1err = Double.parseDouble(sp[7]);
-        peptideA = sp[8];
+        super.peptideA = sp[8];
         proteinA = sp[9];
         modA = sp[10];
-        peptideB = sp[11];
+        super.peptideB = sp[11];
         proteinB = sp[12];
+        accProteinA = proteinA.substring(0, proteinA.indexOf("("));
+        accProteinB = proteinB.substring(0, proteinB.indexOf("("));
         modB = sp[13];
         linkPeptideA = Integer.parseInt(sp[14]);
         linkPeptideB = Integer.parseInt(sp[15]);
@@ -73,59 +67,16 @@ public class XilmassResult extends Outcome {
         expMatchedPeakList = sp[28];
         theoMatchedPeakList = sp[29];
         labeling = sp[30];
-
         if (doesKeepCPeptideFragmPattern && doesKeepWeights) {
             cPeptidePattern = sp[31];
             ionWeight = sp[32];
-
         } else if (doesKeepCPeptideFragmPattern && !doesKeepWeights) {
             cPeptidePattern = sp[31];
             ionWeight = "";
-
         } else if (!doesKeepCPeptideFragmPattern && doesKeepWeights) {
             cPeptidePattern = "";
             ionWeight = sp[31];
         }
-    }
-
-    public String getTarget_decoy() {
-        return target_decoy;
-    }
-
-    public void setTarget_decoy(String target_decoy) {
-        this.target_decoy = target_decoy;
-    }
-
-    public String getTrueCrossLinking() {
-        return trueCrossLinking;
-    }
-
-    public void setTrueCrossLinking(String trueCrossLinking) {
-        this.trueCrossLinking = trueCrossLinking;
-    }
-
-    public String getSpectrumFile() {
-        return spectrumFile;
-    }
-
-    public void setSpectrumFile(String spectrumFile) {
-        this.spectrumFile = spectrumFile;
-    }
-
-    public String getSpectrumTitle() {
-        return spectrumTitle;
-    }
-
-    public void setSpectrumTitle(String spectrumTitle) {
-        this.spectrumTitle = spectrumTitle;
-    }
-
-    public String getPeptideA() {
-        return peptideA;
-    }
-
-    public void setPeptideA(String peptideA) {
-        this.peptideA = peptideA;
     }
 
     public String getProteinA() {
@@ -142,14 +93,6 @@ public class XilmassResult extends Outcome {
 
     public void setModA(String modA) {
         this.modA = modA;
-    }
-
-    public String getPeptideB() {
-        return peptideB;
-    }
-
-    public void setPeptideB(String peptideB) {
-        this.peptideB = peptideB;
     }
 
     public String getProteinB() {
@@ -315,7 +258,7 @@ public class XilmassResult extends Outcome {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 79 * hash + (this.spectrumFile != null ? this.spectrumFile.hashCode() : 0);
+        hash = 79 * hash + (this.spectrumFileName != null ? this.spectrumFileName.hashCode() : 0);
         hash = 79 * hash + (this.spectrumTitle != null ? this.spectrumTitle.hashCode() : 0);
         hash = 79 * hash + (this.peptideA != null ? this.peptideA.hashCode() : 0);
         hash = 79 * hash + (this.proteinA != null ? this.proteinA.hashCode() : 0);
@@ -349,7 +292,7 @@ public class XilmassResult extends Outcome {
             return false;
         }
         final XilmassResult other = (XilmassResult) obj;
-        if ((this.spectrumFile == null) ? (other.spectrumFile != null) : !this.spectrumFile.equals(other.spectrumFile)) {
+        if ((this.spectrumFileName == null) ? (other.spectrumFileName != null) : !this.spectrumFileName.equals(other.spectrumFileName)) {
             return false;
         }
         if ((this.spectrumTitle == null) ? (other.spectrumTitle != null) : !this.spectrumTitle.equals(other.spectrumTitle)) {
@@ -437,7 +380,7 @@ public class XilmassResult extends Outcome {
      */
     public String toPrint() {
 
-        String toPrint = spectrumFile + "\t" + spectrumTitle + "\t"
+        String toPrint = spectrumFileName + "\t" + spectrumTitle + "\t"
                 + observedMass + "\t" + charge + "\t" + retentionTime + "\t" + scanNr + "\t"
                 + ms1Err + "\t" + absMS1err + "\t"
                 + peptideA + "\t" + proteinA + "\t" + modA + "\t"
@@ -449,12 +392,12 @@ public class XilmassResult extends Outcome {
                 + lnNumSp + "\t"
                 + target_decoy + "\t"
                 + labeling + "\t"
-                + trueCrossLinking + "\t";
+                + trueCrossLinking;
         if (!cPeptidePattern.isEmpty()) {
-            toPrint += cPeptidePattern + "\t";
+            toPrint += "\t" + cPeptidePattern;
         }
         if (!ionWeight.isEmpty()) {
-            toPrint += ionWeight + "\t";
+            toPrint += "\t" + ionWeight;
         }
         return toPrint;
     }
@@ -466,7 +409,7 @@ public class XilmassResult extends Outcome {
      */
     @Override
     public String toString() {
-        return "XilmassResult{" + "spectrumFile=" + spectrumFile + ", spectrumTitle=" + spectrumTitle
+        return "XilmassResult{" + "spectrumFile=" + spectrumFileName + ", spectrumTitle=" + spectrumTitle
                 + ", peptideA=" + peptideA + ", proteinA=" + proteinA + ", modA=" + modA
                 + ", peptideB=" + peptideB + ", proteinB=" + proteinB + ", modB=" + modB
                 + ", type=" + type + ", scoringFunctionName=" + scoringFunctionName
@@ -483,6 +426,40 @@ public class XilmassResult extends Outcome {
                 @Override
                 public int compare(XilmassResult o1, XilmassResult o2) {
                     return o1.getScore() < o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
+                }
+            };
+
+    
+    public static final Comparator<XilmassResult> ScoreDSCBasedTDs
+            = new Comparator<XilmassResult>() {
+                @Override
+                public int compare(XilmassResult o1, XilmassResult o2) {
+                    if (o1.getScore() > o2.getScore()) {
+                        return -1;
+                    } else if (o1.getScore() < o2.getScore()) {
+                        return 1;
+                    } else {
+                        if (o1.getTarget_decoy().equals("TT")) {
+                            if (o2.getTarget_decoy().equals("TT")) {
+                                return 0;
+                            } else {
+                                return -1;
+                            }
+                        } else if (o1.getTarget_decoy().equals("DD")) {
+                            if (o2.getTarget_decoy().equals("DD")) {
+                                return 0;
+                            } else {
+                                return 1;
+                            }
+                        } else if (o2.getTarget_decoy().equals("TD")) {
+                            if (o2.getTarget_decoy().equals("TT")) {
+                                return 1;
+                            } else {
+                                return -1;
+                            }
+                        }
+                    }
+                    return 0;
                 }
             };
 

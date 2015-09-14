@@ -5,12 +5,14 @@
  */
 package analyse.XPSM.prepareOutcome;
 
+import analyse.XPSM.outcome.Outcome;
 import analyse.xwalk_uniprot.TrueLinking;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -25,7 +27,7 @@ public abstract class AnalyzeOutcomes {
     protected String[] target_names; // target protein accession names
     protected HashSet<TrueLinking> trueLinkings = new HashSet<TrueLinking>(); // a list of predicted cross linking sites
     protected boolean areReversedDecoys = true, // true:target/decoy (reversed or shuffled) approach and false: Pfu is decoy ## TODO: for the future...
-            isConventionalFDR = false, //true: all_decoy/all_target false: (half_decoy-full_decoy)/all_target
+            isPIT = false, //true: all_decoy/all_target false: (half_decoy-full_decoy)/all_target
             areContaminantMSMSReady = false; // in order to fill out a list of validated contaminant peptide derived PSMs
 
     /**
@@ -68,6 +70,63 @@ public abstract class AnalyzeOutcomes {
             }
         }
         return res;
+    }
+
+    /**
+     * This method returns a list of validated outputs with a given fd FDR is
+     * calculated based on either PIT (Kall, 2008) or pLink-derived (Yang, 2012)
+     *
+     * @param res a list of all outputs
+     * @param fdr FDR cutoff
+     * @return
+     * @throws IOException
+     */
+    protected ArrayList<Outcome> getValidatedPSMs(ArrayList<Outcome> res, double fdr) throws IOException {
+        ArrayList<Outcome> tmpValidatedPSMlist = new ArrayList<Outcome>();
+        double tmp_fdr = 0.00;
+        int targets = 0,
+                full_decoys = 0,
+                half_decoys = 0;
+        boolean isBiggerFDR = false;
+        for (int i = 0; i < res.size(); i++) {
+            Outcome o = res.get(i);
+            boolean isTarget = false,
+                    isHalfDecoy = false,
+                    isDecoy = false;
+            if (o.getTarget_decoy().equals("TT")) {
+                isTarget = true;
+            } else if (o.getTarget_decoy().equals("TD")) {
+                isHalfDecoy = true;
+            } else if (o.getTarget_decoy().equals("DD")) {
+                isDecoy = true;
+            }
+            if (isTarget) {
+                targets++;
+            } else if (isHalfDecoy) {
+                half_decoys++;
+            } else if (isDecoy) {
+                full_decoys++;
+            }
+            // means any decoy divided by all target..
+            if (isPIT && targets > 0) {
+                tmp_fdr = (double) (full_decoys + half_decoys) / (double) targets;
+                // means pLink based calculation..    
+            } else if (!isPIT && (targets > 0)) {
+                if (half_decoys - full_decoys > 0) {
+                    tmp_fdr = (double) (half_decoys - full_decoys) / (double) targets;
+                } else {
+                    tmp_fdr = (double) full_decoys / (double) targets;
+                }
+            }
+            if (fdr >= tmp_fdr && !isBiggerFDR) {
+                if (o.getTarget_decoy().equals("TT")) {
+                    tmpValidatedPSMlist.add(o);
+                }
+            } else if (isBiggerFDR && fdr <= tmp_fdr) {
+                isBiggerFDR = true;
+            }
+        }
+        return tmpValidatedPSMlist;
     }
 
     /**
@@ -140,31 +199,30 @@ public abstract class AnalyzeOutcomes {
      * @param target_names - list of uniprot accession numbers for proteins
      * @return
      */
-    protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names) {
-        String first_target_name = target_names[0],
-                second_target_name = target_names[1];
-        String type = "";
-        if (areReversedDecoys) {
-            type = "half-decoy";
-            if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
-                type = "target";
-            } else if ((proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
-                type = "decoy";
-            }
-        } else {
-            type = "half-decoy";
-            if ((proteinAacess.equals(first_target_name) || proteinAacess.equals(second_target_name))
-                    && (proteinBasses.equals(first_target_name) || proteinBasses.equals(second_target_name))) {
-                type = "target";
-            }
-            if ((!proteinAacess.equals(first_target_name) && !proteinAacess.equals(second_target_name))
-                    && (!proteinBasses.equals(first_target_name) && !proteinBasses.equals(second_target_name))) {
-                type = "decoy";
-            }
-        }
-        return type;
-    }
-
+//    protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names) {
+//        String first_target_name = target_names[0],
+//                second_target_name = target_names[1];
+//        String type = "";
+//        if (areReversedDecoys) {
+//            type = "half-decoy";
+//            if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
+//                type = "target";
+//            } else if ((proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
+//                type = "decoy";
+//            }
+//        } else {
+//            type = "half-decoy";
+//            if ((proteinAacess.equals(first_target_name) || proteinAacess.equals(second_target_name))
+//                    && (proteinBasses.equals(first_target_name) || proteinBasses.equals(second_target_name))) {
+//                type = "target";
+//            }
+//            if ((!proteinAacess.equals(first_target_name) && !proteinAacess.equals(second_target_name))
+//                    && (!proteinBasses.equals(first_target_name) && !proteinBasses.equals(second_target_name))) {
+//                type = "decoy";
+//            }
+//        }
+//        return type;
+//    }
     /**
      * It decided given two proteins are either target or full_decoy or
      * half_decoy
