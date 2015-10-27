@@ -149,10 +149,8 @@ public class LuceneIndexSearch {
                 variableModB = doc.get("varModB");
         if (!proteinA.startsWith("contaminant")) {
             String labelInfo = doc.get("label").replace("\n", "");
-//            System.out.println("labelInfo="+labelInfo);
             if (labelInfo.equalsIgnoreCase("heavyLabeled")) {
                 selectedLinker = heavyLinker;
-//                System.out.println(" yup inderdaad heavyLabeled linker");
             }
         }
         // linker positions...
