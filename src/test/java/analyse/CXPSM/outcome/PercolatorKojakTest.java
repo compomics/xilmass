@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analyse.XPSM.outcome;
+package analyse.CXPSM.outcome;
 
-import analyse.XPSM.NameTargetDecoy;
+import analyse.CXPSM.outcome.PercolatorResult;
+import analyse.CXPSM.NameTargetDecoy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -4,9 +4,10 @@
  * and open the template in the editor.
  */
 
-package analyse.XPSM.prepareOutcome;
+package analyse.CXPSM.prepareOutcome;
 
-import analyse.XPSM.outcome.PLinkResult;
+import analyse.CXPSM.prepareOutcome.AnalyzePLink;
+import analyse.CXPSM.outcome.PLinkResult;
 import java.io.File;
 import java.util.ArrayList;
 import org.junit.After;

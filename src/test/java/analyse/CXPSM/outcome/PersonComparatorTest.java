@@ -4,8 +4,10 @@
  * and open the template in the editor.
  */
 
-package analyse.XPSM.outcome;
+package analyse.CXPSM.outcome;
 
+import analyse.CXPSM.outcome.PersonComparator;
+import analyse.CXPSM.outcome.KojakResult;
 import java.util.Comparator;
 import org.junit.After;
 import org.junit.AfterClass;

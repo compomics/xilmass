@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analyse.XPSM.prepareOutcome;
+package analyse.CXPSM.prepareOutcome;
 
-import analyse.XPSM.outcome.KojakResult;
-import analyse.XPSM.outcome.Outcome;
-import analyse.XPSM.outcome.XilmassResult;
+import analyse.CXPSM.prepareOutcome.AnalyzeOutcomes;
+import analyse.CXPSM.outcome.KojakResult;
+import analyse.CXPSM.outcome.Outcome;
+import analyse.CXPSM.outcome.XilmassResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;

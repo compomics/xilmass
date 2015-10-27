@@ -4,8 +4,9 @@
  * and open the template in the editor.
  */
 
-package analyse.XPSM.outcome;
+package analyse.CXPSM.outcome;
 
+import analyse.CXPSM.outcome.KojakResult;
 import com.compomics.util.protein.Protein;
 import java.io.File;
 import java.util.ArrayList;
