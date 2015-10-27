@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- *
+ * This abstract class holds information on cross-linker, fragmentation mode, list of theoretical ions (also theoretical peak information as intensity)
+ * 
  * @author Sule
  */
 public abstract class CrossLinking {
@@ -30,7 +31,6 @@ public abstract class CrossLinking {
     protected HashSet<CPeptideIon> theoretical_ions = new HashSet<CPeptideIon>();
     protected IonFactory fragmentFactory = IonFactory.getInstance();
     protected boolean is_monoisotopic_mass = true,
-            is_Branching, // true/false to create linkedPeptideFragmentIons with Branching/Attaching
             isMassCalculated = false;
     protected double intensity = 100,
             theoretical_xlinked_mass = 0;
@@ -54,10 +54,6 @@ public abstract class CrossLinking {
 
     public boolean isIs_monoisotopic_mass() {
         return is_monoisotopic_mass;
-    }
-
-    public boolean isIs_Branching() {
-        return is_Branching;
     }
 
     public boolean isIsMassCalculated() {
@@ -198,10 +194,9 @@ public abstract class CrossLinking {
     }
 
     /**
-     * To sort CrossLinking objects in a ascending order of theoretical
- mass
+     * To sort CrossLinking objects in a ascending order of theoretical mass
      */
-    public static final Comparator<CrossLinking> CPeptides_ASC_mass_order
+    public static final Comparator<CrossLinking> Crosslinking_xlinked_mass_ASC_order
             = new Comparator<CrossLinking>() {
                 @Override
                 public int compare(CrossLinking o1, CrossLinking o2) {
