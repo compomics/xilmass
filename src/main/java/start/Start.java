@@ -42,7 +42,7 @@ import scoringFunction.ScoreName;
 import start.lucene.LuceneIndexSearch;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 import theoretical.CrossLinkingType;
 import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
@@ -67,10 +67,11 @@ public class Start {
 
         LOGGER.info("Program starts! " + "\t");
         // STEP 1: DATABASE GENERATIONS! 
+        double version = 0.0;
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
                 inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
-                insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta",
+                insilicoContaminantDBName = "",
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                 monoLinkFile = cxDBName + "_monoLink.index",
@@ -90,6 +91,9 @@ public class Start {
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
                 scoring = ConfigHolder.getInstance().getString("scoring"),
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
+        if (!contaminantDBName.isEmpty()) {
+            insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
+        }
 
         // get Fragmenteation enum...
         FragmentationMode fragMode = null;
@@ -131,8 +135,7 @@ public class Start {
         // multithreading 
         ExecutorService excService = Executors.newFixedThreadPool(threadNum);
         // more cross linking option..;
-        boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("doesLinkToItself_InterPeptide"),
-                isBranching = ConfigHolder.getInstance().getBoolean("isBranching"),
+        boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("allowIntraPeptide"),
                 doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
                 isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
@@ -142,7 +145,8 @@ public class Start {
                 doesKeepIonWeights = true,
                 isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
                 doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("doesFindAllMatchedPeaks"),
-                isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked");
+                isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
+                hasIonWeights = ConfigHolder.getInstance().getBoolean("hasIonWeights");
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
@@ -186,10 +190,13 @@ public class Start {
             }
         }
         // here load db entries to memory for Lucene indexing search
-        File folder = new File(indexFile.getParentFile().getPath() + File.separator + "lucene");
+        File folder = new File(indexFile.getParentFile().getPath() + File.separator + "index");
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
         // Either the same settings but no CXDB found or not the same settings at all..
         HashMap<String, String> headers_sequences = new HashMap<String, String>();
-        if ((isSame && !doesCXDBExist) || !isSame || folder.listFiles().length == 0) {
+        if ((isSame && !doesCXDBExist) || !isSame || (folder.listFiles().length == 0)) {
             // Construct a cross linked peptide database and write an index file with masses...
             LOGGER.info("A CXDB IS NOT found or DIFFERENT DATABASE SETTINGS! A CXDB is going to be constructed..");
             CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
@@ -213,7 +220,7 @@ public class Start {
                 o.main(insilicoContaminantDBName, enzymeFileName, enzymeName, contaminantDBName, null, lowMass, highMass, null, misclevaged);
                 addContaminants(headers_sequences, insilicoContaminantDBName, 4, 25);
                 // delete the contaminant file
-                System.out.println(insilicoContaminantDBName);
+                LOGGER.debug(insilicoContaminantDBName);
                 File insilicoContaminantDB = new File(insilicoContaminantDBName);
                 insilicoContaminantDB.delete();
             }
@@ -231,7 +238,7 @@ public class Start {
                         headers_sequences, ptmFactory,
                         fixedModifications,
                         variableModifications,
-                        linker, fragMode, isBranching, maxModsPerPeptide);
+                        linker, fragMode, maxModsPerPeptide);
             }
             bw2.close();
             LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
@@ -257,7 +264,7 @@ public class Start {
                         headers_sequences, ptmFactory,
                         fixedModifications,
                         variableModifications,
-                        linker, fragMode, isBranching, maxModsPerPeptide);
+                        linker, fragMode, maxModsPerPeptide);
             }
             bw2.close();
         }
@@ -272,21 +279,21 @@ public class Start {
                     headers_sequences, ptmFactory,
                     fixedModifications,
                     variableModifications,
-                    fragMode, isBranching, isContrastLinkedAttachmentOn, maxModsPerPeptide);
+                    fragMode, isContrastLinkedAttachmentOn, maxModsPerPeptide);
             all_headers.addAll(tmp_headers);
             for (CrossLinker linker : linkers) {
                 tmp_headers = FASTACPDBLoader.generate_peptide_mass_index(bw2,
                         headers_sequences, ptmFactory,
                         fixedModifications,
                         variableModifications,
-                        linker, fragMode, isBranching, isContrastLinkedAttachmentOn, maxModsPerPeptide);
+                        linker, fragMode, isContrastLinkedAttachmentOn, maxModsPerPeptide);
                 all_headers.addAll(tmp_headers);
                 if (searcForAlsoMonoLink) {
 //                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2,
 //                            headers_sequences, ptmFactory,
 //                            fixedModifications,
 //                            variableModifications,
-//                            linker, fragMode, isBranching, maxModsPerPeptide);
+//                            linker, fragMode, maxModsPerPeptide);
 //                    all_headers.addAll(tmp_headers);
                 }
             }
@@ -301,7 +308,7 @@ public class Start {
             cF.delete();
         }
         // enable searching on indexed xlinked proteins...
-        LuceneIndexSearch search = new LuceneIndexSearch(all_headers, folder, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, crossLinkerName);
+        LuceneIndexSearch search = new LuceneIndexSearch(all_headers, folder, ptmFactory, fragMode, isContrastLinkedAttachmentOn, crossLinkerName);
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! (all MS2 spectra)
@@ -312,7 +319,7 @@ public class Start {
             if (mgf.getName().endsWith(".mgf")) {
                 // prepare percolator inputs
                 HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-                System.out.println(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                LOGGER.debug(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
                 File percolatorIntra = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt"),
                         percolatorInter = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
                 BufferedWriter bw_intra = new BufferedWriter(new FileWriter(percolatorIntra)),
@@ -322,12 +329,15 @@ public class Start {
 
                 // write results on output file for each mgf
                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmas" + ".txt"));
+                // write the version number
+                bw.write("Xilmass version " + version);
+                bw.newLine();
                 StringBuilder titleToWrite = prepareTitle(isPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
                 bw.write(titleToWrite + "\n");
                 // now check all spectra to collect all required calculations...
                 SpectrumFactory fct = SpectrumFactory.getInstance();
                 if (mgf.getName().endsWith("mgf")) {
-                    LOGGER.info("Scoring starts now!");
+                    LOGGER.info("Scoring starts now!" + " Spectra file=" + mgf.getName());
                     fct.addSpectra(mgf, new WaitingHandlerCLIImpl());
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
@@ -366,7 +376,7 @@ public class Start {
                                     for (Result r : info) {
                                         CrossLinkingType linkingType = r.getCp().getLinkingType();
                                         if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
-                                            String i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp());
+                                            String i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), hasIonWeights, ptmFactory);
                                             if (!percolatorInfo.contains(i)) {
                                                 percolatorInfo.add(i);
                                                 percolatorInfoResults.add(r);
@@ -469,7 +479,7 @@ public class Start {
         double from = from_to[0],
                 to = from_to[1];
 //        System.out.println(precMass + "\t" + precTol + "\t" + from + "\t" + to);
-        ArrayList<CrossLinkedPeptides> selectedCPeptides = search.getQuery(from, to);
+        ArrayList<CrossLinking> selectedCPeptides = search.getQuery(from, to);
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
@@ -506,9 +516,8 @@ public class Start {
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
-                isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
-                hasInterPeptide = ConfigHolder.getInstance().getString("hasInterPeptide"),
+                allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
@@ -534,8 +543,7 @@ public class Start {
         bw.write("fragModeName" + "\t" + fragModeName + "\n");
         bw.write("minLen" + "\t" + minLen + "\n");
         bw.write("maxLenCombined" + "\t" + maxLenCombined + "\n");
-        bw.write("isBranching" + "\t" + isBranching + "\n");
-        bw.write("hasInterPeptide" + "\t" + hasInterPeptide);
+        bw.write("allowIntraPeptide" + "\t" + allowIntraPeptide);
         bw.close();
     }
 
@@ -559,10 +567,9 @@ public class Start {
                 highMass = ConfigHolder.getInstance().getString("higherMass"),
                 variableModification = ConfigHolder.getInstance().getString("variableModification"),
                 fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
-                isBranching = ConfigHolder.getInstance().getString("isBranching"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
-                hasInterPeptide = ConfigHolder.getInstance().getString("hasInterPeptide"),
+                allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled");
         int control = 0;
         boolean isSame = false;
@@ -587,21 +594,21 @@ public class Start {
                 control++;
             } else if ((line.startsWith("fixedModification")) && (line.split("\t")[1].equals(fixedModification)) && line.split("\t").length == 1) {
                 control++;
-            } else if ((line.startsWith("variableModification")) && (line.split("\t")[1].equals(variableModification))) {
+            } else if ((line.startsWith("variableModification")) && line.split("\t").length > 1 && line.split("\t")[1].equals(variableModification)) {
+                control++;
+            } else if (line.split("\t").length == 1) {
                 control++;
             } else if ((line.startsWith("isLabeled")) && (line.split("\t")[1].equals(isLabeled))) {
                 control++;
             } else if ((line.startsWith("minLen")) && (line.split("\t")[1].equals(minLen))) {
                 control++;
             } else if ((line.startsWith("maxLenCombined")) && (line.split("\t")[1].equals(maxLenCombined))) {
-                control++;
-            } else if ((line.startsWith("isBranching")) && (line.split("\t")[1].equals(isBranching))) {
-                control++;
-            } else if ((line.startsWith("hasInterPeptide")) && (line.split("\t")[1].equals(hasInterPeptide))) {
+                control++;            
+            } else if ((line.startsWith("allowIntraPeptide")) && (line.split("\t")[1].equals(allowIntraPeptide))) {
                 control++;
             }
         }
-        if (control == 14) {
+        if (control == 13) {
             isSame = true;
         }
         return isSame;
@@ -679,8 +686,9 @@ public class Start {
                 // + "absMassDelta_ppm" + "\t"
                 + "CrossLinkerLabeling" + "\t"
                 + "lenPepA" + "\t" + "lenPepB" + "\t" + "sumLen" + "\t"
-                //                 + "ionFracA" + "\t" + "ionFracB" + "\t"
+                //                + "ionFracA" + "\t" + "ionFracB" + "\t"
                 + "lnNumSp" + "\t"
+                //                + "IonFracA" + "\t" + "IonFracB" + "\t"
                 + "Peptide" + "\t"
                 + "Protein";
         return (title);
@@ -741,10 +749,11 @@ public class Start {
                 + pepALen + "\t" + pepBLen + "\t" + sumLen + "\t"
                 //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
                 + res.getLnNumSpec() + "\t"
-                //                + "-." + cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory) + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
-                //                + cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory) + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part              
-                + "-." + cp.getPeptideA().getSequence() + "(" + linkerA + ")" + "--" // PeptideA Sequence
-                + cp.getPeptideB().getSequence() + "(" + linkerB + ")" + ".-" // PeptideBSequence part
+                //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
+                + "-." + cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory) + "(" + linkerA + ")" + "--" // PeptideA Sequence
+                + cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory) + "(" + linkerB + ")" + ".-" // PeptideBSequence part              
+                //                + "-." + cp.getPeptideA().getSequence() + "(" + linkerA + ")" + "--" // PeptideA Sequence
+                //                + cp.getPeptideB().getSequence() + "(" + linkerB + ")" + ".-" // PeptideBSequence part
                 + "\t"
                 + cp.getProteinA() + "-" + cp.getProteinB();
         return input;
@@ -752,7 +761,7 @@ public class Start {
 
     /**
      */
-    private static String getPercolatorInfoNoIDs(Result res, CPeptides c) throws IOException {
+    private static String getPercolatorInfoNoIDs(Result res, CPeptides c, boolean hasIonWeight, PTMFactory ptmFactory) throws IOException {
         String scn = res.getScanNum(),
                 labelInfo = "0";
         int label = -1,
@@ -788,10 +797,11 @@ public class Start {
                 + pepALen + "\t" + pepBLen + "\t" + sumLen + "\t"
                 //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
                 + res.getLnNumSpec() + "\t"
-                //                + "-." + cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory) + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
-                //                + cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory) + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part              
-                + "-." + cp.getPeptideA().getSequence() + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
-                + cp.getPeptideB().getSequence() + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part
+                //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
+                + "-." + cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory) + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
+                + cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory) + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part              
+                //                + "-." + cp.getPeptideA().getSequence() + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
+                //                + cp.getPeptideB().getSequence() + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part
                 + "\t"
                 + cp.getProteinA() + "-" + cp.getProteinB();
         return input;

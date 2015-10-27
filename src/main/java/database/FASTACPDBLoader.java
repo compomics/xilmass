@@ -43,14 +43,13 @@ public class FASTACPDBLoader {
      * @param ptmFactory
      * @param linker
      * @param fragMode
-     * @param isBranching
      * @param isContrastLinkedAttachmentOn
      * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
     public static HashMap<CPeptides, Double> readFiletoGetCPeptideTheoMass(File file, PTMFactory ptmFactory, CrossLinker linker,
-            FragmentationMode fragMode, boolean isBranching, boolean isContrastLinkedAttachmentOn)
+            FragmentationMode fragMode, boolean isContrastLinkedAttachmentOn)
             throws XmlPullParserException, IOException {
         HashMap<CPeptides, Double> cPeptides_Masses = new HashMap<CPeptides, Double>();
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -84,7 +83,7 @@ public class FASTACPDBLoader {
                 Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA),
                         peptideB = new Peptide(peptideBseq, ptms_peptideB);
                 // now generate peptide...
-                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isContrastLinkedAttachmentOn);
+                CPeptides cPeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isContrastLinkedAttachmentOn);
                 cPeptides_Masses.put(cPeptide, mass);
             }
         }
@@ -103,7 +102,6 @@ public class FASTACPDBLoader {
      * @param variableModifications is a list of given variable modifications
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
-     * @param isBranching true:is branching/false:attaching
      * @param isContrastLinkedAttachmentOn
      * @param max_mods_per_peptide
      * @return
@@ -116,7 +114,6 @@ public class FASTACPDBLoader {
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
-            boolean isBranching,
             boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
 
@@ -162,7 +159,7 @@ public class FASTACPDBLoader {
             for (Peptide pA : peptideAs) {
                 for (Peptide pB : peptideBs) {
                     CPeptides cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA,
-                            linkerPosPeptideB, fragMode, isBranching, isContrastLinkedAttachmentOn);
+                            linkerPosPeptideB, fragMode, isContrastLinkedAttachmentOn);
                     cPeptides.add(cPeptide);
                 }
             }
@@ -184,7 +181,6 @@ public class FASTACPDBLoader {
      * @param variableModifications is a list of given variable modifications
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
-     * @param isBranching true:is branching/false:attaching
      * @param isContrastLinkedAttachmentOn
      * @param max_mods_per_peptide
      * @return
@@ -198,7 +194,7 @@ public class FASTACPDBLoader {
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
-            boolean isBranching, boolean isContrastLinkedAttachmentOn,
+            boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
         boolean isCPeptidesObjConstructed = false;
@@ -250,7 +246,7 @@ public class FASTACPDBLoader {
                     for (Peptide pB : peptideBs) {
                         if (!isCPeptidesObjConstructed) {
                             cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB,
-                                    fragMode, isBranching, isContrastLinkedAttachmentOn);
+                                    fragMode, isContrastLinkedAttachmentOn);
                             String labelInfo = "lightLabeled";
                             if (cPeptide.getLinker().isIsLabeled()) {
                                 labelInfo = "heavyLabeled";
@@ -294,7 +290,7 @@ public class FASTACPDBLoader {
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
             FragmentationMode fragMode,
-            boolean isBranching, boolean isContrastLinkedAttachmentOn,
+            boolean isContrastLinkedAttachmentOn,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
         // This part for Contaminant sequence
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
@@ -364,8 +360,8 @@ public class FASTACPDBLoader {
      * @param variableModifications is a list of given variable modifications
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
-     * @param isBranching true:is branching/false:attaching
      * @param max_mods_per_peptide
+     * @return 
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -375,7 +371,7 @@ public class FASTACPDBLoader {
             PTMFactory ptmFactory,
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
-            CrossLinker linker, FragmentationMode fragMode, boolean isBranching,
+            CrossLinker linker, FragmentationMode fragMode,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
         HashSet<String> headers = new HashSet<String>();
         boolean isMonoLinkedPeptideObjConstructed = false;
@@ -426,7 +422,7 @@ public class FASTACPDBLoader {
                 // fill all monolinked peptides here...
                 for (Peptide pA : peptideAs) {
                     if (!isMonoLinkedPeptideObjConstructed) {
-                        mPeptides = new MonoLinkedPeptides(pA, proteinA.toString(), linkerPosPeptideA, linker, fragMode, isBranching);
+                        mPeptides = new MonoLinkedPeptides(pA, proteinA.toString(), linkerPosPeptideA, linker, fragMode);
                         mass = mPeptides.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
@@ -451,7 +447,7 @@ public class FASTACPDBLoader {
                 for (Peptide pB : peptideBs) {
                     if (!isMonoLinkedPeptideObjConstructed) {
                         isMonoLinkedPeptideObjConstructed = true;
-                        mPeptides = new MonoLinkedPeptides(pB, proteinB.toString(), linkerPosPeptideB, linker, fragMode, isBranching);
+                        mPeptides = new MonoLinkedPeptides(pB, proteinB.toString(), linkerPosPeptideB, linker, fragMode);
                         mass = mPeptides.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);

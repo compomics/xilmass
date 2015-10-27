@@ -25,7 +25,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import start.GetPTMs;
 import theoretical.CPeptides;
 import theoretical.Contaminant;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 
@@ -44,28 +44,24 @@ public class LuceneIndexSearch {
     private CPeptideSearch cpSearch; // A searching class to run queries
     private PTMFactory ptmFactory;
     private FragmentationMode fragMode;
-    private boolean isBranching,
-            isContrastLinkedAttachmentOn;
+    private boolean isContrastLinkedAttachmentOn;
     private CrossLinker heavyLinker,
             lightLinker;
 
     /**
      *
      * @param headers
-     * @param indexFile a crosslinked peptide-mass index file an index file with
-     * given protein mass, sequences to construct CPeptides objects
      * @param ptmFactory
      * @param linkerName - just name of linker to create both heavy and light
      * labeled versions
      * @param fragMode
      * @param folder
-     * @param isBranching
      * @param isContrastLinkedAttachmentOn
      * @throws IOException
      * @throws Exception
      */
     public LuceneIndexSearch(HashSet<StringBuilder> headers, File folder, PTMFactory ptmFactory, FragmentationMode fragMode,
-            boolean isBranching, boolean isContrastLinkedAttachmentOn, String linkerName) throws IOException, Exception {
+            boolean isContrastLinkedAttachmentOn, String linkerName) throws IOException, Exception {
         // check if index files exist on given folder
         boolean reader = DirectoryReader.indexExists(FSDirectory.open(folder));
         // if it is not, then write index files
@@ -76,7 +72,6 @@ public class LuceneIndexSearch {
         cpSearch = new CPeptideSearch(folder);
         this.ptmFactory = ptmFactory;
         this.fragMode = fragMode;
-        this.isBranching = isBranching;
         this.isContrastLinkedAttachmentOn = isContrastLinkedAttachmentOn;
         heavyLinker = GetCrossLinker.getCrossLinker(linkerName, true);
         lightLinker = GetCrossLinker.getCrossLinker(linkerName, false);
@@ -89,8 +84,8 @@ public class LuceneIndexSearch {
     // range search
     //mod_date:[20020101 TO 20030101] - must be small and bigger
     /**
-     * Return selected of CrossLinkedPeptides within a given mass range
-     * (inclusive lower and upper mass)
+     * Return selected of CrossLinking within a given mass range (inclusive
+     * lower and upper mass)
      *
      * @param from smaller value
      * @param to bigger value (must be)
@@ -99,8 +94,8 @@ public class LuceneIndexSearch {
      * @throws ParseException
      * @throws XmlPullParserException
      */
-    public ArrayList<CrossLinkedPeptides> getQuery(double from, double to) throws IOException, ParseException, XmlPullParserException, IOException {
-        ArrayList<CrossLinkedPeptides> selected = new ArrayList<CrossLinkedPeptides>();
+    public ArrayList<CrossLinking> getQuery(double from, double to) throws IOException, ParseException, XmlPullParserException, IOException {
+        ArrayList<CrossLinking> selected = new ArrayList<CrossLinking>();
         String query = "mass:[" + from + " TO " + to + "]";
         int topSearch = 100; // how many topX number of query needs to be called
         TopDocs topDocs = cpSearch.performSearch(query, topSearch);
@@ -115,7 +110,7 @@ public class LuceneIndexSearch {
         for (ScoreDoc re : res) {
             Document doc = cpSearch.getDocument(re.doc);
             // to select only cross-linked objects
-            CrossLinkedPeptides cp = getCPeptides(doc);
+            CrossLinking cp = getCPeptides(doc);
             if (cp instanceof CPeptides) {
                 selected.add(cp);
             }
@@ -134,14 +129,13 @@ public class LuceneIndexSearch {
      * @param ptmFactory
      * @param linker
      * @param fragMode
-     * @param isBranching
      * @param isContrastLinkedAttachmentOn
      * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private CrossLinkedPeptides getCPeptides(Document doc) throws XmlPullParserException, IOException {
-        CrossLinkedPeptides selected = null;
+    private CrossLinking getCPeptides(Document doc) throws XmlPullParserException, IOException {
+        CrossLinking selected = null;
         CrossLinker selectedLinker = lightLinker;
         String proteinA = doc.get("proteinA"),
                 proteinB = doc.get("proteinB"), // proteinB name
@@ -181,10 +175,10 @@ public class LuceneIndexSearch {
                     peptideB = new Peptide(peptideBseq, ptms_peptideB);
             if (peptideA.getSequence().length() > peptideB.getSequence().length()) {
                 // now generate peptide...
-                CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, selectedLinker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isBranching, isContrastLinkedAttachmentOn);
+                CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, selectedLinker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isContrastLinkedAttachmentOn);
                 selected = tmpCpeptide;
             } else {
-                CPeptides tmpCpeptide = new CPeptides(proteinB, proteinA, peptideB, peptideA, selectedLinker, linkerPosPeptideB, linkerPosPeptideA, fragMode, isBranching, isContrastLinkedAttachmentOn);
+                CPeptides tmpCpeptide = new CPeptides(proteinB, proteinA, peptideB, peptideA, selectedLinker, linkerPosPeptideB, linkerPosPeptideA, fragMode, isContrastLinkedAttachmentOn);
                 selected = tmpCpeptide;
             }
         } // This means only monolinked peptide...    
@@ -198,7 +192,7 @@ public class LuceneIndexSearch {
             ptms_peptideA.addAll(variablePTM_peptideA);
             // First peptideA
             Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA);
-            MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, selectedLinker, fragMode, isBranching);
+            MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, selectedLinker, fragMode);
             selected = mP;
         } else if (proteinA.startsWith("contaminant")) {
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
@@ -209,7 +203,7 @@ public class LuceneIndexSearch {
             ptms_peptideA.addAll(variablePTM_peptideA);
             // First peptideA
             Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA);
-            Contaminant mP = new Contaminant(peptideA, proteinA, fragMode, isBranching);
+            Contaminant mP = new Contaminant(peptideA, proteinA, fragMode);
             selected = mP;
         }
         return selected;
@@ -225,12 +219,11 @@ public class LuceneIndexSearch {
         PTMFactory ptmFactory = PTMFactory.getInstance();
         ptmFactory.importModifications(modsFile, false);
         FragmentationMode fragMode = FragmentationMode.HCD;
-        boolean isBranching = false,
-                isContrastLinkedAttachmentOn = false;
+        boolean isContrastLinkedAttachmentOn = false;
 
-//        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isBranching, isContrastLinkedAttachmentOn, "DSS");
+//        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isContrastLinkedAttachmentOn, "DSS");
 //        ArrayList<CrossLinkedPeptides> query = o.getQuery(1500, 1700);
-//        for (CrossLinkedPeptides q : query) {
+//        for (CrossLinking q : query) {
 //            System.out.println(q.toPrint());
 //        }
     }
