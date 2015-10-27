@@ -21,7 +21,7 @@ import start.CalculatePrecursorMass;
 import theoretical.CPeptideIon;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 
 /**
  *
@@ -34,7 +34,7 @@ public class MatchAndScore {
 
     private MSnSpectrum expMS2; // experimental MS2 spectrum
     private HashSet<Peak> matchedPeaks = new HashSet<Peak>(); // matched peaks on on an experimental MS2 spectrum with the certain fragment tolerance against theoretical spectrum
-    private CrossLinkedPeptides cPeptides; // cross linked peptide object (containing peptideA, peptideB and crosslinker)
+    private CrossLinking cPeptides; // cross linked peptide object (containing peptideA, peptideB and crosslinker)
     private HashSet<CPeptideIon> theoXLMS2ions = new HashSet<CPeptideIon>(); // theoretical crosslinked ions derived from a cross linked peptide (they have an attribute called mass)
     private HashSet<CPeptidePeak> theoXLPeaks = new HashSet<CPeptidePeak>(), // theoretical crosslinked peaks derived from a cross linked peptide (they have an attribute called MZ, not MASS)
             // TODO: Need to see the performance in terms of object generation!
@@ -64,7 +64,7 @@ public class MatchAndScore {
             isPPM = false;
     /* Constructor */
 
-    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinkedPeptides cPeptides,
+    public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinking cPeptides,
             double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum,
             double massWindow, boolean doesFindAllMatchedPeaks, boolean isPPM) {
         this.expMS2 = expMS2;
@@ -164,7 +164,7 @@ public class MatchAndScore {
      *
      * @return
      */
-    public CrossLinkedPeptides getCPeptides() {
+    public CrossLinking getCPeptides() {
         return cPeptides;
     }
 
