@@ -72,7 +72,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
                 peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false, false);
+        CPeptides o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();
 
         File test_theoSpec = new File("Data/Test/theoretical/MLSDAK_AIKNK_by_theo.txt");
@@ -98,11 +98,6 @@ public class CPeptidesTest extends TestCase {
         Collections.sort(list_test_ions, Ion_ASC_mass_order);
         Collections.sort(list_from_given_file);
 
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println(list.get(i).get_theoretical_mz(1) + "\t" + list.get(i).getName());
-//            assertEquals(list_from_given_file.get(i), list.get(i).getMass(), 0.02);
-        }
-
         assertEquals(36, list.size());
         // Now check...
         for (int i = 0; i < list_test_ions.size(); i++) {
@@ -116,7 +111,7 @@ public class CPeptidesTest extends TestCase {
         // PepA=AILVNFKAR	 PepB=KMRPEVR	 at 6	0
         peptideA = new Peptide("AILVNFKAR", parent_proteins_test, modifications_test);
         peptideB = new Peptide("KMRPEVR", parent_proteins_test, modifications_test);
-        o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false, false);
+        o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false);
         result = o.getTheoretical_ions();
 //        assertEquals(60, result.size());
 
@@ -143,13 +138,15 @@ public class CPeptidesTest extends TestCase {
     @Test
     public void testGetTheoretical_mass() {
         System.out.println("getTheoretical_mass");
-        ArrayList<String> parent_proteins_test = new ArrayList<String>();
-        parent_proteins_test.add("Pro1");
+        ArrayList<String> parent_proteins_test = new ArrayList<String>(),
+                parent_proteins_test_2 = new ArrayList<String>();
+        parent_proteins_test.add("Pro1(5-9");
+        parent_proteins_test_2.add("Pro1(12-15)");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
         Peptide peptideA = new Peptide("MLSDA", parent_proteins_test, modifications_test),
                 peptideB = new Peptide("AIKN", parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true, false);
+        CPeptides instance = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         double expResult = 535.2385 + 444.2769 + 138.0681000;
         double result = instance.getTheoretical_xlinked_mass();
@@ -165,12 +162,12 @@ public class CPeptidesTest extends TestCase {
         String peptideAstr = "MLSDAK",
                 peptideBstr = "AIKNK";
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
-        parent_proteins_test.add("Pro1");
+        parent_proteins_test.add("Pro1(20-25)");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
         Peptide peptideA = new Peptide(peptideAstr, parent_proteins_test, modifications_test),
                 peptideB = new Peptide(peptideBstr, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, true, false);
+        CPeptides instance = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         // First get N-termini ones!!
         HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
@@ -179,7 +176,7 @@ public class CPeptidesTest extends TestCase {
         double mass_shift = 572.365;
         String lepName = "pepA_b_";
         CPeptideIonType cPepIonType = CPeptideIonType.Backbone_PepA;
-        HashSet<CPeptideIon> backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        HashSet<CPeptideIon> backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
         ArrayList<CPeptideIon> backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, backbone.size()); // 5-N-terminis
@@ -194,7 +191,7 @@ public class CPeptidesTest extends TestCase {
         lepName = "pepB_b_";
         mass_shift = 663.3262;
         cPepIonType = CPeptideIonType.Backbone_PepB;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(4, backbone.size()); // 4-N terminis
@@ -211,7 +208,7 @@ public class CPeptidesTest extends TestCase {
         mass_shift = 572.365;
         lepName = "pepA_y_";
         cPepIonType = CPeptideIonType.Backbone_PepA;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, backbone.size()); // 5-N-terminis
@@ -227,7 +224,7 @@ public class CPeptidesTest extends TestCase {
         lepName = "pepB_y_";
         mass_shift = 663.3262;
         cPepIonType = CPeptideIonType.Backbone_PepB;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(3, backbone.size()); // 5-N-termini
@@ -235,6 +232,14 @@ public class CPeptidesTest extends TestCase {
         assertEquals(260.1557, backbone_al.get(0).getMass(), 0.05);
         assertEquals(388.2507, backbone_al.get(1).getMass(), 0.05);
         assertEquals(1302.729, backbone_al.get(2).getMass(), 0.05);
+
+        cPepIonType = CPeptideIonType.Backbone_PepB;
+        ion_type = PeptideFragmentIon.A_ION;
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
+        backbone_al = new ArrayList<CPeptideIon>(backbone);
+        Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
+        assertEquals(1, backbone.size()); // 4-N terminis
+        assertEquals(156.13, backbone_al.get(0).getMass(), 0.05);
     }
 
     /**
@@ -250,7 +255,7 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideAstr, modifications_test),
                 peptideB = new Peptide(peptideBstr, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false, false);
+        CPeptides instance = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         // First get N-termini one with LinkedPeptideA!!
         int fragmentIonType = PeptideFragmentIon.B_ION;
@@ -260,7 +265,7 @@ public class CPeptidesTest extends TestCase {
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
-        assertEquals(602.26, result.get(0).getMass(), 0.05);
+        assertEquals(602.26 - 18, result.get(0).getMass(), 0.05);
         assertEquals(655.30, result.get(1).getMass(), 0.05);
         assertEquals(768.38, result.get(2).getMass(), 0.05);
         assertEquals(896.482, result.get(3).getMass(), 0.05);
@@ -272,7 +277,7 @@ public class CPeptidesTest extends TestCase {
         result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
-        assertEquals(468.3, result.get(0).getMass(), 0.05);
+        assertEquals(468.3 - 18, result.get(0).getMass(), 0.05);
         assertEquals(581.33, result.get(1).getMass(), 0.05);
         assertEquals(694.42, result.get(2).getMass(), 0.05);
         assertEquals(781.45, result.get(3).getMass(), 0.05);
@@ -286,7 +291,7 @@ public class CPeptidesTest extends TestCase {
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
-        assertEquals(488.25, result.get(0).getMass(), 0.05); //mono-linked
+        assertEquals(470.23, result.get(0).getMass(), 0.05); //linked attached
         assertEquals(616.3, result.get(1).getMass(), 0.05);
         assertEquals(730.4, result.get(2).getMass(), 0.05);
         assertEquals(858.49, result.get(3).getMass(), 0.05);
@@ -297,7 +302,7 @@ public class CPeptidesTest extends TestCase {
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
-        assertEquals(544.32, result.get(0).getMass(), 0.05); //mono-linked
+        assertEquals(526.31, result.get(0).getMass(), 0.05); //linker attached
         assertEquals(672.43, result.get(1).getMass(), 0.05);
         assertEquals(743.46, result.get(2).getMass(), 0.05);
 //        assertEquals(858.49, result.get(3).getMass(), 0.05);
@@ -322,7 +327,6 @@ public class CPeptidesTest extends TestCase {
 //        theoreticPTMs.add("pyro-cmc");
 //        theoreticPTMs.add("oxidation of m");
         ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
-
 //        theoreticPTMs = new ArrayList<String>();
 //        theoreticPTMs.add("propionamide c");
 //        theoreticPTMs.add("oxidation of m");
@@ -336,11 +340,10 @@ public class CPeptidesTest extends TestCase {
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
         Peptide peptideB = new Peptide("AIKNK", modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides instance = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false, false);
+        CPeptides instance = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
         HashMap<Integer, ArrayList<Ion>> product_ions = IonFactory.getInstance().getFragmentIons(peptideA).get(0);
         assertEquals(7, product_ions.get(0).size());
-
     }
 
     /**
@@ -400,9 +403,8 @@ public class CPeptidesTest extends TestCase {
         Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
                 peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
         CrossLinker linker = new DSS();
-        CPeptides o = new CPeptides("ProteinA", "ProteinB", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false, false);
+        CPeptides o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();
-
     }
 
     public class TestIon {
