@@ -7,8 +7,10 @@ package theoretical;
 
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
+import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
 import java.text.DecimalFormat;
@@ -87,11 +89,16 @@ public abstract class CrossLinkedPeptides {
      * @return NI IONS!
      */
     public HashSet<CPeptideIon> prepareBackbone(HashMap<Integer, ArrayList<Ion>> product_ions,
-            int ion_type, int linked_index, double mass_shift, String pepName, CPeptideIonType cPepIonType) {
+            int ion_type, int linked_index, double mass_shift, String pepName, CPeptideIonType cPepIonType, boolean isA2Required) {
         HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
         String abbrIonType = LinkedPeptideFragmentIon.getAbbrIonType(ion_type);
         String rootName = pepName + "_" + abbrIonType;
         ArrayList<Ion> tmp_ions = product_ions.get(ion_type);
+        if (isA2Required && ion_type == PeptideFragmentIon.A_ION) {
+            Ion a2 = tmp_ions.get(1);
+            tmp_ions = new ArrayList<Ion>();
+            tmp_ions.add(a2);
+        }
         for (int index = 0; index < tmp_ions.size(); index++) {
             Ion ion = tmp_ions.get(index);
             double ion_mass = ion.getTheoreticMass();
@@ -103,6 +110,9 @@ public abstract class CrossLinkedPeptides {
 
             }
             int index_to_show = index + 1;
+            if (isA2Required && ion_type == PeptideFragmentIon.A_ION) {
+                index_to_show++;
+            }
             String ionName = rootName + index_to_show;
             boolean isFound = false;
             // check if there is an ion with the same mass already...Because there are two N-terminis and C-terminis!
@@ -157,16 +167,26 @@ public abstract class CrossLinkedPeptides {
             boolean modified = false;
             for (int j = 0; j < modificationMatches.size() && !modified; j++) {
                 ModificationMatch m = modificationMatches.get(j);
-                if (m.getModificationSite() == (i + 1)) {                   
+                if (m.getModificationSite() == (i + 1)) {
                     String modName = "";
                     if (m.isVariable()) {
-                         modified = true;
-                        double mass = ptmFactory.getPTM(m.getTheoreticPtm()).getMass();
-                        String format = df.format(mass);
-                        modName = "[" + format + "]";
+                        modified = true;
+                        int type = ptmFactory.getPTM(m.getTheoreticPtm()).getType();
+                        // type=1 is n-term type=0 is aminoacid - If type is amino-acid PTM..
+                        if (type == PTM.MODAA) {
+                            double mass = ptmFactory.getPTM(m.getTheoreticPtm()).getMass();
+                            String format = df.format(mass);
+                            modName = "[" + format + "]";
+                            alteredPeptideSequence.append(peptide.getSequence().charAt(i));
+                            alteredPeptideSequence.append(modName);
+                        } else if (type == PTM.MODCAA || type == PTM.MODCPAA || type == PTM.MODNAA || type == PTM.MODNPAA) {
+                            System.err.print("Do not know how to write this modifications!");
+                        }
+                    } else {
+                        modified = true;
+                        // type=1 is n-term type=0 is aminoacid - If type is amino-acid PTM..
+                        alteredPeptideSequence.append(peptide.getSequence().charAt(i));
                     }
-                    alteredPeptideSequence.append(peptide.getSequence().charAt(i));
-                    alteredPeptideSequence.append(modName);
                 }
             }
             if (!modified) {
