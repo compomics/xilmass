@@ -255,7 +255,8 @@ public class CPeptides extends CrossLinkedPeptides {
             if (tmp_ion_type == PeptideFragmentIon.X_ION || tmp_ion_type == PeptideFragmentIon.Y_ION || tmp_ion_type == PeptideFragmentIon.Z_ION) {
                 index = pep_length - linked_index - 1;
             }
-            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType));
+            // true= only a2-b2 pair for HCD..
+            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType, true));
         }
         return backbones;
     }
@@ -369,13 +370,25 @@ public class CPeptides extends CrossLinkedPeptides {
             linker_position_of_linkedPeptide = linkedPepLength - linker_position_of_linkedPeptide - 1;
         }
         Ion linkedIon = null;
+
         // a control is needed, to check if C-termini ion is on the first aminoacid (because none of C-termini ions is generated for the first aa
-        if (!isCtermini || (isCtermini && linker_location_of_product_ions < attachedToPepLength - 1)) {
+        if (fragmentIonType != PeptideFragmentIon.A_ION && (!isCtermini || (isCtermini && linker_location_of_product_ions < attachedToPepLength - 1))) {
             linkedIon = peptide_backbone_ions.get(linker_location_of_product_ions);
             // first add monolink one
             double linker_attached_ion_mass = linkedIon.getTheoreticMass() + linker.getMassShift_Type2();
             int index_to_show_for_linked = linker_position_of_linkedPeptide + 1,
                     index_to_show_for_backbone = linker_location_of_product_ions + 1;
+            String name = pepName + "_" + abbrIonType + index_to_show_for_backbone + "_" + lepName + "_linker_" + abbrIonType + index_to_show_for_linked;
+            CPeptideIon cPepIonMonoLink = new CPeptideIon(intensity, linker_attached_ion_mass, cPeptideIonType, fragmentIonType, name);
+            linked_ions.add(cPepIonMonoLink);
+            // It is possible that a peptide is linked to another one by the first amino acid but in C-termini ions this linked peptide is not calculated...
+            // By CXLinked DB construction, it is impossible to linked a peptide on the last aminoacid..
+        } else if (fragmentIonType == PeptideFragmentIon.A_ION && linker_location_of_product_ions == 1 && linker_position_of_linkedPeptide == 1) {
+            linkedIon = peptide_backbone_ions.get(0);
+            // first add monolink one
+            double linker_attached_ion_mass = linkedIon.getTheoreticMass() + linker.getMassShift_Type2();
+            int index_to_show_for_linked = 2,
+                    index_to_show_for_backbone = 2;
             String name = pepName + "_" + abbrIonType + index_to_show_for_backbone + "_" + lepName + "_linker_" + abbrIonType + index_to_show_for_linked;
             CPeptideIon cPepIonMonoLink = new CPeptideIon(intensity, linker_attached_ion_mass, cPeptideIonType, fragmentIonType, name);
             linked_ions.add(cPepIonMonoLink);
@@ -406,27 +419,29 @@ public class CPeptides extends CrossLinkedPeptides {
         // now generate all cPeptideIon objects..
         int index_to_show_for_backbone = linker_location_of_product_ions + 1;
         String rootName = pepName + "_" + abbrIonType + index_to_show_for_backbone;
-        //lepName + "_" + abbrIonType;
-        for (int i = 0; i < selectedTerminiIons.size(); i++) {
-            CPeptideIon tmp_ion = selectedTerminiIons.get(i);
-            int reader_index = i + 1;
-            String name = rootName + "_" + lepName + "_" + abbrIonType + reader_index;
-            tmp_ion.setName(name);
-            double tmp_mass = linkedIon.getTheoreticMass() + tmp_ion.getMass() + linker.getMassShift_Type2();
-            tmp_ion.setMass(tmp_mass);
-            // select to be removed one..
-            if ((isLinkedPeptideA && i == linker_position_on_peptideA && isNtermini)
-                    || (isLinkedPeptideA && i == (peptideA.getSequence().length() - linker_position_on_peptideA - 1) && !isNtermini)) {
-                // do nothing......
-            } else if (((!isLinkedPeptideA) && i == linker_position_on_peptideB && isNtermini)
-                    || ((!isLinkedPeptideA) && i == (peptideB.getSequence().length() - linker_position_on_peptideB - 1) && !isNtermini)) {
-                // update a name...
-                String addName = "_pepB_" + abbrIonType + reader_index + "_lepA_" + abbrIonType + index_to_show_for_backbone;
-                name = name + addName;
+        if ((fragmentIonType == PeptideFragmentIon.A_ION && linker_location_of_product_ions == 1 && linker_position_of_linkedPeptide == 1) || fragmentIonType != PeptideFragmentIon.A_ION) {
+            //lepName + "_" + abbrIonType;
+            for (int i = 0; i < selectedTerminiIons.size(); i++) {
+                CPeptideIon tmp_ion = selectedTerminiIons.get(i);
+                int reader_index = i + 1;
+                String name = rootName + "_" + lepName + "_" + abbrIonType + reader_index;
                 tmp_ion.setName(name);
-                linked_ions.add(tmp_ion);
-            } else {
-                linked_ions.add(tmp_ion);
+                double tmp_mass = linkedIon.getTheoreticMass() + tmp_ion.getMass() + linker.getMassShift_Type2();
+                tmp_ion.setMass(tmp_mass);
+                // select to be removed one..
+                if ((isLinkedPeptideA && i == linker_position_on_peptideA && isNtermini)
+                        || (isLinkedPeptideA && i == (peptideA.getSequence().length() - linker_position_on_peptideA - 1) && !isNtermini)) {
+                    // do nothing......
+                } else if (((!isLinkedPeptideA) && i == linker_position_on_peptideB && isNtermini)
+                        || ((!isLinkedPeptideA) && i == (peptideB.getSequence().length() - linker_position_on_peptideB - 1) && !isNtermini)) {
+                    // update a name...
+                    String addName = "_pepB_" + abbrIonType + reader_index + "_lepA_" + abbrIonType + index_to_show_for_backbone;
+                    name = name + addName;
+                    tmp_ion.setName(name);
+                    linked_ions.add(tmp_ion);
+                } else {
+                    linked_ions.add(tmp_ion);
+                }
             }
         }
         return linked_ions;
@@ -449,7 +464,11 @@ public class CPeptides extends CrossLinkedPeptides {
     private ArrayList<Ion> get_product_ions(HashMap<Integer, ArrayList<Ion>> fragment_ions, int fragmentIonType) {
         ArrayList<Ion> ions = new ArrayList<Ion>();
         ArrayList<Ion> tmp_ions = fragment_ions.get(fragmentIonType);
-        ions.addAll(tmp_ions);
+        if (fragmentIonType == PeptideFragmentIon.A_ION) {
+            ions.add(tmp_ions.get(1));
+        } else {
+            ions.addAll(tmp_ions);
+        }
         return ions;
     }
 
