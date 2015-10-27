@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
-import start.ShuffledDecoy;
 
 /**
  *
@@ -59,8 +58,7 @@ public class CreateDatabase {
     private File inputProteinFile,
             inSilicoPeptideDB;
     private boolean does_a_peptide_link_to_itself = false, // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
-            has_shuffled_decoy_as_concatenated,
-            isInvertedPeptides;
+            has_shuffled_decoy_as_concatenated;
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
@@ -96,7 +94,6 @@ public class CreateDatabase {
         this.minLen = minLen;
         this.maxLen_for_combined = maxLen_for_combined;
         this.does_a_peptide_link_to_itself = does_link_to_itself;
-        this.isInvertedPeptides = isInvertedPeptides;
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
         this.has_shuffled_decoy_as_concatenated = has_shuffled_decoy_as_concatenated;
     }
@@ -208,11 +205,7 @@ public class CreateDatabase {
      */
     public void construct() throws UnknownDBFormatException, IOException, Exception {
         digest_insilico();
-        // read in silico digested pepti file and generate cross linked peptides
-        // first generate shuffles
-        if (has_shuffled_decoy_as_concatenated) {
-            shuffle();
-        }
+        // read in silico digested pepti file and generate cross linked peptides       
         // now generate cross linked ones..
         LOGGER.info("create_crossLinkedPeptides");
         create_crossLinkedPeptides();
@@ -429,48 +422,6 @@ public class CreateDatabase {
                 LOGGER.info("In silico digestion is finished after " + ((end - start) / 1000) + " seconds.");
             }
         }
-    }
-
-    /**
-     * After doing in silico digestion, this method generates all possible
-     * cross-linked peptides based on given criteria
-     *
-     * Make sure that this part was actually created via
-     *
-     * @throws IOException
-     * @throws Exception
-     */
-    private void shuffle() throws IOException, Exception {
-        DBLoader loader = DBLoaderLoader.loadDB(inSilicoPeptideDB);
-        // Use randomizing class from DBToolKit!
-        ShuffleDBThread sdt = new ShuffleDBThread(inSilicoPeptideDB);
-        sdt.shuffle();
-
-        Protein protein = null;
-        ShuffledDecoy r = null;
-        proteinaccessionAndshuffled = new HashMap<String, String>();
-        // get a crossLinkerName object        
-        while ((protein = loader.nextProtein()) != null) {
-            String sequence = protein.getSequence().getSequence();
-            while ((protein = loader.nextProtein()) != null) {
-                String tmpStartAccession = protein.getHeader().getAccession(),
-                        startSequence = protein.getSequence().getSequence();
-                int iStart_StartProtein = protein.getHeader().getStartLocation(),
-                        iEnd_StartProtein = protein.getHeader().getEndLocation();
-                String header_to_put = tmpStartAccession.replace(" ", "") + "(" + iStart_StartProtein + "_" + iEnd_StartProtein + ")";
-
-                // check the first condition
-                if (proteinaccessionAndshuffled.isEmpty()) {
-                    r = new ShuffledDecoy(sequence);
-                    proteinaccessionAndshuffled.put(header_to_put, r.getShuffled().toString());
-                } else {
-                    r.setTarget(sequence);
-                    r.getShuffled();
-                    proteinaccessionAndshuffled.put(header_to_put, r.getShuffled().toString());
-                }
-            }
-        }
-        LOGGER.info("Shuffles for each sequence were generated!" + proteinaccessionAndshuffled.size());
     }
 
     /**
