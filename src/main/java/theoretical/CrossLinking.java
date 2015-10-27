@@ -23,7 +23,7 @@ import java.util.HashSet;
  *
  * @author Sule
  */
-public abstract class CrossLinkedPeptides {
+public abstract class CrossLinking {
 
     protected CrossLinker linker;
     protected FragmentationMode fragmentation_mode;
@@ -85,6 +85,7 @@ public abstract class CrossLinkedPeptides {
      * @param mass_shift
      * @param pepName
      * @param cPepIonType
+     * @param isA2Required true: a2 ion is introduced, false: only b and y ions for HCD
      *
      * @return NI IONS!
      */
@@ -197,13 +198,13 @@ public abstract class CrossLinkedPeptides {
     }
 
     /**
-     * To sort CrossLinkedPeptides objects in a ascending order of theoretical
-     * mass
+     * To sort CrossLinking objects in a ascending order of theoretical
+ mass
      */
-    public static final Comparator<CrossLinkedPeptides> CPeptides_ASC_mass_order
-            = new Comparator<CrossLinkedPeptides>() {
+    public static final Comparator<CrossLinking> CPeptides_ASC_mass_order
+            = new Comparator<CrossLinking>() {
                 @Override
-                public int compare(CrossLinkedPeptides o1, CrossLinkedPeptides o2) {
+                public int compare(CrossLinking o1, CrossLinking o2) {
                     return o1.getTheoretical_xlinked_mass() < o2.getTheoretical_xlinked_mass() ? -1 : o1.getTheoretical_xlinked_mass() == o2.getTheoretical_xlinked_mass() ? 0 : 1;
                 }
             };
