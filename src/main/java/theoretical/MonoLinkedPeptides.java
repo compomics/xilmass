@@ -20,7 +20,7 @@ import java.util.HashSet;
  *
  * @author Sule
  */
-public class MonoLinkedPeptides extends CrossLinkedPeptides {
+public class MonoLinkedPeptides extends CrossLinking {
 
     private Peptide peptide;
     private String protein;
@@ -30,14 +30,13 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
     public MonoLinkedPeptides(Peptide peptide, String protein,
             int linkerPosition,
             CrossLinker linker,
-            FragmentationMode fragmentation_mode, boolean is_Branching_Approach) {
+            FragmentationMode fragmentation_mode) {
         this.protein = protein;
         this.peptide = peptide;
         super.linker = linker;
         this.linker_position = linkerPosition;
         this.fragmentation_mode = fragmentation_mode;
         product_ions = fragmentFactory.getFragmentIons(peptide).get(0); // only peptide fragment ions
-        super.is_Branching = is_Branching_Approach;
         super.linkingType = CrossLinkingType.MONOLINK;
     }
 
@@ -141,7 +140,7 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
             if (tmp_ion_type == PeptideFragmentIon.X_ION || tmp_ion_type == PeptideFragmentIon.Y_ION || tmp_ion_type == PeptideFragmentIon.Z_ION) {
                 index = pep_length - linked_index - 1;
             }
-            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType));
+            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType, true));
         }
         return backbones;
     }
@@ -156,7 +155,6 @@ public class MonoLinkedPeptides extends CrossLinkedPeptides {
         hash = 73 * hash + (this.fragmentation_mode != null ? this.fragmentation_mode.hashCode() : 0);
         hash = 73 * hash + (this.theoretical_ions != null ? this.theoretical_ions.hashCode() : 0);
         hash = 73 * hash + (this.fragmentFactory != null ? this.fragmentFactory.hashCode() : 0);
-        hash = 73 * hash + (this.is_Branching ? 1 : 0);
         hash = 73 * hash + (int) (Double.doubleToLongBits(this.theoretical_xlinked_mass) ^ (Double.doubleToLongBits(this.theoretical_xlinked_mass) >>> 32));
         return hash;
     }

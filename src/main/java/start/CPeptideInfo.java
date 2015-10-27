@@ -8,7 +8,7 @@ package start;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import java.util.ArrayList;
 import theoretical.CPeptides;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 import theoretical.CrossLinkingType;
 import theoretical.MonoLinkedPeptides;
 
@@ -26,7 +26,7 @@ public class CPeptideInfo {
      * @param isReversed True; first B then A (in reversed order of peptide)
      * @return
      */
-    public static StringBuilder getInfo(CrossLinkedPeptides cPeptide, boolean isReversed) {
+    public static StringBuilder getInfo(CrossLinking cPeptide, boolean isReversed) {
         if (cPeptide.getLinkingType() == CrossLinkingType.CROSSLINK) {
             CPeptides cp = (CPeptides) cPeptide;
             String proteinA = cp.getProteinA(),

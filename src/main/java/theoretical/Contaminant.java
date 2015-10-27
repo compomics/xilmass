@@ -18,7 +18,7 @@ import java.util.HashSet;
  *
  * @author Sule
  */
-public class Contaminant extends CrossLinkedPeptides {
+public class Contaminant extends CrossLinking {
 
     private Peptide peptide;
     private String protein;
@@ -33,13 +33,12 @@ public class Contaminant extends CrossLinkedPeptides {
      * @param fragmentation_mode
      * @param is_Branching_Approach
      */
-    public Contaminant(Peptide peptide, String protein, FragmentationMode fragmentation_mode, boolean is_Branching_Approach) {
+    public Contaminant(Peptide peptide, String protein, FragmentationMode fragmentation_mode) {
         super.linkingType = CrossLinkingType.CONTAMINANT;
         this.protein = protein;
         this.peptide = peptide;
         this.fragmentation_mode = fragmentation_mode;
         product_ions = fragmentFactory.getFragmentIons(peptide).get(0); // only peptide fragment ions
-        super.is_Branching = is_Branching_Approach;
     }
 
     public Peptide getPeptide() {
@@ -139,7 +138,7 @@ public class Contaminant extends CrossLinkedPeptides {
             if (tmp_ion_type == PeptideFragmentIon.X_ION || tmp_ion_type == PeptideFragmentIon.Y_ION || tmp_ion_type == PeptideFragmentIon.Z_ION) {
                 index = pep_length - linked_index - 1;
             }
-            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, 0, pepName, cPepIonType));
+            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, 0, pepName, cPepIonType, true));
         }
         return backbones;
     }

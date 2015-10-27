@@ -22,7 +22,7 @@ import static theoretical.LinkedPeptideFragmentIon.getAbbrIonType;
  *
  * @author Sule
  */
-public class CPeptides extends CrossLinkedPeptides {
+public class CPeptides extends CrossLinking {
 
     private Peptide peptideA,// first occured peptide on a database
             peptideB;// second occured peptide on a database
@@ -44,7 +44,6 @@ public class CPeptides extends CrossLinkedPeptides {
             Peptide peptideA, Peptide peptideB,
             CrossLinker linker, int linker_position_on_peptideA, int linker_position_on_peptideB,
             FragmentationMode fragmentation_mode,
-            boolean is_Branching_Approach,
             boolean isContrastLinkedAttachmentOn) {
         this.isContrastLinkedAttachmentOn = isContrastLinkedAttachmentOn;
         this.proteinA = proteinA;
@@ -69,7 +68,6 @@ public class CPeptides extends CrossLinkedPeptides {
         this.fragmentation_mode = fragmentation_mode;
         product_ions_peptideA = fragmentFactory.getFragmentIons(peptideA).get(0); // only peptide fragment ions
         product_ions_peptideB = fragmentFactory.getFragmentIons(peptideB).get(0);
-        super.is_Branching = is_Branching_Approach;
         super.linkingType = CrossLinkingType.CROSSLINK;
         super.linker.setIsLabeled(linker.isIsLabeled());
     }
@@ -134,10 +132,6 @@ public class CPeptides extends CrossLinkedPeptides {
 
     public void setFragmentation_mode(FragmentationMode fragmentation_mode) {
         this.fragmentation_mode = fragmentation_mode;
-    }
-
-    public void setIs_Branching(boolean is_Branching) {
-        this.is_Branching = is_Branching;
     }
 
     public String getType() {
@@ -406,7 +400,7 @@ public class CPeptides extends CrossLinkedPeptides {
             linked_ions.add(cPepIonMonoLink);
         }
         // now add all linked fragment ions
-        LinkedPeptideFragmentIon obj = new LinkedPeptideFragmentIon(linkedPeptide, linker_position_of_linkedPeptide, isLinkedPeptideA, intensity, is_Branching);
+        LinkedPeptideFragmentIon obj = new LinkedPeptideFragmentIon(linkedPeptide, linker_position_of_linkedPeptide, isLinkedPeptideA, intensity);
         ArrayList<CPeptideIon> selectedTerminiIons;
         boolean isNtermini = false;
         if (fragmentIonType == PeptideFragmentIon.A_ION || fragmentIonType == PeptideFragmentIon.B_ION || fragmentIonType == PeptideFragmentIon.C_ION) {
@@ -511,7 +505,6 @@ public class CPeptides extends CrossLinkedPeptides {
         hash = 73 * hash + (this.fragmentation_mode != null ? this.fragmentation_mode.hashCode() : 0);
         hash = 73 * hash + (this.theoretical_ions != null ? this.theoretical_ions.hashCode() : 0);
         hash = 73 * hash + (this.fragmentFactory != null ? this.fragmentFactory.hashCode() : 0);
-        hash = 73 * hash + (this.is_Branching ? 1 : 0);
         hash = 73 * hash + (int) (Double.doubleToLongBits(this.theoretical_xlinked_mass) ^ (Double.doubleToLongBits(this.theoretical_xlinked_mass) >>> 32));
         return hash;
     }
@@ -553,9 +546,6 @@ public class CPeptides extends CrossLinkedPeptides {
             return false;
         }
         if (this.fragmentFactory != other.fragmentFactory && (this.fragmentFactory == null || !this.fragmentFactory.equals(other.fragmentFactory))) {
-            return false;
-        }
-        if (this.is_Branching != other.is_Branching) {
             return false;
         }
         if (this.theoretical_xlinked_mass != other.theoretical_xlinked_mass && this.theoretical_xlinked_mass == 0) {

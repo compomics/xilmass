@@ -38,16 +38,14 @@ public final class LinkedPeptideFragmentIon {
     private int linker_position_on_linkedPeptide; // An index on where a linker is bond to that linkedPeptide
     private boolean isLinkedPepA; // Used for naming...
     private double intensity; // intensity for a theoretical ion intensity
-    private boolean isBranchingApproach; // true:Branching stragety/false:Attaching strategy
     private IonFactory fragmentFactory = IonFactory.getInstance();
     private HashMap<Integer, ArrayList<Ion>> product_ions_linkedPeptide;// peptide backbon ion of a linked peptide
 
-    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int linker_position_on_linkedPeptide, boolean isLinkedPepA, double intensity, boolean isBranchingApproach) {
+    public LinkedPeptideFragmentIon(Peptide linkedPeptide, int linker_position_on_linkedPeptide, boolean isLinkedPepA, double intensity) {
         this.linkedPeptide = linkedPeptide;
         this.linker_position_on_linkedPeptide = linker_position_on_linkedPeptide;
         this.isLinkedPepA = isLinkedPepA;
         this.intensity = intensity;
-        this.isBranchingApproach = isBranchingApproach;
         product_ions_linkedPeptide = fragmentFactory.getFragmentIons(linkedPeptide).get(0); // only peptide fragment ions
     }
 
@@ -66,12 +64,7 @@ public final class LinkedPeptideFragmentIon {
         if (fragmentIonType == PeptideFragmentIon.X_ION
                 || fragmentIonType == PeptideFragmentIon.Y_ION
                 || fragmentIonType == PeptideFragmentIon.Z_ION) {
-            ArrayList<CPeptideIon> cTerminiMasses;
-            if (isBranchingApproach) {
-                cTerminiMasses = calculateCTerminiCPeptideIons(fragmentIonType);
-            } else {
-                cTerminiMasses = calculateTerminisAttaching(fragmentIonType);
-            }
+            ArrayList<CPeptideIon> cTerminiMasses = calculateTerminisAttaching(fragmentIonType);
             return cTerminiMasses;
         } else {
             System.err.print("N-termini including fragment ion type is selected to retrieve C-termini ones!");
@@ -91,12 +84,7 @@ public final class LinkedPeptideFragmentIon {
         if (fragmentIonType == PeptideFragmentIon.A_ION
                 || fragmentIonType == PeptideFragmentIon.B_ION
                 || fragmentIonType == PeptideFragmentIon.C_ION) {
-            ArrayList<CPeptideIon> nTerminiMasses;
-            if (isBranchingApproach) {
-                nTerminiMasses = calculateNTerminiCPeptideIons(fragmentIonType);
-            } else {
-                nTerminiMasses = calculateTerminisAttaching(fragmentIonType);
-            }
+            ArrayList<CPeptideIon> nTerminiMasses = calculateTerminisAttaching(fragmentIonType);
             return nTerminiMasses;
         } else {
             System.err.print("C-termini including fragment ion type is selected to retrieve N-termini ones!");
@@ -124,8 +112,16 @@ public final class LinkedPeptideFragmentIon {
         // select given fragment ion types and retrieve them..
         ArrayList<CPeptideIon> terminiCPepIons = new ArrayList<CPeptideIon>();
         ArrayList<Ion> tmp_ions = product_ions_linkedPeptide.get(fragmentIonType);
+        if (fragmentIonType == PeptideFragmentIon.A_ION) {
+            Ion a2 = tmp_ions.get(1);
+            tmp_ions = new ArrayList<Ion>();
+            tmp_ions.add(a2);
+        }
         for (int ion_index = 0; ion_index < tmp_ions.size(); ion_index++) {
             int index_for_user = ion_index + 1;
+            if (fragmentIonType == PeptideFragmentIon.A_ION) {
+                index_for_user++;
+            }
             String cPepIonTypeName = rootName + "_" + index_for_user;
             Ion ion = tmp_ions.get(ion_index);
             CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), cPeptideIonType, fragmentIonType, cPepIonTypeName);
