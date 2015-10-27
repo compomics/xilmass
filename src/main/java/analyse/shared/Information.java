@@ -3,18 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package analyse.shared;
 
 import java.util.Comparator;
 
 /**
- * This class holds XPSMs regarding informations from program output! 
- * 
+ * This class holds XPSMs regarding informations from program output!
+ *
  * @author Sule
  */
 public class Information {
-    private String fileName,
+
+    protected String fileName,
             scanNumber,
             proteinA,
             peptideA,
@@ -28,13 +28,13 @@ public class Information {
             euclidean_alpha,
             euclidean_beta,
             foundBy;
-    private double score;
+    protected double score;
 
-    public Information(String foundBy, String fileName, String scanNumber, 
-            String proteinA, String peptideA, String modA, String linkA, 
-            String proteinB, String peptideB, String modB, String linkB, 
-            String label, String td, String predicted, 
-            String euclidean_alpha, String euclidean_beta, 
+    public Information(String foundBy, String fileName, String scanNumber,
+            String proteinA, String peptideA, String modA, String linkA,
+            String proteinB, String peptideB, String modB, String linkB,
+            String label, String td, String predicted,
+            String euclidean_alpha, String euclidean_beta,
             double score) {
         this.foundBy = foundBy;
         this.fileName = fileName;
@@ -60,7 +60,7 @@ public class Information {
     public void setFoundBy(String foundBy) {
         this.foundBy = foundBy;
     }
-    
+
     public String getFileName() {
         return fileName;
     }
@@ -172,21 +172,28 @@ public class Information {
     public void setScore(double score) {
         this.score = score;
     }
-    
-    
-     public static final Comparator<Information> ScoreASC
+
+    public static final Comparator<Information> ScoreASC
             = new Comparator<Information>() {
                 @Override
                 public int compare(Information o1, Information o2) {
-                    return o1.getScore() < o2.getScore() ? -1 : o1.getScore() == o2.getScore()? 0 : 1;
+                    return o1.getScore() < o2.getScore() ? -1 : o1.getScore() == o2.getScore() ? 0 : 1;
                 }
             };
-     
-     public static final Comparator<Information> ScoreDESC
+
+    public static final Comparator<Information> ScoreDESC
             = new Comparator<Information>() {
                 @Override
                 public int compare(Information o1, Information o2) {
-                    return o2.getScore() < o1.getScore() ? -1 : o2.getScore() == o1.getScore()? 0 : 1;
+                    return o2.getScore() < o1.getScore() ? -1 : o2.getScore() == o1.getScore() ? 0 : 1;
+                }
+            };
+
+    public static final Comparator<InformationQValue> QvalueASC
+            = new Comparator<InformationQValue>() {
+                @Override
+                public int compare(InformationQValue o1, InformationQValue o2) {
+                    return o1.getQvalue() < o2.getQvalue() ? -1 : o1.getQvalue() == o2.getQvalue() ? 0 : 1;
                 }
             };
 
@@ -248,11 +255,8 @@ public class Information {
 
     @Override
     public String toString() {
-        return  fileName + "\t" + scanNumber + "\t" + proteinA + "\t" + peptideA + "\t" + linkA + "\t" + proteinB + "\t" + peptideB + "\t" + linkB + "\t" 
-                + label + "\t" + td + "\t" + predicted + "\t" + euclidean_alpha + "\t" + euclidean_beta + "\t" + foundBy + "\t" + score ;
+        return fileName + "\t" + scanNumber + "\t" + proteinA + "\t" + peptideA + "\t" + linkA + "\t" + proteinB + "\t" + peptideB + "\t" + linkB + "\t"
+                + label + "\t" + td + "\t" + predicted + "\t" + euclidean_alpha + "\t" + euclidean_beta + "\t" + foundBy + "\t" + score;
     }
-    
-    
-    
-    
+
 }
