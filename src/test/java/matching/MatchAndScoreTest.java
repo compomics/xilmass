@@ -31,7 +31,7 @@ import theoretical.CPeptideIon;
 import theoretical.CPeptideIonType;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 import theoretical.FragmentationMode;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
@@ -254,8 +254,8 @@ public class MatchAndScoreTest extends TestCase {
     public void testGetCPeptides() {
         System.out.println("getCPeptides");
         MatchAndScore instance = null;
-        CrossLinkedPeptides expResult = null;
-        CrossLinkedPeptides result = instance.getCPeptides();
+        CrossLinking expResult = null;
+        CrossLinking result = instance.getCPeptides();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -476,7 +476,7 @@ public class MatchAndScoreTest extends TestCase {
         Peptide p1 = new Peptide("EAFSLFDKDGDGTITTK", modifications),
                 p2 = new Peptide("AKELLEK", modifications);
         CrossLinker linker = new DSS();
-        CPeptides c = new CPeptides("proA", "proB", p1, p2, linker, 7, 1, FragmentationMode.HCD_all, false, false);
+        CPeptides c = new CPeptides("proA(1-25)", "proB(1-25)", p1, p2, linker, 7, 1, FragmentationMode.HCD_all, false);
 
         MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100, false, false);
         instance.setDoesFindAllMatchedPeaks(false);
