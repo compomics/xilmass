@@ -8,6 +8,7 @@ package analyse.validated;
 import analyse.shared.Information;
 import analyse.shared.retrieving.RetrieveKojak;
 import analyse.shared.retrieving.RetrievePLink;
+import analyse.shared.retrieving.RetrievePercolatorKojak;
 import analyse.shared.retrieving.RetrieveValidatedList;
 import analyse.shared.retrieving.RetrieveXilmass;
 import analyse.shared.retrieving.RetrievepLinkValidateds;
@@ -31,14 +32,16 @@ public class AnalyseXPSMs {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        File xilmassInput = new File("C:/Users/Sule/Documents/PhD/XLinked/XLinkData_Freiburg/competetives/xilmass/td_dss_hcdElite_Both_Scr4_MinPeak0_rDecoy_allPeaks.txt"),
+        File xilmassInput = new File("C:/Users/Sule/Documents/PhD/XLinked/XLinkData_Freiburg/competetives/xilmass/td_dss_hcdElite_Both_Scr4_MP0_MC2_rDecoy_allPeaks.txt"),
                 validatedPLinkInput = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink/pLink_Native5FDRValidated_Elite_OnlyTarget.txt"),
                 allXPSMPLink = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\pLink/pLink_AllXPSMs_Validated_Elite_OnlyTarget.txt"),
-                kojak = new File("");
+                kojak = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\merged/kojakP_HCDDSS_Elite.txt"),
+                percolator = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\kojak\\merged/kojakP_HCDDSS_Elite.txt");
 
         boolean isTraditionalFDR = false; // true=regular FDR approach, false=pLink approach on FDR calculation during comparison 
         int analysis = 0; // 0:Xilmass, 1:pLinkValidated 2:pLinkAll 10:Xilmass-PLinkValidated 11:Xilmass-PLinkAll      
-        double fdr = 0.0500000;
+        double fdr = 0.0500000,
+                qvalue = 0.01000;
 
         RetrieveValidatedList o = null;
         if (analysis == 0) {
@@ -50,9 +53,11 @@ public class AnalyseXPSMs {
             o = new RetrievePLink(allXPSMPLink);
         } else if (analysis == 3) {
             o = new RetrieveKojak(kojak);
+        } else if (analysis == 4) {// percolator result ones
+            o = new RetrievePercolatorKojak(percolator);
         }
 
-        if (analysis < 10) {
+        if (analysis < 10 && analysis != 4) {
             // first you need to prepare validated list via
             o.getValidateds(fdr, isTraditionalFDR);
             // now select rank list for corresponding fdr...
@@ -65,7 +70,19 @@ public class AnalyseXPSMs {
             printXLinkingSites(idXLinkingSites);
         }
 
-        if (analysis > 10) {
+        // Kojak Percolator! !
+        if (analysis == 4) {
+            RetrievePercolatorKojak second2 = new RetrievePercolatorKojak(kojak);
+            ArrayList<Information> secondValidateds = second2.getQValidateds(qvalue);
+            HashMap<CrossLinkingSite, Integer> idXLinkingSites = RetrieveValidatedList.getXLinkingSites(secondValidateds);
+            // print all found cross linking site info..
+            printXLinkingSites(idXLinkingSites);
+        }
+
+        if (analysis >= 10) {
+            ArrayList<Information> firstValidateds = new ArrayList<Information>(),
+                    secondValidateds = new ArrayList<Information>(); // Here there are only validated hits 
+
             ArrayList<String> names = new ArrayList<String>();
             // To compare two inputs... 
             RetrieveValidatedList first = null, // the first information list..
@@ -75,30 +92,42 @@ public class AnalyseXPSMs {
                 names.add("ValidatedPLink");
                 names.add("Shared");
                 first = new RetrieveXilmass(xilmassInput);
+                firstValidateds = first.getValidateds(fdr, isTraditionalFDR);
                 second = new RetrievepLinkValidateds(validatedPLinkInput);
+                secondValidateds = second.getRetrievedInfo();
             } else if (analysis == 11) {
                 names.add("Xilmass");
                 names.add("RawPLink");
                 names.add("Shared");
                 first = new RetrieveXilmass(xilmassInput);
                 second = new RetrievePLink(allXPSMPLink); // PLink result from raw xpsm...
+                firstValidateds = first.getValidateds(fdr, isTraditionalFDR);
+                System.err.println("Check PLink all results");
             } else if (analysis == 12) {
                 names.add("Xilmass");
                 names.add("Kojak");
                 names.add("Shared");
                 first = new RetrieveXilmass(xilmassInput);
                 second = new RetrieveKojak(kojak); // PLink result from raw xpsm...
+                firstValidateds = first.getValidateds(fdr, isTraditionalFDR);
+                secondValidateds = second.getValidateds(fdr, isTraditionalFDR);
+            } else if (analysis == 13) {
+                names.add("Xilmass");
+                names.add("PercolatorKojak");
+                names.add("Shared");
+                first = new RetrieveXilmass(xilmassInput);
+                RetrievePercolatorKojak second2 = new RetrievePercolatorKojak(kojak); // PLink result from raw xpsm...
+                firstValidateds = first.getValidateds(fdr, isTraditionalFDR);
+                secondValidateds = second2.getQValidateds(qvalue);
             }
             // now find shared XPSMs and cross linking sites...
-            ArrayList<Information> firstValidateds = first.getValidateds(0.0500, isTraditionalFDR),
-                    secondValidateds = second.getRetrievedInfo(); // Here there are only validated hits 
             ArrayList<Information> sharedValidatedList = getSharedInfo(firstValidateds, secondValidateds);
             printValidated(firstValidateds, secondValidateds, sharedValidatedList, names);
 
             // now find xlinking sites
             HashMap<CrossLinkingSite, Integer> firstXLinkingSites = RetrieveValidatedList.getXLinkingSites(firstValidateds),
                     secondXLinkingSites = RetrieveValidatedList.getXLinkingSites(secondValidateds);
-            HashMap<CrossLinkingSite, Integer> sharedXLinkingSites = getSharedXLinkingSites(firstValidateds, secondValidateds);
+            HashMap<CrossLinkingSite, String> sharedXLinkingSites = getSharedXLinkingSites(firstValidateds, secondValidateds);
 
             printXlinkings(firstXLinkingSites, secondXLinkingSites, sharedXLinkingSites, names);
 
@@ -107,12 +136,19 @@ public class AnalyseXPSMs {
                     onlySecondXLinkingSites = findOnly(secondXLinkingSites, sharedXLinkingSites);
 
             // print only the firstList/shared/secondList xlinking sites information
+            System.out.print("\n");
+            System.out.println("Only found XLinkingSites by " + names.get(0));
             printXLinkingSites(onlyFirstXLinkingSites);
-            printXLinkingSites(sharedXLinkingSites);
+            System.out.print("\n");
+            System.out.println("Found shared XLinkingSites ");
+            print(sharedXLinkingSites);
+            System.out.print("\n");
+            System.out.println("Only found XLinkingSites by " + names.get(1));
             printXLinkingSites(onlySecondXLinkingSites);
 
-//        System.out.println("Same MSMS but different linking...");
-            //            sameMSMSdiffXLinking(xilmassValidateds, pLnkVals, isTraditionalFDR);
+            System.out.print("\n");
+            System.out.println("Same MSMS but different linking...");
+            sameMSMSdiffXLinking(firstValidateds, secondValidateds);
         }
     }
 
@@ -153,17 +189,16 @@ public class AnalyseXPSMs {
      * @param second
      * @return
      */
-    public static HashMap<CrossLinkingSite, Integer> getSharedXLinkingSites(ArrayList<Information> first, ArrayList<Information> second) {
-        HashMap<CrossLinkingSite, Integer> xlinkingxilmass = RetrieveValidatedList.getXLinkingSites(first),
-                xlinkingspLink = RetrieveValidatedList.getXLinkingSites(second),
-                sharedXLinkedsXPSMs = new HashMap<CrossLinkingSite, Integer>();
+    public static HashMap<CrossLinkingSite, String> getSharedXLinkingSites(ArrayList<Information> first, ArrayList<Information> second) {
+        HashMap<CrossLinkingSite, Integer> firstXLinkingsXPSMs = RetrieveValidatedList.getXLinkingSites(first),
+                secondXLinkingsXPSMs = RetrieveValidatedList.getXLinkingSites(second);
+        HashMap<CrossLinkingSite, String> sharedXLinkedsXPSMs = new HashMap<CrossLinkingSite, String>();
         // each each cross linking sites
-        for (CrossLinkingSite i : xlinkingxilmass.keySet()) {
-            for (CrossLinkingSite iP : xlinkingspLink.keySet()) {
+        for (CrossLinkingSite i : firstXLinkingsXPSMs.keySet()) {
+            for (CrossLinkingSite iP : secondXLinkingsXPSMs.keySet()) {
                 if (i.getProteinA().equals(iP.getProteinA()) && i.getProteinB().equals(iP.getProteinB()) && i.getLinkA().equals(iP.getLinkA()) && i.getLinkB().equals(iP.getLinkB())
                         || i.getProteinA().equals(iP.getProteinB()) && i.getProteinB().equals(iP.getProteinA()) && i.getLinkA().equals(iP.getLinkB()) && i.getLinkB().equals(iP.getLinkA())) {
-                    sharedXLinkedsXPSMs.put(i, xlinkingspLink.get(iP));
-                    sharedXLinkedsXPSMs.put(i, xlinkingxilmass.get(iP));
+                    sharedXLinkedsXPSMs.put(i, firstXLinkingsXPSMs.get(i) + "_" + secondXLinkingsXPSMs.get(iP));
                 }
             }
         }
@@ -181,13 +216,31 @@ public class AnalyseXPSMs {
     public static void sameMSMSdiffXLinking(ArrayList<Information> first, ArrayList<Information> second) throws IOException {
         ArrayList<Information> diffs = new ArrayList<Information>();
         for (Information i : first) {
+            boolean isFound = false;
+            boolean isSameSpectrum = false;
             for (Information iP : second) {
                 if (i.getFileName().equals(iP.getFileName()) && i.getScanNumber().equals(iP.getScanNumber())) {
-                    if (i.getProteinA().equals(iP.getProteinA()) && i.getProteinB().equals(iP.getProteinB()) && i.getLinkA().equals(iP.getLinkA()) && i.getLinkB().equals(iP.getLinkB())
-                            || i.getProteinA().equals(iP.getProteinB()) && i.getProteinB().equals(iP.getProteinA()) && i.getLinkA().equals(iP.getLinkB()) && i.getLinkB().equals(iP.getLinkA())) {
-                        diffs.add(i);
+                    isSameSpectrum = true;
+                    if (i.getProteinA().equals(iP.getProteinA()) && i.getProteinB().equals(iP.getProteinB()) && i.getLinkA().equals(iP.getLinkA()) && i.getLinkB().equals(iP.getLinkB())) {
+                        isFound = true;
                     }
                 }
+            }
+            if (!isFound) {
+                // check now other way around to be sure...
+                for (Information iP : second) {
+                    if (i.getFileName().equals(iP.getFileName()) && i.getScanNumber().equals(iP.getScanNumber())) {
+                        isSameSpectrum = true;
+                        if ((i.getProteinA().equals(iP.getProteinB()) && i.getProteinB().equals(iP.getProteinA()) && i.getLinkA().equals(iP.getLinkB()) && i.getLinkB().equals(iP.getLinkA()))) {
+                            isFound = true;
+                        }
+                    }
+                }
+            }
+            if (!isFound && isSameSpectrum) {
+                diffs.add(i);
+                System.out.println(i.getFileName() + "\t" + i.getScanNumber());
+
             }
         }
         System.out.println("XPSMs by Xilmass=" + first.size());
@@ -197,6 +250,15 @@ public class AnalyseXPSMs {
 
     public static void printXLinkingSites(HashMap<CrossLinkingSite, Integer> xLinkingSitesAndXPSMs) {
         System.out.println("ProteinA" + "\t" + "ProteinB" + "\t" + "LinkA" + "\t" + "LinkB" + "\t" + "XPSMs" + "\t" + "EuclideanAlpha" + "\t" + "EuclideanBeta" + "\t" + "Prediction");
+        for (CrossLinkingSite i : xLinkingSitesAndXPSMs.keySet()) {
+            System.out.println(i.getProteinA() + "\t" + i.getProteinB() + "\t"
+                    + i.getLinkA() + "\t" + i.getLinkB() + "\t" + xLinkingSitesAndXPSMs.get(i) + "\t"
+                    + i.getEuclideanAlpha() + "\t" + i.getEuclideanBeta() + "\t" + i.getPrediction());
+        }
+    }
+
+    public static void print(HashMap<CrossLinkingSite, String> xLinkingSitesAndXPSMs) {
+        System.out.println("ProteinA" + "\t" + "ProteinB" + "\t" + "LinkA" + "\t" + "LinkB" + "\t" + "XPSMs(First-Second)" + "\t" + "EuclideanAlpha" + "\t" + "EuclideanBeta" + "\t" + "Prediction");
         for (CrossLinkingSite i : xLinkingSitesAndXPSMs.keySet()) {
             System.out.println(i.getProteinA() + "\t" + i.getProteinB() + "\t"
                     + i.getLinkA() + "\t" + i.getLinkB() + "\t" + xLinkingSitesAndXPSMs.get(i) + "\t"
@@ -215,23 +277,30 @@ public class AnalyseXPSMs {
 
     private static void printValidated(ArrayList<Information> firstValidateds, ArrayList<Information> secondValidateds,
             ArrayList<Information> sharedValidatedList, ArrayList<String> names) {
-        System.out.println(names.get(0) + "=" + "\t" + firstValidateds.size());
-        System.out.println(names.get(1) + "=" + "\t" + secondValidateds.size());
-        System.out.println(names.get(2) + "=" + "\t" + sharedValidatedList.size());
+        System.out.println(names.get(0) + " #XPSMs=" + "\t" + firstValidateds.size());
+        System.out.println(names.get(1) + " #XPSMs=" + "\t" + secondValidateds.size());
+        System.out.println(names.get(2) + " #XPSMs=" + "\t" + sharedValidatedList.size());
     }
 
     private static void printXlinkings(HashMap<CrossLinkingSite, Integer> firstXLinkingSites, HashMap<CrossLinkingSite, Integer> secondXLinkingSites,
-            HashMap<CrossLinkingSite, Integer> sharedXLinkingSites, ArrayList<String> names) {
-        System.out.println(names.get(0) + "=" + "\t" + firstXLinkingSites.size());
-        System.out.println(names.get(1) + "=" + "\t" + secondXLinkingSites.size());
-        System.out.println(names.get(2) + "=" + "\t" + sharedXLinkingSites.size());
+            HashMap<CrossLinkingSite, String> sharedXLinkingSites, ArrayList<String> names) {
+        System.out.println(names.get(0) + " #XLinkingSites=" + "\t" + firstXLinkingSites.size());
+        System.out.println(names.get(1) + " #XLinkingSites=" + "\t" + secondXLinkingSites.size());
+        System.out.println(names.get(2) + " #XLinkingSites=" + "\t" + sharedXLinkingSites.size());
     }
 
-    public static HashMap<CrossLinkingSite, Integer> findOnly(HashMap<CrossLinkingSite, Integer> xLinkingSites, HashMap<CrossLinkingSite, Integer> sharedXLinkingSites) {
+    public static HashMap<CrossLinkingSite, Integer> findOnly(HashMap<CrossLinkingSite, Integer> xLinkingSites, HashMap<CrossLinkingSite, String> sharedXLinkingSites) {
         HashMap<CrossLinkingSite, Integer> onlyXLinkingSites = new HashMap<CrossLinkingSite, Integer>();
-        for (CrossLinkingSite c : xLinkingSites.keySet()) {
-            if (!sharedXLinkingSites.containsKey(c)) {
-                onlyXLinkingSites.put(c, xLinkingSites.get(c));
+        for (CrossLinkingSite i : xLinkingSites.keySet()) {
+            boolean isShared = false;
+            for (CrossLinkingSite iP : sharedXLinkingSites.keySet()) {
+                if (i.getProteinA().equals(iP.getProteinA()) && i.getProteinB().equals(iP.getProteinB()) && i.getLinkA().equals(iP.getLinkA()) && i.getLinkB().equals(iP.getLinkB())
+                        || i.getProteinA().equals(iP.getProteinB()) && i.getProteinB().equals(iP.getProteinA()) && i.getLinkA().equals(iP.getLinkB()) && i.getLinkB().equals(iP.getLinkA())) {
+                    isShared = true;
+                }
+            }
+            if (!isShared) {
+                onlyXLinkingSites.put(i, xLinkingSites.get(i));
             }
         }
         return onlyXLinkingSites;
