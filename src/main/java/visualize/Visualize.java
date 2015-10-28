@@ -15,6 +15,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -28,7 +29,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -75,6 +75,8 @@ public final class Visualize extends javax.swing.JFrame {
             setSpecsFolder(startDialog.getSpecFolder());
             start_visualization();
             this.setVisible(true);
+        } else {
+            System.exit(0);
         }
     }
 
@@ -130,7 +132,7 @@ public final class Visualize extends javax.swing.JFrame {
      * @param dataStrArr
      * @param sorter
      */
-    private void prepareResultFileJTable(ArrayList<String[]> dataStrArr, TableRowSorter sorter) {        
+    private void prepareResultFileJTable(ArrayList<String[]> dataStrArr, TableRowSorter sorter) {
         // change the table header as bold and slightly bigger
         resultFilejTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
         // enable scrolling
@@ -402,11 +404,6 @@ public final class Visualize extends javax.swing.JFrame {
                 resultFilejTableMouseClicked(evt);
             }
         });
-        resultFilejTable.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                resultFilejTableKeyReleased(evt);
-            }
-        });
         resultFilejScrollPane.setViewportView(resultFilejTable);
 
         jMenuBar.setBorder(null);
@@ -485,31 +482,6 @@ public final class Visualize extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_resultFilejTableMouseClicked
 
-    private void resultFilejTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resultFilejTableKeyReleased
-        int selectedRow = resultFilejTable.getSelectedRow();
-        String spectrumFileName = (String) resultFilejTable.getValueAt(selectedRow, 2),
-                spectrumTitle = (String) resultFilejTable.getValueAt(selectedRow, 3);
-        try {
-            setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
-        } catch (IOException ex) {
-            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (MzMLUnmarshallerException ex) {
-            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            original_spec = findMSnSpectrum(specsFolder, spectrumFileName, spectrumTitle);
-            annotateSpectrum();
-        } catch (IOException ex) {
-            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (MzMLUnmarshallerException ex) {
-            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_resultFilejTableKeyReleased
-
     private void exitjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitjMenuItemActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitjMenuItemActionPerformed
@@ -520,15 +492,15 @@ public final class Visualize extends javax.swing.JFrame {
         int status = savePlaylistDialog.showSaveDialog(this);
         if (status == JFileChooser.APPROVE_OPTION) {
             File savePlaylist = savePlaylistDialog.getSelectedFile();
-            //BufferedImage bi = new BufferedImage(spectrumPanel.getSize().width, spectrumPanel.getSize().height, BufferedImage.TYPE_INT_ARGB);
-            BufferedImage bi = new BufferedImage(visualizeSpectrumjPanel.getWidth(), visualizeSpectrumjPanel.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics g = bi.createGraphics();
-            this.paint(g);  //this == JComponent
-            g.dispose();
+            BufferedImage bImg = new BufferedImage(visualizeSpectrumjPanel.getWidth(), visualizeSpectrumjPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D cg = bImg.createGraphics();
+            visualizeSpectrumjPanel.paintAll(cg);
             try {
-                ImageIO.write(bi, "png", new File(savePlaylist + ".png"));
-            } catch (Exception e) {
-                System.out.println("Problem...");
+                if (ImageIO.write(bImg, "png", new File(savePlaylist + ".png"))) {
+                    LOGGER.info("-- saved");
+                }
+            } catch (IOException e) {
+                LOGGER.info(e.toString());
             }
         }
     }//GEN-LAST:event_saveImagejMenuItemActionPerformed
@@ -567,6 +539,7 @@ public final class Visualize extends javax.swing.JFrame {
         visualizeSpectrumjPanel.add(spectrumPanel, gridBagConstraints);
         visualizeSpectrumjPanel.revalidate();
         visualizeSpectrumjPanel.repaint();
+
     }
 
     /**
