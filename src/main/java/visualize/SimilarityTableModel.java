@@ -10,15 +10,17 @@ import javax.swing.table.AbstractTableModel;
  *
  * @author Sule
  */
-public class SimilarityTableModel extends AbstractTableModel {
+public class SimilarityTableModel extends AbstractTableModel {    
+       
+    private String[] columnNames;
+    private Object[][] data;
+        
 
     public SimilarityTableModel(String[] columnNames, Object[][] data) {
         this.columnNames = columnNames;
         this.data = data;
     }
-   
-    private String[] columnNames;
-    private Object[][] data;
+
 
     @Override
     public int getColumnCount() {

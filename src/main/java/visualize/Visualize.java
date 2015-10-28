@@ -11,7 +11,9 @@ import com.compomics.util.gui.interfaces.SpectrumAnnotation;
 import com.compomics.util.gui.spectrum.DefaultSpectrumAnnotation;
 import com.compomics.util.gui.spectrum.SpectrumPanel;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.image.BufferedImage;
@@ -20,20 +22,28 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
-import org.apache.commons.lang.NumberUtils;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
+ * This class reads a given Xilmass output file (which is set on StartDialog)
+ * Then, it fills a table with Xilmass outcomes. An experimental spectrum with
+ * all annotated peaks are firstly shown on spectrum panel (for the first
+ * selected row on the output file). Then, any other row can be selected to
+ * visually see annotation of spectra based on Xilmass results..
  *
  * @author Sule
  */
@@ -58,14 +68,12 @@ public final class Visualize extends javax.swing.JFrame {
      * @throws ClassNotFoundException
      */
     public Visualize() throws MzMLUnmarshallerException, FileNotFoundException, ClassNotFoundException {
-
         startDialog = new StartDialog(this, true);
         if (!startDialog.getSpecFolder().isEmpty()) {
             initComponents();
             indexOfAnnotatedPeaks = startDialog.getIndexOfAnnotatedPeaks();
             setSpecsFolder(startDialog.getSpecFolder());
-            prepareTable();
-//            setLocation(200, WIDTH);
+            start_visualization();
             this.setVisible(true);
         }
     }
@@ -79,7 +87,7 @@ public final class Visualize extends javax.swing.JFrame {
     }
 
     /**
-     * This method read a given Xilmass result file to put into
+     * This method reads a given Xilmass result file to put into
      * ArrayList<String[]>
      *
      * @param file
@@ -87,7 +95,7 @@ public final class Visualize extends javax.swing.JFrame {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public ArrayList<String[]> readResultFile(File file) throws FileNotFoundException, IOException {
+    public ArrayList<String[]> parseXilmassOutput(File file) throws FileNotFoundException, IOException {
         BufferedReader br = new BufferedReader(new FileReader(file.getAbsolutePath()));
         String line = null;
         int control = 0;
@@ -107,9 +115,7 @@ public final class Visualize extends javax.swing.JFrame {
                 }
                 // prepare data
                 if (control != 0) {
-                    if (!split[0].equals(split[1])) {
-                        dataStrArr.add(split);
-                    }
+                    dataStrArr.add(split);
                 }
                 control++;
             }
@@ -117,81 +123,138 @@ public final class Visualize extends javax.swing.JFrame {
         return dataStrArr;
     }
 
-    private void readResultFileJTable(ArrayList<String[]> dataStrArr, Object[][] data, TableRowSorter sorter) {
+    /**
+     * This method reads a given Xilmass output then prepares the table with all
+     * Xilmass results
+     *
+     * @param dataStrArr
+     * @param sorter
+     */
+    private void prepareResultFileJTable(ArrayList<String[]> dataStrArr, TableRowSorter sorter) {        
+        // change the table header as bold and slightly bigger
+        resultFilejTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        // enable scrolling
         resultFilejScrollPane.setAutoscrolls(true);
+        // fill values from dataStrArr to a resultFileJTable..
+        fillResultFileJTable(dataStrArr);
+        // now adjust table columns
         resultFilejTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        // resize the column
-        resultFilejTable.getColumnModel().getColumn(0).setPreferredWidth(80);    // index            
-
-        // Fill information on data.
-        int number = 0;
-        for (int arr = 0; arr < dataStrArr.size(); arr++) {
-            String[] strArr = dataStrArr.get(arr);
-            if (!strArr[0].equals(strArr[1])) {
-                data[arr][0] = number;
-                number++;
-                resultFilejTable.setValueAt(number, arr, 0);
-                for (int i = 0; i < strArr.length; i++) {
-                    data[arr][i + 1] = strArr[i];
-                    resultFilejTable.setValueAt(strArr[i], arr, i + 1);
+        int totalWidth = 0; // to set a size of a scrol pane 
+        for (int column = 0; column < resultFilejTable.getColumnCount(); column++) {
+            TableColumn tableColumn = resultFilejTable.getColumnModel().getColumn(column);
+            int maxWidth = tableColumn.getMaxWidth();
+            // get the actual fit header on the table.
+            int headerWidth = getHeaderWidth(tableColumn, column);
+            // set a header as preferedWidth which will be later set based on the values on the table
+            // this setting will allow finding the most appropriate width for a given column
+            int preferedWidth = headerWidth;
+            for (int row = 0; row < resultFilejTable.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = resultFilejTable.getCellRenderer(row, column);
+                Component c = resultFilejTable.prepareRenderer(cellRenderer, row, column);
+                // intercellspacing is bit bigger to allow slightly more space on the cell
+                int width = c.getPreferredSize().width + (10 * resultFilejTable.getIntercellSpacing().width);
+                preferedWidth = Math.max(preferedWidth, width);
+                // some cells are super big, setting to maximum 800 will make the table virtually nicer. 
+                if (preferedWidth >= maxWidth && preferedWidth < 800) {
+                    preferedWidth = maxWidth;
+                    break;
+                } else if (preferedWidth > 800) {
+                    preferedWidth = 800;
+                    break;
                 }
             }
+            // update column widht
+            tableColumn.setPreferredWidth(preferedWidth);
+            totalWidth += preferedWidth;
         }
-        // set some variables on a table         
-        SimilarityTableCellRenderer renderer = new SimilarityTableCellRenderer();
-        resultFilejTable.setDefaultRenderer(Object.class, renderer);
         resultFilejTable.setRowSorter(sorter);
         resultFilejTable.setAutoCreateColumnsFromModel(true);
         // select an entire row by clicking
         resultFilejTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         resultFilejTable.setRowSelectionAllowed(true);
         resultFilejTable.setColumnSelectionAllowed(false);
+        // select the first row..
         resultFilejTable.setRowSelectionInterval(0, 0);
-        Dimension size = new Dimension(resultFilejTable.getColumnModel().getTotalColumnWidth() + 2700, resultFilejTable.getRowCount() * resultFilejTable.getRowHeight());
+        // update size to enable seeing a scrollbar..
+        Dimension size = new Dimension(totalWidth, resultFilejTable.getRowCount() * resultFilejTable.getRowHeight());
         resultFilejTable.setPreferredSize(size);
         resultFilejTable.setPreferredScrollableViewportSize(size);
-//        resultFilejTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        resultFilejScrollPane.setPreferredSize(size);
     }
 
-    public void prepareTable() throws MzMLUnmarshallerException, FileNotFoundException, ClassNotFoundException {
+    /**
+     * To fill resultFileJTable from a given dataStrArr, which were parsed from
+     * Xilmass output
+     *
+     * @param dataStrArr
+     */
+    private void fillResultFileJTable(ArrayList<String[]> dataStrArr) {
+        // Fill information on data.
+        int number = 0;
+        for (int arr = 0; arr < dataStrArr.size(); arr++) {
+            String[] strArr = dataStrArr.get(arr);
+            if (!strArr[0].equals(strArr[1])) {
+                number++;
+                resultFilejTable.setValueAt(number, arr, 0);
+                for (int i = 0; i < strArr.length; i++) {
+                    String tmp = strArr[i];
+                    try {
+                        Double d = Double.parseDouble(tmp);
+                        DecimalFormat df = new DecimalFormat("#.##");
+                        String formatted = df.format(d);
+                        resultFilejTable.setValueAt(formatted, arr, i + 1);
+                    } catch (NumberFormatException e) {
+                        resultFilejTable.setValueAt(tmp, arr, i + 1);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This method returns a width of a header of given table column
+     *
+     * @param tableColumn
+     * @param column
+     * @return
+     */
+    private int getHeaderWidth(TableColumn tableColumn, int column) {
+        // arrange header..
+        TableCellRenderer renderer = tableColumn.getHeaderRenderer();
+        if (renderer == null) {
+            renderer = resultFilejTable.getTableHeader().getDefaultRenderer();
+        }
+        Component component = renderer.getTableCellRendererComponent(resultFilejTable,
+                tableColumn.getHeaderValue(), false, false, -1, column);
+        int header_width = component.getPreferredSize().width + (10 * (resultFilejTable.getIntercellSpacing().width));
+        return header_width;
+    }
+
+    /**
+     * This method starts visualization with preparing Xilmass output on a table
+     * and then shows the first spectrum with annotated peask
+     *
+     *
+     * @throws MzMLUnmarshallerException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     */
+    public void start_visualization() throws MzMLUnmarshallerException, FileNotFoundException, ClassNotFoundException {
         if (!isOpenFileMenu) {
             resultFile = new File(startDialog.getPathToScoreFilejTextField().getText());
         }
         try {
-            // read the file
-            ArrayList<String[]> dataStrArr = readResultFile(resultFile);
+            // parse Xilmass output
+            ArrayList<String[]> dataStrArr = parseXilmassOutput(resultFile);
             int row_number = dataStrArr.size();
             // construct a 2D array for TableModel
             Object[][] data = new Object[row_number][columnNames.length];
-            // Prepare similarity table
+            // Prepare similarity table model 
             SimilarityTableModel similarityTableModel = new SimilarityTableModel(columnNames, data);
             resultFilejTable.setModel(similarityTableModel);
-//            resultFilejTable.setFillsViewportHeight(true);
-            // Prepare a sorter
-            TableRowSorter sorter = new TableRowSorter(resultFilejTable.getModel()) {
-                @Override
-                public Comparator getComparator(int column) {
-                    Comparator<String> comparator = new Comparator<String>() {
-                        @Override
-                        public int compare(String o1, String o2) {
-                            boolean isNumber = NumberUtils.isNumber(o1);
-                            if (isNumber) {
-                                Double o1_integer = Double.parseDouble(o1),
-                                        o2_integer = Double.parseDouble(o2);
-
-                                return (o1_integer.compareTo(o2_integer));
-                            } else {
-                                return o1.compareTo(o2);
-                            }
-                        }
-                    };
-                    return comparator;
-                }
-            };
-            readResultFileJTable(dataStrArr, data, sorter);
-            System.out.println(resultFilejTable.getValueAt(1, 1) + "\t" + resultFilejTable.getValueAt(1, 2));
+            // prepare a tableRowSorter
+            TableRowSorter sorter = prepareTableRowSorter();
+            prepareResultFileJTable(dataStrArr, sorter);
+            LOGGER.log(Level.INFO, "Plotted spectra {0}\t{1}", new Object[]{resultFilejTable.getValueAt(1, 1), resultFilejTable.getValueAt(1, 2)});
             String spectrumFileName = resultFilejTable.getValueAt(1, 1).toString(),
                     spectrumTitle = resultFilejTable.getValueAt(1, 2).toString();
             setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
@@ -202,7 +265,36 @@ public final class Visualize extends javax.swing.JFrame {
     }
 
     /**
-     * To prepare spectrum for plotting from a spectra folder.
+     * This sorter enables sorting a selected column. If values are double, sort
+     * double values; otherwise it sorts them as String
+     *
+     * @return
+     */
+    private TableRowSorter prepareTableRowSorter() {
+        TableRowSorter sorter = new TableRowSorter(resultFilejTable.getModel()) {
+            @Override
+            public Comparator getComparator(int column) {
+                Comparator<String> comparator = new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        try {
+                            Double o1_integer = Double.parseDouble(o1.toString()),
+                                    o2_integer = Double.parseDouble(o2.toString());
+                            return (o1_integer.compareTo(o2_integer));
+                        } catch (NumberFormatException e) {
+                            return o1.compareTo(o2);
+                        }
+                    }
+                };
+                return comparator;
+            }
+        };
+        return sorter;
+    }
+
+    /**
+     * This method prepares a spectrum for plotting from a folder containing
+     * spectra.
      *
      * @param spectrumName is MSnSpectrum object
      * @throws IOException
@@ -213,7 +305,7 @@ public final class Visualize extends javax.swing.JFrame {
     private void setOriginalSpectrumForPlotting(String spectrumFileName, String spectrumTitle) throws IOException, MzMLUnmarshallerException, FileNotFoundException, ClassNotFoundException {
         boolean isSpecfound = false;
         // find spectrum...
-        LOGGER.info("SpectrumFileName=" + spectrumFileName + "\t" + "SpectrumTitle=" + spectrumTitle);
+        LOGGER.log(Level.INFO, "SpectrumFileName={0}" + "\t" + "SpectrumTitle={1}", new Object[]{spectrumFileName, spectrumTitle});
         original_spec = findMSnSpectrum(specsFolder, spectrumFileName, spectrumTitle);
         // create copies for the selected spectra
         // check the possible error
@@ -228,11 +320,13 @@ public final class Visualize extends javax.swing.JFrame {
     }
 
     /**
-     * To find a spectrum according to spectrum name while searching in all
-     * spectra files on a given spectra folder
+     * This method finds a spectrum according to a title of a spectrum and a
+     * name of a spectrum file while searching in the given folder containing
+     * all spectum files
      *
-     * @param spectraFolder
-     * @param specName
+     * @param spectraFolder folder containing all spectrum files
+     * @param spectrumFileName
+     * @param spectrumTitle
      * @return
      * @throws IOException
      * @throws FileNotFoundException
@@ -285,12 +379,9 @@ public final class Visualize extends javax.swing.JFrame {
         visualizeSpectrumjPanelLayout.rowWeights = new double[] {2000.0};
         visualizeSpectrumjPanel.setLayout(visualizeSpectrumjPanelLayout);
 
-        resultFilejScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        resultFilejScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        resultFilejScrollPane.setAutoscrolls(true);
         resultFilejScrollPane.setMaximumSize(new java.awt.Dimension(3, 3));
         resultFilejScrollPane.setMinimumSize(new java.awt.Dimension(2, 2));
-        resultFilejScrollPane.setPreferredSize(new java.awt.Dimension(20, 20));
+        resultFilejScrollPane.setPreferredSize(new java.awt.Dimension(10, 10));
 
         resultFilejTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -321,7 +412,9 @@ public final class Visualize extends javax.swing.JFrame {
         jMenuBar.setBorder(null);
 
         jMenu.setText("Menu");
+        jMenu.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
 
+        saveImagejMenuItem.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         saveImagejMenuItem.setText("Save image");
         saveImagejMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -330,6 +423,7 @@ public final class Visualize extends javax.swing.JFrame {
         });
         jMenu.add(saveImagejMenuItem);
 
+        exitjMenuItem.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         exitjMenuItem.setText("Exit");
         exitjMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -349,7 +443,7 @@ public final class Visualize extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(visualizeSpectrumjPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(visualizeSpectrumjPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 774, Short.MAX_VALUE)
                     .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -359,7 +453,7 @@ public final class Visualize extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(visualizeSpectrumjPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
+                .addComponent(resultFilejScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -427,17 +521,23 @@ public final class Visualize extends javax.swing.JFrame {
         if (status == JFileChooser.APPROVE_OPTION) {
             File savePlaylist = savePlaylistDialog.getSelectedFile();
             //BufferedImage bi = new BufferedImage(spectrumPanel.getSize().width, spectrumPanel.getSize().height, BufferedImage.TYPE_INT_ARGB);
-            BufferedImage bi = new BufferedImage(visualizeSpectrumjPanel.getSize().width + 100, visualizeSpectrumjPanel.getSize().height + 100, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage bi = new BufferedImage(visualizeSpectrumjPanel.getWidth(), visualizeSpectrumjPanel.getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics g = bi.createGraphics();
             this.paint(g);  //this == JComponent
             g.dispose();
             try {
                 ImageIO.write(bi, "png", new File(savePlaylist + ".png"));
             } catch (Exception e) {
+                System.out.println("Problem...");
             }
         }
     }//GEN-LAST:event_saveImagejMenuItemActionPerformed
 
+    /**
+     * This method annotates theoretical peaks onto a given experimental
+     * spectrum and then onto a visualizeSpectrumjPanel
+     *
+     */
     public void annotateSpectrum() {
         // First prepare a spectrum Panel
         double[] mzs = original_spec.getMzValuesAsArray(),
@@ -453,7 +553,7 @@ public final class Visualize extends javax.swing.JFrame {
                 name); // String spectrum file name  
         // set up the peak annotations!!!
         List<SpectrumAnnotation> peakAnnotation = getAnnotatedPeaks();
-        System.out.println("Annotated peaks=" + peakAnnotation.size());
+        LOGGER.info("Annotated peaks=" + peakAnnotation.size());
         // add the annotations to the spectrum
         spectrumPanel.setAnnotations(peakAnnotation);
         // add the spectrum panel to the parent frame or dialog
@@ -530,10 +630,15 @@ public final class Visualize extends javax.swing.JFrame {
     private javax.swing.JPanel visualizeSpectrumjPanel;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * This method returns a list of spectrum annotation from a selected row on
+     * the result file
+     *
+     * @return
+     */
     private List<SpectrumAnnotation> getAnnotatedPeaks() {
         List<SpectrumAnnotation> annotations = new ArrayList<SpectrumAnnotation>();
         int selectedRow = resultFilejTable.getSelectedRow();
-        System.out.println(resultFilejTable.getValueAt(selectedRow, indexOfAnnotatedPeaks));
         String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, indexOfAnnotatedPeaks);
         String[] splittedAnnotatedPeaksStr = annotatedPeaksStr.split(" ");
         Color lightBlue = Color.getHSBColor(0.56f, 0.3f, 1f),
@@ -550,7 +655,6 @@ public final class Visualize extends javax.swing.JFrame {
                 selectedColor = null;
         for (String splittedAnnotatedPeak : splittedAnnotatedPeaksStr) {
             if (!splittedAnnotatedPeak.isEmpty()) {
-                System.out.println(splittedAnnotatedPeak);
                 String[] annotationInfo = splittedAnnotatedPeak.split("_");
                 String chargeState = annotationInfo[0],
                         ionNameAndIndex = splittedAnnotatedPeak.substring(splittedAnnotatedPeak.indexOf("_") + 1, splittedAnnotatedPeak.lastIndexOf("_")),
