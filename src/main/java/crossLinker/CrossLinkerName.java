@@ -3,19 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package crossLinker;
 
 /**
- * This enum class hold names for each implemented cross linker agents
- * 
+ * This enum class holds a name for each implemented cross linker agents
+ *
  * @author Sule
  */
 public enum CrossLinkerName {
     DSSd0,// light labeled..
     DSSd12, // heavy labeled..
+    BS3d0, // light labeled..
+    BS3d4, // heavy labeled..
     EDC,
-    BS3,
-    BS3d4, // heavy labeled one..
     GA
 }
