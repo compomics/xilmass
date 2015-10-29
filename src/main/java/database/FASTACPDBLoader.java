@@ -187,6 +187,8 @@ public class FASTACPDBLoader {
      * @throws XmlPullParserException
      * @throws IOException
      */
+    
+    
     public static HashSet<StringBuilder> generate_peptide_mass_index(
             BufferedWriter bw,
             HashMap<String, String> header_sequence,
@@ -365,7 +367,7 @@ public class FASTACPDBLoader {
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static HashSet<String> generate_peptide_mass_index_monoLink(
+    public static HashSet<StringBuilder> generate_peptide_mass_index_monoLink(
             BufferedWriter bw,
             HashMap<String, String> header_sequence,
             PTMFactory ptmFactory,
@@ -373,7 +375,7 @@ public class FASTACPDBLoader {
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
             int max_mods_per_peptide) throws XmlPullParserException, IOException {
-        HashSet<String> headers = new HashSet<String>();
+        HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
         boolean isMonoLinkedPeptideObjConstructed = false;
         StringBuilder proteinA,
                 proteinB,
@@ -426,8 +428,8 @@ public class FASTACPDBLoader {
                         mass = mPeptides.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info + "\n");
+                        if (!headers.contains(info) && !header.contains(rInfo)) {                           
+                            headers.add( info.append("\n"));
                             bw.write(info + "\n");
                         }
                     } else {
@@ -438,7 +440,7 @@ public class FASTACPDBLoader {
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
                         if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info + "\n");
+                            headers.add( info.append("\n"));
                             bw.write(info + "\n");
                         }
                     }
@@ -452,7 +454,7 @@ public class FASTACPDBLoader {
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
                         if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info + "\n");
+                            headers.add( info.append("\n"));
                             bw.write(info + "\n");
                         }
                     } else {
@@ -463,7 +465,7 @@ public class FASTACPDBLoader {
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
                         if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info + "\n");
+                            headers.add( info.append("\n"));
                             bw.write(info + "\n");
                         }
                     }
