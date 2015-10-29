@@ -7,7 +7,6 @@ package database;
 
 import playground.EnzymeDigest;
 import com.compomics.dbtoolkit.gui.workerthreads.ProcessThread;
-import com.compomics.dbtoolkit.gui.workerthreads.ShuffleDBThread;
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.EnzymeLoader;
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
@@ -57,12 +56,10 @@ public class CreateDatabase {
             maxLen_for_combined = 50; // How many amino acids are on one cross linked peptides
     private File inputProteinFile,
             inSilicoPeptideDB;
-    private boolean does_a_peptide_link_to_itself = false, // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
-            has_shuffled_decoy_as_concatenated;
+    private boolean does_a_peptide_link_to_itself = false; // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
-    private HashMap<String, String> proteinaccessionAndshuffled = new HashMap<String, String>();
 
     public CreateDatabase(String givenDBName,
             String inSilicoPeptideDBName,
@@ -74,9 +71,7 @@ public class CreateDatabase {
             int minLen,
             int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
             boolean does_link_to_itself,
-            boolean isLabeled, // T: heavy labeled protein, F:no labeled
-            boolean has_shuffled_decoy_as_concatenated,
-            boolean isInvertedPeptides
+            boolean isLabeled // T: heavy labeled protein, F:no labeled
     ) throws Exception {
         // db related parameters
         inputProteinFileName = givenDBName;
@@ -95,7 +90,6 @@ public class CreateDatabase {
         this.maxLen_for_combined = maxLen_for_combined;
         this.does_a_peptide_link_to_itself = does_link_to_itself;
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
-        this.has_shuffled_decoy_as_concatenated = has_shuffled_decoy_as_concatenated;
     }
 
     // getter and setter methods    
@@ -501,7 +495,7 @@ public class CreateDatabase {
         if (nextSequence.length() >= minLen && totalLen <= maxLen_for_combined) {
             if ((does_a_peptide_link_to_itself && nextSequence.equals(startSequence)) || (!nextSequence.equals(startSequence))) {
                 HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
-                if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3 or BS3d4.. So K-K
+                if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3d0 or BS3d4.. So K-K
                     for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
                         ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
                         for (Integer next_index : next_indices_liked_aas) {

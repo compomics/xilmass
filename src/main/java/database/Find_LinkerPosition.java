@@ -20,7 +20,7 @@ public class Find_LinkerPosition {
         String startSequence = startProtein.getSequence().getSequence();
         HashMap<String, ArrayList<Integer>> crossLinker_and_indices = new HashMap<String, ArrayList<Integer>>();
         switch (crossLinker.getName()) {
-            case BS3:
+            case BS3d0:
                 link_homobifunctional(startSequence, crossLinker_and_indices);
                 break;
             case BS3d4:
