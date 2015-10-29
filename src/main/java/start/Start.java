@@ -89,7 +89,8 @@ public class Start {
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-                scoring = ConfigHolder.getInstance().getString("scoring"),
+                //                scoring = ConfigHolder.getInstance().getString("scoring"),
+                scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
         if (!contaminantDBName.isEmpty()) {
             insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
@@ -125,28 +126,37 @@ public class Start {
         ptmFactory.importModifications(new File(modsFileName), false);
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
-                intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
+                //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
+                //intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
+                intensity_option = 1,
                 minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
                 maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
                 threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
-                peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("peakRequiredForImprovedSearch"),
+                //# Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
+                //peakRequiredForImprovedSearch=0                
+                peakRequiredForImprovedSearch = 0,
                 maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
 
         // multithreading 
         ExecutorService excService = Executors.newFixedThreadPool(threadNum);
         // more cross linking option..;
         boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("allowIntraPeptide"),
-                doesRecordZeroes = ConfigHolder.getInstance().getBoolean("recordZeroScore"),
+                //# Keep scores equal to zero (either probability of matched peak is zero or none matched peaks)
+                //recordZeroScore=F
+                doesRecordZeroes = false,
                 isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
                 searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
-                has_decoy = ConfigHolder.getInstance().getBoolean("decoy"),
-                isInvertedPeptides = ConfigHolder.getInstance().getBoolean("isInverted"),
                 doesKeepIonWeights = true,
-                isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
-                doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("doesFindAllMatchedPeaks"),
+                // a setting when I tried to merged different fragment ion types but it must be off by setting as false
+                // isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
+                isContrastLinkedAttachmentOn = false,
+                //  settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
+                //doesFindAllMatchedPeaks=T
+                doesFindAllMatchedPeaks = true,
                 isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
-                hasIonWeights = ConfigHolder.getInstance().getBoolean("hasIonWeights");
+                // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
+                hasIonWeights = true;
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
@@ -209,9 +219,7 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled,
-                    has_decoy,
-                    isInvertedPeptides); //
+                    isLabeled); //
             LOGGER.info("Construction of header_sequence..");
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             // in silico digested contaminant database
@@ -254,9 +262,7 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled,
-                    has_decoy,
-                    isInvertedPeptides); //
+                    isLabeled); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             for (CrossLinker linker : linkers) {
@@ -447,8 +453,9 @@ public class Start {
         ArrayList<String> mods = new ArrayList<String>();
         if (!ptmNames.isEmpty()) {
             String[] fixed_modifications_name_split = ptmNames.split(";");
+            // convert to all lower case            
             for (String fixed_modification_name : fixed_modifications_name_split) {
-                mods.add(fixed_modification_name);
+                mods.add(fixed_modification_name.toLowerCase());
             }
         }
         return mods;
@@ -603,7 +610,7 @@ public class Start {
             } else if ((line.startsWith("minLen")) && (line.split("\t")[1].equals(minLen))) {
                 control++;
             } else if ((line.startsWith("maxLenCombined")) && (line.split("\t")[1].equals(maxLenCombined))) {
-                control++;            
+                control++;
             } else if ((line.startsWith("allowIntraPeptide")) && (line.split("\t")[1].equals(allowIntraPeptide))) {
                 control++;
             }
