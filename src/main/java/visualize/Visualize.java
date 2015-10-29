@@ -71,7 +71,7 @@ public final class Visualize extends javax.swing.JFrame {
         startDialog = new StartDialog(this, true);
         if (!startDialog.getSpecFolder().isEmpty()) {
             initComponents();
-            indexOfAnnotatedPeaks = startDialog.getIndexOfAnnotatedPeaks();
+            indexOfAnnotatedPeaks = startDialog.getIndexOfAnnotatedPeaks()+1;
             setSpecsFolder(startDialog.getSpecFolder());
             start_visualization();
             this.setVisible(true);
@@ -627,6 +627,7 @@ public final class Visualize extends javax.swing.JFrame {
                 forest_green = new Color(0, 102, 0),
                 selectedColor = null;
         for (String splittedAnnotatedPeak : splittedAnnotatedPeaksStr) {
+            System.out.println(splittedAnnotatedPeak);
             if (!splittedAnnotatedPeak.isEmpty()) {
                 String[] annotationInfo = splittedAnnotatedPeak.split("_");
                 String chargeState = annotationInfo[0],

@@ -139,7 +139,7 @@ public class StartDialog extends javax.swing.JDialog {
         indexjLabel.setText("Index of annotated peaks");
 
         indexjTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        indexjTextField.setText("30");
+        indexjTextField.setText("24");
 
         javax.swing.GroupLayout resultFilejPanelLayout = new javax.swing.GroupLayout(resultFilejPanel);
         resultFilejPanel.setLayout(resultFilejPanelLayout);
