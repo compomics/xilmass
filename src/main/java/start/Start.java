@@ -89,7 +89,7 @@ public class Start {
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-                //                scoring = ConfigHolder.getInstance().getString("scoring"),
+                //scoring = ConfigHolder.getInstance().getString("scoring"),
                 scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
         if (!contaminantDBName.isEmpty()) {
@@ -295,12 +295,12 @@ public class Start {
                         linker, fragMode, isContrastLinkedAttachmentOn, maxModsPerPeptide);
                 all_headers.addAll(tmp_headers);
                 if (searcForAlsoMonoLink) {
-//                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2,
-//                            headers_sequences, ptmFactory,
-//                            fixedModifications,
-//                            variableModifications,
-//                            linker, fragMode, maxModsPerPeptide);
-//                    all_headers.addAll(tmp_headers);
+                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2,
+                            headers_sequences, ptmFactory,
+                            fixedModifications,
+                            variableModifications,
+                            linker, fragMode, maxModsPerPeptide);
+                    all_headers.addAll(tmp_headers);
                 }
             }
             bw2.close();
@@ -375,14 +375,13 @@ public class Start {
                                     }
                                 }
                                 if (isPercolatorAsked) {
-                                    // write all res..
-                                    // write also percolator input
+                                    // write all res and also percolator input
                                     ArrayList<String> percolatorInfo = new ArrayList<String>();
                                     ArrayList<Result> percolatorInfoResults = new ArrayList<Result>();
                                     for (Result r : info) {
                                         CrossLinkingType linkingType = r.getCp().getLinkingType();
                                         if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
-                                            String i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), hasIonWeights, ptmFactory);
+                                            String i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
                                             if (!percolatorInfo.contains(i)) {
                                                 percolatorInfo.add(i);
                                                 percolatorInfoResults.add(r);
@@ -425,12 +424,8 @@ public class Start {
                 + "LinkProteinA" + "\t" + "LinkProteinB" + "\t"
                 + "LinkingType" + "\t"
                 + "Score" + "\t"
-                // + "DeltaScore" + "\t" 
-                + "ScoringName" + "\t"
                 + "ln(NumSp)" + "\t"
                 + "#MatchedPeaks" + "\t" + "#MatchedTheoPeaks" + "\t"
-                + "#TheoIonA" + "\t" + "#TheoIonB" + "\t"
-                + "IonFracA" + "\t" + "IonFracB" + "\t"
                 + "MatchedPeakList" + "\t" + "MatchedTheoPeakList" + "\t"
                 + "Labeling");
         if (doesKeepCPeptideFragmPattern) {
@@ -485,7 +480,6 @@ public class Start {
         double[] from_to = getRange(precMass, precTol, isPPM);
         double from = from_to[0],
                 to = from_to[1];
-//        System.out.println(precMass + "\t" + precTol + "\t" + from + "\t" + to);
         ArrayList<CrossLinking> selectedCPeptides = search.getQuery(from, to);
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
@@ -526,7 +520,6 @@ public class Start {
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
                 allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
                 isLabeled = ConfigHolder.getInstance().getString("isLabeled");
-
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         bw.write("Settings file" + "\n");
         bw.write("Running date=" + new Date().toString() + "\n");
@@ -685,17 +678,12 @@ public class Start {
      */
     private static String writePercolatorTitle() throws IOException {
         String title = "SpecID" + "\t" + "Label" + "\t" + "scannr" + "\t"
-                // + "retentionTime" + "\t" 
                 + "massDelta_ppm" + "\t"
                 + "score" + "\t"
-                // + "deltaScore" + "\t"
                 + "charge" + "\t" + "observedMass_Da" + "\t"
-                // + "absMassDelta_ppm" + "\t"
                 + "CrossLinkerLabeling" + "\t"
                 + "lenPepA" + "\t" + "lenPepB" + "\t" + "sumLen" + "\t"
-                //                + "ionFracA" + "\t" + "ionFracB" + "\t"
                 + "lnNumSp" + "\t"
-                //                + "IonFracA" + "\t" + "IonFracB" + "\t"
                 + "Peptide" + "\t"
                 + "Protein";
         return (title);
@@ -745,30 +733,34 @@ public class Start {
         int linkerA = cp.getLinker_position_on_peptideA() + 1,
                 linkerB = cp.getLinker_position_on_peptideB() + 1;
         String input = id + "\t" + label + "\t" + scn + "\t"
-                // + res.getMsms().getPrecursor().getRt() + "\t"
                 + res.getDeltaMass() + "\t"
                 + res.getScore() + "\t"
-                // + res.getDeltaScore() + "\t"
                 + res.getCharge() + "\t"
                 + res.getObservedMass() + "\t"
-                // + res.getAbsDeltaMass() + "\t"
                 + labelInfo + "\t"
                 + pepALen + "\t" + pepBLen + "\t" + sumLen + "\t"
-                //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
                 + res.getLnNumSpec() + "\t"
-                //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
                 + "-." + cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory) + "(" + linkerA + ")" + "--" // PeptideA Sequence
                 + cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory) + "(" + linkerB + ")" + ".-" // PeptideBSequence part              
-                //                + "-." + cp.getPeptideA().getSequence() + "(" + linkerA + ")" + "--" // PeptideA Sequence
-                //                + cp.getPeptideB().getSequence() + "(" + linkerB + ")" + ".-" // PeptideBSequence part
                 + "\t"
                 + cp.getProteinA() + "-" + cp.getProteinB();
         return input;
     }
 
+ 
+    
     /**
+     * This method generates Percolator Input entries without scanIDs 
+     * 
+     * 
+     * @param res
+     * @param c
+     * @param hasIonWeight
+     * @param ptmFactory
+     * @return
+     * @throws IOException 
      */
-    private static String getPercolatorInfoNoIDs(Result res, CPeptides c, boolean hasIonWeight, PTMFactory ptmFactory) throws IOException {
+    private static String getPercolatorInfoNoIDs(Result res, CPeptides c, PTMFactory ptmFactory) throws IOException {
         String scn = res.getScanNum(),
                 labelInfo = "0";
         int label = -1,
@@ -793,22 +785,15 @@ public class Start {
         // because only cross linked peptides are selected for scoring!
         CPeptides cp = (CPeptides) res.getCp();
         String input = label + "\t" + scn + "\t"
-                // + res.getMsms().getPrecursor().getRt() + "\t"
                 + res.getDeltaMass() + "\t"
                 + res.getScore() + "\t"
-                // + res.getDeltaScore() + "\t"
                 + res.getCharge() + "\t"
                 + res.getObservedMass() + "\t"
-                // + res.getAbsDeltaMass() + "\t"
                 + labelInfo + "\t"
                 + pepALen + "\t" + pepBLen + "\t" + sumLen + "\t"
-                //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
                 + res.getLnNumSpec() + "\t"
-                //                + res.getIonFracA() + "\t" + res.getIonFracB() + "\t"
                 + "-." + cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory) + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
                 + cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory) + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part              
-                //                + "-." + cp.getPeptideA().getSequence() + "(" + cp.getLinker_position_on_peptideA() + ")" + "--" // PeptideA Sequence
-                //                + cp.getPeptideB().getSequence() + "(" + cp.getLinker_position_on_peptideB() + ")" + ".-" // PeptideBSequence part
                 + "\t"
                 + cp.getProteinA() + "-" + cp.getProteinB();
         return input;
