@@ -17,7 +17,7 @@ import crossLinker.CrossLinkerType;
 public class BS3 extends CrossLinker {
 
     public BS3() {
-        this.name = CrossLinkerName.BS3;
+        this.name = CrossLinkerName.BS3d0;
         this.type = CrossLinkerType.homobifunctional; // K-K     
         double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * Atom.H.getMonoisotopicMass());
         super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
@@ -25,8 +25,8 @@ public class BS3 extends CrossLinker {
     }
 
     /**
-     * heavy labeled BS3 is introduced as addition of 4 more deuterium ions...
-     * If isLabeled is true, it returns BSSd4, otherwise BS3.
+     * heavy labeled BS3d0 is introduced as addition of 4 more deuterium ions...
+     * If isLabeled is true, it returns BSSd4, otherwise BS3d0.
      *
      * @param isLabeled
      */
@@ -41,7 +41,7 @@ public class BS3 extends CrossLinker {
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
         } else {
-            this.name = CrossLinkerName.BS3;
+            this.name = CrossLinkerName.BS3d0;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
@@ -58,7 +58,7 @@ public class BS3 extends CrossLinker {
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
         } else {
-            this.name = CrossLinkerName.BS3;
+            this.name = CrossLinkerName.BS3d0;
             double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
             super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
             super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);

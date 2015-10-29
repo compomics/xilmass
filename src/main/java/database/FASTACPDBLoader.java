@@ -29,7 +29,7 @@ import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 
 /**
- * This class is used to load
+ * This class is used to load constructed database with their peptide masses
  *
  * @author Sule
  */

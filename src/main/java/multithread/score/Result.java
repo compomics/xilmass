@@ -16,7 +16,7 @@ import naming.IdCPeptideFragmentationPatternName;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 
 /**
  * This method keeps results spectrum-cross linked peptide score calculation via
@@ -27,7 +27,7 @@ import theoretical.CrossLinkedPeptides;
 public class Result {
 
     private MSnSpectrum msms; // a selected MSnSpectrum object
-    private CrossLinkedPeptides cp; // a cross linked peptide object
+    private CrossLinking cp; // a cross linked peptide object
     private double score; // score how likely that cross linked peptide spectra looks like MSnSpectrum object
     private ScoreName scoreName; // a name of scoring function
     private HashSet<Peak> matchedPeaks; // list of matched peaks on an experimental spectrum 
@@ -67,7 +67,7 @@ public class Result {
      * @param doesContainCPeptidePattern true: there is a CPeptidePattern
      * @param doesContainIonFrac - true: there is ion fraction
      */
-    public Result(MSnSpectrum msms, CrossLinkedPeptides cp, ScoreName scoreName, double score, double deltaScore, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks,
+    public Result(MSnSpectrum msms, CrossLinking cp, ScoreName scoreName, double score, double deltaScore, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks,
             double weight, double ionFracA, double ionFacB, double observedMass, double deltaMass, double absDeltaMass, double lnNumSpec, int matchedTheoA, int matchedTheoB,
             boolean doesContainCPeptidePattern, boolean doesContainIonFrac) {
         this.msms = msms;
@@ -121,11 +121,11 @@ public class Result {
         this.ionFrac = weight;
     }
 
-    public CrossLinkedPeptides getCp() {
+    public CrossLinking getCp() {
         return cp;
     }
 
-    public void setCp(CrossLinkedPeptides cp) {
+    public void setCp(CrossLinking cp) {
         this.cp = cp;
     }
 
@@ -249,12 +249,10 @@ public class Result {
         Collections.sort(matchedPLists, Peak.ASC_mz_order);
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
-
         String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"
                 + observedMass + "\t" + charge + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
                 + score + "\t"
-                // + deltaScore + "\t" 
                 + scoreName + "\t"
                 + lnNumSpec + "\t"
                 + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"

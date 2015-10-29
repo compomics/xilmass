@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
 import matching.MatchAndScore;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
-import theoretical.CrossLinkedPeptides;
+import theoretical.CrossLinking;
 
 /**
  *
@@ -23,7 +23,7 @@ import theoretical.CrossLinkedPeptides;
  */
 public class ScorePSM implements Callable<ArrayList<Result>> {
 
-    private ArrayList<CrossLinkedPeptides> selectedCPeptides; // 
+    private ArrayList<CrossLinking> selectedCPeptides; // 
     private MSnSpectrum ms; // a MSnSpectrum compared to CPeptides object
     private ScoreName scoreName; // a ScoreName
     private double fragTol, // fragment tolerance, requiring for MatchAndScore instantiation.
@@ -36,7 +36,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
             doesKeepPattern,
             doesKeepWeight;
 
-    public ScorePSM(ArrayList<CrossLinkedPeptides> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName, 
+    public ScorePSM(ArrayList<CrossLinking> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName, 
             double fragTol, double massWindow, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber,
             boolean doesFindAllMatchedPeaks, boolean isPPM, boolean doesKeepPattern, boolean doesKeepWeight) {
         this.selectedCPeptides = selectedCPeptides;
@@ -63,9 +63,9 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
     @Override
     public ArrayList<Result> call() throws Exception {
         ArrayList<Result> results = new ArrayList<Result>();
-        InnerIteratorSync<CrossLinkedPeptides> iteratorCPeptides = new InnerIteratorSync(selectedCPeptides.iterator());
+        InnerIteratorSync<CrossLinking> iteratorCPeptides = new InnerIteratorSync(selectedCPeptides.iterator());
         while (iteratorCPeptides.iter.hasNext()) {
-            CrossLinkedPeptides tmpCPeptide = (CrossLinkedPeptides) iteratorCPeptides.iter.next();
+            CrossLinking tmpCPeptide = (CrossLinking) iteratorCPeptides.iter.next();
             synchronized (tmpCPeptide) {
                 MatchAndScore obj = new MatchAndScore(ms, scoreName, tmpCPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow, doesFindAllMatchedPeaks, isPPM);
                 double tmpScore = obj.getCXPSMScore(),
