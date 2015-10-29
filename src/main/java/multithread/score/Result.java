@@ -253,14 +253,10 @@ public class Result {
                 + observedMass + "\t" + charge + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
                 + score + "\t"
-                + scoreName + "\t"
                 + lnNumSpec + "\t"
-                + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"
-                + matchedTheoA + "\t" + matchedTheoB + "\t"
-                + ionFracA + "\t" + ionFracB + "\t"
+                + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"                
                 + printPeaks(matchedPLists) + "\t"
                 + printCPeaks(matchedCTheoPLists);
-
         if (cp instanceof CPeptides) {
             boolean isHeavyLabel = cp.getLinker().isIsLabeled();
             if (isHeavyLabel) {

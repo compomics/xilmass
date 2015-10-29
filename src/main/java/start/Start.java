@@ -66,6 +66,8 @@ public class Start {
     public static void main(String[] args) throws UnknownDBFormatException, IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException, Exception {
 
         LOGGER.info("Program starts! " + "\t");
+        String startTime = new Date().toString();
+
         // STEP 1: DATABASE GENERATIONS! 
         double version = 0.0;
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
@@ -75,7 +77,7 @@ public class Start {
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                 monoLinkFile = cxDBName + "_monoLink.index",
-                dbFolder = ConfigHolder.getInstance().getString("folder"),
+                indexFolder = ConfigHolder.getInstance().getString("indexFolder"),
                 crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
                 enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
@@ -147,16 +149,17 @@ public class Start {
                 isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
                 searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
-                doesKeepIonWeights = true,
+                doesKeepIonWeights = false,
                 // a setting when I tried to merged different fragment ion types but it must be off by setting as false
                 // isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
                 isContrastLinkedAttachmentOn = false,
                 //  settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
                 //doesFindAllMatchedPeaks=T
                 doesFindAllMatchedPeaks = true,
+                isSettingRunBefore = true,
                 isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
                 // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
-                hasIonWeights = true;
+                hasIonWeights = false;
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
@@ -172,32 +175,27 @@ public class Start {
         } else if (labeledOption.equals("T")) {
             linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
         }
-
         // Maybe heavy and light labeled linkers are used
-        LOGGER.info("Parameters are ready!");
-        LOGGER.info("CX database is checking!");
+        LOGGER.info("Parameters are ready to perform search!");
+        LOGGER.info("Checking the existence of any CX database with the same search settings!");
         // This part of the code makes sure that an already generated CXDB is not constructed again..
-        File settings = new File("settings.txt"),
-                cxDB = new File(cxDBName + ".fastacp"),
+        File cxDB = new File(cxDBName + ".fastacp"),
+                settings = new File(cxDB.getAbsoluteFile().getParent() + File.separator + "settings.txt"),
                 indexFile = new File(cxDBNameIndexFile),
                 indexMonoLinkFile = new File(monoLinkFile);
-        boolean isSame = isSameDBSetting(settings), // either the same/different/empty
+        boolean isSame = false,
                 doesCXDBExist = false;
-        // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
-        if (isSame) {
-            for (File f : new File(dbFolder).listFiles()) {
-                if (f.getName().equals(cxDB.getName())) {
-                    LOGGER.info("A constrcuted fastacp file is found! The name=" + f.getName());
-                    doesCXDBExist = true;
-                }
-            }
-        }
-        if (isSame && doesCXDBExist) {
-            for (File f : new File(dbFolder).listFiles()) {
-                if (f.getName().equals(indexFile.getName())) {
-                    LOGGER.info("An index file for fastacp file is also found! The name=" + f.getName());
-                }
-            }
+        if (settings.exists()) {
+            isSame = isSameDBSetting(settings); // either the same/different/empty
+            // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
+            if (isSame) {
+                for (File f : new File(indexFolder).getParentFile().listFiles()) {
+                    if (f.getName().equals(cxDB.getName())) {
+                        LOGGER.info("A previously constrcuted fastacp file is found! Name=" + f.getName());
+                        doesCXDBExist = true;
+                    } 
+               }
+            }            
         }
         // here load db entries to memory for Lucene indexing search
         File folder = new File(indexFile.getParentFile().getPath() + File.separator + "index");
@@ -208,7 +206,7 @@ public class Start {
         HashMap<String, String> headers_sequences = new HashMap<String, String>();
         if ((isSame && !doesCXDBExist) || !isSame || (folder.listFiles().length == 0)) {
             // Construct a cross linked peptide database and write an index file with masses...
-            LOGGER.info("A CXDB IS NOT found or DIFFERENT DATABASE SETTINGS! A CXDB is going to be constructed..");
+            LOGGER.info("A CXDB  either is not found or the setting were different than preivous runs! A CXDB is going to be constructed..");
             CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
                     inSilicoPeptideDBName,
                     cxDBName, // db related parameters
@@ -236,7 +234,7 @@ public class Start {
             WriteCXDB.writeCXDB(headers_sequences, cxDBName);
             LOGGER.info("A CX database is now ready!");
             // now write a settings file
-            writeSettings(settings);
+            isSettingRunBefore = false;
         }
         // TODO: Check for mono linked searching...
         if (searcForAlsoMonoLink && !headers_sequences.isEmpty()) {
@@ -404,6 +402,8 @@ public class Start {
                 bw_inter.close();
             }
         }
+        LOGGER.info("Running ends, so write the setting file");
+        writeSettings(settings, startTime, isSettingRunBefore, ("Xilmass version " + version));
         LOGGER.info("Cross linked database search is done!");
         excService.shutdown();
     }
@@ -498,19 +498,19 @@ public class Start {
      * @param file
      * @throws IOException
      */
-    private static void writeSettings(File file) throws IOException {
+    private static void writeSettings(File file, String startTime, boolean isSettingRunBefore, String versionInfo) throws IOException {
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
-                cxDBNameIndexFile = cxDBName + "header_seq_mass_cxms.index", // An index file from already generated cross linked protein database
-                dbFolder = ConfigHolder.getInstance().getString("folder"),
+                contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
+                indexFolder = ConfigHolder.getInstance().getString("indexFolder"),
                 crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes"),
                 enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
                 enzymeFileName = ConfigHolder.getInstance().getString("enzymeFileName"),
                 modsFileName = ConfigHolder.getInstance().getString("modsFileName"),
-                misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
-                lowMass = ConfigHolder.getInstance().getString("lowerMass"),
-                highMass = ConfigHolder.getInstance().getString("higherMass"),
+                miscleavaged = ConfigHolder.getInstance().getString("miscleavaged"),
+                lowerMass = ConfigHolder.getInstance().getString("lowerMass"),
+                higherMass = ConfigHolder.getInstance().getString("higherMass"),
                 mgfs = ConfigHolder.getInstance().getString("mgfs"),
                 resultFolder = ConfigHolder.getInstance().getString("resultFolder"),
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
@@ -519,31 +519,60 @@ public class Start {
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
                 allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled");
+                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
+                keepCPeptideFragmPattern = ConfigHolder.getInstance().getString("keepCPeptideFragmPattern"),
+                searcForAlsoMonoLink = ConfigHolder.getInstance().getString("searcForAlsoMonoLink"),
+                maxModsPerPeptide = ConfigHolder.getInstance().getString("maxModsPerPeptide"),
+                ms1Err = ConfigHolder.getInstance().getString("ms1Err"),
+                isMS1PPM = ConfigHolder.getInstance().getString("isMS1PPM"),
+                ms2Err = ConfigHolder.getInstance().getString("ms2Err"),
+                minimumFiltedPeaksNumberForEachWindow = ConfigHolder.getInstance().getString("minimumFiltedPeaksNumberForEachWindow"),
+                maximumFiltedPeaksNumberForEachWindow = ConfigHolder.getInstance().getString("maximumFiltedPeaksNumberForEachWindow"),
+                massWindow = ConfigHolder.getInstance().getString("massWindow"),
+                threadNumbers = ConfigHolder.getInstance().getString("threadNumbers"),
+                isPercolatorAsked = ConfigHolder.getInstance().getString("isPercolatorAsked");
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-        bw.write("Settings file" + "\n");
-        bw.write("Running date=" + new Date().toString() + "\n");
-        bw.write("givenDBName" + "\t" + givenDBName + "\n");
-        bw.write("cxDBName" + "\t" + cxDBName + "\n");
-        bw.write("cxDBNameIndexFile" + "\t" + cxDBNameIndexFile + "\n");
-        bw.write("dbFolder" + "\t" + dbFolder + "\n");
-        bw.write("crossLinkerName" + "\t" + crossLinkerName + "\n");
-        bw.write("isLabeled" + "\t" + isLabeled + "\n");
-        bw.write("crossLinkedProteinTypes" + "\t" + crossLinkedProteinTypes + "\n");
-        bw.write("enzymeName" + "\t" + enzymeName + "\n");
-        bw.write("enzymeFileName" + "\t" + enzymeFileName + "\n");
-        bw.write("modsFileName" + "\t" + modsFileName + "\n");
-        bw.write("misclevaged" + "\t" + misclevaged + "\n");
-        bw.write("lowMass" + "\t" + lowMass + "\n");
-        bw.write("highMass" + "\t" + highMass + "\n");
-        bw.write("mgfs" + "\t" + mgfs + "\n");
-        bw.write("resultFile" + resultFolder + "\t" + "\n");
-        bw.write("fixedModificationNames" + "\t" + fixedModificationNames + "\n");
-        bw.write("variableModificationNames" + "\t" + variableModificationNames + "\n");
-        bw.write("fragModeName" + "\t" + fragModeName + "\n");
-        bw.write("minLen" + "\t" + minLen + "\n");
-        bw.write("maxLenCombined" + "\t" + maxLenCombined + "\n");
-        bw.write("allowIntraPeptide" + "\t" + allowIntraPeptide);
+        bw.write("Settings-file for " + versionInfo + "\n");
+        bw.write("" + "\n");
+        bw.write("Running started=" + startTime + "\n");
+        bw.write("Running ended=" + new Date().toString() + "\n");
+        if (isSettingRunBefore) {
+            bw.write("A cross-linked peptide database has been already constructed!" + "\n");
+        } else {
+            bw.write("A cross-linked peptide database was constructed for the first time!" + "\n");
+        }
+        bw.write("givenDBName=" + givenDBName + "\n");
+        bw.write("contaminantDBName=" + contaminantDBName + "\n");
+        bw.write("cxDBName=" + cxDBName + "\n");
+        bw.write("indexFolder=" + indexFolder + "\n");
+        bw.write("mgfs=" + mgfs + "\n");
+        bw.write("resultFolder=" + resultFolder + "\n");
+        bw.write("crossLinkerName=" + crossLinkerName + "\n");
+        bw.write("isLabeled=" + isLabeled + "\n");
+        bw.write("crossLinkedProteinTypes=" + crossLinkedProteinTypes + "\n");
+        bw.write("searcForAlsoMonoLink=" + searcForAlsoMonoLink + "\n");
+        bw.write("minLen=" + minLen + "\n");
+        bw.write("maxLenCombined=" + maxLenCombined + "\n");
+        bw.write("allowIntraPeptide=" + allowIntraPeptide + "\n");
+        bw.write("keepCPeptideFragmPattern=" + keepCPeptideFragmPattern + "\n");
+        bw.write("enzymeFileName=" + enzymeFileName + "\n");
+        bw.write("enzymeName=" + enzymeName + "\n");
+        bw.write("miscleavaged=" + miscleavaged + "\n");
+        bw.write("lowerMass=" + lowerMass + "\n");
+        bw.write("higherMass=" + higherMass + "\n");
+        bw.write("modsFileName=" + modsFileName + "\n");
+        bw.write("fixedModification=" + fixedModificationNames + "\n");
+        bw.write("variableModification=" + variableModificationNames + "\n");
+        bw.write("maxModsPerPeptide=" + maxModsPerPeptide + "\n");
+        bw.write("fragModeName=" + fragModeName + "\n");
+        bw.write("ms1Err=" + ms1Err + "\n");
+        bw.write("isMS1PPM=" + isMS1PPM + "\n");
+        bw.write("ms2Err=" + ms2Err + "\n");
+        bw.write("minimumFiltedPeaksNumberForEachWindow=" + minimumFiltedPeaksNumberForEachWindow + "\n");
+        bw.write("maximumFiltedPeaksNumberForEachWindow=" + maximumFiltedPeaksNumberForEachWindow + "\n");
+        bw.write("massWindow=" + massWindow + "\n");
+        bw.write("threadNumbers=" + threadNumbers + "\n");
+        bw.write("isPercolatorAsked=" + isPercolatorAsked);
         bw.close();
     }
 
@@ -558,57 +587,68 @@ public class Start {
      */
     public static boolean isSameDBSetting(File paramFile) throws IOException {
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
-                dbFolder = ConfigHolder.getInstance().getString("folder"),
+                contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
+                cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
+                indexFolder = ConfigHolder.getInstance().getString("indexFolder"),
                 crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
+                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes"),
-                enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
-                misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
-                lowMass = ConfigHolder.getInstance().getString("lowerMass"),
-                highMass = ConfigHolder.getInstance().getString("higherMass"),
-                variableModification = ConfigHolder.getInstance().getString("variableModification"),
-                fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
+                searcForAlsoMonoLink = ConfigHolder.getInstance().getString("searcForAlsoMonoLink"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
                 allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled");
+                enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
+                misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
+                lowerMass = ConfigHolder.getInstance().getString("lowerMass"),
+                higherMass = ConfigHolder.getInstance().getString("higherMass"),
+                fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
+                variableModification = ConfigHolder.getInstance().getString("variableModification"),
+                maxModsPerPeptide = ConfigHolder.getInstance().getString("maxModsPerPeptide");
         int control = 0;
         boolean isSame = false;
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
         String line = "";
         while ((line = br.readLine()) != null) {
-            if ((line.startsWith("givenDBName")) && (line.split("\t")[1].equals(givenDBName))) {
+            if ((line.startsWith("givenDBName")) && (line.split("=")[1].equals(givenDBName))) {
                 control++;
-            } else if ((line.startsWith("dbFolder")) && (line.split("\t")[1].equals(dbFolder))) {
+            } else if (((line.startsWith("contaminantDBName")) && (line.split("=").length == 2) && (line.split("\t")[1].equals(contaminantDBName)))
+                    || (line.startsWith("contaminantDBName")) && (line.split("=").length == 1)) {
                 control++;
-            } else if ((line.startsWith("crossLinkerName")) && (line.split("\t")[1].equals(crossLinkerName))) {
+            } else if ((line.startsWith("cxDBName")) && (line.split("=")[1].equals(cxDBName))) {
                 control++;
-            } else if ((line.startsWith("crossLinkedProteinTypes")) && (line.split("\t")[1].equals(crossLinkedProteinTypes))) {
+            } else if ((line.startsWith("indexFolder")) && (line.split("=")[1].equals(indexFolder))) {
                 control++;
-            } else if ((line.startsWith("enzymeName")) && (line.split("\t")[1].equals(enzymeName))) {
+            } else if ((line.startsWith("crossLinkerName")) && (line.split("=")[1].equals(crossLinkerName))) {
                 control++;
-            } else if ((line.startsWith("misclevaged")) && (line.split("\t")[1].equals(misclevaged))) {
+            } else if ((line.startsWith("isLabeled")) && (line.split("=")[1].equals(isLabeled))) {
                 control++;
-            } else if ((line.startsWith("lowMass")) && (line.split("\t")[1].equals(lowMass))) {
+            } else if ((line.startsWith("crossLinkedProteinTypes")) && (line.split("=")[1].equals(crossLinkedProteinTypes))) {
                 control++;
-            } else if ((line.startsWith("highMass")) && (line.split("\t")[1].equals(highMass))) {
+            } else if ((line.startsWith("searcForAlsoMonoLink")) && (line.split("=")[1].equals(searcForAlsoMonoLink))) {
                 control++;
-            } else if ((line.startsWith("fixedModification")) && (line.split("\t")[1].equals(fixedModification)) && line.split("\t").length == 1) {
+            } else if ((line.startsWith("minLen")) && (line.split("=")[1].equals(minLen))) {
                 control++;
-            } else if ((line.startsWith("variableModification")) && line.split("\t").length > 1 && line.split("\t")[1].equals(variableModification)) {
+            } else if ((line.startsWith("maxLenCombined")) && (line.split("=")[1].equals(maxLenCombined))) {
                 control++;
-            } else if (line.split("\t").length == 1) {
+            } else if ((line.startsWith("allowIntraPeptide")) && (line.split("=")[1].equals(allowIntraPeptide))) {
                 control++;
-            } else if ((line.startsWith("isLabeled")) && (line.split("\t")[1].equals(isLabeled))) {
+            } else if ((line.startsWith("enzymeName")) && (line.split("=")[1].equals(enzymeName))) {
                 control++;
-            } else if ((line.startsWith("minLen")) && (line.split("\t")[1].equals(minLen))) {
+            } else if ((line.startsWith("miscleavaged")) && (line.split("=")[1].equals(misclevaged))) {
                 control++;
-            } else if ((line.startsWith("maxLenCombined")) && (line.split("\t")[1].equals(maxLenCombined))) {
+            } else if ((line.startsWith("lowerMass")) && (line.split("=")[1].equals(lowerMass))) {
                 control++;
-            } else if ((line.startsWith("allowIntraPeptide")) && (line.split("\t")[1].equals(allowIntraPeptide))) {
+            } else if ((line.startsWith("higherMass")) && (line.split("=")[1].equals(higherMass))) {
+                control++;
+            } else if ((line.startsWith("fixedModification")) && line.split("=").length > 1 && (line.split("=")[1].equals(fixedModification))) {
+                control++;
+            } else if ((line.startsWith("variableModification")) && line.split("=").length > 1 && line.split("=")[1].equals(variableModification)) {
+                control++;
+            } else if ((line.startsWith("maxModsPerPeptide")) && (line.split("=")[1].equals(maxModsPerPeptide))) {
                 control++;
             }
         }
-        if (control == 13) {
+        if (control == 18) {
             isSame = true;
         }
         return isSame;
@@ -747,18 +787,16 @@ public class Start {
         return input;
     }
 
- 
-    
     /**
-     * This method generates Percolator Input entries without scanIDs 
-     * 
-     * 
+     * This method generates Percolator Input entries without scanIDs
+     *
+     *
      * @param res
      * @param c
      * @param hasIonWeight
      * @param ptmFactory
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     private static String getPercolatorInfoNoIDs(Result res, CPeptides c, PTMFactory ptmFactory) throws IOException {
         String scn = res.getScanNum(),
