@@ -209,6 +209,7 @@ public class CPeptides extends CrossLinking {
     public HashSet<CPeptideIon> getBackbone(HashMap<Integer, ArrayList<Ion>> product_ions, boolean isPeptideA) {
         HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
         // prepare for naming
+        boolean isA2B2pair = false;
         String pepName = "pepA";
         int pep_length = getPeptideA().getSequence().length();
         int linked_index = linker_position_on_peptideA;
@@ -237,12 +238,14 @@ public class CPeptides extends CrossLinking {
             ion_types.add(PeptideFragmentIon.A_ION);
             ion_types.add(PeptideFragmentIon.B_ION);
             ion_types.add(PeptideFragmentIon.Y_ION);
+            isA2B2pair = true;
         } else if (fragmentation_mode.equals(FragmentationMode.HCD_all)) {
             // mostly y ions and then b and a ions
             ion_types.add(PeptideFragmentIon.A_ION);
             ion_types.add(PeptideFragmentIon.B_ION);
             ion_types.add(PeptideFragmentIon.X_ION);
             ion_types.add(PeptideFragmentIon.Y_ION);
+            isA2B2pair = true;
         }
         for (Integer tmp_ion_type : ion_types) {
             int index = linked_index;
@@ -250,7 +253,7 @@ public class CPeptides extends CrossLinking {
                 index = pep_length - linked_index - 1;
             }
             // true= only a2-b2 pair for HCD..
-            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType, true));
+            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType, isA2B2pair));
         }
         return backbones;
     }
@@ -321,7 +324,8 @@ public class CPeptides extends CrossLinking {
     }
 
     /**
-     * This method generates
+     * This method generates fragment ions from a linked peptide.
+     * Currently, a fragment ions only works for a2 generation
      *
      * @param fragmentIonType
      * @param isLinkedPeptideA true/false - a linked peptide is peptideA or
@@ -413,6 +417,7 @@ public class CPeptides extends CrossLinking {
         // now generate all cPeptideIon objects..
         int index_to_show_for_backbone = linker_location_of_product_ions + 1;
         String rootName = pepName + "_" + abbrIonType + index_to_show_for_backbone;
+        // This shows only a2b2 pair..
         if ((fragmentIonType == PeptideFragmentIon.A_ION && linker_location_of_product_ions == 1 && linker_position_of_linkedPeptide == 1) || fragmentIonType != PeptideFragmentIon.A_ION) {
             //lepName + "_" + abbrIonType;
             for (int i = 0; i < selectedTerminiIons.size(); i++) {

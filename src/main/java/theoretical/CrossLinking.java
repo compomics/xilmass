@@ -20,8 +20,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * This abstract class holds information on cross-linker, fragmentation mode, list of theoretical ions (also theoretical peak information as intensity)
- * 
+ * This abstract class holds information on cross-linker, fragmentation mode,
+ * list of theoretical ions (also theoretical peak information as intensity)
+ *
  * @author Sule
  */
 public abstract class CrossLinking {
@@ -36,6 +37,7 @@ public abstract class CrossLinking {
             theoretical_xlinked_mass = 0;
     protected CrossLinkingType linkingType;
 
+    
     public CrossLinker getLinker() {
         return linker;
     }
@@ -81,7 +83,8 @@ public abstract class CrossLinking {
      * @param mass_shift
      * @param pepName
      * @param cPepIonType
-     * @param isA2Required true: a2 ion is introduced, false: only b and y ions for HCD
+     * @param isA2Required true: a2 ion is introduced, false: only b and y ions
+     * for HCD
      *
      * @return NI IONS!
      */
