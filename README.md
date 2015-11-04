@@ -14,7 +14,7 @@ Xilmass is an algorithm designed to identify cross-linked peptides independent o
 ----
 ## Downloads
 
-Download Xilmass algorithm [here] ().  
+Download Xilmass algorithm [here] (http://genesis.ugent.be/maven2/com/compomics/xilmass/0.1/xilmass-0.1.zip).  
 
 Download A simple visualization tool [here] ().
 
