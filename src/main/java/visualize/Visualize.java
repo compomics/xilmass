@@ -371,7 +371,6 @@ public final class Visualize extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cross-linked peptide visualization");
-        setMaximumSize(new java.awt.Dimension(2147, 2147));
 
         visualizeSpectrumjPanel.setBackground(new java.awt.Color(255, 255, 255));
         java.awt.GridBagLayout visualizeSpectrumjPanelLayout = new java.awt.GridBagLayout();
@@ -402,6 +401,11 @@ public final class Visualize extends javax.swing.JFrame {
         resultFilejTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 resultFilejTableMouseClicked(evt);
+            }
+        });
+        resultFilejTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                resultFilejTableKeyReleased(evt);
             }
         });
         resultFilejScrollPane.setViewportView(resultFilejTable);
@@ -504,6 +508,31 @@ public final class Visualize extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_saveImagejMenuItemActionPerformed
+
+    private void resultFilejTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resultFilejTableKeyReleased
+        int selectedRow = resultFilejTable.getSelectedRow();
+        String spectrumFileName = (String) resultFilejTable.getValueAt(selectedRow, 1),
+                spectrumTitle = (String) resultFilejTable.getValueAt(selectedRow, 2);
+        try {
+            setOriginalSpectrumForPlotting(spectrumFileName, spectrumTitle);
+        } catch (IOException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MzMLUnmarshallerException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            original_spec = findMSnSpectrum(specsFolder, spectrumFileName, spectrumTitle);
+            annotateSpectrum();
+        } catch (IOException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MzMLUnmarshallerException ex) {
+            Logger.getLogger(Visualize.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_resultFilejTableKeyReleased
 
     /**
      * This method annotates theoretical peaks onto a given experimental
