@@ -3,14 +3,35 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>com.compomics</groupId>
-    <artifactId>CrossLinkedPeptides</artifactId>
+    <artifactId>xilmass</artifactId>
     <version>0.1</version>
     <packaging>jar</packaging>
    
-    <name>CrossLinked</name>
+    <name>xilmass</name>
     <url>http://maven.apache.org</url>
+      
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>  
     
-    <build>
+    <build>                
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>                
+            </resource>            
+        </resources>
+        
+        <extensions> 
+            <extension> 
+                <groupId>org.apache.maven.wagon</groupId> 
+                <artifactId>wagon-ssh</artifactId> 
+                <version>2.2</version> 
+            </extension> 
+        </extensions>
+        
         <!-- Plugins -->
         <plugins>
             <!-- Compiler plugin -->
@@ -42,7 +63,8 @@
                             </outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>src/main/resources/resources</directory>                                  
+                                    <directory>src/main/resources</directory> 
+                                    <filtering>true</filtering>                                       
                                 </resource>
                             </resources>
                         </configuration>
@@ -57,7 +79,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>analyse.CheckRobustnessDecoyApproach</mainClass>
+                            <mainClass>start.Start</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>
@@ -89,6 +111,26 @@
                     </execution>
                 </executions>
             </plugin>
+            
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/zip.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin> 
         </plugins>
     </build>
     
@@ -112,9 +154,8 @@
             <artifactId>combinatoricslib</artifactId>
             <version>2.1</version>
             <scope>compile</scope>
-        </dependency>
-        
-        
+        </dependency>   
+                   
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
@@ -212,9 +253,12 @@
         </dependency>
     </dependencies>
     
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>   
+    <distributionManagement>        
+        <repository>
+            <id>genesis-maven2-repo</id>
+            <name>Genesis Maven Repository</name>
+            <url>scp://genesis.ugent.be/home/maven/public_html/maven2</url>
+        </repository>
+    </distributionManagement>
+   
 </project>

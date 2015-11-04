@@ -68,9 +68,9 @@ public class Start {
         LOGGER.info("Program starts! " + "\t");
         String startTime = new Date().toString();
 
-        // STEP 1: DATABASE GENERATIONS! 
-        double version = 0.0;
-        String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
+        // STEP 1: DATABASE GENERATIONS!
+        String version = ConfigHolder.getInstance().getString("xilmass.version"),
+                givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
                 inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                 insilicoContaminantDBName = "",
@@ -94,6 +94,7 @@ public class Start {
                 //scoring = ConfigHolder.getInstance().getString("scoring"),
                 scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
+        LOGGER.info("Xilmass version " + version + "\t");
         if (!contaminantDBName.isEmpty()) {
             insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
         }
@@ -193,9 +194,9 @@ public class Start {
                     if (f.getName().equals(cxDB.getName())) {
                         LOGGER.info("A previously constrcuted fastacp file is found! Name=" + f.getName());
                         doesCXDBExist = true;
-                    } 
-               }
-            }            
+                    }
+                }
+            }
         }
         // here load db entries to memory for Lucene indexing search
         File folder = new File(indexFile.getParentFile().getPath() + File.separator + "index");
@@ -341,8 +342,7 @@ public class Start {
                 // now check all spectra to collect all required calculations...
                 SpectrumFactory fct = SpectrumFactory.getInstance();
                 if (mgf.getName().endsWith("mgf")) {
-                    LOGGER.info("Scoring starts now!" + " Spectra file=" + mgf.getName());
-                    fct.addSpectra(mgf, new WaitingHandlerCLIImpl());
+                    fct.addSpectra(mgf);
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
                         List<Future<ArrayList<Result>>> futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
