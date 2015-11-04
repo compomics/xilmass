@@ -11,11 +11,11 @@ S	332.16	pepA_b3	BackboneA	+
 D	333.1769	pepA_y3	BackboneA	+		420.2088892	lepA_y__4
 K	389.2507	pepB_y3	BackboneB	+		518.2279105	lepA_b__5
 D	447.19	pepA_b4	BackboneA	+			
-K-monolink	469.302	pepB_b3_lepA_monolink_b4	BackboneB_Monolink_LinkedPeptideA	+			
-D-monolink	489.2549	pepA_y3_lepB_monolink_y3	BackboneA_Monolink_LinkedPeptideB	+			
-K-monolink	545.3287	pepB_y3_lepA_monolink_y3	BackboneB-LinkedPeptideA	+			
+K-linker	451.29	pepB_b3_lepA_linker_b4	BackboneB_Linker_LinkedPeptideA	+			
+D-linker	471.24	pepA_y3_lepB_linker_y3	BackboneA_Linker_LinkedPeptideB	+			
+K-linker	527.31	pepB_y3_lepA_linker_y3	BackboneB-LinkedPeptideA	+			
 K-M 	582.332	pepB_b3_lepA_b1	BackboneB-LinkedPeptideA	+			
-D	603.268	pepA_b4_lepB_monolink_b3	BackboneA_Monolink_LinkedPeptideB	+			
+D-linker	585.25	pepA_b4_lepB_linker_b3	BackboneA_Linker_LinkedPeptideB	+			
 D-K	617.3577	pepA_y3_lepB_y1	BackboneA-LinkedPeptideB	+			
 D-A	656.302	pepA_b4_lepB_b1	BackboneA-LinkedPeptideB	+			
 K-K	673.4315	pepB_y3_lepA_y1	BackboneB-LinkedPeptideA	+			
