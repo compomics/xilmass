@@ -6,7 +6,7 @@
 ----
 ## Project description
 
-Xilmass is an algorithm designed to identify cross-linked peptides independent of labeling strategy. 
+Xilmass is an algorithm designed to identify cross-linked peptides independent of any labeling strategy. 
 
 
 [Go to top of page](#xilmass)
@@ -14,9 +14,9 @@ Xilmass is an algorithm designed to identify cross-linked peptides independent o
 ----
 ## Downloads
 
-Download Xilmass algorithm [here] (http://genesis.ugent.be/maven2/com/compomics/xilmass/0.1/xilmass-0.1.zip).  
+Download [Xilmass algorithm] (http://genesis.ugent.be/maven2/com/compomics/xilmass/0.1/xilmass-0.1.zip).  
 
-Download A simple visualization tool [here] ().
+Download [a simple Xilmass-visualization tool] (http://genesis.ugent.be/maven2/com/compomics/xilmass-visualize/0.1/xilmass-visualize-0.1.zip).
 
 ----
 
