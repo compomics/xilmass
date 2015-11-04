@@ -1,20 +1,33 @@
-# Cross linked peptides
+# Xilmass
+ * [Project Description](#project-description)
+ * [Downloads](#downloads)
+ * [Usage](#usage)
+  
+----
+## Project description
 
-This program is consisted by 3 packages: Database construction, Theoretical spectra generation, Scoring
-
-## STEP1: Database construction
-
-A customized protein database is generated. 
-Here there is no alpha-beta/beta-alpha order.
-The entries are alpha-beta/alpha-Reversed(beta).
-
-Note that the database must be GENERIC formatted! 
-See the link above to format your protein database as generic 
-
-```
-https://code.google.com/p/searchgui/wiki/DatabaseHelp
-```
-
-The crucial thing is to set miscleavaged number (Recommended:2, if this value get bigger, the search space will increase drastically).
+Xilmass is an algorithm designed to identify cross-linked peptides independent of labeling strategy. 
 
 
+[Go to top of page](#xilmass)
+
+----
+## Downloads
+
+Download Xilmass algorithm [here] (http://genesis.ugent.be/maven2/com/compomics/xilmass/0.1/xilmass-0.1.zip).  
+
+Download A simple visualization tool [here] ().
+
+----
+
+## Usage
+See the [wiki](https://github.com/compomics/xilmass/wiki).
+
+----
+
+| Java | Maven | Netbeans | Lucene |
+|:--:|:--:|:--:|:--:|
+|[![java](http://genesis.ugent.be/public_data/image/java.png)](http://java.com/en/) | [![maven](http://genesis.ugent.be/public_data/image/maven.png)](http://maven.apache.org/) | [![netbeans](https://netbeans.org/images_www/visual-guidelines/NB-logo-single.jpg)](https://netbeans.org/) | [![lucene](https://lucene.apache.org/images/lucene_logo_green_300.png)](https://lucene.apache.org/) |
+
+
+[Go to top of page](#xilmass)
