@@ -6,7 +6,7 @@
 ----
 ## Project description
 
-Xilmass is an algorithm designed to identify cross-linked peptides independent of any labeling strategy. 
+Xilmass is an algorithm designed to identify cross-linked peptides from MS/MS spectra, without reliance of any labeling strategy. 
 
 
 [Go to top of page](#xilmass)
