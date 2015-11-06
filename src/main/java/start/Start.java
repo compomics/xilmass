@@ -8,6 +8,8 @@ package start;
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
 import com.compomics.dbtoolkit.io.interfaces.DBLoader;
+import com.compomics.pride_asa_pipeline.config.PropertiesConfigurationHolder;
+import com.compomics.pride_asa_pipeline.util.ResourceUtils;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
@@ -22,21 +24,28 @@ import database.WriteCXDB;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import multithread.score.Result;
 import multithread.score.ScorePSM;
 import org.apache.log4j.Logger;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.xmlpull.v1.XmlPullParserException;
 import scoringFunction.ScoreName;
 import start.lucene.LuceneIndexSearch;
@@ -77,12 +86,9 @@ public class Start {
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                 monoLinkFile = cxDBName + "_monoLink.index",
-                indexFolder = ConfigHolder.getInstance().getString("indexFolder"),
                 crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
                 enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
-                enzymeFileName = ConfigHolder.getInstance().getString("enzymeFileName"),
-                modsFileName = ConfigHolder.getInstance().getString("modsFileName"),
                 misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
                 lowMass = ConfigHolder.getInstance().getString("lowerMass"),
                 highMass = ConfigHolder.getInstance().getString("higherMass"),
@@ -94,6 +100,39 @@ public class Start {
                 //scoring = ConfigHolder.getInstance().getString("scoring"),
                 scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
+        // load enzyme and modification files from resource folder
+//         File modFile = new File(Start.class.getClassLoader().getResource("mods.xml").toURI().getPath());
+        Resource resourceByRelativePath = ResourceUtils.getResourceByRelativePath("mods.xml");
+        File modFile = resourceByRelativePath.getFile();
+        
+//          File modFile = new File(Start.class.getClassLoader().getResource("mods.xml").getFile());
+
+//         File modFile = new File(Start.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+File.separator+"mods.xml");
+//         File modFile = new File(Start.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+File.separator+"mods.xml");
+//         Resource usedModificationsResource = new FileSystemResource(PropertiesConfigurationHolder.getInstance().getString("mods.xml"));
+//         Resource usedModificationsResource = new FileSystemResource(Start.class.getClassLoader().getResource("mods.xml").getPath());
+//        File modFile = usedModificationsResource.getFile();
+         
+//        File modFile = new File("mods2.xml");
+//        if (modFile.exists()) {
+//            modFile.delete();
+//        }
+//        InputStream in = Start.class.getClassLoader().getResourceAsStream("mods.xml");
+//        Files.copy(in, modFile.toPath());
+         
+//        FileInputStream fin = new FileInputStream(file);
+//        file.delete();
+         
+        File enzymeFile = new File(Start.class.getClassLoader().getResource("enzymes.txt").getFile());
+//        File enzymeFile = new File("enzymes2.txt");
+//        if (enzymeFile.exists()) {
+//            enzymeFile.delete();
+//        }
+//        InputStream inEnzyme = Start.class.getClassLoader().getResourceAsStream("enzymes.txt");
+//        Files.copy(inEnzyme, enzymeFile.toPath());
+
+        String enzymeFileName = enzymeFile.toString(),
+                modsFileName = modFile.toString();
         LOGGER.info("Xilmass version " + version + "\t");
         if (!contaminantDBName.isEmpty()) {
             insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
@@ -126,7 +165,8 @@ public class Start {
                 variableModifications = getModificationsName(variableModificationNames);
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(new File(modsFileName), false);
+//        System.out.println(modFile.getName());
+        ptmFactory.importModifications(modFile, false);
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
                 //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
@@ -190,7 +230,7 @@ public class Start {
             isSame = isSameDBSetting(settings); // either the same/different/empty
             // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
             if (isSame) {
-                for (File f : new File(indexFolder).getParentFile().listFiles()) {
+                for (File f : cxDB.getParentFile().listFiles()) {
                     if (f.getName().equals(cxDB.getName())) {
                         LOGGER.info("A previously constrcuted fastacp file is found! Name=" + f.getName());
                         doesCXDBExist = true;
@@ -199,7 +239,7 @@ public class Start {
             }
         }
         // here load db entries to memory for Lucene indexing search
-        File folder = new File(indexFile.getParentFile().getPath() + File.separator + "index");
+        File folder = new File(cxDB.getParentFile().getPath() + File.separator + "index");
         if (!folder.exists()) {
             folder.mkdir();
         }
@@ -322,6 +362,7 @@ public class Start {
         String percolatorInputTitle = writePercolatorTitle();
         for (File mgf : new File(mgfs).listFiles()) {
             if (mgf.getName().endsWith(".mgf")) {
+                LOGGER.info("Spectra in process is " + mgf.getName());
                 // prepare percolator inputs
                 HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
                 LOGGER.debug(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
@@ -402,6 +443,9 @@ public class Start {
                 bw_inter.close();
             }
         }
+        modFile.delete();
+        enzymeFile.delete();
+        
         LOGGER.info("Running ends, so write the setting file");
         writeSettings(settings, startTime, isSettingRunBefore, ("Xilmass version " + version));
         LOGGER.info("Cross linked database search is done!");
@@ -648,7 +692,7 @@ public class Start {
                 control++;
             }
         }
-        if (control == 18) {
+        if (control == 17) {
             isSame = true;
         }
         return isSame;
