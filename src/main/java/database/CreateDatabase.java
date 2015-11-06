@@ -198,10 +198,11 @@ public class CreateDatabase {
      * @throws Exception
      */
     public void construct() throws UnknownDBFormatException, IOException, Exception {
+        LOGGER.info("Performing in silico digestion");
         digest_insilico();
         // read in silico digested pepti file and generate cross linked peptides       
         // now generate cross linked ones..
-        LOGGER.info("create_crossLinkedPeptides");
+        LOGGER.info("Constructing a cross-linked peptides database");
         create_crossLinkedPeptides();
     }
 
@@ -413,7 +414,7 @@ public class CreateDatabase {
                 long start = System.currentTimeMillis();
                 pt.run();
                 long end = System.currentTimeMillis();
-                LOGGER.info("In silico digestion is finished after " + ((end - start) / 1000) + " seconds.");
+                LOGGER.info("In silico digestion was finished after " + ((end - start) / 1000) + " seconds.");
             }
         }
     }
@@ -430,6 +431,7 @@ public class CreateDatabase {
                 loader_next = null;
         Protein startProtein = null,
                 nextProtein = null;
+        long start = System.currentTimeMillis();
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
             String tmpStartAccession = startProtein.getHeader().getAccession(),
@@ -466,8 +468,9 @@ public class CreateDatabase {
                     }
                 }
             }
-        }
-        LOGGER.info("Cross linked peptide combinations are constructed!");
+        }        
+        long end = System.currentTimeMillis();
+        LOGGER.info("Cross-linked peptides combinations are generated in "  + ((end - start) / 1000) + " seconds.");
     }
 
     /**

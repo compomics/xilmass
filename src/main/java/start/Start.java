@@ -28,7 +28,6 @@ import start.lucene.LuceneIndexSearch;
 import theoretical.*;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 import util.ResourceUtils;
-
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -53,12 +52,11 @@ public class Start {
      */
     public static void main(String[] args) throws UnknownDBFormatException, IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException, Exception {
 
-        LOGGER.info("Program starts! " + "\t");
-        String startTime = new Date().toString();
-
+        long startTime = System.currentTimeMillis();
         // STEP 1: DATABASE GENERATIONS!
-        String version = ConfigHolder.getInstance().getString("xilmass.version"),
-                givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
+        String version = ConfigHolder.getInstance().getString("xilmass.version");
+        LOGGER.info("Xilmass version:" + version + " starts!");
+        String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
                 inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                 insilicoContaminantDBName = "",
@@ -85,7 +83,7 @@ public class Start {
         resourceByRelativePath = ResourceUtils.getResourceByRelativePath("enzymes.txt");
         File enzymeFile = resourceByRelativePath.getFile();
         String enzymeFileName = enzymeFile.toString();
-        LOGGER.info("Xilmass version " + version + "\t");
+
         if (!contaminantDBName.isEmpty()) {
             insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
         }
@@ -169,8 +167,8 @@ public class Start {
             linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
         }
         // Maybe heavy and light labeled linkers are used
-        LOGGER.info("Parameters are ready to perform search!");
-        LOGGER.info("Checking the existence of any CX database with the same search settings!");
+        LOGGER.info("The settings are ready to perform the search!");
+        LOGGER.info("Checking if a previously constructed CX database exists for the same search settings!");
         // This part of the code makes sure that an already generated CXDB is not constructed again..
         File cxDB = new File(cxDBName + ".fastacp"),
                 settings = new File(cxDB.getAbsoluteFile().getParent() + File.separator + "settings.txt"),
@@ -184,7 +182,7 @@ public class Start {
             if (isSame) {
                 for (File f : cxDB.getParentFile().listFiles()) {
                     if (f.getName().equals(cxDB.getName())) {
-                        LOGGER.info("A previously constrcuted fastacp file is found! Name=" + f.getName());
+                        LOGGER.info("A previously constructed CX database file is found! The name is " + f.getName());
                         doesCXDBExist = true;
                     }
                 }
@@ -199,7 +197,7 @@ public class Start {
         HashMap<String, String> headers_sequences = new HashMap<String, String>();
         if ((isSame && !doesCXDBExist) || !isSame || (folder.listFiles().length == 0)) {
             // Construct a cross linked peptide database and write an index file with masses...
-            LOGGER.info("A CXDB  either is not found or the setting were different than preivous runs! A CXDB is going to be constructed..");
+            LOGGER.info("Either a CX database is not found or the settings are different! A CX database is going to be constructed..");
             CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
                     inSilicoPeptideDBName,
                     cxDBName, // db related parameters
@@ -211,7 +209,6 @@ public class Start {
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
                     isLabeled); //
-            LOGGER.info("Construction of header_sequence..");
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             // in silico digested contaminant database
             if (!contaminantDBName.isEmpty()) {
@@ -269,7 +266,7 @@ public class Start {
         HashSet<StringBuilder> all_headers = new HashSet<StringBuilder>(),
                 tmp_headers = new HashSet<StringBuilder>();
         // if this folder is empty...
-        if (folder.listFiles().length == 0) {
+        if (folder.listFiles().length == 0 || !isSame ) {
             // Make sure that an index file also exists...
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexFile));
             tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw2,
@@ -297,7 +294,7 @@ public class Start {
             bw2.close();
             // uncomment to store all index files here..           
             indexFile.delete();
-            LOGGER.info("An index (peptide-mass index) file bas been created!");
+            LOGGER.info("An index file (including peptides and masses) bas been created!");
             // delete in silico DBs
             File f = new File(inSilicoPeptideDBName),
                     cF = new File(insilicoContaminantDBName);
@@ -309,12 +306,13 @@ public class Start {
         // STEP 2: CONSTRUCT CPEPTIDE OBJECTS
         // STEP 3: MATCH AGAINST THEORETICAL SPECTRUM
         // Get all MSnSpectrum! (all MS2 spectra)
-        LOGGER.info("Getting experimental spectra and calculating PCXMs");
+        LOGGER.info("The identification starts and XPSMs are calculated!");
+        long start = System.currentTimeMillis();
         // Title for percolator-input
         String percolatorInputTitle = writePercolatorTitle();
         for (File mgf : new File(mgfs).listFiles()) {
             if (mgf.getName().endsWith(".mgf")) {
-                LOGGER.info("Spectra in process is " + mgf.getName());
+                LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
                 // prepare percolator inputs
                 HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
                 LOGGER.debug(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
@@ -395,9 +393,10 @@ public class Start {
                 bw_inter.close();
             }
         }
-        LOGGER.info("Running ends, so write the setting file");
         writeSettings(settings, startTime, isSettingRunBefore, ("Xilmass version " + version));
-        LOGGER.info("Cross linked database search is done!");
+        LOGGER.info("The settings file is ready.");
+        long end = System.currentTimeMillis();
+        LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
         excService.shutdown();
     }
 
@@ -491,7 +490,7 @@ public class Start {
      * @param file
      * @throws IOException
      */
-    private static void writeSettings(File file, String startTime, boolean isSettingRunBefore, String versionInfo) throws IOException {
+    private static void writeSettings(File file, long startTime, boolean isSettingRunBefore, String versionInfo) throws IOException {
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
@@ -528,7 +527,7 @@ public class Start {
         bw.write("Settings-file for " + versionInfo + "\n");
         bw.write("" + "\n");
         bw.write("Running started=" + startTime + "\n");
-        bw.write("Running ended=" + new Date().toString() + "\n");
+        bw.write("Running ended=" + System.currentTimeMillis() + "\n");
         if (isSettingRunBefore) {
             bw.write("A cross-linked peptide database has been already constructed!" + "\n");
         } else {
