@@ -79,39 +79,12 @@ public class Start {
                 //scoring = ConfigHolder.getInstance().getString("scoring"),
                 scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
-        // load enzyme and modification files from resource folder
-//         File modFile = new File(Start.class.getClassLoader().getResource("mods.xml").toURI().getPath());
+        // load enzyme and modification files from a resource folder
         Resource resourceByRelativePath = ResourceUtils.getResourceByRelativePath("mods.xml");
         File modFile = resourceByRelativePath.getFile();
-        
-//          File modFile = new File(Start.class.getClassLoader().getResource("mods.xml").getFile());
-
-//         File modFile = new File(Start.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+File.separator+"mods.xml");
-//         File modFile = new File(Start.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+File.separator+"mods.xml");
-//         Resource usedModificationsResource = new FileSystemResource(PropertiesConfigurationHolder.getInstance().getString("mods.xml"));
-//         Resource usedModificationsResource = new FileSystemResource(Start.class.getClassLoader().getResource("mods.xml").getPath());
-//        File modFile = usedModificationsResource.getFile();
-         
-//        File modFile = new File("mods2.xml");
-//        if (modFile.exists()) {
-//            modFile.delete();
-//        }
-//        InputStream in = Start.class.getClassLoader().getResourceAsStream("mods.xml");
-//        Files.copy(in, modFile.toPath());
-         
-//        FileInputStream fin = new FileInputStream(file);
-//        file.delete();
-         
-        File enzymeFile = new File(Start.class.getClassLoader().getResource("enzymes.txt").getFile());
-//        File enzymeFile = new File("enzymes2.txt");
-//        if (enzymeFile.exists()) {
-//            enzymeFile.delete();
-//        }
-//        InputStream inEnzyme = Start.class.getClassLoader().getResourceAsStream("enzymes.txt");
-//        Files.copy(inEnzyme, enzymeFile.toPath());
-
-        String enzymeFileName = enzymeFile.toString(),
-                modsFileName = modFile.toString();
+        resourceByRelativePath = ResourceUtils.getResourceByRelativePath("enzymes.txt");
+        File enzymeFile = resourceByRelativePath.getFile();
+        String enzymeFileName = enzymeFile.toString();
         LOGGER.info("Xilmass version " + version + "\t");
         if (!contaminantDBName.isEmpty()) {
             insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
@@ -422,9 +395,6 @@ public class Start {
                 bw_inter.close();
             }
         }
-        modFile.delete();
-        enzymeFile.delete();
-        
         LOGGER.info("Running ends, so write the setting file");
         writeSettings(settings, startTime, isSettingRunBefore, ("Xilmass version " + version));
         LOGGER.info("Cross linked database search is done!");
