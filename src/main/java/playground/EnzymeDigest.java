@@ -12,9 +12,7 @@
  */
 package playground;
 
-import crossLinker.CrossLinkerName;
 import com.compomics.dbtoolkit.gui.workerthreads.ProcessThread;
-import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.EnzymeLoader;
 import com.compomics.dbtoolkit.io.UnknownDBFormatException;
 import com.compomics.dbtoolkit.io.implementations.AutoDBLoader;
@@ -24,16 +22,10 @@ import com.compomics.dbtoolkit.io.interfaces.ProteinFilter;
 import com.compomics.util.general.CommandLineParser;
 import com.compomics.util.io.MascotEnzymeReader;
 import com.compomics.util.protein.Enzyme;
-import com.compomics.util.protein.Protein;
-import java.io.BufferedWriter;
-
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -212,17 +204,14 @@ public class EnzymeDigest {
                 if (filter != null) {
                     try {
                         Properties props = new Properties();
-                        InputStream in = EnzymeDigest.class
-                                .getClassLoader().getResourceAsStream("filters.properties");
-                        if (in
-                                == null) {
+                        InputStream in = EnzymeDigest.class.getClassLoader().getResourceAsStream("filters.properties");
+                        if (in == null) {
                             throw new IOException("File 'filters.properties' not found in current classpath!");
                         }
 
                         props.load(in);
                         String filterParams = props.getProperty(filter);
-                        if (filterParams
-                                == null) {
+                        if (filterParams == null) {
                             flagError("The filter you specified (" + filter + ") is not found in the 'filters.properties' file!");
                         }
                         StringTokenizer st = new StringTokenizer(filterParams, ",");
@@ -303,8 +292,6 @@ public class EnzymeDigest {
                 pt.run();
                 long end = System.currentTimeMillis();
                 System.out.println("Finished after " + ((end - start) / 1000) + " seconds.");
-                // read output file and modify it.
-//                create_crossLinkedPeptides(output, crossLinker, minLen, maxLen);
             }
         }
     }
