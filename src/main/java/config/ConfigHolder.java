@@ -4,12 +4,12 @@
  */
 package config;
 
-import com.compomics.pride_asa_pipeline.util.ResourceUtils;
 import java.io.IOException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.springframework.core.io.Resource;
+import util.ResourceUtils;
 
 public class ConfigHolder extends PropertiesConfiguration {
 
