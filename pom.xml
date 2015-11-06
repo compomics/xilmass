@@ -20,7 +20,12 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>                
+                <filtering>true</filtering> 
+                <excludes>
+                    <exclude>PercolatorRun.properties</exclude>
+                    <exclude>TargetDecoy.properties</exclude>
+                    <!--exclude>log4j.properties</exclude-->
+                </excludes>
             </resource>            
         </resources>
         
@@ -65,7 +70,12 @@
                             <resources>
                                 <resource>
                                     <directory>src/main/resources</directory> 
-                                    <filtering>true</filtering>                                       
+                                    <filtering>true</filtering> 
+                                    <excludes>
+                                        <exclude>PercolatorRun.properties</exclude>
+                                        <exclude>TargetDecoy.properties</exclude>
+                                        <!--exclude>log4j.properties</exclude-->
+                                    </excludes>                                      
                                 </resource>
                             </resources>
                         </configuration>
@@ -81,6 +91,7 @@
                     <archive>
                         <manifest>
                             <mainClass>start.Start</mainClass>
+                            <!--mainClass>visualize.Visualize</mainClass-->
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>
@@ -227,7 +238,14 @@
             <artifactId>dbtoolkit</artifactId>
             <version>4.2.4</version>
             <type>jar</type>            
-        </dependency>     
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>4.2.2.RELEASE</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     
     <!-- a remote repository for the deploy -->
