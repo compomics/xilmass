@@ -53,6 +53,8 @@ public class Start {
     public static void main(String[] args) throws UnknownDBFormatException, IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException, Exception {
 
         long startTime = System.currentTimeMillis();
+        Date startDate = new Date();
+
         // STEP 1: DATABASE GENERATIONS!
         String version = ConfigHolder.getInstance().getString("xilmass.version");
         LOGGER.info("Xilmass version:" + version + " starts!");
@@ -266,7 +268,7 @@ public class Start {
         HashSet<StringBuilder> all_headers = new HashSet<StringBuilder>(),
                 tmp_headers = new HashSet<StringBuilder>();
         // if this folder is empty...
-        if (folder.listFiles().length == 0 || !isSame ) {
+        if (folder.listFiles().length == 0 || !isSame) {
             // Make sure that an index file also exists...
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexFile));
             tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw2,
@@ -393,7 +395,7 @@ public class Start {
                 bw_inter.close();
             }
         }
-        writeSettings(settings, startTime, isSettingRunBefore, ("Xilmass version " + version));
+        writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
         LOGGER.info("The settings file is ready.");
         long end = System.currentTimeMillis();
         LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
@@ -490,16 +492,13 @@ public class Start {
      * @param file
      * @throws IOException
      */
-    private static void writeSettings(File file, long startTime, boolean isSettingRunBefore, String versionInfo) throws IOException {
+    private static void writeSettings(File file, Date startTime, boolean isSettingRunBefore, String versionInfo) throws IOException {
         String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                 cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
                 contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
-                indexFolder = ConfigHolder.getInstance().getString("indexFolder"),
                 crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes"),
                 enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
-                enzymeFileName = ConfigHolder.getInstance().getString("enzymeFileName"),
-                modsFileName = ConfigHolder.getInstance().getString("modsFileName"),
                 miscleavaged = ConfigHolder.getInstance().getString("miscleavaged"),
                 lowerMass = ConfigHolder.getInstance().getString("lowerMass"),
                 higherMass = ConfigHolder.getInstance().getString("higherMass"),
@@ -526,8 +525,8 @@ public class Start {
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         bw.write("Settings-file for " + versionInfo + "\n");
         bw.write("" + "\n");
-        bw.write("Running started=" + startTime + "\n");
-        bw.write("Running ended=" + System.currentTimeMillis() + "\n");
+        bw.write("Running started=" + startTime.toString() + "\n");
+        bw.write("Running ended=" + new Date().toString() + "\n");
         if (isSettingRunBefore) {
             bw.write("A cross-linked peptide database has been already constructed!" + "\n");
         } else {
@@ -536,7 +535,6 @@ public class Start {
         bw.write("givenDBName=" + givenDBName + "\n");
         bw.write("contaminantDBName=" + contaminantDBName + "\n");
         bw.write("cxDBName=" + cxDBName + "\n");
-        bw.write("indexFolder=" + indexFolder + "\n");
         bw.write("mgfs=" + mgfs + "\n");
         bw.write("resultFolder=" + resultFolder + "\n");
         bw.write("crossLinkerName=" + crossLinkerName + "\n");
@@ -547,12 +545,10 @@ public class Start {
         bw.write("maxLenCombined=" + maxLenCombined + "\n");
         bw.write("allowIntraPeptide=" + allowIntraPeptide + "\n");
         bw.write("keepCPeptideFragmPattern=" + keepCPeptideFragmPattern + "\n");
-        bw.write("enzymeFileName=" + enzymeFileName + "\n");
         bw.write("enzymeName=" + enzymeName + "\n");
         bw.write("miscleavaged=" + miscleavaged + "\n");
         bw.write("lowerMass=" + lowerMass + "\n");
         bw.write("higherMass=" + higherMass + "\n");
-        bw.write("modsFileName=" + modsFileName + "\n");
         bw.write("fixedModification=" + fixedModificationNames + "\n");
         bw.write("variableModification=" + variableModificationNames + "\n");
         bw.write("maxModsPerPeptide=" + maxModsPerPeptide + "\n");
