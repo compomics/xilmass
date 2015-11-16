@@ -10,14 +10,17 @@ import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
 import crossLinker.GetCrossLinker;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
@@ -30,85 +33,69 @@ import theoretical.FragmentationMode;
 import theoretical.MonoLinkedPeptides;
 
 /**
- * This class first checks if there are index files constructed before. If these
- * were not constructed before, it creates index files by construction of
- * CPeptidesIndex object and calling writeIndexFile() method. After making sure
- * that there are index files, by Search object to call query to select
- * CPeptides
+ * This class first checks if an already constructed index folder exists. If
+ * not, it creates index files by constructing a CPeptidesIndexer object (by
+ * calling index()). After making sure that index is ready, it calls
+ * CPeptidesSearcher object to query in order to select a list of CPeptides.
  *
  * @author Sule
  */
-public class LuceneIndexSearch {
+public class IndexAndSearch {
 
-    private static final Logger LOGGER = Logger.getLogger(LuceneIndexSearch.class);
-    private CPeptideSearch cpSearch; // A searching class to run queries
+    private CPeptideSearcher cPeptideSearcher;
     private PTMFactory ptmFactory;
     private FragmentationMode fragMode;
-    private boolean isContrastLinkedAttachmentOn;
     private CrossLinker heavyLinker,
             lightLinker;
 
     /**
      *
-     * @param headers
+     * @param headers a list of CPeptides entries
      * @param ptmFactory
      * @param linkerName - just name of linker to create both heavy and light
      * labeled versions
-     * @param fragMode
-     * @param folder
-     * @param isContrastLinkedAttachmentOn
+     * @param fragMode fragmentation mode
+     * @param folder index folder
      * @throws IOException
      * @throws Exception
      */
-    public LuceneIndexSearch(HashSet<StringBuilder> headers, File folder, PTMFactory ptmFactory, FragmentationMode fragMode,
-            boolean isContrastLinkedAttachmentOn, String linkerName) throws IOException, Exception {
+    public IndexAndSearch(HashSet<StringBuilder> headers, File folder, PTMFactory ptmFactory, FragmentationMode fragMode, String linkerName) throws IOException, Exception {
         // check if index files exist on given folder
         boolean reader = DirectoryReader.indexExists(FSDirectory.open(folder));
-        // if it is not, then write index files
+        // if an index folder is absent, first index 
         if (!reader) {
-            CPeptidesIndex obj = new CPeptidesIndex(headers, folder);
-            obj.writeIndexFile();
+            CPeptidesIndexer indexer = new CPeptidesIndexer(headers, folder);
+            indexer.index();
         }
-        cpSearch = new CPeptideSearch(folder);
+        cPeptideSearcher = new CPeptideSearcher(folder);
         this.ptmFactory = ptmFactory;
         this.fragMode = fragMode;
-        this.isContrastLinkedAttachmentOn = isContrastLinkedAttachmentOn;
         heavyLinker = GetCrossLinker.getCrossLinker(linkerName, true);
         lightLinker = GetCrossLinker.getCrossLinker(linkerName, false);
     }
 
-    public CPeptideSearch getCpSearch() {
-        return cpSearch;
+    public CPeptideSearcher getCpSearch() {
+        return cPeptideSearcher;
     }
 
-    // range search
-    //mod_date:[20020101 TO 20030101] - must be small and bigger
     /**
-     * Return selected of CrossLinking within a given mass range (inclusive
+     * This method returns a list of CPeptides at their masses within a given mass range (inclusive
      * lower and upper mass)
      *
-     * @param from smaller value
-     * @param to bigger value (must be)
+     * @param from smaller value (inclusive)
+     * @param to bigger value (inclusive)
      * @return
      * @throws IOException
      * @throws ParseException
      * @throws XmlPullParserException
      */
-    public ArrayList<CrossLinking> getQuery(double from, double to) throws IOException, ParseException, XmlPullParserException, IOException {
+    public ArrayList<CrossLinking> getCPeptidesFromGivenMassRange(double from, double to) throws IOException, ParseException, XmlPullParserException, IOException {
         ArrayList<CrossLinking> selected = new ArrayList<CrossLinking>();
-        String query = "mass:[" + from + " TO " + to + "]";
-        int topSearch = 100; // how many topX number of query needs to be called
-        TopDocs topDocs = cpSearch.performSearch(query, topSearch);
+        int topSearch = FieldName.MAX_SEARCH; // how many top number matches is allowed for querying
+        TopDocs topDocs = cPeptideSearcher.performMassRangeSearch(from, to, topSearch);
         ScoreDoc[] res = topDocs.scoreDocs;
-        while (res.length == topSearch) {
-            topSearch += 1;
-            LOGGER.debug("indeed full.." + topSearch);
-            topDocs = cpSearch.performSearch(query, topSearch);
-            res = topDocs.scoreDocs;
-        }
-        LOGGER.debug("total result=" + res.length);
         for (ScoreDoc re : res) {
-            Document doc = cpSearch.getDocument(re.doc);
+            Document doc = cPeptideSearcher.getDocument(re.doc);
             // to select only cross-linked objects
             CrossLinking cp = getCPeptides(doc);
             if (cp instanceof CPeptides) {
@@ -137,18 +124,19 @@ public class LuceneIndexSearch {
     private CrossLinking getCPeptides(Document doc) throws XmlPullParserException, IOException {
         CrossLinking selected = null;
         CrossLinker selectedLinker = lightLinker;
-        String proteinA = doc.get("proteinA"),
-                proteinB = doc.get("proteinB"), // proteinB name
-                peptideAseq = doc.get("peptideAseq"),
-                peptideBseq = doc.get("peptideBseq"),
-                linkA = doc.get("linkA"),
-                linkB = doc.get("linkB"),
-                fixedModA = doc.get("fixModA"),
-                fixedModB = doc.get("fixModB"),
-                variableModA = doc.get("varModA"),
-                variableModB = doc.get("varModB");
+        String proteinA = doc.get(FieldName.PROTEINA),
+                proteinB = doc.get(FieldName.PROTEINB), // proteinB name
+                peptideAseq = doc.get(FieldName.PEPTIDEA),
+                peptideBseq = doc.get(FieldName.PEPTIDEB),
+                linkA = doc.get(FieldName.LINKA),
+                linkB = doc.get(FieldName.LINKB),
+                fixedModA = doc.get(FieldName.FIXMODA),
+                fixedModB = doc.get(FieldName.FIXMODB),
+                variableModA = doc.get(FieldName.VARMODA),
+                variableModB = doc.get(FieldName.VARMODB);
+        boolean isContrastLinkedAttachmentOn = false;
         if (!proteinA.startsWith("contaminant")) {
-            String labelInfo = doc.get("label").replace("\n", "");
+            String labelInfo = doc.get(FieldName.LABEL).replace("\n", "");
             if (labelInfo.equalsIgnoreCase("heavyLabeled")) {
                 selectedLinker = heavyLinker;
             }
@@ -207,22 +195,4 @@ public class LuceneIndexSearch {
         return selected;
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws IOException, Exception {
-        File indexFile = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\databases\\test\\lucene/target_Rdecoy_cam_plectin_cxm_both_index.txt"),
-                modsFile = new File("C:/Users/Sule/Documents/NetBeansProjects/CrossLinkedPeptides/src/resources/mods.xml"),
-                folder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\databases\\test\\lucene/lucene");
-        PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modsFile, false);
-        FragmentationMode fragMode = FragmentationMode.HCD;
-        boolean isContrastLinkedAttachmentOn = false;
-
-//        LuceneIndexSearch o = new LuceneIndexSearch(indexFile, folder, ptmFactory, fragMode, isContrastLinkedAttachmentOn, "DSS");
-//        ArrayList<CrossLinkedPeptides> query = o.getQuery(1500, 1700);
-//        for (CrossLinking q : query) {
-//            System.out.println(q.toPrint());
-//        }
-    }
 }
