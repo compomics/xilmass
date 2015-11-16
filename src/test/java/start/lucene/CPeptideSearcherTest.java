@@ -29,9 +29,10 @@ import static start.lucene.CPeptidesIndexerTest.deleteDirectory;
  */
 public class CPeptideSearcherTest {
 
-    HashSet<StringBuilder> cPeptideEntries;
-    CPeptidesIndexer indexInstance;
-    File folder, indexFile;
+    private HashSet<StringBuilder> cPeptideEntries;
+    private CPeptidesIndexer indexInstance;
+    private File folder, 
+            indexFile;
 
     public CPeptideSearcherTest() throws FileNotFoundException, IOException, XmlPullParserException {
         folder = new File("Data\\Test\\database\\index");

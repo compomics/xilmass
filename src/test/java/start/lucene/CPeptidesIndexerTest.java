@@ -7,7 +7,9 @@ package start.lucene;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashSet;
 import org.apache.lucene.document.Document;
 import org.junit.After;
@@ -16,14 +18,32 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  *
  * @author Sule
  */
-public class CPeptidesIndexerTest {
+public final class CPeptidesIndexerTest {
 
-    public CPeptidesIndexerTest() {
+    private HashSet<StringBuilder> cPeptideEntries;
+    private CPeptidesIndexer indexInstance;
+    private File folder, 
+            indexFile;
+
+    public CPeptidesIndexerTest() throws FileNotFoundException, IOException, XmlPullParserException {
+        folder = new File("Data\\Test\\database\\index");
+        indexFile = new File("Data\\Test\\database\\test_mhcproteins_R_cxm_both_org_partial.index");
+        deleteDirectory(folder);
+        folder = new File("Data\\Test\\database\\index");
+        cPeptideEntries = new HashSet<StringBuilder>();
+        BufferedReader br = new BufferedReader(new FileReader(indexFile));
+        String line = "";
+        while ((line = br.readLine()) != null) {
+            cPeptideEntries.add(new StringBuilder(line));
+        }
+        indexInstance = new CPeptidesIndexer(cPeptideEntries, folder);
+        indexInstance.index();
     }
 
     @BeforeClass
@@ -48,16 +68,6 @@ public class CPeptidesIndexerTest {
     @Test
     public void testGetIndexWriter() throws Exception {
         System.out.println("getIndexWriter");
-        File folder = new File("Data\\Test\\database\\index"),
-                indexFile = new File("Data\\Test\\database\\test_mhcproteins_R_cxm_both_org_partial.index");
-        deleteDirectory(folder);
-        folder = new File("Data\\Test\\database\\index");
-        HashSet<StringBuilder> cPeptideEntries = new HashSet<StringBuilder>();
-        BufferedReader br = new BufferedReader(new FileReader(indexFile));
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            cPeptideEntries.add(new StringBuilder(line));
-        }
         CPeptidesIndexer instance = new CPeptidesIndexer(cPeptideEntries, folder);
         assertEquals(30, instance.getTotalDoc());
     }
@@ -89,10 +99,6 @@ public class CPeptidesIndexerTest {
     @Test
     public void testGetDocument() throws Exception {
         System.out.println("getDocument");
-        File folder = new File("Data\\Test\\database\\index");
-        deleteDirectory(folder);
-        folder = new File("Data\\Test\\database\\index");
-        HashSet<StringBuilder> cPeptideEntries = new HashSet<StringBuilder>();
         StringBuilder line = new StringBuilder("P01911REVERSED(25-30)	P04233(58-63)	LAQLKK	KLRLDK	4	0	[acetylation of protein n-term_1]	[acetylation of protein n-term_1]			1693.05019292722	CROSSLINK	lightLabeled");
         CPeptidesIndexer instance = new CPeptidesIndexer(cPeptideEntries, folder);
         Document result = instance.getDocument(line);

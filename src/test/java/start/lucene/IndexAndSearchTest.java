@@ -8,7 +8,9 @@ package start.lucene;
 import com.compomics.util.experiment.biology.PTMFactory;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import org.apache.lucene.search.NumericRangeQuery;
@@ -19,6 +21,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xmlpull.v1.XmlPullParserException;
+import static start.lucene.CPeptidesIndexerTest.deleteDirectory;
 import theoretical.CPeptides;
 import theoretical.CrossLinking;
 import theoretical.FragmentationMode;
@@ -29,7 +33,29 @@ import theoretical.FragmentationMode;
  */
 public class IndexAndSearchTest {
 
-    public IndexAndSearchTest() {
+    private HashSet<StringBuilder> cPeptideEntries;
+    private CPeptidesIndexer indexInstance;
+    private File folder,
+            indexFile,
+            modsFile;
+    private PTMFactory ptmFactory;
+
+    public IndexAndSearchTest() throws FileNotFoundException, IOException, XmlPullParserException {
+        folder = new File("Data\\Test\\database\\index");
+        indexFile = new File("Data\\Test\\database\\test_mhcproteins_R_cxm_both_org_partial.index");
+        modsFile = new File("C:/Users/Sule/Documents/NetBeansProjects/CrossLinkedPeptides/src/main/resources/mods.xml");
+        deleteDirectory(folder);
+        folder = new File("Data\\Test\\database\\index");
+        cPeptideEntries = new HashSet<StringBuilder>();
+        BufferedReader br = new BufferedReader(new FileReader(indexFile));
+        String line = "";
+        while ((line = br.readLine()) != null) {
+            cPeptideEntries.add(new StringBuilder(line));
+        }
+        indexInstance = new CPeptidesIndexer(cPeptideEntries, folder);
+        indexInstance.index();
+        ptmFactory = PTMFactory.getInstance();
+        ptmFactory.importModifications(modsFile, false);
     }
 
     @BeforeClass
@@ -54,24 +80,9 @@ public class IndexAndSearchTest {
     @Test
     public void testGetCPeptidesFromGivenMassRange() throws Exception {
         System.out.println("getCPeptidesFromGivenMassRange");
-        double from = 0.0;
-        double to = 0.0;
-        File folder = new File("Data\\Test\\database\\index"),
-                indexFile = new File("Data\\Test\\database\\test_mhcproteins_R_cxm_both_org_partial.index"),
-                modsFile = new File("C:/Users/Sule/Documents/NetBeansProjects/CrossLinkedPeptides/src/main/resources/mods.xml");
-        PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modsFile, false);
         FragmentationMode fragMode = FragmentationMode.HCD;
-        HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
-        BufferedReader br = new BufferedReader(new FileReader(indexFile));
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            headers.add(new StringBuilder(line));
-        }
-        System.out.println("Reading done.");
-//         IndexAndSearch(all_headers, folder, ptmFactory, fragMode, isContrastLinkedAttachmentOn, crossLinkerName);
-        IndexAndSearch instance = new IndexAndSearch(headers, folder, ptmFactory, fragMode, "BS3");
-        System.out.println("Indexing done..");
+        String crossLinkerName = "BS3";
+        IndexAndSearch instance = new IndexAndSearch(cPeptideEntries, folder, ptmFactory, fragMode, crossLinkerName);
         ArrayList<CrossLinking> result = instance.getCPeptidesFromGivenMassRange(5689.948796, 5862.080226);
         assertEquals(7, result.size());
         // the following boolean are due to selecting the first peptide might be different while construction of 
@@ -139,7 +150,6 @@ public class IndexAndSearchTest {
         // just to print how query looks..
         Query numeric_query = NumericRangeQuery.newDoubleRange("mass", 1, 110.0, 2000.0, false, false);
         System.out.println("numeric_query is \t" + numeric_query.toString());
-
     }
 
 }
