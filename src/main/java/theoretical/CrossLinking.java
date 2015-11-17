@@ -70,6 +70,10 @@ public abstract class CrossLinking {
         return theoretical_xlinked_mass;
     }
 
+    public void setTheoretical_xlinked_mass(double theoretical_xlinked_mass) {
+        this.theoretical_xlinked_mass = theoretical_xlinked_mass;
+    }
+    
     public CrossLinkingType getLinkingType() {
         return linkingType;
     }
