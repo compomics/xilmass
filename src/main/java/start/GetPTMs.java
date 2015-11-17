@@ -63,7 +63,8 @@ public class GetPTMs {
                 if (ptmType == PTM.MODAA
                         || ptmType == PTM.MODNAA
                         || ptmType == PTM.MODCAA
-                        || ptmType == PTM.MODCPAA) {
+                        || ptmType == PTM.MODCPAA
+                        || ptmType == PTM.MODNPAA) {
                     int target = tmpPTM.getPattern().getTarget();
                     ArrayList<Character> targetAAs = tmpPTM.getPattern().getTargetedAA(target);
                     for (Character targetAA : targetAAs) {
@@ -107,7 +108,7 @@ public class GetPTMs {
             ArrayList<String> ptms = getPTMStoRead(ptmName);
             for (String ptm : ptms) {
                 String tmpPTM = ptm.substring(0, ptm.lastIndexOf("_"));
-                int index = Integer.parseInt(ptm.substring(ptm.lastIndexOf("_")+1));
+                int index = Integer.parseInt(ptm.substring(ptm.lastIndexOf("_") + 1));
                 PTM actualPTM = ptmFactory.getPTM(tmpPTM);
                 String theoreticPTM = actualPTM.getName();
                 ModificationMatch modification = new ModificationMatch(theoreticPTM, isVariable, index);
@@ -134,7 +135,8 @@ public class GetPTMs {
         if (ptmType == PTM.MODAA
                 || ptmType == PTM.MODNAA
                 || ptmType == PTM.MODCAA
-                || ptmType == PTM.MODCPAA) {
+                || ptmType == PTM.MODCPAA
+                || ptmType == PTM.MODNPAA) {
             int target = tmpPTM.getPattern().getTarget();
             ArrayList<Character> targetAAs = tmpPTM.getPattern().getTargetedAA(target);
             for (Character targetAA : targetAAs) {
