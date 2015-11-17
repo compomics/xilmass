@@ -46,20 +46,6 @@ public class ScorePSMTest {
     }
 
     /**
-     * Test of call method, of class ScorePSM.
-     */
-    @Test
-    public void testCall() throws Exception {
-        System.out.println("call");
-        ScorePSM instance = null;
-        ArrayList<Result> expResult = null;
-        ArrayList<Result> result = instance.call();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of updateResults method, of class ScorePSM.
      */
     @Test

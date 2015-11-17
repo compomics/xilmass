@@ -36,18 +36,6 @@ public class FilteringTest extends TestCase {
         super.tearDown();
     }
 
-    /**
-     * Test of getExpMSnSpectrum method, of class Filter.
-     */
-    public void testGetExpMSnSpectrum() {
-        System.out.println("getExpMSnSpectrum");
-        Filter instance = null;
-        MSnSpectrum expResult = null;
-        MSnSpectrum result = instance.getExpMSnSpectrum();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
     /**
      * Test of getFilteredCPeaks method, of class Filter.
@@ -92,17 +80,5 @@ public class FilteringTest extends TestCase {
         assertEquals(310.00, result.get(4).getMz());
     }
 
-    /**
-     * Test of getTopN method, of class Filter.
-     */
-    public void testGetNumHighestPeak() {
-        System.out.println("getNumHighestPeak");
-        Filter instance = null;
-        int expResult = 0;
-        int result = instance.getTopN();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
 }

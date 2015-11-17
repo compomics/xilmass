@@ -39,20 +39,6 @@ public class DefineIdCPeptideFragmentationPatternTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of getMatchedCPepPeaks method, of class
-     * DefineIdCPeptideFragmentationPattern.
-     */
-    @Test
-    public void testGetMatchedCPepPeaks() {
-        System.out.println("getMatchedCPepPeaks");
-        DefineIdCPeptideFragmentationPattern instance = null;
-        ArrayList<CPeptidePeak> expResult = null;
-        ArrayList<CPeptidePeak> result = instance.getMatchedCPepPeaks();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
     /**
      * Test of getName method, of class DefineIdCPeptideFragmentationPattern.

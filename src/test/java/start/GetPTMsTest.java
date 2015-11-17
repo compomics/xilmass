@@ -22,9 +22,9 @@ import org.junit.Test;
  *
  * @author Sule
  */
-public class GetPTMTest {
+public class GetPTMsTest {
 
-    public GetPTMTest() {
+    public GetPTMsTest() {
     }
 
     @BeforeClass
@@ -86,7 +86,7 @@ public class GetPTMTest {
         // Getting one fixed PTMs
         ArrayList<String> theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add("oxidation of m");
-        theoreticPTMs.add("pyro-cmc");
+        theoreticPTMs.add("carbamidomethyl c");
         ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false);
 
         Peptide peptideObject = new Peptide(peptideSequence, result);
@@ -108,10 +108,31 @@ public class GetPTMTest {
         // Getting one fixed PTMs
         ArrayList<String> theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add("oxidation of m");
-        theoreticPTMs.add("pyro-cmc");
+        theoreticPTMs.add("carbamidomethyl c");
         ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
 
         Peptide peptideObject = new Peptide(peptideSequence, result);
+        assertEquals("mLcSDAOP", peptideObject.getSequenceWithLowerCasePtms());
+        assertEquals(2, result.size());
+
+        assertEquals("oxidation of m", result.get(0).getTheoreticPtm());
+        assertEquals(1, result.get(0).getModificationSite());
+        assertEquals("carbamidomethyl c", result.get(1).getTheoreticPtm());
+        assertEquals(3, result.get(1).getModificationSite());
+
+        assertTrue(result.get(0).isVariable());
+        assertTrue(result.get(1).isVariable());
+
+        assertEquals(2, result.size());
+
+        // Now select another PTMs..
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add("oxidation of m");
+        theoreticPTMs.add("pyro-cmc");
+
+        result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
+        
+        peptideObject = new Peptide(peptideSequence, result);
         assertEquals("mLcSDAOP", peptideObject.getSequenceWithLowerCasePtms());
         assertEquals(2, result.size());
 
