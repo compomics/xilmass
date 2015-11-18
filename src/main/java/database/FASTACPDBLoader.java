@@ -104,6 +104,8 @@ public class FASTACPDBLoader {
      * @param fragMode fragmentation mode
      * @param isContrastLinkedAttachmentOn
      * @param max_mods_per_peptide
+     * @param acc_and_length is list of accession numbers and its sequence
+     * length
      * @return
      * @throws XmlPullParserException
      * @throws IOException
@@ -115,7 +117,9 @@ public class FASTACPDBLoader {
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
             boolean isContrastLinkedAttachmentOn,
-            int max_mods_per_peptide) throws XmlPullParserException, IOException {
+            int max_mods_per_peptide,
+            HashMap<String, Integer> acc_and_length
+    ) throws XmlPullParserException, IOException {
 
         ArrayList<CPeptides> cPeptides = new ArrayList<CPeptides>();
         StringBuilder proteinA,
@@ -143,15 +147,21 @@ public class FASTACPDBLoader {
             String[] headerSplit = header.substring(0).split("_");
             proteinA = new StringBuilder(headerSplit[0]);
             proteinB = new StringBuilder(headerSplit[2]);
+            // example proteinA is P04233REVERSED(165-201)
+            // check if tryptic peptide contains protein termini
+            boolean containsPeptideAProteinNTermini = checkProteinContainsProteinTermini(proteinA, true, acc_and_length), // peptide contains the first amino acid of a protein (protein N-termini)
+                    containsPeptideBProteinNTermini = checkProteinContainsProteinTermini(proteinB, true, acc_and_length), // peptide contains the first amino acid of a protein(protein N-termini)
+                    containsPeptideAProteinCTermini = checkProteinContainsProteinTermini(proteinA, false, acc_and_length),// peptide contains the last amino acid of a protein (protein C-termini)
+                    containsPeptideBProteinCTermini = checkProteinContainsProteinTermini(proteinB, false, acc_and_length);// peptide contains the last amino acid of a protein (protein C-termini)
             // and now peptide sequences..
             peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
             peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
             // First, find fixed variable modifications to construct a Peptide object!
-            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false),
-                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false);
+            ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
+                    fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
             // Then, get all variable PTMs locations for a given Peptide sequence
-            ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
-                    possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
+            ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
+                    possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
             // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
             ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA, max_mods_per_peptide),
                     peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB, max_mods_per_peptide);
@@ -183,12 +193,12 @@ public class FASTACPDBLoader {
      * @param fragMode fragmentation mode
      * @param isContrastLinkedAttachmentOn
      * @param max_mods_per_peptide
+     * @param acc_and_length is list of accession numbers and its sequence
+     * length
      * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
-    
-    
     public static HashSet<StringBuilder> generate_peptide_mass_index(
             BufferedWriter bw,
             HashMap<String, String> header_sequence,
@@ -197,7 +207,9 @@ public class FASTACPDBLoader {
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
             boolean isContrastLinkedAttachmentOn,
-            int max_mods_per_peptide) throws XmlPullParserException, IOException {
+            int max_mods_per_peptide,
+            HashMap<String, Integer> acc_and_length
+    ) throws XmlPullParserException, IOException {
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
         boolean isCPeptidesObjConstructed = false;
         StringBuilder proteinA,
@@ -231,15 +243,21 @@ public class FASTACPDBLoader {
                 }
                 proteinA = new StringBuilder(headerSplit[0]);
                 proteinB = new StringBuilder(proteinBStr);
+                // example proteinA is P04233REVERSED(165-201)
+                // check if tryptic peptide contains protein termini
+                boolean containsPeptideAProteinNTermini = checkProteinContainsProteinTermini(proteinA, true, acc_and_length), // peptide contains the first amino acid of a protein (protein N-termini)
+                        containsPeptideBProteinNTermini = checkProteinContainsProteinTermini(proteinB, true, acc_and_length), // peptide contains the first amino acid of a protein(protein N-termini)
+                        containsPeptideAProteinCTermini = checkProteinContainsProteinTermini(proteinA, false, acc_and_length),// peptide contains the last amino acid of a protein (protein C-termini)
+                        containsPeptideBProteinCTermini = checkProteinContainsProteinTermini(proteinB, false, acc_and_length);// peptide contains the last amino acid of a protein (protein C-termini)
                 // and now peptide sequences..
                 peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
                 peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
                 // First, find fixed variable modifications to construct a Peptide object!
-                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false),
-                        fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false);
+                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
+                        fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
                 // Then, get all variable PTMs locations for a given Peptide sequence
-                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
-                        possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
+                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
+                        possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
                 // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
                 ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA, max_mods_per_peptide),
                         peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB, max_mods_per_peptide);
@@ -293,22 +311,27 @@ public class FASTACPDBLoader {
             ArrayList<String> variableModifications,
             FragmentationMode fragMode,
             boolean isContrastLinkedAttachmentOn,
-            int max_mods_per_peptide) throws XmlPullParserException, IOException {
+            int max_mods_per_peptide,
+            HashMap<String, Integer> acc_and_length) throws XmlPullParserException, IOException {
         // This part for Contaminant sequence
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
 
         for (String header : header_sequence.keySet()) {
             if (!header.isEmpty() && header.startsWith("contaminant")) {
                 String contaminant_seq = header_sequence.get(header);
-                ArrayList<ModificationMatch> fixedPTM_contaminant = GetPTMs.getPTM(ptmFactory, fixedModifications, contaminant_seq, false);
-                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsContaminant = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, contaminant_seq, true);
+                // check if tryptic peptide contains protein termini
+                boolean containsProteinNTermini = checkProteinContainsProteinTermini(new StringBuilder(header), true, acc_and_length), // if contains the first amino acid of a protein (protein N-termini)
+                        containsProteinCTermini = checkProteinContainsProteinTermini(new StringBuilder(header), false, acc_and_length); // ifcontains the last amino acid of a protein (protein C-termini
+                ArrayList<ModificationMatch> fixedPTM_contaminant = GetPTMs.getPTM(ptmFactory, fixedModifications, contaminant_seq, false, containsProteinNTermini, containsProteinCTermini);
+                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsContaminant = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, contaminant_seq, true, containsProteinNTermini, containsProteinCTermini);
                 ArrayList<Peptide> contaminantAs = getPeptidesVarPTMs(possiblePTMsContaminant, new StringBuilder(contaminant_seq), fixedPTM_contaminant, max_mods_per_peptide);
                 for (Peptide c : contaminantAs) {
                     String fixedModPepB = getPTMName(c.getModificationMatches(), false),
                             varModPep = getPTMName(c.getModificationMatches(), true);
                     double mass = c.getMass();
-                    StringBuilder sb = new StringBuilder(header + "\t" + "-" + "\t" + contaminant_seq + "\t" + "-" + "\t" + "-" + "\t" + "-" + "\t" + fixedModPepB + "\t" + "-" + "\t" + varModPep + "\t" + "-" + "\t" + mass);
-                    bw.write(sb + "\n");
+                    StringBuilder sb = new StringBuilder(header).append("\t").append("-").append("\t").append(contaminant_seq).append("\t").append("-").append("\t").append("-")
+                            .append("\t").append("-").append("\t").append(fixedModPepB).append("\t").append("-").append("\t").append(varModPep).append("\t").append("-").append("\t").append(mass).append("\n");
+                    bw.write(sb.toString());
                     headers.add(sb);
                 }
             }
@@ -362,8 +385,10 @@ public class FASTACPDBLoader {
      * @param variableModifications is a list of given variable modifications
      * @param linker a CrossLinker object to construct CPeptides objects
      * @param fragMode fragmentation mode
+     * @param acc_and_length is list of accession numbers and its sequence
+     * length
      * @param max_mods_per_peptide
-     * @return 
+     * @return
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -374,7 +399,9 @@ public class FASTACPDBLoader {
             ArrayList<String> fixedModifications,
             ArrayList<String> variableModifications,
             CrossLinker linker, FragmentationMode fragMode,
-            int max_mods_per_peptide) throws XmlPullParserException, IOException {
+            int max_mods_per_peptide,
+            HashMap<String, Integer> acc_and_length
+    ) throws XmlPullParserException, IOException {
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
         boolean isMonoLinkedPeptideObjConstructed = false;
         StringBuilder proteinA,
@@ -409,15 +436,22 @@ public class FASTACPDBLoader {
                 }
                 proteinA = new StringBuilder(headerSplit[0]);
                 proteinB = new StringBuilder(proteinBStr);
+                // example proteinA is P04233REVERSED(165-201)
+                // check if tryptic peptide contains protein termini
+                boolean containsPeptideAProteinNTermini = checkProteinContainsProteinTermini(proteinA, true, acc_and_length), // peptide contains the first amino acid of a protein (protein N-termini)
+                        containsPeptideBProteinNTermini = checkProteinContainsProteinTermini(proteinB, true, acc_and_length), // peptide contains the first amino acid of a protein(protein N-termini)
+                        containsPeptideAProteinCTermini = checkProteinContainsProteinTermini(proteinA, false, acc_and_length),// peptide contains the last amino acid of a protein (protein C-termini)
+                        containsPeptideBProteinCTermini = checkProteinContainsProteinTermini(proteinB, false, acc_and_length);// peptide contains the last amino acid of a protein (protein C-termini)
+
                 // and now peptide sequences..
                 peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
                 peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
                 // First, find fixed variable modifications to construct a Peptide object!
-                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false),
-                        fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false);
+                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
+                        fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
                 // Then, get all variable PTMs locations for a given Peptide sequence
-                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true),
-                        possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true);
+                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
+                        possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
                 // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
                 ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA, max_mods_per_peptide),
                         peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB, max_mods_per_peptide);
@@ -428,8 +462,8 @@ public class FASTACPDBLoader {
                         mass = mPeptides.getTheoretical_xlinked_mass();
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if (!headers.contains(info) && !header.contains(rInfo)) {                           
-                            headers.add( info.append("\n"));
+                        if (!headers.contains(info) && !header.contains(rInfo)) {
+                            headers.add(info.append("\n"));
                             bw.write(info + "\n");
                         }
                     } else {
@@ -440,7 +474,7 @@ public class FASTACPDBLoader {
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
                         if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add( info.append("\n"));
+                            headers.add(info.append("\n"));
                             bw.write(info + "\n");
                         }
                     }
@@ -454,7 +488,7 @@ public class FASTACPDBLoader {
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
                         if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add( info.append("\n"));
+                            headers.add(info.append("\n"));
                             bw.write(info + "\n");
                         }
                     } else {
@@ -465,7 +499,7 @@ public class FASTACPDBLoader {
                         StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
                                 rInfo = CPeptideInfo.getInfo(mPeptides, true);
                         if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add( info.append("\n"));
+                            headers.add(info.append("\n"));
                             bw.write(info + "\n");
                         }
                     }
@@ -473,5 +507,40 @@ public class FASTACPDBLoader {
             }
         }
         return headers;
+    }
+
+    /**
+     * This method checks tryptic peptide contains any of protein termini. It
+     * checks protein accession number of a tryptic peptide (for example
+     * P04233REVERSED(165-201)). If a tryptic peptide contains the first amino
+     * acid, then protein n-termini still exist If a trypyic peptide contains
+     * the last amino acid, then protein c-termini still exist
+     *
+     * @param proteinA protein accession number for a tryptic peptide
+     * @param checkNTermini true: checking for N-termini, false: checking for
+     * C-termini
+     * @param acc_and_length a map of accession number with corresponding
+     * protein length
+     *
+     * @return true if a tryptic peptide contains that protein termini/ false
+     * shows a tryptic peptide does not contain this
+     */
+    public static boolean checkProteinContainsProteinTermini(StringBuilder proteinA, boolean checkNTermini, HashMap<String, Integer> acc_and_length) {
+        boolean doesContainTermini = false;
+        String acc = proteinA.substring(0, proteinA.indexOf("(")),
+                cleaveageInformation = proteinA.substring(proteinA.indexOf("("));
+        int length = acc_and_length.get(acc);
+        String start = "(1-",
+                end = "-" + length + ")";
+        if (checkNTermini) {
+            if (cleaveageInformation.contains(start)) {
+                doesContainTermini = true;
+            }
+        } else {
+            if (cleaveageInformation.contains(end)) {
+                doesContainTermini = true;
+            }
+        }
+        return doesContainTermini;
     }
 }

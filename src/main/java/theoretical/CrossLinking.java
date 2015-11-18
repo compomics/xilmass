@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.apache.log4j.Logger;
 
 /**
  * This abstract class holds information on cross-linker, fragmentation mode,
@@ -36,8 +37,8 @@ public abstract class CrossLinking {
     protected double intensity = 100,
             theoretical_xlinked_mass = 0;
     protected CrossLinkingType linkingType;
+    private static final Logger LOGGER = Logger.getLogger(CrossLinking.class);
 
-    
     public CrossLinker getLinker() {
         return linker;
     }
@@ -73,7 +74,7 @@ public abstract class CrossLinking {
     public void setTheoretical_xlinked_mass(double theoretical_xlinked_mass) {
         this.theoretical_xlinked_mass = theoretical_xlinked_mass;
     }
-    
+
     public CrossLinkingType getLinkingType() {
         return linkingType;
     }
@@ -169,7 +170,7 @@ public abstract class CrossLinking {
         DecimalFormat df = new DecimalFormat("#.00");
         for (int i = 0; i < peptide.getSequence().length(); i++) {
             boolean modified = false;
-            for (int j = 0; j < modificationMatches.size() && !modified; j++) {
+            for (int j = 0; j < modificationMatches.size(); j++) {
                 ModificationMatch m = modificationMatches.get(j);
                 if (m.getModificationSite() == (i + 1)) {
                     String modName = "";
@@ -177,14 +178,12 @@ public abstract class CrossLinking {
                         modified = true;
                         int type = ptmFactory.getPTM(m.getTheoreticPtm()).getType();
                         // type=1 is n-term type=0 is aminoacid - If type is amino-acid PTM..
-                        if (type == PTM.MODAA) {
+                        if (type == PTM.MODAA || type == PTM.MODCAA || type == PTM.MODCPAA || type == PTM.MODNAA || type == PTM.MODNPAA) {
                             double mass = ptmFactory.getPTM(m.getTheoreticPtm()).getMass();
                             String format = df.format(mass);
                             modName = "[" + format + "]";
                             alteredPeptideSequence.append(peptide.getSequence().charAt(i));
                             alteredPeptideSequence.append(modName);
-                        } else if (type == PTM.MODCAA || type == PTM.MODCPAA || type == PTM.MODNAA || type == PTM.MODNPAA) {
-                            System.err.print("Do not know how to write this modifications!");
                         }
                     } else {
                         modified = true;

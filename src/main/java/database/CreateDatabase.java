@@ -5,7 +5,6 @@
  */
 package database;
 
-import playground.EnzymeDigest;
 import com.compomics.dbtoolkit.gui.workerthreads.ProcessThread;
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.EnzymeLoader;
@@ -21,7 +20,10 @@ import crossLinker.CrossLinker;
 import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
 import crossLinker.GetCrossLinker;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -31,6 +33,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
+import playground.EnzymeDigest;
 
 /**
  *
@@ -60,6 +63,7 @@ public class CreateDatabase {
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
+    private HashMap<String, Integer>  accession_and_length = new HashMap<String, Integer>();
 
     public CreateDatabase(String givenDBName,
             String inSilicoPeptideDBName,
@@ -90,6 +94,7 @@ public class CreateDatabase {
         this.maxLen_for_combined = maxLen_for_combined;
         this.does_a_peptide_link_to_itself = does_link_to_itself;
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
+        accession_and_length = getAccession_and_length(inputProteinFileName);
     }
 
     // getter and setter methods    
@@ -468,9 +473,9 @@ public class CreateDatabase {
                     }
                 }
             }
-        }        
+        }
         long end = System.currentTimeMillis();
-        LOGGER.info("Cross-linked peptides combinations are generated in "  + ((end - start) / 1000) + " seconds.");
+        LOGGER.info("Cross-linked peptides combinations are generated in " + ((end - start) / 1000) + " seconds.");
     }
 
     /**
@@ -550,7 +555,7 @@ public class CreateDatabase {
         System.exit(1);
     }
 
-    private void generate_header_and_sequence(String startSequence, String nextSequence,
+    public void generate_header_and_sequence(String startSequence, String nextSequence,
             Protein startProtein, Protein nextProtein,
             int index_linked_aa_startSeq, int next_index,
             boolean is_inverted, boolean is_start_sequence_reversed) throws IOException {
@@ -598,6 +603,43 @@ public class CreateDatabase {
                 header_sequence.put(tmp_header, tmp_linked_sequence);
             }
         }
+    }
+
+    /**
+     * This method returns a hashmap with keys as accession numbers and values
+     * as the length of the sequence with that accession number
+     * 
+     * 
+     * @param proteinFastaFileName is the name of proteinFastaFileName (with its path)
+     * @return 
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static HashMap<String, Integer> getAccession_and_length(String proteinFastaFileName) throws FileNotFoundException, IOException {
+        HashMap<String, Integer> acc_and_length = new HashMap<String, Integer>();
+        BufferedReader br = new BufferedReader(new FileReader(new File(proteinFastaFileName)));
+        String line = "",
+                acc = null;
+        int len = 0;
+        while ((line = br.readLine()) != null) {
+            // this line has accession number
+            if (line.startsWith(">")) {
+                // first check if already sequence is checked
+                if (len != 0 && acc != null) {
+                    acc_and_length.put(acc, len);
+                }
+                String[] sp = line.split("\\|");
+                acc = sp[1];
+                len = 0;
+                // this line is only sequence
+            } else {
+                len += line.length();
+            }
+        }
+        if (len != 0 && acc != null) {
+            acc_and_length.put(acc, len);
+        }
+        return acc_and_length;
     }
 
 }

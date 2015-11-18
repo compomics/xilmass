@@ -109,6 +109,7 @@ public class CPeptidesTest extends TestCase {
 
         // Test a problematic case...
         // PepA=AILVNFKAR	 PepB=KMRPEVR	 at 6	0
+        // add modifications..
         peptideA = new Peptide("AILVNFKAR", parent_proteins_test, modifications_test);
         peptideB = new Peptide("KMRPEVR", parent_proteins_test, modifications_test);
         o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false);
@@ -317,7 +318,7 @@ public class CPeptidesTest extends TestCase {
     public void testGetlinked_ions_modifications() throws XmlPullParserException, IOException {
         String peptideSequence = "MLCSDAIK";
         // Importing PTMs
-        File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\compomics-utilities\\src/test/resources/experiment/mods.xml");
+        File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\main\\resources/mods.xml");
         PTMFactory ptmFactory = PTMFactory.getInstance();
         ptmFactory.importModifications(modsFile, false);
         // Getting one fixed PTMs
@@ -326,11 +327,13 @@ public class CPeptidesTest extends TestCase {
 //        theoreticPTMs.add("propionamide c");
 //        theoreticPTMs.add("pyro-cmc");
 //        theoreticPTMs.add("oxidation of m");
-        ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
+        boolean containsProteinNTermini = true,
+                containsProteinCTermini = false;
+        ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true, containsProteinNTermini, containsProteinCTermini);
 //        theoreticPTMs = new ArrayList<String>();
 //        theoreticPTMs.add("propionamide c");
 //        theoreticPTMs.add("oxidation of m");
-        result.addAll(GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true));
+        result.addAll(GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true, containsProteinNTermini, containsProteinCTermini));
         Peptide peptideA = new Peptide(peptideSequence, result);
 
         for (ModificationMatch m : peptideA.getModificationMatches()) {

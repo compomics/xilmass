@@ -68,7 +68,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
             CrossLinking tmpCPeptide = (CrossLinking) iteratorCPeptides.iter.next();
             synchronized (tmpCPeptide) {
                 MatchAndScore obj = new MatchAndScore(ms, scoreName, tmpCPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow, doesFindAllMatchedPeaks, isPPM);
-                double tmpScore = obj.getCXPSMScore(),
+                double tmpScore = obj.getXPSMScore(),
                         weight = obj.getWeight(),
                         fracIonPeptideAlpha = obj.getFracIonTheoPepAs(),
                         fracIonPeptideBeta = obj.getFracIonTheoPepBs(),

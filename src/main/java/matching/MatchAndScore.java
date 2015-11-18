@@ -188,6 +188,7 @@ public class MatchAndScore {
      */
     public void setTheoreticalCXMS2ions(HashSet<CPeptideIon> theoreticalCXMS2ions) {
         this.theoXLMS2ions = theoreticalCXMS2ions;
+        isTheoXLPeaksReady = false;
         theoXLPeaks = getTheoreticalCXPeaks();
     }
 
@@ -269,7 +270,7 @@ public class MatchAndScore {
      *
      * @return
      */
-    public double getCXPSMScore() {
+    public double getXPSMScore() {
         if (!isFoundAndMatched) {
             int totalTheoN = getTheoreticalCXPeaks().size(); // all theoretical peaks...
             ArrayList<Double> scores = new ArrayList<Double>();
@@ -347,6 +348,9 @@ public class MatchAndScore {
                                 tmps.add(new MatchedPeak(p, tmpCPeak, tmp_diff));
                                 matched_theoretical_and_matched_peaks.put(tmpCPeak, tmps);
                             }
+//                             if a peak is much smaller than the current peak..
+//                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
+//                            i = theoXLPeaksAL.size();
                         }
                     }
                 }
@@ -485,7 +489,7 @@ public class MatchAndScore {
      */
     public HashSet<Peak> getMatchedPeaks() {
         if (!isFoundAndMatched) {
-            getCXPSMScore();
+            getXPSMScore();
         }
         return matchedPeaks;
     }
@@ -498,7 +502,7 @@ public class MatchAndScore {
      */
     public HashSet<CPeptidePeak> getMatchedTheoreticalCPeaks() {
         if (!isFoundAndMatched) {
-            getCXPSMScore();
+            getXPSMScore();
         }
         return matchedTheoXLPeaks;
     }

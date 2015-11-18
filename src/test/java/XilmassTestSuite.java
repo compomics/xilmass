@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+import database.CreateDatabaseTest;
+import database.FASTACPDBLoaderTest;
 import matching.FilteringTest;
 import matching.MatchAndScore;
 import matching.MatchAndScoreTest;
@@ -26,7 +28,7 @@ import start.lucene.CPeptidesIndexerTest;
 import start.lucene.IndexAndSearchTest;
 import theoretical.CPeptideIonTest;
 import theoretical.CPeptidesTest;
-import theoretical.CrossLinkedPeptidesTest;
+import theoretical.CrossLinkingTest;
 import theoretical.LinkedPeptideFragmentIonTest;
 import theoretical.MonoLinkedPeptidesTest;
 
@@ -38,6 +40,8 @@ import theoretical.MonoLinkedPeptidesTest;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     // matching package
+    CreateDatabaseTest.class,
+    FASTACPDBLoaderTest.class,
     FilteringTest.class,
     MatchAndScoreTest.class,
     ScorePSMTest.class,
@@ -53,12 +57,11 @@ import theoretical.MonoLinkedPeptidesTest;
     StartTest.class,
     CPeptideIonTest.class,
     CPeptidesTest.class,
-    CrossLinkedPeptidesTest.class,
+    CrossLinkingTest.class,
     LinkedPeptideFragmentIonTest.class,
     MonoLinkedPeptidesTest.class
 })
 public class XilmassTestSuite {
-
 
     @BeforeClass
     public static void setUpClass() throws Exception {
