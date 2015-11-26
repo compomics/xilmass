@@ -17,8 +17,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * This abstract class enables preparing the same outcome obtained from the different outcomes by different algorithms.
- * 
+ * This abstract class enables preparing the same outcome obtained from the
+ * different outcomes by different algorithms.
+ *
  * @author Sule
  */
 public abstract class AnalyzeOutcomes {
@@ -56,6 +57,45 @@ public abstract class AnalyzeOutcomes {
             prepareTrueLinkings();
         }
         String res = "Not-predicted" + "\t" + "-" + "\t" + "-";
+        for (TrueLinking tl : trueLinkings) {
+            if (tl.getProteinA().equals(uniprotProAacces)
+                    && tl.getProteinB().equals(uniprotProBacces)
+                    && tl.getIndexA() == uniprotLinkingSiteA
+                    && tl.getIndexB() == uniprotLinkingSiteB) {
+                res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
+            }
+            if (tl.getProteinA().equals(uniprotProBacces)
+                    && tl.getProteinB().equals(uniprotProAacces)
+                    && tl.getIndexA() == uniprotLinkingSiteB
+                    && tl.getIndexB() == uniprotLinkingSiteA) {
+                res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
+            }
+        }
+        return res;
+    }
+
+    /**
+     * This method checks given proteinA and proteinB with their indices to
+     * decide if they are possible cross linking sites
+     *
+     * @param uniprotProAacces Uniprot proteinA accession number
+     * @param uniprotProBacces Uniprot proteinB accession number
+     * @param uniprotLinkingSiteA linking location on proteinA (based on uniprot
+     * sequence)
+     * @param uniprotLinkingSiteB linking location on proteinB (based on uniprot
+     * sequence)
+     * @return
+     * @throws IOException
+     */
+    protected String assetTrueLinking(String uniprotProAacces, String uniprotProBacces, String peptideA, String peptideB,
+            int uniprotLinkingSiteA, int uniprotLinkingSiteB) throws IOException {
+        if (trueLinkings.isEmpty()) {
+            prepareTrueLinkings();
+        }
+        String res = "Not-predicted" + "\t" + "-" + "\t" + "-";
+        if (!peptideA.contains("K") || !peptideB.contains("K")) {
+            res = "NoPossLinkingSite" + "\t" + "-" + "\t" + "-";
+        }
         for (TrueLinking tl : trueLinkings) {
             if (tl.getProteinA().equals(uniprotProAacces)
                     && tl.getProteinB().equals(uniprotProBacces)

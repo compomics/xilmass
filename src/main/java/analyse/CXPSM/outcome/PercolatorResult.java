@@ -6,6 +6,7 @@
 package analyse.CXPSM.outcome;
 
 import java.util.HashMap;
+import org.apache.log4j.Logger;
 
 /**
  * This class holds information from Percolator outputs.
@@ -26,12 +27,16 @@ public class PercolatorResult {
     private int scan, // can be duplicated...one spectrum may have multiples identification with the same best score
             linkA,
             linkB;
+    private boolean isXLinkingPossible = true; // Since Kojak predicted some wrong cross-linking site, this control will check if validated Percolator Result is possible or not
+    private boolean checkLysine;
+    private static final Logger LOGGER = Logger.getLogger(PercolatorResult.class);
 
     public PercolatorResult(String mgfName, String psmID, String peptides, String proteinIDs, String type,
             double score, double qvalue, double posterior_error,
-            HashMap<String, String> accs, boolean isXilmass) {
+            HashMap<String, String> accs, boolean isXilmass, boolean checkLysine) {
         this.mgfName = mgfName;
         this.type = type;
+        this.checkLysine = checkLysine;
         scan = Integer.parseInt(psmID.split("-")[1]);
         String pepApart = peptides.split("--")[0],
                 pepBpart = peptides.split("--")[1];
@@ -39,6 +44,7 @@ public class PercolatorResult {
         peptideB = pepBpart.substring(0, pepBpart.indexOf("("));
         linkA = Integer.parseInt(pepApart.substring(pepApart.indexOf("(") + 1, pepApart.indexOf(")")));
         linkB = Integer.parseInt(pepBpart.substring(pepBpart.indexOf("(") + 1, pepBpart.indexOf(")")));
+
         if (!isXilmass) {
             proteinA = proteinIDs.split("\t")[0].split("\\|")[1].replace(" ", "");
             proteinB = proteinIDs.split("\t")[0].split("\\|")[1].replace(" ", "");
@@ -83,26 +89,50 @@ public class PercolatorResult {
 
         linkA = Integer.parseInt(pepApart.substring(pepApart.indexOf("(") + 1, pepApart.indexOf(")")));
         linkB = Integer.parseInt(pepBpart.substring(pepBpart.indexOf("(") + 1, pepBpart.indexOf(")")));
-        
+
         pepApart = newPepA;
         pepBpart = newPepB;
 
         peptideA = newPepA;
         peptideB = newPepB;
 
+        // this control checks if there is a reverse order on protein listing..
         int tmpindexA = proteinSeqA.indexOf(newPepA),
                 tmpindexB = proteinSeqB.indexOf(newPepB);
-        // there is an error on kojak output, protein order is reversed
-        // therefore this control was introduced
+        // so given protein order must be other way around        
         if (tmpindexA == -1 && tmpindexB == -1) {
-            tmpindexB = proteinSeqA.indexOf(peptideA);
-            tmpindexA = proteinSeqB.indexOf(peptideB);
+            tmpindexB = proteinSeqA.indexOf(newPepB);
+            tmpindexA = proteinSeqB.indexOf(newPepA);
+            String tmpProteinA = proteinB,
+                    tmpProteinB = proteinA;
+            proteinA = tmpProteinA;
+            proteinB = tmpProteinB;
         }
+
+        // now check if this cross-linked peptide is possible   
+        int toCheckLinkA = linkA - 1,
+                toCheckLinkB = linkB - 1;
+        isXLinkingPossible = checkPossibility(peptideA, toCheckLinkA, peptideB, toCheckLinkB, checkLysine);
+        LOGGER.info(new StringBuilder(peptideA).append(linkA).append(peptideB).append(linkB).append(isXLinkingPossible));
+
         linkA += tmpindexA;
         linkB += tmpindexB;
         this.score = score;
         this.qvalue = qvalue;
         this.posterior_error = posterior_error;
+    }
+
+    public static boolean checkPossibility(String peptideA, int linkA, String peptideB, int linkB, boolean checkLysine) {
+        boolean isPossible = true;
+        if (!checkLysine) {
+            LOGGER.info(" A cross-linker is not specific to only Lysine residues! This implementation is not written yet!");
+        }
+        char linkedA = peptideA.charAt(linkA),
+                linkedB = peptideB.charAt(linkB);
+        if (linkedA != 'K' || linkedB != 'K') {
+            isPossible = false;
+        }
+        return isPossible;
     }
 
     public String getType() {
@@ -199,6 +229,14 @@ public class PercolatorResult {
 
     public void setLinkB(int linkB) {
         this.linkB = linkB;
+    }
+
+    public boolean isIsXLinkingPossible() {
+        return isXLinkingPossible;
+    }
+
+    public void setIsXLinkingPossible(boolean isXLinkingPossible) {
+        this.isXLinkingPossible = isXLinkingPossible;
     }
 
     @Override

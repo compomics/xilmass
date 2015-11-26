@@ -55,7 +55,8 @@ public class NameTargetDecoy {
                 isPITFDR = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.PIT.FDR"),
                 isMS1ErrPPM = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.ms1Err.ppm"),
                 doesContainCPeptidePattern = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainCPeptidePattern"),
-                doesContainIonWeight = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainIonWeight");
+                doesContainIonWeight = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainIonWeight"),
+                doesCheckLysine = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesCheckLysine");
         double qvalue = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("qvalue"),
                 fdr_cutoff = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr");
         int analysis = ConfigHolder.getTargetDecoyAnalyzeInstance().getInt("analysis"); // 1-Kojak/2-AllPLink 3-ValPLink 4-Xilmass 5-PercolatorKojak runs! 6-Percolator-Xilmass runs
@@ -89,10 +90,10 @@ public class NameTargetDecoy {
                 o = new AnalyzePLinkValidatedResult(pLinkCombValidatedFile, output, prediction, psms_contamination, protein_names);
                 break;
             case 4:
-                o = new AnalyzePercolator(output, percolatorXilmassFolder, prediction, psms_contamination, protein_names, accs, true, qvalue);
+                o = new AnalyzePercolator(output, percolatorXilmassFolder, prediction, psms_contamination, protein_names, accs, true, qvalue, doesCheckLysine);
                 break;
             case 5:
-                o = new AnalyzePercolator(output, percolatorKojakFolder, prediction, psms_contamination, protein_names, accs, qvalue);
+                o = new AnalyzePercolator(output, percolatorKojakFolder, prediction, psms_contamination, protein_names, accs, qvalue, doesCheckLysine);
                 break;
         }
         o.run();

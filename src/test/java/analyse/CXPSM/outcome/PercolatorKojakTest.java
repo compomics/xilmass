@@ -58,7 +58,7 @@ public class PercolatorKojakTest {
                 qvalue = 0,
                 posterior_error = 0.0967988;
 
-        PercolatorResult o = new PercolatorResult("name", psmID, peptides, proteins, "intra", score, qvalue, posterior_error, accs, false);
+        PercolatorResult o = new PercolatorResult("name", psmID, peptides, proteins, "intra", score, qvalue, posterior_error, accs, false, true);
 
         assertEquals("P62158", o.getProteinA());
         assertEquals("Q15149", o.getProteinB());
@@ -78,7 +78,7 @@ public class PercolatorKojakTest {
         posterior_error = 0.415834;
         peptides = "-.KMKDTDSEEEIR(1)--HRQVKLVNIR(5).-";
         proteins = ">sp|P62158|CALM_HUMAN_Calmodulin_OS=Homo_sapiens_GN=CALM1_PE=1_SV=2	>sp|Q15149|175-400PlectinABDisoform1a(FromJakeSong)";
-        o = new PercolatorResult("name", psmID, peptides, proteins, "inter", score, qvalue, posterior_error, accs, false);
+        o = new PercolatorResult("name", psmID, peptides, proteins, "inter", score, qvalue, posterior_error, accs, false, true);
 
         assertEquals(score, o.getScore(), 0.001);
         assertEquals(6522, o.getScan());
@@ -94,7 +94,7 @@ public class PercolatorKojakTest {
         assertEquals(qvalue, o.getQvalue(), 0.001);
 
         proteins = ">sp|Q15149|175-400PlectinABDisoform1a(FromJakeSong)";
-        o = new PercolatorResult("name", psmID, peptides, proteins, "inter", score, qvalue, posterior_error, accs, false);
+        o = new PercolatorResult("name", psmID, peptides, proteins, "inter", score, qvalue, posterior_error, accs, false, true);
         assertEquals("Q15149", o.getProteinA());
         assertEquals("Q15149", o.getProteinA());
 
