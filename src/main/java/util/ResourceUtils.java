@@ -34,7 +34,11 @@ public class ResourceUtils {
             //try to find it on the classpath
             resource = new ClassPathResource(fileName);
             if (!resource.exists()) {
-                resource = null;
+                // making sure to run on Netbeans..
+                resource = new FileSystemResource("src" + File.separator + "main" + File.separator + RESOURCES_FOLDER + File.separator + fileName);
+                if (!resource.exists()) {
+                    resource = null;
+                }
             }
         }
         return resource;
@@ -49,7 +53,6 @@ public class ResourceUtils {
      */
     public static boolean isExistingFile(String relativePath) {
         boolean isExistingResource = Boolean.FALSE;
-
         Resource resource = new FileSystemResource(relativePath);
         if (resource.exists()) {
             isExistingResource = true;
