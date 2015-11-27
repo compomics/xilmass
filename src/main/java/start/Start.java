@@ -551,7 +551,7 @@ public class Start {
         bw.write("Running started=" + startTime.toString() + "\n");
         bw.write("Running ended=" + new Date().toString() + "\n");
         if (isSettingRunBefore) {
-            bw.write("A cross-linked peptide database has been already constructed!" + "\n");
+            bw.write("A cross-linked peptide database has been previously constructed!" + "\n");
         } else {
             bw.write("A cross-linked peptide database was constructed for the first time!" + "\n");
         }

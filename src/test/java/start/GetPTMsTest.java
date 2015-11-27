@@ -5,7 +5,6 @@
  */
 package start;
 
-import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
@@ -92,8 +91,12 @@ public class GetPTMsTest {
         }
 
         String methylationpeptidecterm = "methylation of peptide c-term";// MODCP - peptide c-termini 
-        theoreticPTMs.add(methylationpeptidecterm);
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add(carbamidomethylc); //"carbamidomethyl c"
+        theoreticPTMs.add(acetylationproteinntermini); //"acetylation of protein n-term" modN
+        theoreticPTMs.add(methylationpeptidecterm); //MODCP - peptide c-termini 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, false, false);
+        //peptideSequence = "MLCSDA";
         assertEquals(2, result.size());
 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, true);
@@ -105,31 +108,50 @@ public class GetPTMsTest {
         assertEquals(3, result.size());
 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, true);
-        assertEquals(4, result.size());
+        assertEquals(3, result.size());
 
         String glucuronylationproteinnterm = "glucuronylation of protein n-term";//MODNAA - particular amino acid (G) on PROTEIN n-termini 
-
         theoreticPTMs.add(glucuronylationproteinnterm);
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, false, false);
         assertEquals(3, result.size());
+        assertEquals("carbamidomethyl c", result.get(0).getTheoreticPtm());
+        assertEquals("methylation of peptide c-term", result.get(1).getTheoreticPtm());
+        assertEquals("formylation of peptide n-term", result.get(2).getTheoreticPtm());
 
         peptideSequence = "MLCSDAG";
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add(carbamidomethylc); //"carbamidomethyl c"
+        theoreticPTMs.add(acetylationproteinntermini); //"acetylation of protein n-term" modN
+        theoreticPTMs.add(methylationpeptidecterm); //"methylation of peptide c-term MODCP - peptide c-termini         
+        theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" for MODNAA - particular amino acid (G) on PROTEIN n-termini 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(4, result.size());
+        assertEquals(3, result.size());
+        assertEquals("carbamidomethyl c", result.get(0).getTheoreticPtm());
+        assertEquals("acetylation of protein n-term", result.get(1).getTheoreticPtm());
+        assertEquals("methylation of peptide c-term", result.get(2).getTheoreticPtm());
 
         peptideSequence = "GMLCSDAG";
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add(carbamidomethylc); //"carbamidomethyl c"
+        theoreticPTMs.add(acetylationproteinntermini); //"acetylation of protein n-term" modN
+        theoreticPTMs.add(methylationpeptidecterm); //MODCP - peptide c-termini 
+        theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" for MODNAA - particular amino acid (G) on PROTEIN n-termini 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(5, result.size());
+        assertEquals(3, result.size());
 
         String homoserine = "homoserine";// MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
-        theoreticPTMs.add(homoserine);
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add(carbamidomethylc); //"carbamidomethyl c"
+        theoreticPTMs.add(acetylationproteinntermini); //"acetylation of protein n-term" modN
+        theoreticPTMs.add(methylationpeptidecterm); //"methylation of peptide c-term MODCP - peptide c-termini         
+        theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" with MODNAA - particular amino acid (G) on PROTEIN n-termini 
+        theoreticPTMs.add(homoserine); //"homoserine" with MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(5, result.size());
+        assertEquals(3, result.size());
 
         peptideSequence = "MGMLCSDAG";
         theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add(homoserine);
-
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
         assertEquals(0, result.size());
 
@@ -161,13 +183,45 @@ public class GetPTMsTest {
         assertEquals("mLcSDAOP", peptideObject.getSequenceWithLowerCasePtms());
         assertEquals(2, result.size());
 
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add("oxidation of m");
+        theoreticPTMs.add("carbamidomethyl c");
+        theoreticPTMs.add("acetylation of protein n-term");
+        result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
+        // since there might C is targeted amino acid, only one time this resiude is modified
+        peptideObject = new Peptide("CLMSDAOP", result);
+        assertEquals("cLmSDAOP", peptideObject.getSequenceWithLowerCasePtms());
+        assertEquals(2, result.size());        
+        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "oxidation of m");        
+        assertEquals(peptideObject.getModificationMatches().get(1).getTheoreticPtm(), "carbamidomethyl c");
+
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add("oxidation of m");
+        theoreticPTMs.add("acetylation of protein n-term");
+        theoreticPTMs.add("carbamidomethyl c");
+        result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, "CLMSDAOP", false, true, false);
+        // since there might C is targeted amino acid, only one time this resiude is modified
+        peptideObject = new Peptide("CLMSDAOP", result);
+        assertEquals("cLmSDAOP", peptideObject.getSequenceWithLowerCasePtms());
+        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "oxidation of m");        
+        assertEquals(peptideObject.getModificationMatches().get(1).getTheoreticPtm(), "acetylation of protein n-term");
+        assertEquals(2, result.size());
+
+        theoreticPTMs = new ArrayList<String>();
+        theoreticPTMs.add("carbamidomethyl c");
+        theoreticPTMs.add("acetylation of protein n-term");
+        result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, "CLMSDAOP", false, true, false);
+        // since there might C is targeted amino acid, only one time this resiude is modified
+        peptideObject = new Peptide("CLMSDAOP", result);
+        assertEquals("cLMSDAOP", peptideObject.getSequenceWithLowerCasePtms());        
+        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "carbamidomethyl c");               
+        assertEquals(1, result.size());
     }
 
     @Test
     public void testGetVariablePTMs() throws Exception {
         System.out.println("GetVariablePTMs");
         String peptideSequence = "MLCSDAOP";
-
         // Importing PTMs
         File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\main\\resources/mods.xml");
         PTMFactory ptmFactory = PTMFactory.getInstance();
@@ -182,7 +236,6 @@ public class GetPTMsTest {
         Peptide peptideObject = new Peptide(peptideSequence, result);
         assertEquals("mLcSDAOP", peptideObject.getSequenceWithLowerCasePtms());
         assertEquals(2, result.size());
-
         assertEquals("oxidation of m", result.get(0).getTheoreticPtm());
         assertEquals(1, result.get(0).getModificationSite());
         assertEquals("carbamidomethyl c", result.get(1).getTheoreticPtm());
