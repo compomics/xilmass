@@ -63,7 +63,7 @@ public class CreateDatabase {
     private CrossLinker linker;
     private HashMap<String, String> header_sequence = new HashMap<String, String>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
-    private HashMap<String, Integer>  accession_and_length = new HashMap<String, Integer>();
+    private HashMap<String, Integer> accession_and_length = new HashMap<String, Integer>();
 
     public CreateDatabase(String givenDBName,
             String inSilicoPeptideDBName,
@@ -563,14 +563,7 @@ public class CreateDatabase {
                 info_if_nextSeq_reversed = "",
                 info_if_startSeq_reversed = "",
                 mod_nextSeq = "";
-        if (is_inverted) {
-            nextSequence = new StringBuilder(nextSequence).reverse().toString();
-            next_index = nextSequence.length() - next_index - 1;
-            info_if_nextSeq_reversed = "_inverted";
-        }
-        if (is_start_sequence_reversed) {
-            info_if_startSeq_reversed = "_inverted";
-        }
+
         // Make sure that a linked amino acid on an inverted sequence is not at the last index
         if (next_index != nextSequence.length() - 1) {
             mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
@@ -580,23 +573,23 @@ public class CreateDatabase {
 
             if (mod_nextSeq.length() <= mod_startSeq.length()) {
                 tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
-                tmp_header = startProtein.getHeader().getAccession().replace(" ", "")
+                tmp_header = startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
-                        + nextProtein.getHeader().getAccession().replace(" ", "")
+                        + nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_nextSeq_reversed + "_" + (next_index + 1);
-                rTmpHeader = nextProtein.getHeader().getAccession().replace(" ", "")
+                rTmpHeader = nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
-                        + startProtein.getHeader().getAccession().replace(" ", "")
+                        + startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
             } else {
                 tmp_linked_sequence = mod_nextSeq + "|" + mod_startSeq;
-                tmp_header = nextProtein.getHeader().getAccession().replace(" ", "")
+                tmp_header = nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
-                        + startProtein.getHeader().getAccession().replace(" ", "")
+                        + startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
-                rTmpHeader = startProtein.getHeader().getAccession().replace(" ", "")
+                rTmpHeader = startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
-                        + nextProtein.getHeader().getAccession().replace(" ", "")
+                        + nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
                         + info_if_nextSeq_reversed + "_" + (next_index + 1);
             }
             if (!header_sequence.containsKey(rTmpHeader)) {
@@ -608,10 +601,11 @@ public class CreateDatabase {
     /**
      * This method returns a hashmap with keys as accession numbers and values
      * as the length of the sequence with that accession number
-     * 
-     * 
-     * @param proteinFastaFileName is the name of proteinFastaFileName (with its path)
-     * @return 
+     *
+     *
+     * @param proteinFastaFileName is the name of proteinFastaFileName (with its
+     * path)
+     * @return
      * @throws FileNotFoundException
      * @throws IOException
      */
@@ -630,6 +624,11 @@ public class CreateDatabase {
                 }
                 String[] sp = line.split("\\|");
                 acc = sp[1];
+                if (acc.contains("_REVERSED")) {
+                    acc = acc.replace("_REVERSED", "REVERSED");
+                } else if (acc.contains("_SHUFFLED")) {
+                    acc = acc.replace("_SHUFFLED", "SHUFFLED");
+                }
                 len = 0;
                 // this line is only sequence
             } else {

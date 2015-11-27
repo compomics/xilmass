@@ -131,13 +131,6 @@ public class FASTACPDBLoader {
             String[] split = header.split("_");
             int pepAIndex = 1,
                     pepBIndex = 3;
-            if (split[pepAIndex].equals("inverted")) {
-                pepBIndex++;
-                pepAIndex++;
-            }
-            if (split[pepBIndex].equals("inverted")) {
-                pepBIndex++;
-            }
             int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                     writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
             // indices for linker positions necessary for constructing a CrossLinkedPeptide object...
@@ -223,13 +216,6 @@ public class FASTACPDBLoader {
                 String[] split = header.split("_");
                 int pepAIndex = 1,
                         pepBIndex = 3;
-                if (split[pepAIndex].equals("inverted")) {
-                    pepBIndex++;
-                    pepAIndex++;
-                }
-                if (split[pepBIndex].equals("inverted")) {
-                    pepBIndex++;
-                }
                 int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                         writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
                 // indices for linker positions necessary for constructing a CrossLinkedPeptide object...
@@ -238,9 +224,7 @@ public class FASTACPDBLoader {
                 // now get protein names
                 String[] headerSplit = header.substring(0).split("_");
                 String proteinBStr = headerSplit[2];
-                if (pepBIndex != 3) {
-                    proteinBStr += "_" + "inverted";
-                }
+
                 proteinA = new StringBuilder(headerSplit[0]);
                 proteinB = new StringBuilder(proteinBStr);
                 // example proteinA is P04233REVERSED(165-201)
@@ -416,13 +400,7 @@ public class FASTACPDBLoader {
                 String[] split = header.split("_");
                 int pepAIndex = 1,
                         pepBIndex = 3;
-                if (split[pepAIndex].equals("inverted")) {
-                    pepBIndex++;
-                    pepAIndex++;
-                }
-                if (split[pepBIndex].equals("inverted")) {
-                    pepBIndex++;
-                }
+
                 int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
                         writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
                 // indices for linker positions necessary for constructing a CrossLinkedPeptide object...
@@ -431,9 +409,7 @@ public class FASTACPDBLoader {
                 // now get protein names
                 String[] headerSplit = header.substring(0).split("_");
                 String proteinBStr = headerSplit[2];
-                if (pepBIndex != 3) {
-                    proteinBStr += "_" + "inverted";
-                }
+
                 proteinA = new StringBuilder(headerSplit[0]);
                 proteinB = new StringBuilder(proteinBStr);
                 // example proteinA is P04233REVERSED(165-201)
