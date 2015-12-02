@@ -116,7 +116,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                 }
             }
             if (till == 0) {
-                till = results.size() - 1; // because apparently all elements have the same score..
+                till = results.size(); // because apparently all elements have the same score..
             }
             ArrayList<Result> toRemove = new ArrayList<Result>();
             for (int i = 0; i < results.size(); i++) {

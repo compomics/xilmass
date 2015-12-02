@@ -180,7 +180,7 @@ public class Start {
                 doesCXDBExist = false;
         HashMap<String, Integer> acc_and_length = CreateDatabase.getAccession_and_length(givenDBName),
                 contaminant_acc_lenght = new HashMap<String, Integer>();
-        if(!contaminantDBName.isEmpty()){
+        if (!contaminantDBName.isEmpty()) {
             contaminant_acc_lenght = CreateDatabase.getAccession_and_length(contaminantDBName);
         }
         if (settings.exists()) {
@@ -286,7 +286,7 @@ public class Start {
                     fragMode, isContrastLinkedAttachmentOn, maxModsPerPeptide, contaminant_acc_lenght);
             all_headers.addAll(tmp_headers);
             // accession numbers with protein lengths from a given fasta-protein database
-            
+
             for (CrossLinker linker : linkers) {
                 tmp_headers = FASTACPDBLoader.generate_peptide_mass_index(bw2,
                         headers_sequences, ptmFactory,
@@ -858,7 +858,8 @@ public class Start {
             if (c.getType().equals("interProtein")) {
                 // write to bw_inter
                 bw_inter.write(getPercolatorInfo(res, c, ids, ptmFactory) + "\n");
-            } else {
+            }
+            if (c.getType().equals("intraProtein")) {
                 // write to bw_intra
                 bw_intra.write(getPercolatorInfo(res, c, ids, ptmFactory) + "\n");
             }

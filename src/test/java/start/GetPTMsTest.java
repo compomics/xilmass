@@ -137,7 +137,7 @@ public class GetPTMsTest {
         theoreticPTMs.add(methylationpeptidecterm); //MODCP - peptide c-termini 
         theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" for MODNAA - particular amino acid (G) on PROTEIN n-termini 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(3, result.size());
+        assertEquals(4, result.size());
 
         String homoserine = "homoserine";// MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
         theoreticPTMs = new ArrayList<String>();
@@ -147,7 +147,7 @@ public class GetPTMsTest {
         theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" with MODNAA - particular amino acid (G) on PROTEIN n-termini 
         theoreticPTMs.add(homoserine); //"homoserine" with MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(3, result.size());
+        assertEquals(4, result.size());
 
         peptideSequence = "MGMLCSDAG";
         theoreticPTMs = new ArrayList<String>();
@@ -191,9 +191,10 @@ public class GetPTMsTest {
         // since there might C is targeted amino acid, only one time this resiude is modified
         peptideObject = new Peptide("CLMSDAOP", result);
         assertEquals("cLmSDAOP", peptideObject.getSequenceWithLowerCasePtms());
-        assertEquals(2, result.size());        
-        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "oxidation of m");        
+        assertEquals(3, result.size());
+        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "oxidation of m");
         assertEquals(peptideObject.getModificationMatches().get(1).getTheoreticPtm(), "carbamidomethyl c");
+        assertEquals(peptideObject.getModificationMatches().get(2).getTheoreticPtm(), "acetylation of protein n-term");
 
         theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add("oxidation of m");
@@ -203,9 +204,10 @@ public class GetPTMsTest {
         // since there might C is targeted amino acid, only one time this resiude is modified
         peptideObject = new Peptide("CLMSDAOP", result);
         assertEquals("cLmSDAOP", peptideObject.getSequenceWithLowerCasePtms());
-        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "oxidation of m");        
+        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "oxidation of m");
         assertEquals(peptideObject.getModificationMatches().get(1).getTheoreticPtm(), "acetylation of protein n-term");
-        assertEquals(2, result.size());
+        assertEquals(peptideObject.getModificationMatches().get(2).getTheoreticPtm(), "carbamidomethyl c");
+        assertEquals(3, result.size());
 
         theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add("carbamidomethyl c");
@@ -213,9 +215,10 @@ public class GetPTMsTest {
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, "CLMSDAOP", false, true, false);
         // since there might C is targeted amino acid, only one time this resiude is modified
         peptideObject = new Peptide("CLMSDAOP", result);
-        assertEquals("cLMSDAOP", peptideObject.getSequenceWithLowerCasePtms());        
-        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "carbamidomethyl c");               
-        assertEquals(1, result.size());
+        assertEquals("cLMSDAOP", peptideObject.getSequenceWithLowerCasePtms());
+        assertEquals(peptideObject.getModificationMatches().get(0).getTheoreticPtm(), "carbamidomethyl c");
+        assertEquals(peptideObject.getModificationMatches().get(1).getTheoreticPtm(), "acetylation of protein n-term");
+        assertEquals(2, result.size());
     }
 
     @Test

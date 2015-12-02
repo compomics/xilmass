@@ -38,7 +38,7 @@ public class GetPTMs {
             boolean containsProteinNTermini, boolean containsProteinCTermini) throws XmlPullParserException, IOException {
         ArrayList<ModificationMatch> modifications = new ArrayList<ModificationMatch>();
         // a check to making sure the same residue is not modified twice..
-        int[] modIndices = new int[peptideSequence.length()];
+        int[] modIndices = new int[peptideSequence.length() + 2];
         // Getting each PTM one by one..
         for (String ptmName : ptmNames) {
             ArrayList<ModificationMatch> ptm = getPTM(ptmFactory, ptmName, peptideSequence, isVariable, containsProteinNTermini, containsProteinCTermini, modIndices);
@@ -86,15 +86,15 @@ public class GetPTMs {
                     for (Character targetAA : targetAAs) {
                         for (int i = 0; i < peptideSequence.length(); i++) {
                             char aa = peptideSequence.charAt(i);
-                            int previouslyMod = modIndices[i];
+                            int index = i + 1;
+                            int previouslyMod = modIndices[index];
                             if (previouslyMod == 0
                                     && ((aa == targetAA && ptmType == PTM.MODAA)
                                     || (aa == targetAA && ptmType == PTM.MODCAA && containsProteinCTermini && i == peptideSequence.length() - 1)
                                     || (aa == targetAA && ptmType == PTM.MODCPAA && i == peptideSequence.length() - 1)
                                     || (aa == targetAA && ptmType == PTM.MODNAA && containsProteinNTermini && i == 0)
                                     || (aa == targetAA && ptmType == PTM.MODNPAA && i == 0))) {
-                                int index = i + 1;
-                                modIndices[i] = 1;
+                                modIndices[index] = 1;
                                 ModificationMatch modification = new ModificationMatch(theoreticPTM, isVariable, index);
                                 modifications.add(modification);
                             }
@@ -105,9 +105,9 @@ public class GetPTMs {
                     modIndices[0] = 1;
                     ModificationMatch modification = new ModificationMatch(theoreticPTM, isVariable, 1);
                     modifications.add(modification);
-                } else if (modIndices[peptideSequence.length() - 1] == 0
+                } else if (modIndices[modIndices.length - 1] == 0
                         && ((ptmType == PTM.MODC && containsProteinCTermini) || ptmType == PTM.MODCP)) { // modification of protein or peptide c-terminus                       
-                    modIndices[peptideSequence.length() - 1] = 1;
+                    modIndices[modIndices.length - 1] = 1;
                     ModificationMatch modification = new ModificationMatch(theoreticPTM, isVariable, peptideSequence.length());
                     modifications.add(modification);
                 }
@@ -147,7 +147,7 @@ public class GetPTMs {
         ArrayList<PTMNameIndex> modifications = new ArrayList<PTMNameIndex>();
         // Getting each PTM one by one..
         // a check to making sure the same residue is not modified twice..
-        int[] modIndices = new int[peptideSequence.length()];
+        int[] modIndices = new int[peptideSequence.length() + 2];
         for (String ptmName : ptmNames) {
             ArrayList<PTMNameIndex> ptm = getPossiblePTMs(ptmFactory, ptmName, peptideSequence, isVariable, containsProteinNTermini, containsProteinCTermini, modIndices);
             modifications.addAll(ptm);
@@ -170,15 +170,15 @@ public class GetPTMs {
             for (Character targetAA : targetAAs) {
                 for (int i = 0; i < peptideSequence.length(); i++) {
                     char aa = peptideSequence.charAt(i);
-                    int previouslyMod = modIndices[i];
+                    int index = i + 1;
+                    int previouslyMod = modIndices[index];
                     if (previouslyMod == 0
                             && ((aa == targetAA && ptmType == PTM.MODAA)
                             || (aa == targetAA && ptmType == PTM.MODCAA && containsProteinCTermini && i == peptideSequence.length() - 1)
                             || (aa == targetAA && ptmType == PTM.MODCPAA && i == peptideSequence.length() - 1)
                             || (aa == targetAA && ptmType == PTM.MODNAA && containsProteinNTermini && i == 0)
                             || (aa == targetAA && ptmType == PTM.MODNPAA && i == 0))) {
-                        int index = i + 1;
-                        modIndices[i] = 1;
+                        modIndices[index] = 1;
                         PTMNameIndex ptmAndindex = new PTMNameIndex(ptmName, index);
                         ptmNameAndIndices.add(ptmAndindex);
                     }
@@ -189,12 +189,11 @@ public class GetPTMs {
             modIndices[0] = 1;
             PTMNameIndex ptmAndindex = new PTMNameIndex(ptmName, 1);
             ptmNameAndIndices.add(ptmAndindex);
-        } else if (modIndices[peptideSequence.length() - 1] == 0 && (ptmType == PTM.MODC && containsProteinCTermini) // modification of protein c-terminus 
+        } else if (modIndices[modIndices.length - 1] == 0 && (ptmType == PTM.MODC && containsProteinCTermini) // modification of protein c-terminus 
                 || ptmType == PTM.MODCP) {// modification of peptide c-terminus 
-            modIndices[peptideSequence.length() - 1] = 1;
             PTMNameIndex ptmAndindex = new PTMNameIndex(ptmName, peptideSequence.length());
             ptmNameAndIndices.add(ptmAndindex);
-
+            modIndices[modIndices.length - 1] = 1;
         }
         return ptmNameAndIndices;
     }
