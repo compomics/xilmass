@@ -129,7 +129,7 @@ public class Start {
                 threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
                 //# Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
                 //peakRequiredForImprovedSearch=0                
-                peakRequiredForImprovedSearch = 0,
+                peakRequiredForImprovedSearch = 1,
                 maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
 
         // multithreading 
@@ -327,7 +327,6 @@ public class Start {
             if (mgf.getName().endsWith(".mgf")) {
                 LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
                 // prepare percolator inputs
-                HashSet<StringBuilder> ids = new HashSet<StringBuilder>(); // to give every time unique ids for each entry on percolator input
                 LOGGER.debug(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
                 File percolatorIntra = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt"),
                         percolatorInter = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
@@ -347,6 +346,7 @@ public class Start {
 //                int msNum = 0; 
                 List<Future<ArrayList<Result>>> futureList = null;
                 if (mgf.getName().endsWith("mgf")) {
+                    HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
                     fct.addSpectra(mgf);
                     ArrayList<Result> results = new ArrayList<Result>(),
                             info = new ArrayList<Result>(),
@@ -397,6 +397,7 @@ public class Start {
                                             }
                                         }
                                     }
+                                    ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
                                     for (Result r : percolatorInfoResults) {
                                         write(r, bw_inter, bw_intra, ids, ptmFactory);
                                     }
@@ -681,7 +682,8 @@ public class Start {
         for (CPeptidePeak cpP : matchedCTheoPLists) {
             if (cpP.getName().contains("pepA") || cpP.getName().contains("lepA")) {
                 theoPepA++;
-            } else if (cpP.getName().contains("pepB") || cpP.getName().contains("lepB")) {
+            }
+            if (cpP.getName().contains("pepB") || cpP.getName().contains("lepB")) {
                 theoPepB++;
             }
         }
@@ -743,11 +745,11 @@ public class Start {
     /**
      * This method writes down each Result for percolator-inputs
      */
-    private static StringBuilder getPercolatorInfo(Result res, CPeptides c, HashSet<StringBuilder> ids, PTMFactory ptmFactory) throws IOException {
-        StringBuilder id = new StringBuilder(""),
-                scn = new StringBuilder(res.getScanNum()),
+    private static StringBuilder getPercolatorInfo(Result res, CPeptides c, HashSet<String> ids, PTMFactory ptmFactory) throws IOException {
+        StringBuilder scn = new StringBuilder(res.getScanNum()),
                 target = new StringBuilder(""),
                 labelInfo = new StringBuilder("0");
+        String id = "";
         int label = -1,
                 pepALen = c.getPeptideA().getSequence().length(),
                 pepBLen = c.getPeptideB().getSequence().length(),
@@ -770,15 +772,18 @@ public class Start {
         } else {
             target = new StringBuilder("D-");
         }
-        id = target.append(scn);
+        id = target.toString() + scn.toString();
+
         if (ids.contains(id)) {
             int i = 2;
+            id = target.toString() + scn.toString() + "-" + (i);
             while (ids.contains(id)) {
-                id = target.append(scn).append("-").append(i);
                 i++;
+                id = target.toString() + scn.toString() + "-" + (i);
             }
         }
         ids.add(id);
+
         // because only cross linked peptides are selected for scoring!
         CPeptides cp = (CPeptides) res.getCp();
         int linkerA = cp.getLinker_position_on_peptideA() + 1,
@@ -852,7 +857,7 @@ public class Start {
      * This method allows writing down results for either intra-proteins or
      * inter-proteins
      */
-    private static void write(Result res, BufferedWriter bw_inter, BufferedWriter bw_intra, HashSet<StringBuilder> ids, PTMFactory ptmFactory) throws IOException {
+    private static void write(Result res, BufferedWriter bw_inter, BufferedWriter bw_intra, HashSet<String> ids, PTMFactory ptmFactory) throws IOException {
         if (res.getCp() instanceof CPeptides) {
             CPeptides c = (CPeptides) res.getCp();
             if (c.getType().equals("interProtein")) {
