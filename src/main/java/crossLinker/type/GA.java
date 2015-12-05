@@ -19,15 +19,17 @@ public class GA extends CrossLinker {
 
     public GA() {
         this.name = CrossLinkerName.GA;
-        this.type = CrossLinkerType.homobifunctional; // K-K
+        this.type = CrossLinkerType.AMINE_TO_AMINE; // K-K
         double moleculeMass = (5 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (8 * Atom.H.getMonoisotopicMass()),
                 waterMass = (2 * Atom.H.getMonoisotopicMass()) + Atom.O.getMonoisotopicMass();
         super.massShift_Type0 = moleculeMass - waterMass;
         super.massShift_Type2 = moleculeMass - (2 * waterMass);
+        throw new UnsupportedOperationException("GA cross linker is not supported yet."); 
+
     }
 
     @Override
     protected void calculateMassShifts(boolean isLabeled) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("GA cross linker is not supported yet."); 
     }
 }
