@@ -7,15 +7,23 @@ package database;
 
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.interfaces.DBLoader;
+import com.compomics.util.protein.Header;
 import com.compomics.util.protein.Protein;
+import crossLinker.CrossLinker;
 import crossLinker.CrossLinkerName;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -27,14 +35,12 @@ public class CreateDatabaseTest extends TestCase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -44,34 +50,24 @@ public class CreateDatabaseTest extends TestCase {
         System.out.println("digest_insilico");
         // Here construct...
         String inputFileName = "Data/Test/database/art_testing1Ent.fasta",
-                inputFile2Name = "Data/Test/database/art_testing1Ent_K.fasta",
                 outputFileName = "Data/Test/database/del/test_output_digest_insilico",
+                enzymeFile = "C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\main\\resources/enzymes.txt",
                 crossLinker = "DSS",
                 enzymeName = "Trypsin";
         int minLen = 4,
                 maxLen_for_combined = 40;
-//        CreateDatabase instance = new CreateDatabase(inputFileName, outputFileName, crossLinker, "Inter", minLen, maxLen_for_combined),
-//                instance2 = new CreateDatabase(inputFile2Name, outputFileName, crossLinker, "Inter", minLen, maxLen_for_combined);
-//
-//        instance.digest_insilico();
-//        DBLoader loader = DBLoaderLoader.loadDB(new File(outputFileName));
-//        Protein start_protein = null;
-//        long countNumberOfEntries = loader.countNumberOfEntries();
-//        assertEquals(6, countNumberOfEntries);
-//        while ((start_protein = loader.nextProtein()) != null) {
-//            System.out.println(start_protein.getSequence().getSequence());
-//        }
-//
-//        instance2.digest_insilico();
-//        DBLoader loader2 = DBLoaderLoader.loadDB(new File(outputFileName));
-//        start_protein = null;
-//        countNumberOfEntries = loader2.countNumberOfEntries();
-//        assertEquals(10, countNumberOfEntries);
-//        while ((start_protein = loader2.nextProtein()) != null) {
-//            System.out.println(start_protein.getSequence().getSequence());
-//        }
-        fail("The test case is a prototype.");
+        CreateDatabase instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing_testfastacp",
+                crossLinker, "Inter", "Trypsin", enzymeFile, "4", "350", "4000.0", minLen, maxLen_for_combined, true, true);
+        // Note min mass=300 gives two RR.. but not 350.. min mass=350 might be good to start for in silico digestion
 
+        instance.digest_insilico();
+        DBLoader loader = DBLoaderLoader.loadDB(new File(outputFileName));
+        long countNumberOfEntries = loader.countNumberOfEntries();
+        assertEquals(7, countNumberOfEntries);
+        Protein start_protein = null;
+        while ((start_protein = loader.nextProtein()) != null) {
+            System.out.println(start_protein.getSequence().getSequence());
+        }
     }
 
     /**
@@ -80,216 +76,27 @@ public class CreateDatabaseTest extends TestCase {
     public void testCreate_crossLinkedPeptides() throws Exception {
         System.out.println("create_crossLinkedPeptides");
 
-        // Here construct...
-        String inputFileName = "Data/Test/database/art_testing1Ent.fasta",
-                inputFile2Name = "Data/Test/database/art_testing1Ent_K.fasta",
-                outputFileName = "Data/Test/database/del/test_output_Create_crossLinkedPeptides",
+        String inputFileName = "Data/Test/database/art_testing2Ent.fasta",
+                outputFileName = "Data/Test/database/art_testing2Ent_insilico.fasta",
+                enzymeFile = "C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\main\\resources/enzymes.txt",
                 crossLinker = "DSS",
                 enzymeName = "Trypsin";
         int minLen = 4,
                 maxLen_for_combined = 40;
-//        CreateDatabase instance = new CreateDatabase(inputFileName, outputFileName, crossLinker, "Inter", minLen, maxLen_for_combined),
-//                instance2 = new CreateDatabase(inputFile2Name, outputFileName, crossLinker, "Inter", minLen, maxLen_for_combined),
-//                instance3 = new CreateDatabase(inputFile2Name, outputFileName, crossLinker, "Intra", minLen, maxLen_for_combined);
-//
-//        instance.digest_insilico();
-//        instance.create_crossLinkedPeptides();
-//        String crossLinkedDBName = instance.getCrossLinkedDB().getName();
-//
-//        BufferedReader br = new BufferedReader(new FileReader(crossLinkedDBName));
-//        int entries = 0;
-//        String line = "";
-//        while ((line = br.readLine()) != null) {
-//            System.out.println(line);
-//            if (line.startsWith(">")) {
-//                entries++;
-//            }
-//        }
-//        assertEquals(0, entries);
-//
-//        instance2.digest_insilico();
-//        instance2.create_crossLinkedPeptides();
-//        crossLinkedDBName = instance2.getCrossLinkedDB().getName();
-//        br = new BufferedReader(new FileReader(crossLinkedDBName));
-//        entries = 0;
-//        line = "";
-//        while ((line = br.readLine()) != null) {
-//            if (line.startsWith(">")) {
-//                entries++;
-//            } else {
-//                System.out.println(line);
-//
-//            }
-//        }
-//        assertEquals(60, entries);
-//
-//        instance3.digest_insilico();
-//        instance3.create_crossLinkedPeptides();
-//        crossLinkedDBName = instance3.getCrossLinkedDB().getName();
-//        br = new BufferedReader(new FileReader(crossLinkedDBName));
-//        entries = 0;
-//        line = "";
-//        while ((line = br.readLine()) != null) {
-//            if (line.startsWith(">")) {
-//                entries++;
-//            } else {
-//                System.out.println(line);
-//
-//            }
-//        }
-//        assertEquals(0, entries);
-        fail("The test case is a prototype.");
+        CreateDatabase instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing1EntCX",
+                crossLinker, "Intra", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true);
+        HashMap<String, StringBuilder> headersAndSequences = instance.getHeadersAndSequences();
+        assertEquals(10, headersAndSequences.size());
 
-    }
+        instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing1EntCX",
+                crossLinker, "Inter", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true);
+        headersAndSequences = instance.getHeadersAndSequences();
+        assertEquals(0, headersAndSequences.size());
 
-    /**
-     * Test of generate_peptide_combinations method, of class CreateDatabase.
-     */
-    public void testGenerate_peptide_combinations() throws Exception {
-        System.out.println("generate_peptide_combinations");
-        Protein next_protein = new Protein("P2_(10-18)", "RLGKPGKMN"),
-                start_protein = new Protein("P3_(13-15)", "MGKTTLR");
-
-        CrossLinkerName linker = CrossLinkerName.DSSd0;
-        String startCoreHeader = "P1_(4-9)";
-        String mod_startSeq = "AWGRK*R";
-        BufferedWriter bw = new BufferedWriter(new FileWriter("test.txt"));
-        String possible_linked_aa = "RLGKPGKMN";
-        int minLen = 4,
-                maxLen_for_combined = 40;
-        String inputFileName = "data/Test/database/art_test_db.fasta",
-                inSilicoPeptideDBName = "data/Test/database/art_test_db_insilico.fasta",
-                outputFileName = "data/Test/database/art_test_db.fastacp",
-                crossLinker = "DSS",
-                crossLinkedProteinTypes = "Both",
-                enzymeName = "Trypsin",
-                misclevaged = "2",
-                lowMass = "200",
-                highMass = "5000",
-                enzymeFileName = "src/main/resources/enzymes.txt";
-        // filtering of in silico peptides on peptide masses
-        boolean does_link_to_itself = true, // if a peptide itself links to itself..
-                isLabeled = false; //now it is heavy-labeled crosslinker
-        CreateDatabase instance = new CreateDatabase(inputFileName, inSilicoPeptideDBName, outputFileName, crossLinker, "Inter",
-                enzymeName, enzymeFileName, misclevaged, lowMass, highMass, minLen, maxLen_for_combined, does_link_to_itself, isLabeled);
-        instance.construct();
-
-//        HashMap<String, String> pep_combinations = instance.generate_header_and_sequence(start_protein, false, next_protein, "K", 4);
-//        String header = "P1_(4-9)_5_P2_(10-18)_7",
-//                sequence = "AWGRK*R|RLGKPGK*MN";
-//        int counting = 0;
-//        for (String key : pep_combinations.keySet()) {
-//            if (pep_combinations.get(key).equals(sequence)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-//        counting = 0;
-//        for (String key : pep_combinations.keySet()) {
-//            if (key.startsWith(header)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-//        counting = 0;
-//        sequence = "AWGRK*R|RLGK*PGKMN";
-//        header = "P1_(4-9)_5_P2_(10-18)_4";
-//        for (String key : pep_combinations.keySet()) {
-//            if (pep_combinations.get(key).equals(sequence)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-//        counting = 0;
-//        for (String key : pep_combinations.keySet()) {
-//            if (key.startsWith(header)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-////        CreateDatabase instance2 = new CreateDatabase(inputFileName, outputFileName, crossLinker, "Inter", minLen, maxLen_for_combined, true);
-////        instance.digest_insilico();
-////        HashMap<String, String> pep_combinations2 = instance2.generate_peptide_combinations(next_protein, linker, "Protein2", startCoreHeader, mod_startSeq, bw, possible_linked_aa, 4);
-//
-//        counting = 0;
-//        header = "P1_(4-9)_5_P2_(10-18)_3_inverted";
-//        sequence = "AWGRK*R|NMK*GPKGLR";
-//        for (String key : pep_combinations2.keySet()) {
-//            if (pep_combinations2.get(key).equals(sequence)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-//        counting = 0;
-//        for (String key : pep_combinations2.keySet()) {
-//            if (key.startsWith(header)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-//        counting = 0;
-//        header = "P1_(4-9)_5_P2_(10-18)_6_inverted";
-//        sequence = "AWGRK*R|NMKGPK*GLR";
-//        for (String key : pep_combinations2.keySet()) {
-//            if (pep_combinations2.get(key).equals(sequence)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-//
-//        counting = 0;
-//        for (String key : pep_combinations2.keySet()) {
-//            if (key.startsWith(header)) {
-//                counting++;
-//            }
-//        }
-//        assertEquals(1, counting);
-        fail("The test case is a prototype.");
-
-    }
-
-    /**
-     * Test of construct method, of class CreateDatabase.
-     */
-    public void testConstruct() throws Exception {
-        System.out.println("construct");
-        String givenDBName = "data/Test/database/art_test_db.fasta",
-                inSilicoPeptideDBName = "data/Test/database/art_test_db_insilico.fasta",
-                cxDBName = "data/Test/database/art_test_db.fastacp",
-                crossLinkerName = "DSS",
-                crossLinkedProteinTypes = "Both",
-                enzymeName = "Trypsin",
-                misclevaged = "2",
-                lowMass = "200",
-                highMass = "5000",
-                enzymeFileName = "src/main/resources/enzymes.txt";
-        int minLen = 4,
-                maxLen_for_combined = 40;
-        // filtering of in silico peptides on peptide masses
-        boolean does_link_to_itself = true, // if a peptide itself links to itself..
-                isLabeled = true; //now it is heavy-labeled crosslinker
-
-        CreateDatabase instance = new CreateDatabase(
-                givenDBName,
-                inSilicoPeptideDBName,
-                cxDBName, // db related parameters
-                crossLinkerName, // crossLinker name
-                crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
-                enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
-                lowMass, highMass, // filtering of in silico peptides on peptide masses
-                minLen, // minimum length for each in silico digested peptide
-                maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
-                does_link_to_itself, // if a peptide itself links to itself..
-                isLabeled); //
-
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing1EntCX",
+                crossLinker, "Both", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true);
+        headersAndSequences = instance.getHeadersAndSequences();
+        assertEquals(10, headersAndSequences.size());
     }
 
     /**
@@ -337,6 +144,159 @@ public class CreateDatabaseTest extends TestCase {
         assertEquals(new Integer(34), acc_and_length.get("P17154"));
         assertEquals(new Integer(47), acc_and_length.get("P17155"));
         assertEquals(new Integer(80), acc_and_length.get("P17156"));
+    }
+
+ 
+
+    /**
+     * Test of construct_header_and_sequence method, of class CreateDatabase.
+     */
+    @Test
+    public void testConstruct_header_and_sequence() throws Exception {
+        System.out.println("prepare_header_and_sequence");
+        Protein proteinA = new Protein("Q9QXS1-3_REVERSED(53-65)", "YVKNMDILMPKHR"),
+                proteinB = new Protein("Q9QXS1-3(181-215)", "HKPMLIDMNKVYRQTNLENLDQAFSVAERDLGVTR");
+        Header h = Header.parseFromFASTA(">generic|Q9QXS1-3_REVERSED(53-65)| Protein A");
+        proteinA.setHeader(h);
+
+        h = Header.parseFromFASTA(">generic|Q9QXS1-3(181-215)| Protein B");
+        proteinB.setHeader(h);
+
+        int positionA = 2,
+                positionB = 9;
+        LinkedResidue start = new LinkedResidue(proteinA, positionA, LinkedResidueType.K, true, true),
+                next = new LinkedResidue(proteinB, positionB, LinkedResidueType.K, true, true);
+        StringBuilder[] prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("Q9QXS1-3(181-215)_10_Q9QXS1-3_REVERSED(53-65)_3", prepare_header_and_sequence[0].toString());
+        assertEquals("HKPMLIDMNK*VYRQTNLENLDQAFSVAERDLGVTR|YVK*NMDILMPKHR", prepare_header_and_sequence[1].toString());
+
+        // SECOND TEST-Both reversed..
+        h = Header.parseFromFASTA(">generic|Q9QXS1-3_REVERSED(53-65)| Protein A");
+        proteinA.setHeader(h);
+        h = Header.parseFromFASTA(">generic|Q9QXS1-3_REVERSED(181-215)| Protein B");
+        proteinB.setHeader(h);
+
+        positionA = 2;
+        positionB = 9;
+        start = new LinkedResidue(proteinA, positionA, LinkedResidueType.K, true, true);
+        next = new LinkedResidue(proteinB, positionB, LinkedResidueType.K, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("Q9QXS1-3_REVERSED(181-215)_10_Q9QXS1-3_REVERSED(53-65)_3", prepare_header_and_sequence[0].toString());
+        assertEquals("HKPMLIDMNK*VYRQTNLENLDQAFSVAERDLGVTR|YVK*NMDILMPKHR", prepare_header_and_sequence[1].toString());
+
+        // THIRD TEST-Both shuffled..
+        h = Header.parseFromFASTA(">generic|Q9QXS1-3_SHUFFLED(53-65)| Protein A");
+        proteinA.setHeader(h);
+        h = Header.parseFromFASTA(">generic|Q9QXS1-3_SHUFFLED(181-215)| Protein B");
+        proteinB.setHeader(h);
+
+        positionA = 2;
+        positionB = 9;
+        start = new LinkedResidue(proteinA, positionA, LinkedResidueType.K, true, true);
+        next = new LinkedResidue(proteinB, positionB, LinkedResidueType.K, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("Q9QXS1-3_SHUFFLED(181-215)_10_Q9QXS1-3_SHUFFLED(53-65)_3", prepare_header_and_sequence[0].toString());
+        assertEquals("HKPMLIDMNK*VYRQTNLENLDQAFSVAERDLGVTR|YVK*NMDILMPKHR", prepare_header_and_sequence[1].toString());
+
+        // FOURTH TEST-Starting with Methionine..
+        proteinA = new Protein("P62158(1-9)", "MDILMPKHR");
+        proteinB = new Protein("Q9QXS1-3(181-215)", "HKPMLIDMNKVYRQTNLENLDQAFSVAERDLGVTR");
+        h = Header.parseFromFASTA(">generic|P62158(1-9)| Protein A");
+        proteinA.setHeader(h);
+
+        h = Header.parseFromFASTA(">generic|Q9QXS1-3(181-215)| Protein B");
+        proteinB.setHeader(h);
+
+        positionA = 0;
+        positionB = 9;
+        start = new LinkedResidue(proteinA, positionA, LinkedResidueType.M, true, true);
+        next = new LinkedResidue(proteinB, positionB, LinkedResidueType.K, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("Q9QXS1-3(181-215)_10_P62158(1-9)_1", prepare_header_and_sequence[0].toString());
+        assertEquals("HKPMLIDMNK*VYRQTNLENLDQAFSVAERDLGVTR|M*DILMPKHR", prepare_header_and_sequence[1].toString());
+
+        // Now starting with a peptide after methionine..
+        positionA = 0;
+        positionB = 9;
+        start = new LinkedResidue(proteinA, positionA, LinkedResidueType.NTerminiIncludesM, true, true);
+        next = new LinkedResidue(proteinB, positionB, LinkedResidueType.K, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("Q9QXS1-3(181-215)_10_P62158(2-9)_1", prepare_header_and_sequence[0].toString());
+        assertEquals("HKPMLIDMNK*VYRQTNLENLDQAFSVAERDLGVTR|D*ILMPKHR", prepare_header_and_sequence[1].toString());
+
+        // now starting with a peptide with containing n-termini
+        proteinA = new Protein("P62158(1-9)", "GDILMPKHR");
+        h = Header.parseFromFASTA(">generic|P62158(1-9)| Protein A");
+        proteinA.setHeader(h);
+
+        positionA = 0;
+        positionB = 9;
+        start = new LinkedResidue(proteinA, positionA, LinkedResidueType.NTerminus, true, true);
+        next = new LinkedResidue(proteinB, positionB, LinkedResidueType.K, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("Q9QXS1-3(181-215)_10_P62158(1-9)_1", prepare_header_and_sequence[0].toString());
+        assertEquals("HKPMLIDMNK*VYRQTNLENLDQAFSVAERDLGVTR|G*DILMPKHR", prepare_header_and_sequence[1].toString());
+
+        // both of them have M on protein n-termini
+        proteinA = new Protein("P62158(1-9)", "MDILMPKHR");
+        proteinB = new Protein("P62158(1-9)", "MDILMPKHR");
+        h = Header.parseFromFASTA(">generic|P62158(1-9)| Protein A");
+        proteinA.setHeader(h);
+        proteinB.setHeader(h);
+        start = new LinkedResidue(proteinA, 0, LinkedResidueType.M, true, true);
+        next = new LinkedResidue(proteinB, 0, LinkedResidueType.M, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("P62158(1-9)_1_P62158(1-9)_1", prepare_header_and_sequence[0].toString());
+        assertEquals("M*DILMPKHR|M*DILMPKHR", prepare_header_and_sequence[1].toString());
+
+        proteinA = new Protein("P62158-3_REVERSED(1-9)", "MDILMPKHR");
+        proteinB = new Protein("P62158-3_REVERSED(1-9)", "MDILMPKHR");
+        h = Header.parseFromFASTA(">generic|P62158-3_REVERSED(1-9)| Protein A");
+        proteinA.setHeader(h);
+        proteinB.setHeader(h);
+        start = new LinkedResidue(proteinA, 0, LinkedResidueType.M, true, true);
+        next = new LinkedResidue(proteinB, 0, LinkedResidueType.M, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("P62158-3_REVERSED(1-9)_1_P62158-3_REVERSED(1-9)_1", prepare_header_and_sequence[0].toString());
+        assertEquals("M*DILMPKHR|M*DILMPKHR", prepare_header_and_sequence[1].toString());
+
+        proteinA = new Protein("P62158-3_REVERSED(1-9)", "MDILMPKHR");
+        proteinB = new Protein("P62158-3_REVERSED(1-9)", "MDILMPKHRRRR");
+        h = Header.parseFromFASTA(">generic|P62158-3_REVERSED(1-9)| Protein A");
+        proteinA.setHeader(h);
+        proteinB.setHeader(h);
+        start = new LinkedResidue(proteinA, 0, LinkedResidueType.NTerminiIncludesM, true, true);
+        next = new LinkedResidue(proteinB, 0, LinkedResidueType.M, true, true);
+        prepare_header_and_sequence = CreateDatabase.construct_header_and_sequence(start, next);
+        assertEquals("P62158-3_REVERSED(1-9)_1_P62158-3_REVERSED(2-9)_1", prepare_header_and_sequence[0].toString());
+        assertEquals("M*DILMPKHRRRR|D*ILMPKHR", prepare_header_and_sequence[1].toString());
+    }
+
+    /**
+     * Test of reverse method, of class CreateDatabase.
+     */
+    @Test
+    public void testReverse() throws Exception {
+        System.out.println("reverse");
+        StringBuilder[] header_and_sequence = new StringBuilder[2];
+        header_and_sequence[0] = new StringBuilder("P62158-3_REVERSED(1-9)_1_P62158-3_REVERSED(2-9)_1");
+        header_and_sequence[1] = new StringBuilder("M*DILMPKHRRRR|D*ILMPKHR");
+        StringBuilder rev = CreateDatabase.reverse(header_and_sequence);
+        System.out.println(rev.toString());
+        assertEquals("P62158-3_REVERSED(2-9)_1_P62158-3_REVERSED(1-9)_1", rev.toString());
+
+        header_and_sequence = new StringBuilder[2];
+        header_and_sequence[0] = new StringBuilder("P62158-3(1-9)_1_P62158-3(2-9)_1");
+        header_and_sequence[1] = new StringBuilder("M*DILMPKHRRRR|D*ILMPKHR");
+        rev = CreateDatabase.reverse(header_and_sequence);
+        assertEquals("P62158-3(2-9)_1_P62158-3(1-9)_1", rev.toString());
+
+        header_and_sequence = new StringBuilder[2];
+        header_and_sequence[0] = new StringBuilder("P62158-3(1-9)_1_P62158-3_REVERSED(2-9)_1");
+        header_and_sequence[1] = new StringBuilder("M*DILMPKHRRRR|D*ILMPKHR");
+        rev = CreateDatabase.reverse(header_and_sequence);
+        assertEquals("P62158-3_REVERSED(2-9)_1_P62158-3(1-9)_1", rev.toString());
+
     }
 
 }

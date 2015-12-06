@@ -15,9 +15,9 @@ import com.compomics.dbtoolkit.io.interfaces.Filter;
 import com.compomics.dbtoolkit.io.interfaces.ProteinFilter;
 import com.compomics.util.io.MascotEnzymeReader;
 import com.compomics.util.protein.Enzyme;
+import com.compomics.util.protein.Header;
 import com.compomics.util.protein.Protein;
 import crossLinker.CrossLinker;
-import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
 import crossLinker.GetCrossLinker;
 import java.io.BufferedReader;
@@ -37,14 +37,14 @@ import playground.EnzymeDigest;
 
 /**
  *
- * @author Lennart adapted from DBToolKit for in silico digestion of database
- * from DBToolKit
- * @author Sule to integrate for crossLinkedPeptides
+ * @author Lennart in silico digestion adapted from DBToolKit
+ * 
+ * @author Sule combination of cross-linked peptides
  *
  */
 public class CreateDatabase {
 
-    private String inputProteinFileName, // input fasta file
+    private String inputProteinDBName, // input fasta file
             inSilicoPeptideDBName, // in silico digested fasta file
             crossLinkerName, // a cross linker name 
             crossLinkedProteinTypes = "both", // "intra"(Different proteins), "inter" (Same proteins) "both" (Same and different proteins)           
@@ -61,11 +61,11 @@ public class CreateDatabase {
             inSilicoPeptideDB;
     private boolean does_a_peptide_link_to_itself = false; // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
     private CrossLinker linker;
-    private HashMap<String, String> header_sequence = new HashMap<String, String>();
+    private HashMap<String, StringBuilder> header_sequence = new HashMap<String, StringBuilder>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
     private HashMap<String, Integer> accession_and_length = new HashMap<String, Integer>();
 
-    public CreateDatabase(String givenDBName,
+    public CreateDatabase(String proteinDBName,
             String inSilicoPeptideDBName,
             String cxDBName, // db related parameters
             String crossLinkerName, // crossLinkerName
@@ -78,7 +78,7 @@ public class CreateDatabase {
             boolean isLabeled // T: heavy labeled protein, F:no labeled
     ) throws Exception {
         // db related parameters
-        inputProteinFileName = givenDBName;
+        inputProteinDBName = proteinDBName;
         this.inSilicoPeptideDBName = inSilicoPeptideDBName;
         // crossLinkerName related parameters
         this.crossLinkerName = crossLinkerName;
@@ -94,12 +94,13 @@ public class CreateDatabase {
         this.maxLen_for_combined = maxLen_for_combined;
         this.does_a_peptide_link_to_itself = does_link_to_itself;
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
-        accession_and_length = getAccession_and_length(inputProteinFileName);
+        // accession and the corresponding protein length of a given input-protein database to construct cross-linked peptides database
+        accession_and_length = getAccession_and_length(inputProteinDBName);
     }
 
     // getter and setter methods    
     public String getFastaFileName() {
-        return inputProteinFileName;
+        return inputProteinDBName;
     }
 
     public String getInSilicoPeptideDBName() {
@@ -178,16 +179,34 @@ public class CreateDatabase {
         this.linker = linker;
     }
 
+    public HashMap<String, Integer> getAccession_and_length() {
+        return accession_and_length;
+    }
+
+    public void setAccession_and_length(HashMap<String, Integer> accession_and_length) {
+        this.accession_and_length = accession_and_length;
+    }
+
+    public File getInSilicoPeptideDB() {
+        return inSilicoPeptideDB;
+    }
+
+    public void setInSilicoPeptideDB(File inSilicoPeptideDB) {
+        this.inSilicoPeptideDB = inSilicoPeptideDB;
+    }
+    
+    
     /**
-     * This method returns a hashmap containing header and cx sequences If it is
-     * not already generated, it calls construct() method
+     * This method returns a hashmap containing header and a cross-linked
+     * sequences. If this hashmap is not constructed, yet, it calls construct()
+     * method.
      *
      * @return
      * @throws UnknownDBFormatException
      * @throws IOException
      * @throws Exception
      */
-    public HashMap<String, String> getHeadersAndSequences() throws UnknownDBFormatException, IOException, Exception {
+    public HashMap<String, StringBuilder> getHeadersAndSequences() throws UnknownDBFormatException, IOException, Exception {
         if (header_sequence.isEmpty()) {
             construct();
         }
@@ -195,8 +214,8 @@ public class CreateDatabase {
     }
 
     /**
-     * This method does in silico peptide digestion, then create cross linked
-     * peptide combinations
+     * This method performs in silico peptide digestion, then creates
+     * cross-linked peptide combinations
      *
      * @throws UnknownDBFormatException
      * @throws IOException
@@ -205,23 +224,20 @@ public class CreateDatabase {
     public void construct() throws UnknownDBFormatException, IOException, Exception {
         LOGGER.info("Performing in silico digestion");
         digest_insilico();
-        // read in silico digested pepti file and generate cross linked peptides       
-        // now generate cross linked ones..
         LOGGER.info("Constructing a cross-linked peptides database");
         create_crossLinkedPeptides();
     }
 
     /**
-     * This method does in silico enyzme digestion. This comes from DBToolKit.
-     * In the end, an output file with in silico digested peptides on is
-     * generated.
+     * This method performs in silico enyzme digestion. Only this part comes directly
+     * from DBToolKit. In the end, an output file containing these putative peptides  is generated.
      *
      * @throws UnknownDBFormatException
      * @throws IOException
      */
-    private void digest_insilico() throws UnknownDBFormatException, IOException {
+    public void digest_insilico() throws UnknownDBFormatException, IOException {
         // See if all of this is correct.
-        if (inputProteinFileName == null) {
+        if (inputProteinDBName == null) {
             flagError("You did not specify the '--input <input_file_name>' parameter!\n\nRun program without parameters for help.");
         } else if (inSilicoPeptideDBName == null) {
             flagError("You did not specify an outputfile!\n\nRun program without parameters for help.");
@@ -235,7 +251,7 @@ public class CreateDatabase {
                     flagError("The enzyme definitions file you specified (" + enzymeFile + ") could not be found!\nExiting...");
                 }
             }
-            inputProteinFile = new File(inputProteinFileName);
+            inputProteinFile = new File(inputProteinDBName);
             inSilicoPeptideDB = new File(inSilicoPeptideDBName);
             if (!inSilicoPeptideDB.exists()) {
                 try {
@@ -245,7 +261,7 @@ public class CreateDatabase {
                 }
             }
             if (!inputProteinFile.exists()) {
-                flagError("The input file you specified (" + inputProteinFileName + ") could not be found!\nExiting...");
+                flagError("The input file you specified (" + inputProteinDBName + ") could not be found!\nExiting...");
             } else {
                 // The stuff we've received as input seems to be OK.
                 // Get the props for the AutoDBLoader...
@@ -281,7 +297,7 @@ public class CreateDatabase {
                 } catch (UnknownDBFormatException udfe) {
                 }
                 if (loader == null) {
-                    flagError("Unable to determine database type for your inputfile (" + inputProteinFileName + "), exiting...");
+                    flagError("Unable to determine database type for your inputfile (" + inputProteinDBName + "), exiting...");
                 }
                 // Parse the enzyme stuff and masses etc.
                 double minMass = -1;
@@ -368,11 +384,11 @@ public class CreateDatabase {
                                     } catch (Exception exc) {
                                     }
                                     type = 2;
-                                } else {
                                     try {
                                         constr = lClass.getConstructor(new Class[]{String.class});
                                     } catch (Exception exc) {
                                     }
+                                } else {
                                     type = 3;
                                 }
                                 if (constr == null) {
@@ -431,7 +447,7 @@ public class CreateDatabase {
      * @throws IOException
      * @throws Exception
      */
-    private void create_crossLinkedPeptides() throws IOException, Exception {
+    public void create_crossLinkedPeptides() throws IOException, Exception {
         DBLoader loader = DBLoaderLoader.loadDB(inSilicoPeptideDB),
                 loader_next = null;
         Protein startProtein = null,
@@ -439,36 +455,57 @@ public class CreateDatabase {
         long start = System.currentTimeMillis();
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
-            String tmpStartAccession = startProtein.getHeader().getAccession(),
-                    startHeader = startProtein.getHeader().getAccession(),
-                    startSequence = startProtein.getSequence().getSequence();
+            boolean doesStartProContainProteinNtermini = false,
+                    doesStartProContainProteinCtermini = false;
+            String startHeader = startProtein.getHeader().getAccession(),
+                    tmpStartAccession = startProtein.getHeader().getAccession(),
+                    nextHeader = "",
+                    tmpNextAccession = "";
+            int startLen = startProtein.getSequence().getSequence().length();
             // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
+                doesStartProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(startHeader), true, accession_and_length);
+                doesStartProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(startHeader), false, accession_and_length);
                 tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
-            // check the first condition
-            if (startSequence.length() >= minLen) {
-                // find if there is a possible linker locations.
-                HashMap<String, ArrayList<Integer>> possible_indices = Find_LinkerPosition.find_possibly_linker_locations(startProtein, linker);
-                for (String possible_linked_aa_startSeq : possible_indices.keySet()) {
-                    ArrayList<Integer> indices = possible_indices.get(possible_linked_aa_startSeq);
-                    for (int index : indices) {
-                        // find for each possible match on the other part
-                        loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
-                        while ((nextProtein = loader_next.nextProtein()) != null) {
-                            // now start building a cross linked peptides...
-                            String nextHeader = nextProtein.getHeader().getAccession(),
-                                    tmpNextAccession = nextProtein.getHeader().getAccession();
-                            if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
-                                tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
-                            }
-                            if (tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.equals("intra") || crossLinkedProteinTypes.equals("both"))) {
-                                // put a control to find either inter or intra proteins                              
-                                // header and sequence
-                                generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                            } else if (!tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.equals("inter") || crossLinkedProteinTypes.equals("both"))) {
-                                generate_peptide_combinations(startProtein, false, nextProtein, possible_linked_aa_startSeq, index);
-                            }
+            // a start sequence must be at least #minLen amino acids
+            if (startLen >= minLen) {
+                // find if there is a possible linker locations.                
+                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini),
+                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini),
+                        linkedNextResiduesOnFirstPart = new ArrayList<LinkedResidue>(),
+                        linkedNextResiduesOnSecondPart = new ArrayList<LinkedResidue>();
+                loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
+                while ((nextProtein = loader_next.nextProtein()) != null) {
+                    boolean doesNextProContainProteinNtermini = false,
+                            doesNextProContainProteinCtermini = false,
+                            toConjugate = false;
+                    // now start building a cross linked peptides...
+                    nextHeader = nextProtein.getHeader().getAccession();
+                    tmpNextAccession = nextProtein.getHeader().getAccession();
+                    int nextLen = nextProtein.getSequence().getSequence().length(),
+                            totalLen = startLen + nextLen;
+                    if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*") && nextProtein.getSequence().getSequence().length() >= minLen) {
+                        tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
+                        doesNextProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(nextHeader), true, accession_and_length);
+                        doesNextProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(nextHeader), false, accession_and_length);
+                    }
+                    if ((tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.toLowerCase().equals("intra") || crossLinkedProteinTypes.toLowerCase().equals("both")))
+                            || (!tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.toLowerCase().equals("inter") || crossLinkedProteinTypes.toLowerCase().equals("both")))
+                            && (nextLen >= minLen && totalLen <= maxLen_for_combined)
+                            && (does_a_peptide_link_to_itself && startProtein.getSequence().equals(nextProtein.getSequence())
+                            || (!nextProtein.getSequence().equals(startProtein.getSequence())))) {
+                        toConjugate = true;
+                        linkedNextResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, true, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini);
+                        linkedNextResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, false, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini);
+                    }
+                    if (toConjugate) {
+                        get_peptide_combinations(linkedStartResiduesOnFirstPart, linkedNextResiduesOnSecondPart);
+                        if (linker.getType().equals(CrossLinkerType.AMINE_TO_SULFHYDRYL)
+                                || linker.getType().equals(CrossLinkerType.CARBOXYL_TO_AMINE)
+                                || linker.getType().equals(CrossLinkerType.SULFHYDRYL_TO_CARBOHYDRATE)) {
+                            //Because the the target group of the second reactive group is different
+                            get_peptide_combinations(linkedNextResiduesOnFirstPart, linkedStartResiduesOnSecondPart);
                         }
                     }
                 }
@@ -479,66 +516,22 @@ public class CreateDatabase {
     }
 
     /**
-     * Note that this class is not generating any concatenation for shuffled
-     * decoys! TODO: Apply this if necessary!
+     * This method generates combination of each residue on a
+     * linkedStartResidues list against each residue on linkedNextResidues list.
+     * If this combination is not previously constructed, then it puts into
+     * header_sequence hashmap for further cases
      *
-     * @param startProtein
-     * @param is_start_sequence_reversed
-     * @param nextProtein
-     * @param possible_linked_aa_startSeq
-     * @param index_linked_aa_startSeq
+     * @param linkedStartResidues a list of LinkedResiude
+     * @param linkedNextResidues
      * @throws IOException
      */
-    public void generate_peptide_combinations(Protein startProtein, boolean is_start_sequence_reversed,
-            Protein nextProtein, String possible_linked_aa_startSeq, int index_linked_aa_startSeq) throws IOException {
-        String startSequence = startProtein.getSequence().getSequence(),
-                nextSequence = nextProtein.getSequence().getSequence();
-        // target-target
-        generate_xlinked_ones(startSequence, nextSequence, nextProtein, startProtein, index_linked_aa_startSeq, is_start_sequence_reversed, possible_linked_aa_startSeq);
-    }
-
-    private void generate_xlinked_ones(String startSequence, String nextSequence, Protein nextProtein, Protein startProtein, int index_linked_aa_startSeq, boolean is_start_sequence_reversed, String possible_linked_aa_startSeq) throws IOException {
-        int totalLen = startSequence.length() + nextSequence.length();
-        // check the condition - next sequence needs be to larger than minLen and also a cross linked peptide needs to be shorter than maxLen
-        if (nextSequence.length() >= minLen && totalLen <= maxLen_for_combined) {
-            if ((does_a_peptide_link_to_itself && nextSequence.equals(startSequence)) || (!nextSequence.equals(startSequence))) {
-                HashMap<String, ArrayList<Integer>> next_liked_aas_and_indices = Find_LinkerPosition.find_possibly_linker_locations(nextProtein, linker);
-                if (linker.getType().equals(CrossLinkerType.homobifunctional)) { // either DSSd0, DSSd12, BS3d0 or BS3d4.. So K-K
-                    for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
-                        ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
-                        for (Integer next_index : next_indices_liked_aas) {
-                            generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-//InvertedPeptides            generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
-
-                        }
-                    }//                      
-                } else if (linker.getType().equals(CrossLinkerName.EDC)) {
-                    if (possible_linked_aa_startSeq.equals("K")) {
-                        // the rest should be D or E
-                        for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
-                            if (next_linked_aa.equals("D") || next_linked_aa.equals("S")) {
-                                ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
-                                for (Integer next_index : next_indices_liked_aas) {
-                                    generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-//InvertedPeptides                    generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
-                                }
-                            }
-                        }
-                    } else {
-                        // the rest should be K, So either D or S link to K
-                        if (possible_linked_aa_startSeq.equals("D") || possible_linked_aa_startSeq.equals("S")) {
-                            // the rest should be D or E
-                            for (String next_linked_aa : next_liked_aas_and_indices.keySet()) {
-                                if (next_linked_aa.equals("K")) {
-                                    ArrayList<Integer> next_indices_liked_aas = next_liked_aas_and_indices.get(next_linked_aa);
-                                    for (Integer next_index : next_indices_liked_aas) {
-                                        generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, false, is_start_sequence_reversed);
-//InvertedPeptides                        generate_header_and_sequence(startSequence, nextSequence, startProtein, nextProtein, index_linked_aa_startSeq, next_index, true, is_start_sequence_reversed);
-                                    }
-                                }
-                            }
-                        }
-                    }
+    public void get_peptide_combinations(ArrayList<LinkedResidue> linkedStartResidues, ArrayList<LinkedResidue> linkedNextResidues) throws IOException {
+        for (LinkedResidue start : linkedStartResidues) {
+            for (LinkedResidue next : linkedNextResidues) {
+                StringBuilder[] header_and_sequence = construct_header_and_sequence(start, next);
+                StringBuilder rev_header = reverse(header_and_sequence);
+                if (!header_sequence.containsKey(rev_header.toString())) {
+                    header_sequence.put(header_and_sequence[0].toString(), header_and_sequence[1]);
                 }
             }
         }
@@ -555,55 +548,70 @@ public class CreateDatabase {
         System.exit(1);
     }
 
-    public void generate_header_and_sequence(String startSequence, String nextSequence,
-            Protein startProtein, Protein nextProtein,
-            int index_linked_aa_startSeq, int next_index,
-            boolean is_inverted, boolean is_start_sequence_reversed) throws IOException {
-        String mod_startSeq = startSequence.substring(0, index_linked_aa_startSeq + 1) + "*" + startSequence.substring(index_linked_aa_startSeq + 1),
-                info_if_nextSeq_reversed = "",
-                info_if_startSeq_reversed = "",
-                mod_nextSeq = "";
-
-        // Make sure that a linked amino acid on an inverted sequence is not at the last index
-        if (next_index != nextSequence.length() - 1) {
-            mod_nextSeq = nextSequence.substring(0, next_index + 1) + "*" + nextSequence.substring(next_index + 1);
-            String tmp_linked_sequence = "",
-                    tmp_header = "",
-                    rTmpHeader = "";
-
-            if (mod_nextSeq.length() <= mod_startSeq.length()) {
-                tmp_linked_sequence = mod_startSeq + "|" + mod_nextSeq;
-                tmp_header = startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
-                        + nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_nextSeq_reversed + "_" + (next_index + 1);
-                rTmpHeader = nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
-                        + startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
-            } else {
-                tmp_linked_sequence = mod_nextSeq + "|" + mod_startSeq;
-                tmp_header = nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_nextSeq_reversed + "_" + (next_index + 1) + "_"
-                        + startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1);
-                rTmpHeader = startProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_startSeq_reversed + "_" + (index_linked_aa_startSeq + 1) + "_"
-                        + nextProtein.getHeader().getAccession().replace(" ", "").replace("_", "")
-                        + info_if_nextSeq_reversed + "_" + (next_index + 1);
-            }
-            if (!header_sequence.containsKey(rTmpHeader)) {
-                header_sequence.put(tmp_header, tmp_linked_sequence);
-            }
+    /**
+     * For given for two linkedResidues, headers and sequences are constructed.
+     * If a sequence of @param next is longer than a sequence of @param start;
+     * then the first written part comes from @param next.
+     *
+     *
+     * @param start
+     * @param next
+     * @return an array of StringBuilder with first element is a constructed
+     * header and the second element is a constructed sequence
+     * @throws IOException
+     */
+    public static StringBuilder[] construct_header_and_sequence(LinkedResidue start, LinkedResidue next) throws IOException {
+        String startSeq = start.getSequence(),
+                nextSeq = next.getSequence(),
+                startHeader = start.getProtein().getHeader().getAccession(),
+                nextHeader = next.getProtein().getHeader().getAccession();
+        int positionToStartStartSeq = 0,
+                positionToStartNextSeq = 0,
+                positionLinkedResStartSeq = start.getPosition(),
+                positionLinkedResNextSeq = next.getPosition();
+        // making sure that a sequence starts from the second residue, right after M! 
+        if (start.getResType().equals(LinkedResidueType.NTerminiIncludesM)) {
+            startHeader = startHeader.replace("(1-", "(2-");
+            startSeq = startSeq.substring(1);
         }
+        StringBuilder mod_startSeq = new StringBuilder(startSeq.substring(positionToStartStartSeq, positionLinkedResStartSeq + 1))
+                .append("*")
+                .append(startSeq.substring(positionLinkedResStartSeq + 1));
+        // also making sure that the next sequence starts from the second residue, right after M! 
+        if (next.getResType().equals(LinkedResidueType.NTerminiIncludesM)) {
+            nextSeq = nextSeq.substring(1);
+            nextHeader = nextHeader.replace("(1-", "(2-");
+        }
+        StringBuilder mod_nextSeq = new StringBuilder(nextSeq.substring(positionToStartNextSeq, positionLinkedResNextSeq + 1))
+                .append("*")
+                .append(nextSeq.substring(positionLinkedResNextSeq + 1));
+        StringBuilder tmp_sequence = new StringBuilder(),
+                tmp_header = new StringBuilder();
+        StringBuilder[] header_and_sequence = new StringBuilder[2];
+        if (mod_startSeq.length() >= mod_nextSeq.length()) {
+            tmp_sequence = new StringBuilder(mod_startSeq).append("|").append(mod_nextSeq);
+            tmp_header = new StringBuilder(startHeader.replace(" ", ""))
+                    .append("_").append(positionLinkedResStartSeq + 1).append("_")
+                    .append(nextHeader.replace(" ", ""))
+                    .append("_").append(positionLinkedResNextSeq + 1);
+
+        } else {
+            tmp_sequence = new StringBuilder(mod_nextSeq).append("|").append(mod_startSeq);
+            tmp_header = new StringBuilder(nextHeader.replace(" ", ""))
+                    .append("_").append(positionLinkedResNextSeq + 1).append("_")
+                    .append(startHeader.replace(" ", ""))
+                    .append("_").append(positionLinkedResStartSeq + 1);
+        }
+        header_and_sequence[0] = tmp_header;
+        header_and_sequence[1] = tmp_sequence;
+        return header_and_sequence;
     }
 
     /**
      * This method returns a hashmap with keys as accession numbers and values
-     * as the length of the sequence with that accession number
+     * as length of the sequence with corresponding accession number
      *
-     *
-     * @param proteinFastaFileName is the name of proteinFastaFileName (with its
+     * @param proteinFastaFileName is the name of proteinFastaFileName (the full
      * path)
      * @return
      * @throws FileNotFoundException
@@ -624,11 +632,6 @@ public class CreateDatabase {
                 }
                 String[] sp = line.split("\\|");
                 acc = sp[1];
-                if (acc.contains("_REVERSED")) {
-                    acc = acc.replace("_REVERSED", "REVERSED");
-                } else if (acc.contains("_SHUFFLED")) {
-                    acc = acc.replace("_SHUFFLED", "SHUFFLED");
-                }
                 len = 0;
                 // this line is only sequence
             } else {
@@ -639,6 +642,36 @@ public class CreateDatabase {
             acc_and_length.put(acc, len);
         }
         return acc_and_length;
+    }
+
+    /**
+     * This method swaps around the proteinA and proteinB.
+     *
+     * @param header_and_sequence a header-sequence information that a header is
+     * swapped around
+     * @return
+     */
+    public static StringBuilder reverse(StringBuilder[] header_and_sequence) {
+        StringBuilder reversedHeader = new StringBuilder();
+        String h = header_and_sequence[0].toString();
+        String[] sp = h.split("_");
+        int posA = 0,
+                posB = 2;
+        if (sp[posA + 1].contains("REVERSED")
+                || sp[posA + 1].contains("SHUFFLED")) {
+            posB++;
+        }
+        for (int i = posB; i < sp.length; i++) {
+            reversedHeader.append(sp[i]).append("_");
+        }
+        for (int i = 0; i < posB; i++) {
+            reversedHeader.append(sp[i]);
+            if (i != posB - 1) {
+                reversedHeader.append("_");
+            }
+        }
+        return reversedHeader;
+
     }
 
 }

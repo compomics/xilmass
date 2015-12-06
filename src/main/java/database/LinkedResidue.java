@@ -22,13 +22,13 @@ public class LinkedResidue {
             doesContainProteinCTerminus = false, // true: this sequence still has a protein C-terminus; false: this sequence does not have a protein C-terminus 
             isMethionineFirstResidue = false; // true: Methionine is the first residue, false: a sequence starts with any other residue than methionine
 
-    public LinkedResidue(Protein protein, int position, LinkedResidueType resType, boolean doesContainProteinNtermini, boolean doesContainProteinCTermini) {
+    public LinkedResidue(Protein protein, int position, LinkedResidueType resType, boolean doesContainProteinNterminus, boolean doesContainProteinCTerminus) {
         this.protein = protein;
         this.resType = resType;
         this.sequence = protein.getSequence().getSequence();
         this.position = position;
-        this.doesContainProteinNTerminus = doesContainProteinNtermini;
-        this.doesContainProteinCTerminus = doesContainProteinCTermini;
+        this.doesContainProteinNTerminus = doesContainProteinNterminus;
+        this.doesContainProteinCTerminus = doesContainProteinCTerminus;
         if (sequence.startsWith("M")) {
             isMethionineFirstResidue = true;  
         }
