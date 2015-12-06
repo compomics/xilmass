@@ -97,6 +97,9 @@ public class CreateDatabaseTest extends TestCase {
                 crossLinker, "Both", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true);
         headersAndSequences = instance.getHeadersAndSequences();
         assertEquals(10, headersAndSequences.size());
+        for(String h : headersAndSequences.keySet()){
+            System.out.println(h+"\t"+headersAndSequences.get(h));
+        }
     }
 
     /**

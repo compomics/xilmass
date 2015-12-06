@@ -464,8 +464,8 @@ public class CreateDatabase {
             int startLen = startProtein.getSequence().getSequence().length();
             // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
-                doesStartProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(startHeader), true, accession_and_length);
-                doesStartProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(startHeader), false, accession_and_length);
+                doesStartProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, true, accession_and_length);
+                doesStartProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, false, accession_and_length);
                 tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
             // a start sequence must be at least #minLen amino acids
@@ -487,8 +487,8 @@ public class CreateDatabase {
                             totalLen = startLen + nextLen;
                     if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*") && nextProtein.getSequence().getSequence().length() >= minLen) {
                         tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
-                        doesNextProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(nextHeader), true, accession_and_length);
-                        doesNextProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(new StringBuilder(nextHeader), false, accession_and_length);
+                        doesNextProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(nextHeader, true, accession_and_length);
+                        doesNextProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(nextHeader, false, accession_and_length);
                     }
                     if ((tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.toLowerCase().equals("intra") || crossLinkedProteinTypes.toLowerCase().equals("both")))
                             || (!tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.toLowerCase().equals("inter") || crossLinkedProteinTypes.toLowerCase().equals("both")))
