@@ -117,7 +117,6 @@ public class Start {
                 variableModifications = getModificationsName(variableModificationNames);
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
-//        System.out.println(modFile.getName());
         ptmFactory.importModifications(modFile, false);
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
@@ -201,15 +200,14 @@ public class Start {
             folder.mkdir();
         }
         // Either the same settings but no CXDB found or not the same settings at all..
-        HashMap<String, String> headers_sequences = new HashMap<String, String>();
+        HashMap<String, StringBuilder> headers_sequences = new HashMap<String, StringBuilder>();
         if ((isSame && !doesCXDBExist) || !isSame || (folder.listFiles().length == 0)) {
             // clean the index folder..
             deleteDirectory(folder);
             folder.mkdir();
             // Construct a cross linked peptide database and write an index file with masses...
             LOGGER.info("Either a CX database is not found or the settings are different! A CX database is going to be constructed..");
-            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
-                    inSilicoPeptideDBName,
+            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName,
                     cxDBName, // db related parameters
                     crossLinkerName, // crossLinker name
                     crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
@@ -240,18 +238,15 @@ public class Start {
         if (searcForAlsoMonoLink && !headers_sequences.isEmpty()) {
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             for (CrossLinker linker : linkers) {
-                FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2,
-                        headers_sequences, ptmFactory,
-                        fixedModifications,
-                        variableModifications,
-                        linker, fragMode, maxModsPerPeptide, acc_and_length);
+                FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2, headers_sequences, ptmFactory,
+                        fixedModifications, variableModifications, maxModsPerPeptide,
+                        linker, fragMode, acc_and_length);
             }
             bw2.close();
             LOGGER.info("An index (peptide-mass index) file for monolinks bas been created!");
         } else if (searcForAlsoMonoLink && headers_sequences.isEmpty() && folder.listFiles().length == 0) {
             LOGGER.info("A header and sequence object is empty to build index file for monolink index file! Therefore, a CXDB is going to be constructed..");
-            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName,
-                    inSilicoPeptideDBName,
+            CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName,
                     cxDBName, // db related parameters
                     crossLinkerName, // crossLinker name
                     crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
@@ -264,11 +259,9 @@ public class Start {
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             for (CrossLinker linker : linkers) {
-                FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2,
-                        headers_sequences, ptmFactory,
-                        fixedModifications,
-                        variableModifications,
-                        linker, fragMode, maxModsPerPeptide, acc_and_length);
+                FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2, headers_sequences, ptmFactory,
+                        fixedModifications, variableModifications, maxModsPerPeptide,
+                        linker, fragMode, acc_and_length);
             }
             bw2.close();
         }
@@ -279,27 +272,20 @@ public class Start {
         if (folder.listFiles().length == 0 || !isSame) {
             // Make sure that an index file also exists...
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexFile));
-            tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw2,
-                    headers_sequences, ptmFactory,
-                    fixedModifications,
-                    variableModifications,
-                    fragMode, isContrastLinkedAttachmentOn, maxModsPerPeptide, contaminant_acc_lenght);
+            tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw2, headers_sequences, ptmFactory,
+                    fixedModifications, variableModifications, maxModsPerPeptide,
+                    fragMode, isContrastLinkedAttachmentOn, contaminant_acc_lenght);
             all_headers.addAll(tmp_headers);
             // accession numbers with protein lengths from a given fasta-protein database
-
             for (CrossLinker linker : linkers) {
-                tmp_headers = FASTACPDBLoader.generate_peptide_mass_index(bw2,
-                        headers_sequences, ptmFactory,
-                        fixedModifications,
-                        variableModifications,
-                        linker, fragMode, isContrastLinkedAttachmentOn, maxModsPerPeptide, acc_and_length);
+                tmp_headers = FASTACPDBLoader.generate_peptide_mass_index(bw2, headers_sequences, ptmFactory,
+                        fixedModifications, variableModifications, maxModsPerPeptide,
+                        linker, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
                 all_headers.addAll(tmp_headers);
                 if (searcForAlsoMonoLink) {
-                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2,
-                            headers_sequences, ptmFactory,
-                            fixedModifications,
-                            variableModifications,
-                            linker, fragMode, maxModsPerPeptide, acc_and_length);
+                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw2, headers_sequences, ptmFactory,
+                            fixedModifications, variableModifications, maxModsPerPeptide,
+                            linker, fragMode, acc_and_length);
                     all_headers.addAll(tmp_headers);
                 }
             }
@@ -343,7 +329,6 @@ public class Start {
                 StringBuilder titleToWrite = prepareTitle(isPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
                 bw.write(titleToWrite + "\n");
                 // now check all spectra to collect all required calculations...
-//                int msNum = 0; 
                 List<Future<ArrayList<Result>>> futureList = null;
                 if (mgf.getName().endsWith("mgf")) {
                     HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
@@ -375,8 +360,7 @@ public class Start {
                                                 bw.write(res.toPrint());
                                                 bw.newLine();
                                             }
-                                        }
-                                        if (peakRequiredForImprovedSearch == 0) {
+                                        } else if (peakRequiredForImprovedSearch == 0) {
                                             info.add(res);
                                             bw.write(res.toPrint());
                                             bw.newLine();
@@ -462,10 +446,10 @@ public class Start {
     private static ArrayList<String> getModificationsName(String ptmNames) {
         ArrayList<String> mods = new ArrayList<String>();
         if (!ptmNames.isEmpty()) {
-            String[] fixed_modifications_name_split = ptmNames.split(";");
+            String[] currMods = ptmNames.split(";");
             // convert to all lower case            
-            for (String fixed_modification_name : fixed_modifications_name_split) {
-                mods.add(fixed_modification_name.toLowerCase());
+            for (String curModName : currMods) {
+                mods.add(curModName.toLowerCase());
             }
         }
         return mods;
@@ -497,15 +481,13 @@ public class Start {
                 to = from_to[1];
         ArrayList<CrossLinking> selectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);
         if (!selectedCPeptides.isEmpty()) {
-            for (CrossLinking c : selectedCPeptides) {
-//                LOGGER.info(c.toPrint()+"\t"+c.getTheoretical_xlinked_mass());
-            }
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
                     isPPM, doesKeepCPeptideFragmPattern, doesKeepWeight);
             Future future = excService.submit(score);
             futureList.add(future);
         }
+
         return futureList;
     }
 
@@ -703,8 +685,7 @@ public class Start {
      * @param maxLen
      * @throws IOException
      */
-    //TODO: STRINGBUILDER!
-    private static void addContaminants(HashMap<String, String> headers_sequences, String contaminantDB, int minLen, int maxLen) throws IOException {
+    private static void addContaminants(HashMap<String, StringBuilder> headers_sequences, String contaminantDB, int minLen, int maxLen) throws IOException {
         File contaminant = new File(contaminantDB);
         DBLoader loader = DBLoaderLoader.loadDB(contaminant);
         Protein startProtein = null;
@@ -712,13 +693,12 @@ public class Start {
         while ((startProtein = loader.nextProtein()) != null) {
             String startHeader = startProtein.getHeader().getAccession(),
                     startSequence = startProtein.getSequence().getSequence();
-            StringBuilder tmpStartAccession = null;
             // check if a header comes from a generic! 
 //            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
 //            if (startHeader.startsWith("contaminant")) {
             if (startSequence.length() > minLen && startSequence.length() <= maxLen) {
-                tmpStartAccession.append("contaminant_").append(startHeader.substring(0, startHeader.indexOf("(")));
-                headers_sequences.put(tmpStartAccession.toString(), startSequence);
+                StringBuilder h = new StringBuilder().append("contaminant_").append(startHeader.substring(0, startHeader.indexOf("(")));
+                headers_sequences.put(h.toString(), new StringBuilder(startSequence));
             }
         }
         contaminant.delete();
