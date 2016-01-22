@@ -51,10 +51,10 @@ public class CPeptides extends CrossLinking {
 
         proteinA_acc = proteinA.substring(0, proteinA.indexOf("("));
         proteinB_acc = proteinB.substring(0, proteinB.indexOf("("));
-
-        linker_position_on_proteinA = Integer.parseInt(proteinA.substring(proteinA.indexOf("(") + 1, proteinA.indexOf("-"))) + linker_position_on_peptideA;
-        linker_position_on_proteinB = Integer.parseInt(proteinB.substring(proteinB.indexOf("(") + 1, proteinB.indexOf("-"))) + linker_position_on_peptideB;
-
+        // last index of - makes sure that accession number can contain "-".
+        linker_position_on_proteinA = Integer.parseInt(proteinA.substring(proteinA.indexOf("(") + 1, proteinA.lastIndexOf("-"))) + linker_position_on_peptideA;
+        linker_position_on_proteinB = Integer.parseInt(proteinB.substring(proteinB.indexOf("(") + 1, proteinB.lastIndexOf("-"))) + linker_position_on_peptideB;
+        
         if (proteinA_acc.equals(proteinB_acc)) {
             type = "intraProtein";
         } else {

@@ -40,8 +40,8 @@ public class LinkedPeptideFragmentIonTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
-                peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide(peptideA_str, modifications_test),
+                peptideB = new Peptide(peptideB_str, modifications_test);
         //(Peptide linkedPeptide, int linker_position_on_linkedPeptide, boolean isLinkedPepA, double intensity, boolean isBranchingApproach) 
         LinkedPeptideFragmentIon instance = new LinkedPeptideFragmentIon(peptideB, 2, false, 100);
         ArrayList<CPeptideIon> result = instance.getCTerminiMasses(PeptideFragmentIon.Y_ION);
@@ -69,8 +69,8 @@ public class LinkedPeptideFragmentIonTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
-                peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide(peptideA_str, modifications_test),
+                peptideB = new Peptide(peptideB_str, modifications_test);
         //(Peptide linkedPeptide, int linker_position_on_linkedPeptide, boolean isLinkedPepA, double intensity, boolean isBranchingApproach) 
         LinkedPeptideFragmentIon instance = new LinkedPeptideFragmentIon(peptideB, 2, false, 100);
         ArrayList<CPeptideIon> result = instance.getNTerminiMasses(PeptideFragmentIon.B_ION);
@@ -101,8 +101,8 @@ public class LinkedPeptideFragmentIonTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptide_alpha = new Peptide(peptide_alpha_str, parent_proteins_test, modifications_test),
-                peptide_beta = new Peptide(peptide_beta_str, parent_proteins_test, modifications_test);
+        Peptide peptide_alpha = new Peptide(peptide_alpha_str, modifications_test),
+                peptide_beta = new Peptide(peptide_beta_str, modifications_test);
         LinkedPeptideFragmentIon instance = new LinkedPeptideFragmentIon(peptide_beta, 2, true, 100);
         // X-Y or Z ions are needed to be in selection!!
         instance.getCTerminiMasses(PeptideFragmentIon.A_ION);
@@ -121,8 +121,8 @@ public class LinkedPeptideFragmentIonTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptide_alpha = new Peptide(peptide_alpha_str, parent_proteins_test, modifications_test),
-                peptide_beta = new Peptide(peptide_beta_str, parent_proteins_test, modifications_test);
+        Peptide peptide_alpha = new Peptide(peptide_alpha_str, modifications_test),
+                peptide_beta = new Peptide(peptide_beta_str, modifications_test);
         LinkedPeptideFragmentIon instance = new LinkedPeptideFragmentIon(peptide_beta, 2, false, 100);
         ArrayList<ArrayList<Character>> result = instance.getAALinkedPeptide(true);
         result.addAll(instance.getAALinkedPeptide(false));

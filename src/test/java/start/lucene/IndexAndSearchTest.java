@@ -55,7 +55,6 @@ public class IndexAndSearchTest {
         indexInstance = new CPeptidesIndexer(cPeptideEntries, folder);
         indexInstance.index();
         ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modsFile, false);
     }
 
     @BeforeClass

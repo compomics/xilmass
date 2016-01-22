@@ -63,7 +63,7 @@ public class Filter {
             if (tmpMZ < limitMz) {
                 cPeaks.add(tmpPeak);
             } else {
-                Collections.sort(cPeaks, Peak.DESC_intensity_order);
+                Collections.sort(cPeaks, Peak.DescendingIntensityComparator);
                 int tmp_num = topN;
                 if (topN > cPeaks.size()) {
                     tmp_num = cPeaks.size();
@@ -78,7 +78,7 @@ public class Filter {
             }
         }
         if (!cPeaks.isEmpty()) {
-            Collections.sort(cPeaks, Peak.DESC_intensity_order);
+            Collections.sort(cPeaks, Peak.DescendingIntensityComparator);
             int tmp_num = topN;
             if (topN > cPeaks.size()) {
                 tmp_num = cPeaks.size();
@@ -112,9 +112,9 @@ public class Filter {
      * MSnSpectrum.
      *
      * First, it divides a spectrum into window according to a given window size
-     * (default=100Da). Then, for each window it picks topN peaks ordered by in
-     * DESC_intensity_order in that window. After picking such peaks, it put
-     * them all on an arraylist and return it as a final
+ (default=100Da). Then, for each window it picks topN peaks ordered by in
+ DescendingIntensityComparator in that window. After picking such peaks, it put
+ them all on an arraylist and return it as a final
      *
      * @return
      */

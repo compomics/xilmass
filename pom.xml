@@ -4,7 +4,7 @@
     
     <groupId>com.compomics</groupId>
     <artifactId>xilmass</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <packaging>jar</packaging>
    
     <name>xilmass</name>
@@ -229,7 +229,8 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.45.24</version>
+            <version>4.0.0</version>
+            <!--version>4.3.12</version-->
             <type>jar</type>            
         </dependency>
         

@@ -60,10 +60,9 @@ public class CrossLinkingTest {
         // Importing PTMs
         File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\main\\resources/mods.xml");
         PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modsFile, false);
         // Getting one fixed PTMs
         ArrayList<String> theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add("oxidation of m");
+        theoreticPTMs.add("Oxidation of M");
 //        theoreticPTMs.add("carbamidomethyl c");
 //        theoreticPTMs.add("propionamide c");
 //        theoreticPTMs.add("pyro-cmc");
@@ -78,8 +77,8 @@ public class CrossLinkingTest {
         assertEquals(expResult, r);
 
         theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add("oxidation of m");
-        theoreticPTMs.add("acetylation of protein n-term");
+        theoreticPTMs.add("Oxidation of M");
+        theoreticPTMs.add("Acetylation of protein N-term");
 
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true, containsProteinNTermini, containsProteinCTermini);
         p = new Peptide(peptideSequence, result);
@@ -88,7 +87,7 @@ public class CrossLinkingTest {
         r = instance.getSequenceWithPtms(p, ptmFactory);
         assertEquals(expResult, r);
 
-        theoreticPTMs.add("pyro-glu from n-term q");
+        theoreticPTMs.add("Pyrolidone from Q");
         peptideSequence = "MLCQDAIK";
         containsProteinCTermini = true;
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true, containsProteinNTermini, containsProteinCTermini);
@@ -99,8 +98,8 @@ public class CrossLinkingTest {
         assertEquals(expResult, r);
 
         theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add("oxidation of m");
-        theoreticPTMs.add("pyro-glu from n-term q");
+        theoreticPTMs.add("Oxidation of M");
+        theoreticPTMs.add("Pyrolidone from Q");
 
         peptideSequence = "QMLCQDAIK";
         containsProteinCTermini = true;
@@ -113,9 +112,9 @@ public class CrossLinkingTest {
         assertEquals(expResult, r);
 
         theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add("oxidation of m");
-        theoreticPTMs.add("pyro-glu from n-term q");
-        theoreticPTMs.add("acetylation of protein n-term");
+        theoreticPTMs.add("Oxidation of M");
+        theoreticPTMs.add("Pyrolidone from Q");
+        theoreticPTMs.add("Acetylation of protein N-term");
         peptideSequence = "QMLCQDAIK";
         containsProteinCTermini = true;
         containsProteinNTermini = true;
@@ -129,9 +128,9 @@ public class CrossLinkingTest {
         assertEquals(expResult, r);
 
         theoreticPTMs= new ArrayList<String>();
-        theoreticPTMs.add("oxidation of m");
-        theoreticPTMs.add("acetylation of protein n-term");
-        theoreticPTMs.add("pyro-glu from n-term q");
+        theoreticPTMs.add("Oxidation of M");
+        theoreticPTMs.add("Acetylation of protein N-term");
+        theoreticPTMs.add("Pyrolidone from Q");
         peptideSequence = "QMLCQDAIK";
         containsProteinCTermini = true;
         containsProteinNTermini = true;

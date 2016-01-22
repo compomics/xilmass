@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import specprocessing.DeisotopingAndDeconvoluting;
 
 /**
  *
@@ -77,6 +78,8 @@ public class Start {
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
                 //scoring = ConfigHolder.getInstance().getString("scoring"),
+                
+                //scoring = "AndromedaD",
                 scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
         // load enzyme and modification files from a resource folder
@@ -117,18 +120,18 @@ public class Start {
                 variableModifications = getModificationsName(variableModificationNames);
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modFile, false);
+//        ptmFactory.importModifications(modFile, false);
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
                 //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
                 //intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
-                intensity_option = 1,
+                intensity_option = 0,
                 minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
                 maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
                 threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
                 //# Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
                 //peakRequiredForImprovedSearch=0                
-                peakRequiredForImprovedSearch = 1,
+                peakRequiredForImprovedSearch = 0,
                 maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
 
         // multithreading 
@@ -147,7 +150,7 @@ public class Start {
                 isContrastLinkedAttachmentOn = false,
                 //  settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
                 //doesFindAllMatchedPeaks=T
-                doesFindAllMatchedPeaks = true,
+                doesFindAllMatchedPeaks = false,
                 isSettingRunBefore = true,
                 isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
                 // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
@@ -155,7 +158,13 @@ public class Start {
         // Parameters for searching against experimental spectrum 
         double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
                 ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
-                massWindow = ConfigHolder.getInstance().getDouble("massWindow");    // mass window to make window on a given MSnSpectrum for FILTERING 
+                massWindow = ConfigHolder.getInstance().getDouble("massWindow"), // mass window to make window on a given MSnSpectrum for FILTERING 
+                // values for deisotoping and deconvoluting..
+                deisotopePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision"),
+                deconvulatePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision");
+        // this object will be set for every new spectra
+        DeisotopingAndDeconvoluting deisotopeAndDeconvolute = new DeisotopingAndDeconvoluting(null, deisotopePrecision, deconvulatePrecision);
+
         // A CrossLinker object, required for constructing theoretical spectra - get required cross linkers together
         ArrayList<CrossLinker> linkers = new ArrayList<CrossLinker>();
         boolean isLabeled = true;
@@ -314,17 +323,24 @@ public class Start {
                 LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
                 // prepare percolator inputs
                 LOGGER.debug(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-                File percolatorIntra = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt"),
-                        percolatorInter = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
-                BufferedWriter bw_intra = new BufferedWriter(new FileWriter(percolatorIntra)),
-                        bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
-                bw_intra.write(percolatorInputTitle + "\n");
-                bw_inter.write(percolatorInputTitle + "\n");
+                File percolatorIntra,
+                        percolatorInter;
+                BufferedWriter bw_intra = null,
+                        bw_inter = null;
+                if (isPercolatorAsked) {
+                    percolatorIntra = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                    percolatorInter = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
+                    bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
+                    bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
+                    bw_intra.write(percolatorInputTitle + "\n");
+                    bw_inter.write(percolatorInputTitle + "\n");
+                }
 
                 // write results on output file for each mgf
                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
                 // write the version number
                 bw.write("Xilmass version " + version);
+                
                 bw.newLine();
                 StringBuilder titleToWrite = prepareTitle(isPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
                 bw.write(titleToWrite + "\n");
@@ -339,6 +355,9 @@ public class Start {
                     ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                        // first deisotope and deconvolute
+                        deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
+                        ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
 //                        msNum++;
 //                        LOGGER.info(msNum+ "\t Spectrum name is " + ms.getSpectrumTitle());
                         futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
@@ -395,8 +414,10 @@ public class Start {
                     fct.clearFactory();
                 }
                 bw.close();
-                bw_intra.close();
-                bw_inter.close();
+                if (isPercolatorAsked) {
+                    bw_intra.close();
+                    bw_inter.close();
+                }
             }
         }
         writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
@@ -449,7 +470,7 @@ public class Start {
             String[] currMods = ptmNames.split(";");
             // convert to all lower case            
             for (String curModName : currMods) {
-                mods.add(curModName.toLowerCase());
+                mods.add(curModName);
             }
         }
         return mods;

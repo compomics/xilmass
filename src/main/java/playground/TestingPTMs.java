@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.xmlpull.v1.XmlPullParserException;
-import start.GetPTMs;
 
 /**
  *
@@ -29,7 +28,6 @@ public class TestingPTMs {
         // Importing PTMs
         File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\compomics-utilities\\src/test/resources/experiment/mods.xml");
         PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modsFile, false);
 
         // PeptideSequence
         String peptide_alpha_str = "MLCSDA";
@@ -38,6 +36,12 @@ public class TestingPTMs {
         PTM testPTM = ptmFactory.getPTM("acetylation of protein n-term");
         int type = testPTM.getType();
         System.out.println("type of acetylation=" + type);
+        System.out.println("name=" + testPTM.getName());
+
+        ptmFactory.getPTM("Acetylation of protein n-term");
+        type = testPTM.getType();
+        System.out.println("type of acetylation=" + type);
+        System.out.println("name=" + testPTM.getName());
 
         PTM testPTM2 = ptmFactory.getPTM("oxidation of m");
 
@@ -55,7 +59,6 @@ public class TestingPTMs {
         modifications_test.add(m);
 
         // Construct a Peptide object with only this filled arraylist - not working
-        
         AminoAcidSequence s = new AminoAcidSequence(peptide_alpha_str);
         Peptide peptide_alpha = new Peptide(s.asSequence(), modifications_test);
         peptide_alpha.getModifiedIndexes();

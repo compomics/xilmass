@@ -54,7 +54,14 @@ public class CalculateMS1ErrTest {
         precursorMass = 2515.36694;
         expResult = 6.99;
         result = CalculateMS1Err.getMS1Err(isPPM, theoreticalMass, precursorMass);
-        assertEquals(expResult, result, 0.1);
+        assertEquals(expResult, result, 0.01);
+
+        theoreticalMass = 2291.429824;
+        precursorMass = 2291.422000000;
+        expResult = -3.41;
+        result = CalculateMS1Err.getMS1Err(isPPM, theoreticalMass, precursorMass);
+        assertEquals(expResult, result, 0.01);
+
     }
 
 }

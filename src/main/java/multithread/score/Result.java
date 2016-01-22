@@ -246,7 +246,7 @@ public class Result {
         double rt = msms.getPrecursor().getRt();
         // Sort them to write down on a result file
         ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
-        Collections.sort(matchedPLists, Peak.ASC_mz_order);
+        Collections.sort(matchedPLists, Peak.AscendingMzComparator);
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
         String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"

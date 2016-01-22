@@ -277,7 +277,7 @@ public class MatchAndScore {
             for (int numHighestPeak = minFPeaks; numHighestPeak < maxFPeaks; numHighestPeak++) {
                 Filter filter = new Filter(expMS2, numHighestPeak, massWindow);
                 ArrayList<Peak> filteredPeaks = filter.getFilteredCPeaks();
-                Collections.sort(filteredPeaks, Peak.ASC_mz_order);
+                Collections.sort(filteredPeaks, Peak.AscendingMzComparator);
                 double probability = (double) numHighestPeak / (double) (filter.getWindowSize());
                 int n = 0;
                 HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = new HashMap<CPeptidePeak, MatchedPeak>();
@@ -397,9 +397,17 @@ public class MatchAndScore {
             cXPSMScore = Collections.max(scores);
             // now calculate observed mass and mass error
             observedMass = calculateObservedMass(expMS2);
-            double protonMass = ElementaryIon.proton.getTheoreticMass();
+
+            // select observed and calculated PrecMZ
+            ArrayList<Charge> possibleCharges = expMS2.getPrecursor().getPossibleCharges();
+            int charge_value = possibleCharges.get(possibleCharges.size() - 1).value;
+            double protonMass = ElementaryIon.proton.getTheoreticMass(),
+                    observedPrecMZ = expMS2.getPrecursor().getMz(),
+                    calculatedPrecMZ = (cPeptides.getTheoretical_xlinked_mass() + (charge_value * protonMass)) / (double) charge_value;
             // now calculates MS1 error with precursor mass and theoretical mass of crosslinked peptide-make sure that both masses are singly charged to calculate MS1Err
-            ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), (observedMass - protonMass));
+            // Based on the calcaulation of two values: ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), (observedMass - protonMass));
+            // following one only computes theoretical cpeptide mass, but do not do anything with experimental spectrum precursor. 
+            ms1Err = calculateMS1Err(isPPM, calculatedPrecMZ, observedPrecMZ);
             absMS1Err = Math.abs(ms1Err);
         }
         return cXPSMScore;
@@ -758,12 +766,12 @@ public class MatchAndScore {
      * mass.
      *
      * @param isPPM true: ms1Err is in PPM
-     * @param observedMass
-     * @param calculatedMass
+     * @param observedPrecMZ
+     * @param calculatedPrecMZ
      * @return
      */
-    private double calculateMS1Err(boolean isPPM, double calculatedMass, double observedMass) {
-        double mS1Err = CalculateMS1Err.getMS1Err(isPPM, calculatedMass, observedMass);
+    private double calculateMS1Err(boolean isPPM, double calculatedPrecMZ, double observedPrecMZ) {
+        double mS1Err = CalculateMS1Err.getMS1Err(isPPM, calculatedPrecMZ, observedPrecMZ);
         return mS1Err;
     }
 

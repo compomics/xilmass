@@ -226,7 +226,7 @@ public class MatchAndScoreTest extends TestCase {
         instance.getXPSMScore();
 
         ArrayList<Peak> result = new ArrayList<Peak>(instance.getMatchedPeaks());
-        Collections.sort(result, Peak.ASC_mz_order);
+        Collections.sort(result, Peak.AscendingMzComparator);
 
         assertEquals(5, result.size());
         // just printing to see matched peaks..
@@ -257,7 +257,7 @@ public class MatchAndScoreTest extends TestCase {
         instance.getXPSMScore();
 
         result = new ArrayList<Peak>(instance.getMatchedPeaks());
-        Collections.sort(result, Peak.ASC_mz_order);
+        Collections.sort(result, Peak.AscendingMzComparator);
 
         assertEquals(10, result.size());
         //eventhough the number of the matched experimental peaks is 10, the number of the theoretical peak is 5 (cannot be bigger than what we have as a list)
@@ -288,7 +288,7 @@ public class MatchAndScoreTest extends TestCase {
         result = new ArrayList<Peak>(instance.getMatchedPeaks());
         assertEquals(2, result.size());
 
-        Collections.sort(result, Peak.ASC_mz_order);
+        Collections.sort(result, Peak.AscendingMzComparator);
         assertEquals(100.25, result.get(0).mz);
         assertEquals(103.70, result.get(1).mz);
         assertEquals(2, instance.getMatchedPeaks().size());

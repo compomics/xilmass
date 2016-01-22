@@ -71,7 +71,7 @@ public class GetPTMs {
         if (!ptmName.isEmpty()) {
             ArrayList<String> ptms = getPTMStoRead(ptmName);
             for (String ptm : ptms) {
-                ptm = ptm.toLowerCase();
+//                ptm = ptm.toLowerCase();
                 //if(ptm.equalsIgnoreCase("pyro-glu from n-term q"))
                 PTM tmpPTM = ptmFactory.getPTM(ptm);
                 String theoreticPTM = tmpPTM.getName();

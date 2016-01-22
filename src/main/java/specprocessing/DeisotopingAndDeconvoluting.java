@@ -24,7 +24,7 @@ public class DeisotopingAndDeconvoluting {
     private MSnSpectrum expMSnSpectrum; // experimental spectrum to be deisotoped and deonvulated
     private boolean isDeisotopedDeconvoluted = false; // a control to check if this is already processed
     private double deisotopePrecision, // the tolerance between C12 peak and C12withoneC13 peak
-            deconvolutePrecision; // the precision to select if singly charged deconvulated peak exist as another peak within this precision value
+            deconvolutePrecision; // the precision to select if singly charged and deconvulated peak exist within this precision value
     private static double diffC12C13 = 1.0034; // difference between C12-C13
 
     public DeisotopingAndDeconvoluting(MSnSpectrum expMSnSpectrum, double deisotopDiff, double deconvolutePrecision) {
