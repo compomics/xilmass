@@ -11,20 +11,20 @@ import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
 
 /**
- * This class removes any peak which may derived from a precursor
+ * This class removes any peak which may be derived from a precursor peak
  *
  * @author Sule
  */
 public class PrecursorPeakRemoval {
 
-    protected MSnSpectrum ms;
-    protected double fragmentTolerance; // to check how close peaks are
+    protected MSnSpectrum ms; // an experimental spectrum 
+    protected double fragmentTolerance; // to select a peak within this mass offset (Da)
 
     /**
      *
      * @param msms an MSnSpectrum object
      * @param fragmentTolerance fragment tolerance to pick peaks close to
-     * precursor ion
+     * precursor ion (Da)
      */
     public PrecursorPeakRemoval(MSnSpectrum msms, double fragmentTolerance) {
         this.ms = msms;

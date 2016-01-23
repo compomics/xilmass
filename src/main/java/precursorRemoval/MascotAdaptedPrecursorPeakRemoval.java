@@ -92,11 +92,11 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
     }
 
     /**
-     * This method removes a notch within lower and upper mass offsets on the
-     * spectrum (peak lists) limits.
+     * This method removes a notch within the lower and upper mass offsets on given
+     * spectrum (peak lists), by taking into account of fragment tolerance
      *
      * @param peaks a list of experimental peaks from given MS/MS spectrum
-     * @param lower a mass offset in the begining of the notch (Da)
+     * @param lower a mass offset in the beginning of the notch (Da)
      * @param upper a mass offset in the end of the notch (Da)
      * @param fragTol a fragment tolerance to select peaks (Da)
      * @return
@@ -190,8 +190,8 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
     }
 
     /**
-     * To return already precursor peaks removed MS/MS experimental spectrum. It
-     * checks if the process to remove precursor peaks has been already applied.
+     * To return an MS/MS experimental spectrum with already precursor peaks removed. It
+     * checks if the process to remove precursor peaks has been already applied. If not, first precursor peaks are removed.
      *
      * @return
      */
