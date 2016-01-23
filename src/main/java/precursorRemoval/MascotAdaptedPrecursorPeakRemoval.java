@@ -92,8 +92,8 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
     }
 
     /**
-     * This method removes a notch within the lower and upper mass offsets on given
-     * spectrum (peak lists), by taking into account of fragment tolerance
+     * This method removes a notch within the lower and upper mass offsets on
+     * given spectrum (peak lists), by taking into account of fragment tolerance
      *
      * @param peaks a list of experimental peaks from given MS/MS spectrum
      * @param lower a mass offset in the beginning of the notch (Da)
@@ -101,7 +101,7 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
      * @param fragTol a fragment tolerance to select peaks (Da)
      * @return
      */
-    public static ArrayList<Peak> removeNotch(ArrayList<Peak> peaks,  double lower, double upper, double fragTol) {
+    public static ArrayList<Peak> removeNotch(ArrayList<Peak> peaks, double lower, double upper, double fragTol) {
         ArrayList<Peak> peaksToRemove = new ArrayList<Peak>();
         Collections.sort(peaks, Peak.AscendingMzComparator);
         for (Peak tmpPeak : peaks) {
@@ -190,19 +190,21 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
     }
 
     /**
-     * To return an MS/MS experimental spectrum with already precursor peaks removed. It
-     * checks if the process to remove precursor peaks has been already applied. If not, first precursor peaks are removed.
+     * To return an MS/MS experimental spectrum with already precursor peaks
+     * removed. It checks if the process to remove precursor peaks has been
+     * already applied. If not, first precursor peaks are removed.
      *
      * @return
      */
-    public MSnSpectrum getMs() {
+    public MSnSpectrum getPrecursorPeaksRemovesExpMSnSpectrum() {
         if (!arePrecursorPeaksRemoved) {
             removePrecursor();
         }
         return ms;
     }
 
-    public void setMs(MSnSpectrum ms) {
+    public void setExpMSnSpectrum(MSnSpectrum ms) {
+        arePrecursorPeaksRemoved = false;
         this.ms = ms;
     }
 
@@ -220,5 +222,5 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
 
     public void setArePrecursorPeaksRemoved(boolean arePrecursorPeaksRemoved) {
         this.arePrecursorPeaksRemoved = arePrecursorPeaksRemoved;
-    }    
+    }
 }

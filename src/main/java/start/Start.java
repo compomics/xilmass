@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import precursorRemoval.MascotAdaptedPrecursorPeakRemoval;
 import specprocessing.DeisotopingAndDeconvoluting;
 
 /**
@@ -78,13 +79,12 @@ public class Start {
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
                 //scoring = ConfigHolder.getInstance().getString("scoring"),
-                
+
                 //scoring = "AndromedaD",
                 scoring = "TheoMSAmandaDerived",
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
         // load enzyme and modification files from a resource folder
         Resource resourceByRelativePath = ResourceUtils.getResourceByRelativePath("mods.xml");
-        File modFile = resourceByRelativePath.getFile();
         resourceByRelativePath = ResourceUtils.getResourceByRelativePath("enzymes.txt");
         File enzymeFile = resourceByRelativePath.getFile();
         String enzymeFileName = enzymeFile.toString();
@@ -162,7 +162,8 @@ public class Start {
                 // values for deisotoping and deconvoluting..
                 deisotopePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision"),
                 deconvulatePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision");
-        // this object will be set for every new spectra
+        // this object will be set for every new spectra in order to clean precursor peaks and deisotoping-deconvoluting..
+        MascotAdaptedPrecursorPeakRemoval precursorPeakRemove = new MascotAdaptedPrecursorPeakRemoval(null, ms2Err);
         DeisotopingAndDeconvoluting deisotopeAndDeconvolute = new DeisotopingAndDeconvoluting(null, deisotopePrecision, deconvulatePrecision);
 
         // A CrossLinker object, required for constructing theoretical spectra - get required cross linkers together
@@ -340,7 +341,7 @@ public class Start {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
                 // write the version number
                 bw.write("Xilmass version " + version);
-                
+
                 bw.newLine();
                 StringBuilder titleToWrite = prepareTitle(isPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
                 bw.write(titleToWrite + "\n");
@@ -355,59 +356,68 @@ public class Start {
                     ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
-                        // first deisotope and deconvolute
+                        // first remove any isotopic peaks derived from precursor peak.                        
+                        precursorPeakRemove.setExpMSnSpectrum(ms);
+                        ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
+                        // then deisotoping and harge state deconvolution
                         deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
                         ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
+
+//                        ms = 
 //                        msNum++;
 //                        LOGGER.info(msNum+ "\t Spectrum name is " + ms.getSpectrumTitle());
-                        futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search);
-                        for (Future<ArrayList<Result>> future : futureList) {
-                            try {
-                                // Write each result on an output file...
-                                results = future.get();
-                                info = new ArrayList<Result>();
-                                for (Result res : results) {
-                                    double tmpScore = res.getScore();
-                                    // making sure that only crosslinked ones are written, neither monolinks nor contaminants.
-                                    if (((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes)
-                                            && (res.getCp().getLinkingType().equals(CrossLinkingType.CROSSLINK) || res.getCp().getLinkingType().equals(CrossLinkingType.CONTAMINANT))) {
-                                        if (peakRequiredForImprovedSearch > 0) {
-                                            boolean hasEnoughPeaks = hasEnoughPeaks(new ArrayList<CPeptidePeak>(res.getMatchedCTheoPeaks()), peakRequiredForImprovedSearch);
-                                            if (hasEnoughPeaks) {
+                        
+                        // making sure that a spectrum contains peaks after preprocessing..
+                        if (!ms.getPeakList().isEmpty()) {
+                            futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                                    massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search);
+                            for (Future<ArrayList<Result>> future : futureList) {
+                                try {
+                                    // Write each result on an output file...
+                                    results = future.get();
+                                    info = new ArrayList<Result>();
+                                    for (Result res : results) {
+                                        double tmpScore = res.getScore();
+                                        // making sure that only crosslinked ones are written, neither monolinks nor contaminants.
+                                        if (((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes)
+                                                && (res.getCp().getLinkingType().equals(CrossLinkingType.CROSSLINK) || res.getCp().getLinkingType().equals(CrossLinkingType.CONTAMINANT))) {
+                                            if (peakRequiredForImprovedSearch > 0) {
+                                                boolean hasEnoughPeaks = hasEnoughPeaks(new ArrayList<CPeptidePeak>(res.getMatchedCTheoPeaks()), peakRequiredForImprovedSearch);
+                                                if (hasEnoughPeaks) {
+                                                    info.add(res);
+                                                    bw.write(res.toPrint());
+                                                    bw.newLine();
+                                                }
+                                            } else if (peakRequiredForImprovedSearch == 0) {
                                                 info.add(res);
                                                 bw.write(res.toPrint());
                                                 bw.newLine();
                                             }
-                                        } else if (peakRequiredForImprovedSearch == 0) {
-                                            info.add(res);
-                                            bw.write(res.toPrint());
-                                            bw.newLine();
                                         }
                                     }
-                                }
-                                if (isPercolatorAsked) {
-                                    // write all res and also percolator input
-                                    percolatorInfo = new ArrayList<StringBuilder>();
-                                    percolatorInfoResults = new ArrayList<Result>();
-                                    for (Result r : info) {
-                                        CrossLinkingType linkingType = r.getCp().getLinkingType();
-                                        if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
-                                            StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
-                                            if (!percolatorInfo.contains(i)) {
-                                                percolatorInfo.add(i);
-                                                percolatorInfoResults.add(r);
+                                    if (isPercolatorAsked) {
+                                        // write all res and also percolator input
+                                        percolatorInfo = new ArrayList<StringBuilder>();
+                                        percolatorInfoResults = new ArrayList<Result>();
+                                        for (Result r : info) {
+                                            CrossLinkingType linkingType = r.getCp().getLinkingType();
+                                            if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
+                                                StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
+                                                if (!percolatorInfo.contains(i)) {
+                                                    percolatorInfo.add(i);
+                                                    percolatorInfoResults.add(r);
+                                                }
                                             }
                                         }
+                                        ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                                        for (Result r : percolatorInfoResults) {
+                                            write(r, bw_inter, bw_intra, ids, ptmFactory);
+                                        }
                                     }
-                                    ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-                                    for (Result r : percolatorInfoResults) {
-                                        write(r, bw_inter, bw_intra, ids, ptmFactory);
-                                    }
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    LOGGER.error(e);
                                 }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                LOGGER.error(e);
                             }
                         }
                     }

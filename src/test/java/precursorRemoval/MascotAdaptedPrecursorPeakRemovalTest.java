@@ -96,7 +96,7 @@ public class MascotAdaptedPrecursorPeakRemovalTest {
     }
 
     /**
-     * Test of getMs method, of class MascotAdaptedPrecursorPeakRemoval.
+     * Test of getPrecursorPeaksRemovesExpMSnSpectrum method, of class MascotAdaptedPrecursorPeakRemoval.
      *
      * @throws java.io.IOException
      * @throws java.io.FileNotFoundException
@@ -129,7 +129,7 @@ public class MascotAdaptedPrecursorPeakRemovalTest {
         }
         MascotAdaptedPrecursorPeakRemoval instance = new MascotAdaptedPrecursorPeakRemoval(first_case_msms, 0.10);
         assertEquals(false, instance.arePrecursorPeaksRemoved());
-        instance.getMs();
+        instance.getPrecursorPeaksRemovesExpMSnSpectrum();
         assertEquals(true, instance.arePrecursorPeaksRemoved());
         assertEquals(15, first_case_msms.getPeakList().size());
     }
