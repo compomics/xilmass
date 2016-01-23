@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * This class does two processes: - deisotoping - charge state deconvoluting
+ * This class does two processes: - deisotoping and followed by charge state deconvoluting
  *
  * @author Sule
  */
@@ -25,8 +25,14 @@ public class DeisotopingAndDeconvoluting {
     private boolean isDeisotopedDeconvoluted = false; // a control to check if this is already processed
     private double deisotopePrecision, // the tolerance between C12 peak and C12withoneC13 peak
             deconvolutePrecision; // the precision to select if singly charged and deconvulated peak exist within this precision value
-    private static double diffC12C13 = 1.0034; // difference between C12-C13
+    private static double diffC12C13 = 1.0034; // difference between C12-C13 (Da)
 
+    /**
+     * To construct an instance 
+     * @param expMSnSpectrum is an experimental MS/MS spectrum 
+     * @param deisotopDiff accuracy for deisotoping 
+     * @param deconvolutePrecision precision of charge state deconvolution 
+     */
     public DeisotopingAndDeconvoluting(MSnSpectrum expMSnSpectrum, double deisotopDiff, double deconvolutePrecision) {
         this.expMSnSpectrum = expMSnSpectrum;
         this.deisotopePrecision = deisotopDiff;

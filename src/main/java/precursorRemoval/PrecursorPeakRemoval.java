@@ -17,8 +17,8 @@ import java.util.ArrayList;
  */
 public class PrecursorPeakRemoval {
 
-    private MSnSpectrum ms;
-    private double fragmentTolerance; // to check how close peaks are
+    protected MSnSpectrum ms;
+    protected double fragmentTolerance; // to check how close peaks are
 
     /**
      *
