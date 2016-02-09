@@ -39,7 +39,9 @@ public abstract class CrossLinking {
     protected CrossLinkingType linkingType;
     protected PTMFactory ptmFactory = PTMFactory.getInstance();
     private static final Logger LOGGER = Logger.getLogger(CrossLinking.class);
-
+    
+    
+    /* getter and setter methods */
     public CrossLinker getLinker() {
         return linker;
     }
