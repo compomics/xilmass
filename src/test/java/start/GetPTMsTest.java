@@ -127,28 +127,9 @@ public class GetPTMsTest {
         assertEquals(2, result.size());
         assertEquals("Carbamidomethylation of C", result.get(0).getTheoreticPtm());
         assertEquals("Acetylation of protein N-term", result.get(1).getTheoreticPtm());
-//        assertEquals("Methylation of peptide C-term", result.get(2).getTheoreticPtm());
-
-        peptideSequence = "GMLCSDAG";
-        theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add(carbamidomethylc); //"carbamidomethyl c"
-        theoreticPTMs.add(acetylationproteinntermini); //"acetylation of protein n-term" modN
-        theoreticPTMs.add(methylationpeptidecterm); //MODCP - peptide c-termini 
-        theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" for MODNAA - particular amino acid (G) on PROTEIN n-termini 
-        result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(4, result.size());
-
-        String homoserine = "Homoserine of peptide C-term M";// MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
-        theoreticPTMs = new ArrayList<String>();
-        theoreticPTMs.add(carbamidomethylc); //"carbamidomethyl c"
-        theoreticPTMs.add(acetylationproteinntermini); //"acetylation of protein n-term" modN
-        theoreticPTMs.add(methylationpeptidecterm); //"methylation of peptide c-term MODCP - peptide c-termini         
-        theoreticPTMs.add(glucuronylationproteinnterm); //"glucuronylation of protein n-term" with MODNAA - particular amino acid (G) on PROTEIN n-termini 
-        theoreticPTMs.add(homoserine); //"homoserine" with MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
-        result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);
-        assertEquals(4, result.size());
 
         peptideSequence = "MGMLCSDAG";
+        String homoserine = "Homoserine of peptide C-term M";// MODCPAA - particular amino acid (M) on PEPTIDE c-termini 
         theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add(homoserine);
         result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, false, true, false);

@@ -467,5 +467,5 @@ public class MatchAndScoreTest extends TestCase {
         double result = instance.calculateWeightForTheoPeaks(tmps, alls, true);
         assertEquals(expResult, result, 0.0);
     }
-
-}
+    
+    }

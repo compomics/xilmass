@@ -188,7 +188,7 @@ public class AnalyzeOutcomesTest {
                 if (!line.startsWith("SpectrumFile") && (!line.startsWith("File")) && !line.isEmpty()) {
                     // make sure that a PSM is not contaminant-derived
                     if (!line.contains("contaminant")) {
-                        XilmassResult r = new XilmassResult(line, false, false);
+                        XilmassResult r = new XilmassResult(line, false, false,"ScoreName");
                         // set if it is target or decoy..
                         r.setTarget_decoy(instance.getTargetDecoy(r.getProteinA(), r.getProteinB()));
                         res.add(r);
