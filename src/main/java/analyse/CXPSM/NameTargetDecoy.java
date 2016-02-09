@@ -6,7 +6,7 @@
 package analyse.CXPSM;
 
 import analyse.CXPSM.prepareOutcome.*;
-import com.compomics.util.experiment.identification.SequenceFactory;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import config.ConfigHolder;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,10 +46,19 @@ public class NameTargetDecoy {
                 percolatorXilmassFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.xilmass.elite")),
                 kojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("kojak.folder.elite")),
                 database = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("database.file"));
+        if (args.length > 1) {
+            xilmassResFolder = new File(args[1]);
+        }
         // get every protein entry on database with their accession numbers
         HashMap<String, String> accs = getAccs(database);
         String proteinA = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinA"),
-                proteinB = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinB");
+                proteinB = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinB"),
+                allXPSMsName = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("allXPSMOutputName"),
+                scoringFunctionName = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("scoringFunctionName");
+        System.out.println("allXPSMOutputName=" + allXPSMsName);
+        if (args.length > 1) {
+            scoringFunctionName = args[2];
+        }
         String[] protein_names = {proteinA, proteinB};
         boolean isElite = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.analyzing.elite"),
                 isPITFDR = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.PIT.FDR"),
@@ -58,8 +67,14 @@ public class NameTargetDecoy {
                 doesContainIonWeight = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainIonWeight"),
                 doesCheckLysine = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesCheckLysine");
         double qvalue = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("qvalue"),
-                fdr_cutoff = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr");
+                fdr_cutoff = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr"),
+                fdr_interPro = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr.interPro"),
+                fdr_intraPro = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr.intraPro");
         int analysis = ConfigHolder.getTargetDecoyAnalyzeInstance().getInt("analysis"); // 1-Kojak/2-AllPLink 3-ValPLink 4-Xilmass 5-PercolatorKojak runs! 6-Percolator-Xilmass runs
+
+        if (args.length > 1) {
+            analysis = Integer.parseInt(args[0]);
+        }
 
         if (!isElite) {
             psms_contamination = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("psms.contaminant.qexactive"));
@@ -73,12 +88,21 @@ public class NameTargetDecoy {
         }
 
         File output = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("output"));
+        if (args.length > 1) {
+            output = new File(args[3]);
+            allXPSMsName = args[4];
+        }
 
         // NOW RUN!!!
         AnalyzeOutcomes o = null;
         switch (analysis) {
             case 0:
-                o = new AnalyzeXilmass(xilmassResFolder, output, prediction, psms_contamination, protein_names, fdr_cutoff, isPITFDR, isMS1ErrPPM, doesContainCPeptidePattern, doesContainIonWeight);
+                o = new AnalyzeXilmass(xilmassResFolder, output, prediction, psms_contamination, protein_names, fdr_cutoff, isPITFDR, isMS1ErrPPM, doesContainCPeptidePattern, doesContainIonWeight,
+                        allXPSMsName, scoringFunctionName);
+                break;
+            case 10:
+                o = new AnalyzeXilmass(xilmassResFolder, output, prediction, psms_contamination, protein_names, fdr_cutoff, isPITFDR, isMS1ErrPPM, doesContainCPeptidePattern, doesContainIonWeight,
+                        true, fdr_interPro, fdr_intraPro, allXPSMsName, scoringFunctionName);
                 break;
             case 1:
                 o = new AnalyzeKojak(output, kojakFolder, prediction, psms_contamination, database, protein_names, fdr_cutoff, isPITFDR);

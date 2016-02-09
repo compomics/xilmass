@@ -33,48 +33,50 @@ public class XilmassResult extends Outcome {
             ms1Err, // precursor tolerance
             absMS1err, // absolute value of difference in calculated and observed mass in ppm
             score, // Xilmass XPSM score
-            lnNumSp;// Natural logarithm of #peptide in database within precursor tolerance for MS/MS spectrum
+            lnNumSp,// Natural logarithm of #peptide in database within precursor tolerance for MS/MS spectrum
+            calculatedMass; // calculated theoretical cross-linked peptides
 
-    public XilmassResult(String line, boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights) {
+    public XilmassResult(String line, boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights, String ScoringFunctionName) {
         String[] sp = line.split("\t");
+        calculatedMass=Double.parseDouble(sp[6]);
         super.spectrumFileName = sp[0];
         super.spectrumTitle = sp[1];
         scanNr = Integer.parseInt(sp[2]);
         retentionTime = Double.parseDouble(sp[3]);
         observedMass = Double.parseDouble(sp[4]);
         charge = Integer.parseInt(sp[5]);
-        ms1Err = Double.parseDouble(sp[6]);
-        absMS1err = Double.parseDouble(sp[7]);
-        super.peptideA = sp[8];
-        proteinA = sp[9];
-        modA = sp[10];
-        super.peptideB = sp[11];
-        proteinB = sp[12];
+        ms1Err = Double.parseDouble(sp[7]);
+        absMS1err = Double.parseDouble(sp[8]);
+        super.peptideA = sp[9];
+        proteinA = sp[10];
+        modA = sp[11];
+        super.peptideB = sp[12];
+        proteinB = sp[13];
         super.accProteinA = proteinA.substring(0, proteinA.indexOf("("));
         super.accProteinB = proteinB.substring(0, proteinB.indexOf("("));
         super.target_decoy = "";
         super.trueCrossLinking = "";
-        modB = sp[13];
-        linkPeptideA = Integer.parseInt(sp[14]);
-        linkPeptideB = Integer.parseInt(sp[15]);
-        super.crossLinkedSitePro1 = Integer.parseInt(sp[16]);
-        super.crossLinkedSitePro2 = Integer.parseInt(sp[17]);
-        type = sp[18];
-        score = Double.parseDouble(sp[19]);
-        scoringFunctionName = sp[20];
+        modB = sp[14];
+        linkPeptideA = Integer.parseInt(sp[15]);
+        linkPeptideB = Integer.parseInt(sp[16]);
+        super.crossLinkedSitePro1 = Integer.parseInt(sp[17]);
+        super.crossLinkedSitePro2 = Integer.parseInt(sp[18]);
+        type = sp[19];
+        score = Double.parseDouble(sp[20]);
+        scoringFunctionName = ScoringFunctionName;
         lnNumSp = Double.parseDouble(sp[21]);
-        expMatchedPeakList = sp[28];
-        theoMatchedPeakList = sp[29];
-        super.label = sp[30];
+        expMatchedPeakList = sp[24];
+        theoMatchedPeakList = sp[25];
+        super.label = sp[26];
         if (doesKeepCPeptideFragmPattern && doesKeepWeights) {
-            cPeptidePattern = sp[31];
-            ionWeight = sp[32];
+            cPeptidePattern = sp[27];
+            ionWeight = sp[28];
         } else if (doesKeepCPeptideFragmPattern && !doesKeepWeights) {
-            cPeptidePattern = sp[31];
+            cPeptidePattern = sp[27];
             ionWeight = "";
         } else if (!doesKeepCPeptideFragmPattern && doesKeepWeights) {
             cPeptidePattern = "";
-            ionWeight = sp[31];
+            ionWeight = sp[27];
         }
     }
 
@@ -266,7 +268,7 @@ public class XilmassResult extends Outcome {
 
         String toPrint = spectrumFileName + "\t" + spectrumTitle + "\t"
                 + observedMass + "\t" + charge + "\t" + retentionTime + "\t" + scanNr + "\t"
-                + ms1Err + "\t" + absMS1err + "\t"
+                + ms1Err + "\t" + absMS1err + "\t" +calculatedMass+"\t"
                 + peptideA + "\t" + proteinA + "\t" + modA + "\t"
                 + peptideB + "\t" + proteinB + "\t" + modB + "\t"
                 + type + "\t"

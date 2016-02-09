@@ -31,6 +31,7 @@ public abstract class AnalyzeOutcomes {
     protected boolean areReversedDecoys = true, // true:target/decoy (reversed or shuffled) approach and false: Pfu is decoy ## TODO: for the future...
             isPIT = false, //true: all_decoy/all_target false: (half_decoy-full_decoy)/all_target
             areContaminantMSMSReady = false; // in order to fill out a list of validated contaminant peptide derived PSMs
+    protected String scoringFunctionName;
 
     /**
      * This method analyze a given PSM list for a software
@@ -162,6 +163,8 @@ public abstract class AnalyzeOutcomes {
             if (fdr >= tmp_fdr && !isBiggerFDR) {
                 if (o.getTarget_decoy().equals("TT")) {
                     tmpValidatedPSMlist.add(o);
+                } else {
+                    System.out.println(o.toString());
                 }
             } else if (isBiggerFDR && fdr <= tmp_fdr) {
                 isBiggerFDR = true;
@@ -231,48 +234,16 @@ public abstract class AnalyzeOutcomes {
         return contaminants;
     }
 
+ 
     /**
-     * This method checks if a given pair of protein is either target or decoy
-     * or half-decoy
-     *
-     * @param proteinAacess - uniprot accession number from ProteinA
-     * @param proteinBasses - uniprot accession number from ProteinB
-     * @param target_names - list of uniprot accession numbers for proteins
-     * @return
-     */
-//    protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names) {
-//        String first_target_name = target_names[0],
-//                second_target_name = target_names[1];
-//        String type = "";
-//        if (areReversedDecoys) {
-//            type = "half-decoy";
-//            if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
-//                type = "target";
-//            } else if ((proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
-//                type = "decoy";
-//            }
-//        } else {
-//            type = "half-decoy";
-//            if ((proteinAacess.equals(first_target_name) || proteinAacess.equals(second_target_name))
-//                    && (proteinBasses.equals(first_target_name) || proteinBasses.equals(second_target_name))) {
-//                type = "target";
-//            }
-//            if ((!proteinAacess.equals(first_target_name) && !proteinAacess.equals(second_target_name))
-//                    && (!proteinBasses.equals(first_target_name) && !proteinBasses.equals(second_target_name))) {
-//                type = "decoy";
-//            }
-//        }
-//        return type;
-//    }
-    /**
-     * It decided given two proteins are either target or full_decoy or
+     * It decides based on the given two proteins either target or full_decoy or
      * half_decoy
      *
      * @param proteinA the accession number of proteinA
      * @param proteinB the accession number of proteinB
      * @return
      */
-    protected String getTargetDecoy(String proteinA, String proteinB) {
+    protected static String getTargetDecoy(String proteinA, String proteinB) {
         boolean isProteinAdecoy = false,
                 isProteinBdecoy = false;
         String targetName = "TD";
@@ -304,7 +275,7 @@ public abstract class AnalyzeOutcomes {
         while ((line = br.readLine()) != null) {
             if (!line.startsWith("PDB")) {
 //                PDBStructure	AtomInfoA	AtomInfoB	IdistanceSequence	Type	UniprotAccProA	UniprotIndexProA	UniprotAccProB	UniprotIndexProB	SASDistance(A)	EucDist(Beta_Beta)	EucDist(Alpha_Alpha)
-                String[] split = line.split(",");
+                String[] split = line.split("\t");
                 String betaMeasuredDistanceStr = split[10],
                         alphaMeasuredDistanceStr = split[11],
                         classification = split[4],

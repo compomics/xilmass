@@ -137,4 +137,11 @@ public abstract class Outcome {
     public void setCrossLinkedSitePro2(int crossLinkedSitePro2) {
         this.crossLinkedSitePro2 = crossLinkedSitePro2;
     }
+
+    @Override
+    public String toString() {
+        return "target_proteins=" + target_proteins + ", accProteinA=" + accProteinA + ", accProteinB=" + accProteinB + ", peptideA=" + peptideA + ", peptideB=" + peptideB + ", label=" + label + ", target_decoy=" + target_decoy + ", trueCrossLinking=" + trueCrossLinking + ", scanNumber=" + scanNumber + ", spectrumFileName=" + spectrumFileName + ", spectrumTitle=" + spectrumTitle + ", crossLinkedSitePro1=" + crossLinkedSitePro1 + ", crossLinkedSitePro2=" + crossLinkedSitePro2 + '}';
+    }
+    
+    
 }

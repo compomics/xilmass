@@ -63,6 +63,7 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
         BufferedWriter bw = new BufferedWriter(new FileWriter(output));
         HashMap<String, HashSet<String>> contaminant_MSMSMap = super.getContaminant_MSMSMap();
         HashMap<String, ArrayList<PercolatorResult>> id_and_percolatorResults = new HashMap<String, ArrayList<PercolatorResult>>();
+        System.out.println(folder.getName());
         for (File file : folder.listFiles()) {
             if (file.getName().endsWith(".txt")) {
                 BufferedReader br = new BufferedReader(new FileReader(file));
