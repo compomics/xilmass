@@ -15,9 +15,14 @@ import java.util.concurrent.Callable;
 import matching.MatchAndScore;
 import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
+import theoretical.CPeptides;
+import theoretical.Contaminant;
 import theoretical.CrossLinking;
+import theoretical.MonoLinkedPeptides;
 
 /**
+ * This class is used for multithreading, for matching and scoring every
+ * spectrum with given properties.
  *
  * @author Sule
  */
@@ -30,15 +35,17 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
             massWindow; // mass window, requiring for MatchAndScore instantiation.
     private int intensityOptionForMSAmanda, // fragment tolerance, requiring for MatchAndScore instantiation.
             minFilteredPeakNumber, // min number of filtered peak per window,, requiring for MatchAndScore instantiation.
-            maxFilteredPeakNumber; // max number of filtered peak per window, requiring for MatchAndScore instantiation.  
+            maxFilteredPeakNumber, // max number of filtered peak per window, requiring for MatchAndScore instantiation.  
+            peakRequiredForImprovedSearch;
     private boolean doesFindAllMatchedPeaks,
             isPPM,
             doesKeepPattern,
             doesKeepWeight;
 
-    public ScorePSM(ArrayList<CrossLinking> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName, 
+    public ScorePSM(ArrayList<CrossLinking> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName,
             double fragTol, double massWindow, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber,
-            boolean doesFindAllMatchedPeaks, boolean isPPM, boolean doesKeepPattern, boolean doesKeepWeight) {
+            boolean doesFindAllMatchedPeaks, boolean doesKeepPattern, boolean doesKeepWeight, boolean isPPM, int peakRequiredForImprovedSearch) {
+        this.peakRequiredForImprovedSearch = peakRequiredForImprovedSearch;
         this.selectedCPeptides = selectedCPeptides;
         this.ms = ms;
         this.scoreName = scoreName;
@@ -76,22 +83,87 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                         deltaMass = obj.getMs1Err(),
                         absDeltaMass = obj.getAbsMS1Err();
                 HashSet<Peak> matchedPeaks = obj.getMatchedPeaks();
+
+                // check if there is enough peaks from both peptides here
                 HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalCPeaks();
-                int matchedTheoA = obj.getMatchedTheoPeaksPepA(),
-                        matchedTheoB = obj.getMatchedTheoPeaksPepB();
-                Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta, observedMass, deltaMass, absDeltaMass, 0, matchedTheoA, matchedTheoB, doesKeepPattern, doesKeepWeight);
-                results.add(r);
+
+                boolean control = hasEnoughPeaks(new ArrayList<CPeptidePeak>(matchedTheoreticalCPeaks), peakRequiredForImprovedSearch);
+                if (control) {
+                    int matchedTheoA = obj.getMatchedTheoPeaksPepA(),
+                            matchedTheoB = obj.getMatchedTheoPeaksPepB();
+                    Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta, observedMass, deltaMass, absDeltaMass, 0, matchedTheoA, matchedTheoB, doesKeepPattern, doesKeepWeight);
+                    results.add(r);
+                }
             }
         }
         // natural log of #matched peptides in DB for this selected MSnSpectrum
-        double lnNumSp = Math.log(selectedCPeptides.size());
-        updateResults(results, lnNumSp);
+        if (!results.isEmpty()) {
+            double lnNumSp = getLnNumSp(selectedCPeptides);
+            updateResults(results, lnNumSp);
+        }
         return results;
     }
 
     /**
-     * This method calculates delta score for the best result and set its score and lnNumSpec. 
-     * It also removes any other ranked results from a given list
+     * This method returns the natural logarithm of the number of selected
+     * database peptides
+     *
+     * @param selectedCPeptides
+     * @return
+     */
+    public static double getLnNumSp(ArrayList<CrossLinking> selectedCPeptides) {
+        HashSet<String> peps = new HashSet<String>();
+        for (CrossLinking s : selectedCPeptides) {
+            if (s instanceof CPeptides) {
+                CPeptides sC = (CPeptides) s;
+                String pepA = sC.getPeptideA().getSequence(),
+                        pepB = sC.getPeptideB().getSequence(),
+                        pep = pepA + "_" + pepB;
+                if (!peps.contains(pepB + "_" + pepA)) {
+                    peps.add(pep);
+                }
+            } else if (s instanceof MonoLinkedPeptides) {
+                MonoLinkedPeptides mC = (MonoLinkedPeptides) s;
+                String pep = mC.getPeptide().getSequence();
+                peps.add(pep);
+            } else if (s instanceof Contaminant) {
+                Contaminant cC = (Contaminant) s;
+                String pep = cC.getPeptide().getSequence();
+                peps.add(pep);
+            }
+        }
+        return (Math.log(peps.size()));
+    }
+
+    /**
+     * This method checks if there are enough peaks found from backbones of both
+     * peptides in a pair
+     *
+     * @param matchedCTheoPLists
+     * @param requiredPeaks
+     * @return
+     */
+    private static boolean hasEnoughPeaks(ArrayList<CPeptidePeak> matchedCTheoPLists, int requiredPeaks) {
+        boolean hasEnoughPeaks = false;
+        int theoPepA = 0,
+                theoPepB = 0;
+        for (CPeptidePeak cpP : matchedCTheoPLists) {
+            if (cpP.getName().contains("pepA") && (!cpP.getName().contains("lepB"))) {
+                theoPepA++;
+            }
+            if (cpP.getName().contains("pepB") && (!cpP.getName().contains("lepA"))) {
+                theoPepB++;
+            }
+        }
+        if (theoPepA >= requiredPeaks && theoPepB >= requiredPeaks) {
+            hasEnoughPeaks = true;
+        }
+        return hasEnoughPeaks;
+    }
+
+    /**
+     * This method calculates delta score for the best result and set its score
+     * and lnNumSpec. It also removes any other ranked results from a given list
      *
      * @param results
      * @param lnNumSp
