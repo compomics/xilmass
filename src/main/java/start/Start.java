@@ -78,14 +78,11 @@ public class Start {
                 fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                 variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                 fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-                //scoring = ConfigHolder.getInstance().getString("scoring"),
-
-                //scoring = "AndromedaD",
-                scoring = "TheoMSAmandaDerived",
+                scoring = ConfigHolder.getInstance().getString("scoringFunctionName"),
                 labeledOption = ConfigHolder.getInstance().getString("isLabeled");
+
         // load enzyme and modification files from a resource folder
-        Resource resourceByRelativePath = ResourceUtils.getResourceByRelativePath("mods.xml");
-        resourceByRelativePath = ResourceUtils.getResourceByRelativePath("enzymes.txt");
+        Resource resourceByRelativePath = ResourceUtils.getResourceByRelativePath("enzymes.txt");
         File enzymeFile = resourceByRelativePath.getFile();
         String enzymeFileName = enzymeFile.toString();
 
@@ -120,18 +117,15 @@ public class Start {
                 variableModifications = getModificationsName(variableModificationNames);
         // Importing PTMs, so getting a PTMFactory object 
         PTMFactory ptmFactory = PTMFactory.getInstance();
-//        ptmFactory.importModifications(modFile, false);
         int minLen = ConfigHolder.getInstance().getInt("minLen"),
                 maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
                 //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
-                //intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
-                intensity_option = 0,
+                intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
                 minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
                 maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
                 threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
                 //# Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
-                //peakRequiredForImprovedSearch=0                
-                peakRequiredForImprovedSearch = 0,
+                peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("minRequiredPeaks"),
                 maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
 
         // multithreading 
@@ -139,31 +133,32 @@ public class Start {
         // more cross linking option..;
         boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("allowIntraPeptide"),
                 //# Keep scores equal to zero (either probability of matched peak is zero or none matched peaks)
-                //recordZeroScore=F
                 doesRecordZeroes = false,
-                isPPM = ConfigHolder.getInstance().getBoolean("isMS1PPM"), // Relative or absolute precursor tolerance 
+                shownInPPM = ConfigHolder.getInstance().getBoolean("report_in_ppm"), // Relative or absolute precursor tolerance 
                 doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
-                searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
+                searcForAlsoMonoLink = false,
                 doesKeepIonWeights = false,
                 // a setting when I tried to merged different fragment ion types but it must be off by setting as false
                 // isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
                 isContrastLinkedAttachmentOn = false,
-                //  settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
-                //doesFindAllMatchedPeaks=T
+                // settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
+                // doesFindAllMatchedPeaks=T
                 doesFindAllMatchedPeaks = false,
                 isSettingRunBefore = true,
                 isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
                 // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
                 hasIonWeights = false;
         // Parameters for searching against experimental spectrum 
-        double ms1Err = ConfigHolder.getInstance().getDouble("ms1Err"), // Precursor tolerance - ppm (isPPM needs to be true) or Da 
-                ms2Err = ConfigHolder.getInstance().getDouble("ms2Err"), //Fragment tolerance - mz diff               
+        double msms_tol = ConfigHolder.getInstance().getDouble("msms_tol"), //Fragment tolerance - mz diff               
                 massWindow = ConfigHolder.getInstance().getDouble("massWindow"), // mass window to make window on a given MSnSpectrum for FILTERING 
+                minPrecMassIsotopicPeakSelected = ConfigHolder.getInstance().getDouble("minPrecMassIsotopicPeakSelected"), // min precursor mass that C13 peak is selected over C12 peak on precursor. 
                 // values for deisotoping and deconvoluting..
                 deisotopePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision"),
                 deconvulatePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision");
+        // get all peptide tolerance mass windows
+        ArrayList<PeptideTol> pep_tols = getPepTols(ConfigHolder.getInstance());
         // this object will be set for every new spectra in order to clean precursor peaks and deisotoping-deconvoluting..
-        MascotAdaptedPrecursorPeakRemoval precursorPeakRemove = new MascotAdaptedPrecursorPeakRemoval(null, ms2Err);
+        MascotAdaptedPrecursorPeakRemoval precursorPeakRemove = new MascotAdaptedPrecursorPeakRemoval(null, msms_tol);
         DeisotopingAndDeconvoluting deisotopeAndDeconvolute = new DeisotopingAndDeconvoluting(null, deisotopePrecision, deconvulatePrecision);
 
         // A CrossLinker object, required for constructing theoretical spectra - get required cross linkers together
@@ -343,7 +338,7 @@ public class Start {
                 bw.write("Xilmass version " + version);
 
                 bw.newLine();
-                StringBuilder titleToWrite = prepareTitle(isPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
+                StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
                 bw.write(titleToWrite + "\n");
                 // now check all spectra to collect all required calculations...
                 List<Future<ArrayList<Result>>> futureList = null;
@@ -355,6 +350,7 @@ public class Start {
                             percolatorInfoResults = new ArrayList<Result>();
                     ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
+//                        if (title.equals("File3966 Spectrum5072 scans: 8747")) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
                         // first remove any isotopic peaks derived from precursor peak.                        
                         precursorPeakRemove.setExpMSnSpectrum(ms);
@@ -362,15 +358,13 @@ public class Start {
                         // then deisotoping and harge state deconvolution
                         deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
                         ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
-
-//                        ms = 
 //                        msNum++;
 //                        LOGGER.info(msNum+ "\t Spectrum name is " + ms.getSpectrumTitle());
-                        
                         // making sure that a spectrum contains peaks after preprocessing..
                         if (!ms.getPeakList().isEmpty()) {
-                            futureList = fillFutures(ms, ms1Err, isPPM, scoreName, ms2Err, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                    massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search);
+                            // here comes to check each mgf several mass windows..
+                            futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                                    massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected);
                             for (Future<ArrayList<Result>> future : futureList) {
                                 try {
                                     // Write each result on an output file...
@@ -381,18 +375,9 @@ public class Start {
                                         // making sure that only crosslinked ones are written, neither monolinks nor contaminants.
                                         if (((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes)
                                                 && (res.getCp().getLinkingType().equals(CrossLinkingType.CROSSLINK) || res.getCp().getLinkingType().equals(CrossLinkingType.CONTAMINANT))) {
-                                            if (peakRequiredForImprovedSearch > 0) {
-                                                boolean hasEnoughPeaks = hasEnoughPeaks(new ArrayList<CPeptidePeak>(res.getMatchedCTheoPeaks()), peakRequiredForImprovedSearch);
-                                                if (hasEnoughPeaks) {
-                                                    info.add(res);
-                                                    bw.write(res.toPrint());
-                                                    bw.newLine();
-                                                }
-                                            } else if (peakRequiredForImprovedSearch == 0) {
-                                                info.add(res);
-                                                bw.write(res.toPrint());
-                                                bw.newLine();
-                                            }
+                                            info.add(res);
+                                            bw.write(res.toPrint());
+                                            bw.newLine();
                                         }
                                     }
                                     if (isPercolatorAsked) {
@@ -431,7 +416,7 @@ public class Start {
             }
         }
         writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
-        LOGGER.info("The settings file is ready.");
+        LOGGER.info("The settings-file is ready.");
         long end = System.currentTimeMillis();
         LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
         excService.shutdown();
@@ -447,7 +432,7 @@ public class Start {
         StringBuilder fileTitle = new StringBuilder();
         fileTitle.append("File").append("\t").append("SpectrumTitle").
                 append("\t").append("ScanNumber").append("\t").append("RetentionTime(Seconds)").append("\t").
-                append("ObservedMass(Da)").append("\t").append("PrecCharge").append("\t").append(ms1Err).append("\t").append(absMS1Err).append("\t").
+                append("ObservedMass(Da)").append("\t").append("PrecCharge").append("\t").append("CalculatedMass_Da").append("\t").append(ms1Err).append("\t").append(absMS1Err).append("\t").
                 append("PeptideA").append("\t").append("ProteinA").append("\t").append("ModA").append("\t").
                 append("PeptideB").append("\t").append("ProteinB").append("\t").append("ModB").append("\t").
                 append("LinkPeptideA").append("\t").append("LinkPeptideB").append("\t").
@@ -491,7 +476,8 @@ public class Start {
      *
      */
     private static List<Future<ArrayList<Result>>> fillFutures(MSnSpectrum ms,
-            double precTol, boolean isPPM,
+            ArrayList<PeptideTol> pepTols,
+            boolean shownInPPM,
             ScoreName scoreName,
             double fragTol,
             int intensity_option,
@@ -502,23 +488,56 @@ public class Start {
             boolean doesKeepCPeptideFragmPattern,
             boolean doesKeepWeight,
             ExecutorService excService,
-            IndexAndSearch search) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
+            IndexAndSearch search,
+            int peakRequiredForImprovedSearch,
+            double minPrecMassIsotopicPeakSelected) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
         List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
         // now check all spectra to collect all required calculations...
         // now get query range..
-        double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
-        double[] from_to = getRange(precMass, precTol, isPPM);
-        double from = from_to[0],
-                to = from_to[1];
-        ArrayList<CrossLinking> selectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);
+        LOGGER.info("MS=" + ms.getSpectrumTitle());
+        ArrayList<CrossLinking> selectedCPeptides = new ArrayList<CrossLinking>();
+        for (PeptideTol pepTol : pepTols) {
+            double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
+            // C13 peaks might be selected over C12 peaks if precursor mass is higher than 2500Da,
+            // we start observing C13 peaks more abundant than C12 peaks around 1800-2000Da
+            if ((pepTol.getPeptide_tol_base() >= (DeisotopingAndDeconvoluting.getDiffC12C13() - fragTol) && precMass > minPrecMassIsotopicPeakSelected)
+                    || pepTol.getPeptide_tol_base() < (DeisotopingAndDeconvoluting.getDiffC12C13() - fragTol)) {
+//                precMass = precMass - pepTol.getPeptide_tol_base();
+                double[] from_to = getRange(precMass, pepTol);
+                double from = from_to[0],
+                        to = from_to[1];
+                ArrayList<CrossLinking> tmpSelectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);
+                // making sure that a cross-linked peptides are not already selected
+                for (int s = 0; s < tmpSelectedCPeptides.size(); s++) {
+                    CrossLinking tmpS = tmpSelectedCPeptides.get(s);
+                    boolean isSelected = false;
+                    for (int i = 0; i < selectedCPeptides.size(); i++) {
+                        CrossLinking cp = selectedCPeptides.get(i);
+                        if ((cp instanceof CPeptides) && (tmpS instanceof CPeptides)) {
+                            if (cp.equals(tmpS)) {
+                                isSelected = true;
+                            }
+                        }
+                        // also add Contaminant-derived objects
+                        if ((cp instanceof Contaminant) && (tmpS instanceof Contaminant)) {
+                            if (cp.equals(tmpS)) {
+                                isSelected = true;
+                            }
+                        }
+                    }
+                    if (!isSelected) {
+                        selectedCPeptides.add(tmpS);
+                    }
+                }
+            }
+        }
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
-                    isPPM, doesKeepCPeptideFragmPattern, doesKeepWeight);
+                    doesKeepCPeptideFragmPattern, doesKeepWeight, shownInPPM, peakRequiredForImprovedSearch);
             Future future = excService.submit(score);
             futureList.add(future);
         }
-
         return futureList;
     }
 
@@ -549,11 +568,11 @@ public class Start {
                 allowIntraPeptide = new StringBuilder(ConfigHolder.getInstance().getString("allowIntraPeptide")),
                 isLabeled = new StringBuilder(ConfigHolder.getInstance().getString("isLabeled")),
                 keepCPeptideFragmPattern = new StringBuilder(ConfigHolder.getInstance().getString("keepCPeptideFragmPattern")),
-                searcForAlsoMonoLink = new StringBuilder(ConfigHolder.getInstance().getString("searcForAlsoMonoLink")),
+                //                searcForAlsoMonoLink = new StringBuilder(ConfigHolder.getInstance().getString("searcForAlsoMonoLink")),
                 maxModsPerPeptide = new StringBuilder(ConfigHolder.getInstance().getString("maxModsPerPeptide")),
-                ms1Err = new StringBuilder(ConfigHolder.getInstance().getString("ms1Err")),
-                isMS1PPM = new StringBuilder(ConfigHolder.getInstance().getString("isMS1PPM")),
-                ms2Err = new StringBuilder(ConfigHolder.getInstance().getString("ms2Err")),
+                //                ms1Err = new StringBuilder(ConfigHolder.getInstance().getString("ms1Err")),
+                //                isMS1PPM = new StringBuilder(ConfigHolder.getInstance().getString("isMS1PPM")),
+                msms_tol = new StringBuilder(ConfigHolder.getInstance().getString("msms_tol")),
                 minimumFiltedPeaksNumberForEachWindow = new StringBuilder(ConfigHolder.getInstance().getString("minimumFiltedPeaksNumberForEachWindow")),
                 maximumFiltedPeaksNumberForEachWindow = new StringBuilder(ConfigHolder.getInstance().getString("maximumFiltedPeaksNumberForEachWindow")),
                 massWindow = new StringBuilder(ConfigHolder.getInstance().getString("massWindow")),
@@ -577,7 +596,7 @@ public class Start {
         bw.write("crossLinkerName=" + crossLinkerName + "\n");
         bw.write("isLabeled=" + isLabeled + "\n");
         bw.write("crossLinkedProteinTypes=" + crossLinkedProteinTypes + "\n");
-        bw.write("searcForAlsoMonoLink=" + searcForAlsoMonoLink + "\n");
+//        bw.write("searcForAlsoMonoLink=" + searcForAlsoMonoLink + "\n");
         bw.write("minLen=" + minLen + "\n");
         bw.write("maxLenCombined=" + maxLenCombined + "\n");
         bw.write("allowIntraPeptide=" + allowIntraPeptide + "\n");
@@ -590,9 +609,10 @@ public class Start {
         bw.write("variableModification=" + variableModificationNames + "\n");
         bw.write("maxModsPerPeptide=" + maxModsPerPeptide + "\n");
         bw.write("fragModeName=" + fragModeName + "\n");
-        bw.write("ms1Err=" + ms1Err + "\n");
-        bw.write("isMS1PPM=" + isMS1PPM + "\n");
-        bw.write("ms2Err=" + ms2Err + "\n");
+        //@TODO: add all pep_tol mass windows...
+//        bw.write("ms1Err=" + ms1Err + "\n");
+//        bw.write("isMS1PPM=" + isMS1PPM + "\n");
+        bw.write("msms_tol=" + msms_tol + "\n");
         bw.write("minimumFiltedPeaksNumberForEachWindow=" + minimumFiltedPeaksNumberForEachWindow + "\n");
         bw.write("maximumFiltedPeaksNumberForEachWindow=" + maximumFiltedPeaksNumberForEachWindow + "\n");
         bw.write("massWindow=" + massWindow + "\n");
@@ -673,37 +693,10 @@ public class Start {
                 control++;
             }
         }
-        if (control == 17) {
+        if (control == 18) {
             isSame = true;
         }
         return isSame;
-    }
-
-    /**
-     * This method assures that there are enough peaks from each peptide
-     * (containing number of requiredPeaks for each peptide)
-     *
-     * @param matchedCTheoPLists a list of matched CPeptide Theoretical peaks
-     * @param requiredPeaks minimum number of required peaks for each
-     * theoretical CPeptide fragment ions
-     * @return true/has enough peaks; false/not enough peaks
-     */
-    private static boolean hasEnoughPeaks(ArrayList<CPeptidePeak> matchedCTheoPLists, int requiredPeaks) {
-        boolean hasEnoughPeaks = false;
-        int theoPepA = 0,
-                theoPepB = 0;
-        for (CPeptidePeak cpP : matchedCTheoPLists) {
-            if (cpP.getName().contains("pepA") || cpP.getName().contains("lepA")) {
-                theoPepA++;
-            }
-            if (cpP.getName().contains("pepB") || cpP.getName().contains("lepB")) {
-                theoPepB++;
-            }
-        }
-        if (theoPepA >= requiredPeaks && theoPepB >= requiredPeaks) {
-            hasEnoughPeaks = true;
-        }
-        return hasEnoughPeaks;
     }
 
     /**
@@ -746,7 +739,7 @@ public class Start {
         title.append("SpecID").append("\t").append("Label").append("\t").append("scannr").append("\t").
                 append("massDelta_ppm").append("\t").
                 append("score").append("\t").
-                append("charge").append("\t").append("observedMass_Da").append("\t").
+                append("charge").append("\t").append("observedMass_Da").append("\t").append("calculatedMass_Da").append("\t").
                 append("CrossLinkerLabeling").append("\t").
                 append("lenPepA").append("\t").append("lenPepB").append("\t").append("sumLen").append("\t").
                 append("lnNumSp").append("\t").append("Peptide").append("\t").append("Protein");
@@ -883,26 +876,27 @@ public class Start {
     }
 
     /**
-     * This method getRange of theoretical masses for a given precursorTolerance
-     */
-    /**
-     * This method getRange of theoretical masses for a given precursorTolerance
+     * This method getRange of theoretical masses (in Da) for a given
+     * precursorTolerance
      *
      * @param precMass observed precursor mass
-     * @param isPPM true: ms1Err is on ppm, false: ms1Err is Da
-     * @param precTol precursor tolerance
+     * @param pepTol a peptide_tol mass window object
      * @return an array of lower (O.value) and upper (1.value) mass range
      */
-    public static double[] getRange(double precMass, double precTol, boolean isPPM) {
+    public static double[] getRange(double precMass, PeptideTol pepTol) {
+        boolean isPPM = pepTol.isPPM();
         double[] from_to = new double[2];
-        double from = precMass - precTol,
-                to = precMass + precTol;
+        double upper_limit = pepTol.getUpper_limit(), // already in Dalton
+                lower_limit = pepTol.getLower_limit(),// already in Dalton
+                from = precMass + lower_limit,
+                to = precMass + upper_limit;
         if (isPPM) {
-            double mass = (precMass * 1000000),
-                    shiftDown = (1000000 + precTol),
-                    shiftUp = (1000000 - precTol);
-            from = mass / shiftDown;
-            to = mass / shiftUp;
+            double mass = ((precMass - pepTol.getPeptide_tol_base()) * 1000000),
+                    shiftDown = (1000000 + pepTol.getPeptide_tol()),
+                    shiftUp = (1000000 - pepTol.getPeptide_tol());
+            from = (mass / shiftDown);
+            to = (mass / shiftUp);
+
         }
         from_to[0] = from;
         from_to[1] = to;
@@ -927,6 +921,39 @@ public class Start {
             }
         }
         return (folder.delete());
+    }
+
+    /**
+     * This method retrieves information about the peptide tolerance mass
+     * windows on xLink.properties file
+     *
+     * @param instance is a ConfigHolder instance object holding properties for
+     * Xilmass algorithm.
+     * @return
+     */
+    public static ArrayList<PeptideTol> getPepTols(ConfigHolder instance) {
+        ArrayList<PeptideTol> pep_tols = new ArrayList<PeptideTol>();
+        //the total number of peptide tolerance mass windows 
+        int num_pep_tols = instance.getInt("peptide_tol_total");
+        if (num_pep_tols > 5 && num_pep_tols < 1) {
+            LOGGER.error("Xilmass cannot be executed! Invalid peptide_tol_total! Must be between 1 and 5!");
+            System.exit(1);
+        } else {
+            LOGGER.info("There are currently " + num_pep_tols + " mass windows!");
+            // now feel all peptide mass tolerance mass windows.. 
+            for (int tmp_pep_tol = 1; tmp_pep_tol <= num_pep_tols; tmp_pep_tol++) {
+                String key = "peptide_tol" + tmp_pep_tol;
+                // just making sure that actually ConfigHolder contains this key.. 
+                if (instance.containsKey(key)) {
+                    boolean is_peptide_tol_ppm = instance.getBoolean("is_" + key + "_PPM");
+                    double peptide_tol = instance.getDouble(key),
+                            peptide_tol_base = instance.getDouble(key + "_base"); // 
+                    PeptideTol pep_tol = new PeptideTol(is_peptide_tol_ppm, peptide_tol, peptide_tol_base, key);
+                    pep_tols.add(pep_tol);
+                }
+            }
+        }
+        return pep_tols;
     }
 
 }
