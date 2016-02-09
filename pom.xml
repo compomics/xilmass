@@ -73,7 +73,7 @@
                                     <filtering>true</filtering> 
                                     <excludes>
                                         <exclude>PercolatorRun.properties</exclude>
-                                        <exclude>TargetDecoy.properties</exclude>
+                                        <!--exclude>TargetDecoy.properties</exclude-->
                                         <!--exclude>log4j.properties</exclude-->
                                     </excludes>                                      
                                 </resource>
@@ -90,7 +90,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>start.Start</mainClass>
+                            <mainClass>start.RunAndValidate</mainClass>
                             <!--mainClass>visualize.Visualize</mainClass-->
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
@@ -245,6 +245,13 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>4.2.2.RELEASE</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.8.1</version>
+            <scope>test</scope>
             <type>jar</type>
         </dependency>
     </dependencies>
