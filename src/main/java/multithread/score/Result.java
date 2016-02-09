@@ -5,6 +5,7 @@
  */
 package multithread.score;
 
+import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ public class Result {
             ionFracB, // fraction of found theoretical ion over all theoretical ions for PeptideBeta
             observedMass, // singly charged precursor ion of a selected MSnSpectrum
             deltaMass, // difference in mass between the calculated and observed spectra in ppm
-            absDeltaMass; // absolute difference in mass between the calculated and observed spectra in ppm
+            absDeltaMass, // absolute difference in mass between the calculated and observed spectra in ppm
+            calculatedMass; // theoratical cross-linked peptide mass
     private int matchedTheoA, // matched theoretical peaks from peptideA
             matchedTheoB; // matched theoretical peaks from peptideB
     private boolean doesContainCPeptidePattern,
@@ -88,6 +90,7 @@ public class Result {
         this.matchedTheoB = matchedTheoB;
         this.doesContainCPeptidePattern = doesContainCPeptidePattern;
         this.doesContainIonFract = doesContainIonFrac;
+        calculatedMass = cp.getTheoretical_xlinked_mass() + ElementaryIon.proton.getTheoreticMass();
         if (!msms.getScanNumber().isEmpty()) {
             scanNum = msms.getScanNumber();
         } else if (msms.getSpectrumTitle().contains("scan")) {
@@ -250,11 +253,11 @@ public class Result {
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
         String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"
-                + observedMass + "\t" + charge + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
+                + observedMass + "\t" + charge + "\t" + calculatedMass + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
                 + score + "\t"
                 + lnNumSpec + "\t"
-                + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"                
+                + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"
                 + printPeaks(matchedPLists) + "\t"
                 + printCPeaks(matchedCTheoPLists);
         if (cp instanceof CPeptides) {
@@ -279,7 +282,7 @@ public class Result {
                         linkerPositionPeptideA, linkerPositionPeptideB,
                         peptideALen, peptideBLen);
                 name = p.getName();
-            } 
+            }
             result += "\t" + name;
         }
         if (doesContainIonFract) {
