@@ -7,7 +7,7 @@
 ---
 ##Tool description
 
-Xilmass is a novel algorithm to identify cross-linked peptides. Xilmass uses a new way to compose the search database and a new scoring function that scores each experimental spectrum against complete theoretical spectra. Xilmass can be used for both labeled and unlabeled cross-linkers and allows [Percolator](http://per-colator.com/) input to validate the findings. 
+Xilmass is a novel algorithm to identify cross-linked peptides. Xilmass uses a new way to compose the search database and a new scoring function that scores each experimental spectrum against complete theoretical spectra. Xilmass can be used for both labeled and unlabeled cross-linkers.
 
 [Go to top of page](#xilmass)
 
