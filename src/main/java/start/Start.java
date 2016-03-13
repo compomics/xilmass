@@ -172,6 +172,7 @@ public class Start {
         } else if (labeledOption.equals("T")) {
             linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
         }
+        boolean isSideReactionConsidered = checkEnablingSideReactionOption(crossLinkerName);
         // Maybe heavy and light labeled linkers are used
         LOGGER.info("The settings are ready to perform the search!");
         LOGGER.info("Checking if a previously constructed CX database exists for the same search settings!");
@@ -221,7 +222,7 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled); //
+                    isLabeled, isSideReactionConsidered); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             // in silico digested contaminant database
             if (!contaminantDBName.isEmpty()) {
@@ -260,7 +261,8 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled); //
+                    isLabeled,
+                    isSideReactionConsidered); //
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             for (CrossLinker linker : linkers) {
@@ -954,6 +956,14 @@ public class Start {
             }
         }
         return pep_tols;
+    }
+
+    private static boolean checkEnablingSideReactionOption(String crossLinkerName) {
+        boolean isEnabled = false;
+        if (crossLinkerName.equals("DSS") || crossLinkerName.equals("BS3")) {
+            isEnabled = ConfigHolder.getInstance().getBoolean("isConsideredSideReaction");
+        }
+        return isEnabled;
     }
 
 }

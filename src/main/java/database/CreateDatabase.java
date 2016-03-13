@@ -38,7 +38,7 @@ import playground.EnzymeDigest;
 /**
  *
  * @author Lennart in silico digestion adapted from DBToolKit
- * 
+ *
  * @author Sule combination of cross-linked peptides
  *
  */
@@ -59,7 +59,8 @@ public class CreateDatabase {
             maxLen_for_combined = 50; // How many amino acids are on one cross linked peptides
     private File inputProteinFile,
             inSilicoPeptideDB;
-    private boolean does_a_peptide_link_to_itself = false; // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
+    private boolean does_a_peptide_link_to_itself = false, // Is it possible to have the same peptide from the same protein matched to the same peptide from the same protein?
+            isSideReactionConsidered = false;
     private CrossLinker linker;
     private HashMap<String, StringBuilder> header_sequence = new HashMap<String, StringBuilder>();
     private static final Logger LOGGER = Logger.getLogger(CreateDatabase.class);
@@ -75,7 +76,8 @@ public class CreateDatabase {
             int minLen,
             int maxLen_for_combined,// filtering of in silico peptides on peptide lenghts 
             boolean does_link_to_itself,
-            boolean isLabeled // T: heavy labeled protein, F:no labeled
+            boolean isLabeled, // T: heavy labeled protein, F:no labeled
+            boolean isSideReactionConsidered // consideration of side reaction so allowing STY as linkeable for amine-reactive cross-linkers
     ) throws Exception {
         // db related parameters
         inputProteinDBName = proteinDBName;
@@ -96,6 +98,7 @@ public class CreateDatabase {
         linker = GetCrossLinker.getCrossLinker(this.crossLinkerName, isLabeled);
         // accession and the corresponding protein length of a given input-protein database to construct cross-linked peptides database
         accession_and_length = getAccession_and_length(inputProteinDBName);
+        this.isSideReactionConsidered = isSideReactionConsidered;
     }
 
     // getter and setter methods    
@@ -194,8 +197,7 @@ public class CreateDatabase {
     public void setInSilicoPeptideDB(File inSilicoPeptideDB) {
         this.inSilicoPeptideDB = inSilicoPeptideDB;
     }
-    
-    
+
     /**
      * This method returns a hashmap containing header and a cross-linked
      * sequences. If this hashmap is not constructed, yet, it calls construct()
@@ -229,8 +231,9 @@ public class CreateDatabase {
     }
 
     /**
-     * This method performs in silico enyzme digestion. Only this part comes directly
-     * from DBToolKit. In the end, an output file containing these putative peptides  is generated.
+     * This method performs in silico enyzme digestion. Only this part comes
+     * directly from DBToolKit. In the end, an output file containing these
+     * putative peptides is generated.
      *
      * @throws UnknownDBFormatException
      * @throws IOException
@@ -471,8 +474,8 @@ public class CreateDatabase {
             // a start sequence must be at least #minLen amino acids
             if (startLen >= minLen) {
                 // find if there is a possible linker locations.                
-                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini),
-                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini),
+                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini, isSideReactionConsidered),
+                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini, isSideReactionConsidered),
                         linkedNextResiduesOnFirstPart = new ArrayList<LinkedResidue>(),
                         linkedNextResiduesOnSecondPart = new ArrayList<LinkedResidue>();
                 loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
@@ -496,8 +499,8 @@ public class CreateDatabase {
                             && (does_a_peptide_link_to_itself && startProtein.getSequence().equals(nextProtein.getSequence())
                             || (!nextProtein.getSequence().equals(startProtein.getSequence())))) {
                         toConjugate = true;
-                        linkedNextResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, true, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini);
-                        linkedNextResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, false, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini);
+                        linkedNextResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, true, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini, isSideReactionConsidered);
+                        linkedNextResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, false, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini, isSideReactionConsidered);
                     }
                     if (toConjugate) {
                         get_peptide_combinations(linkedStartResiduesOnFirstPart, linkedNextResiduesOnSecondPart);

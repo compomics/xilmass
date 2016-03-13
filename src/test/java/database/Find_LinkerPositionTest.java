@@ -53,7 +53,7 @@ public class Find_LinkerPositionTest {
         boolean doesContainProteinNtermini = false;
         boolean doesContainProteinCTermini = false;
         ArrayList<LinkedResidue> expResult = null;
-        ArrayList<LinkedResidue> result = Find_LinkerPosition.find_cross_linking_sites(protein, firstPart, crossLinker, doesContainProteinNtermini, doesContainProteinCTermini);
+        ArrayList<LinkedResidue> result = Find_LinkerPosition.find_cross_linking_sites(protein, firstPart, crossLinker, doesContainProteinNtermini, doesContainProteinCTermini,false);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -85,7 +85,7 @@ public class Find_LinkerPositionTest {
         boolean doesContainProteinNTermini = false;
         boolean doesContainProteinCTermini = false;
         ArrayList<LinkedResidue> expResult = null;
-        ArrayList<LinkedResidue> result = Find_LinkerPosition.get_amine_groups(protein, doesContainProteinNTermini, doesContainProteinCTermini);
+        ArrayList<LinkedResidue> result = Find_LinkerPosition.get_amine_groups(protein, doesContainProteinNTermini, doesContainProteinCTermini,false);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

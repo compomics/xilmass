@@ -8,7 +8,7 @@ package database;
 /**
  * Linkeable residue regarding type information
  *
- * amine reactive groups: K and n-termini (such as DSS and BS3)
+ * amine reactive groups: K and n-termini (such as DSS and BS3)+ side reactions with S,T,Y
  * 
  * carboxyl reactive groups: D, E and c-termini (such as EDC)
  *
@@ -23,5 +23,7 @@ public enum LinkedResidueType {
     E, // a linked residue is glutamate
     D, // a linked residue is aspartate
     CTerminus, // only the last residue on a protein at protein c-terminus can be linked
-    S // a linked residue is serine
+    S, // a linked residue is serine
+    T, // a linked residue is threonine
+    Y // a linked residue is tyrosine
 }

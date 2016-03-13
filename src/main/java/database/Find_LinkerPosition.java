@@ -30,31 +30,34 @@ public class Find_LinkerPosition {
      * protein has NOT n-termini
      * @param doesContainProteinCTermini true: a protein has c-termini; false: a
      * protein has NOT c-termini
+     * @param isSideReactionConsidered introducing STY as linkeable due to
+     * consideration of side-reactions
      * @return
      */
-    public static ArrayList<LinkedResidue> find_cross_linking_sites(Protein protein, boolean firstPart, CrossLinker crossLinker, boolean doesContainProteinNtermini, boolean doesContainProteinCTermini) {
+    public static ArrayList<LinkedResidue> find_cross_linking_sites(Protein protein, boolean firstPart, CrossLinker crossLinker,
+            boolean doesContainProteinNtermini, boolean doesContainProteinCTermini, boolean isSideReactionConsidered) {
         ArrayList<LinkedResidue> crossLinker_and_indices = new ArrayList<LinkedResidue>();
         switch (crossLinker.getName()) {
             case BS3d0:
-                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
+                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini, isSideReactionConsidered);
                 break;
             case BS3d4:
-                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
+                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini, isSideReactionConsidered);
                 break;
             case DSSd0:
-                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
+                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini, isSideReactionConsidered);
                 break;
             case DSSd12:
-                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
+                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini, isSideReactionConsidered);
                 break;
             case GA:
-                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
+                crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini, isSideReactionConsidered);
                 break;
             case EDC:
                 if (firstPart) {
                     crossLinker_and_indices = get_carboxyl_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
                 } else {
-                    crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini);
+                    crossLinker_and_indices = get_amine_groups(protein, doesContainProteinNtermini, doesContainProteinCTermini, isSideReactionConsidered);
                 }
                 break;
         }
@@ -93,14 +96,17 @@ public class Find_LinkerPosition {
 
     /**
      * A list of linked residues that contains amine groups in order to
-     * conjugate: These are lysin (K) and protein N-termini
+     * conjugate: These are lysin (K) and protein N-termini, and if side
+     * reaction is allowed STY also allowed
      *
      * @param protein
      * @param doesContainProteinNTermini
      * @param doesContainProteinCTermini
+     * @param isSideReactionConsidered allowing side reactions-based residues as
+     * linkebale (S, T, Y)
      * @return
      */
-    public static ArrayList<LinkedResidue> get_amine_groups(Protein protein, boolean doesContainProteinNTermini, boolean doesContainProteinCTermini) {
+    public static ArrayList<LinkedResidue> get_amine_groups(Protein protein, boolean doesContainProteinNTermini, boolean doesContainProteinCTermini, boolean isSideReactionConsidered) {
         boolean isMethionineFirstResidue = false;
         String sequence = protein.getSequence().getSequence();
         if (sequence.startsWith("M")) {
@@ -111,8 +117,16 @@ public class Find_LinkerPosition {
             LinkedResidue r = null;
             char charAt = sequence.charAt(position);
             // not including c-terminus.. (Rinner et al, 2008)
-            if (charAt == 'K' && position != sequence.length() - 1) {
-                r = new LinkedResidue(protein, position, LinkedResidueType.K, doesContainProteinNTermini, doesContainProteinCTermini);
+            if (position != sequence.length() - 1 && position != 0) { // neither protein n-termini or c-termini 
+                if (charAt == 'K') {
+                    r = new LinkedResidue(protein, position, LinkedResidueType.K, doesContainProteinNTermini, doesContainProteinCTermini);
+                } else if (charAt == 'S' && isSideReactionConsidered) {
+                    r = new LinkedResidue(protein, position, LinkedResidueType.S, doesContainProteinNTermini, doesContainProteinCTermini);
+                } else if (charAt == 'T' && isSideReactionConsidered) {
+                    r = new LinkedResidue(protein, position, LinkedResidueType.T, doesContainProteinNTermini, doesContainProteinCTermini);
+                } else if (charAt == 'Y' && isSideReactionConsidered) {
+                    r = new LinkedResidue(protein, position, LinkedResidueType.Y, doesContainProteinNTermini, doesContainProteinCTermini);
+                }
             } else if (position == 0 && doesContainProteinNTermini && !isMethionineFirstResidue) {
                 r = new LinkedResidue(protein, position, LinkedResidueType.NTerminus, doesContainProteinNTermini, doesContainProteinCTermini);
             } else if (position == 0 && doesContainProteinNTermini && isMethionineFirstResidue) {
