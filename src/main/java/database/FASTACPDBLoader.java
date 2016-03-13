@@ -275,7 +275,8 @@ public class FASTACPDBLoader {
                         peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB, max_mods_per_peptide);
                 // fill all possible modified peptides here...
                 StringBuilder info = new StringBuilder(),
-                        rInfo = new StringBuilder();
+                        rInfo = new StringBuilder(),
+                        headerInfo = new StringBuilder();
                 for (Peptide pA : peptideAs) {
                     for (Peptide pB : peptideBs) {
                         if (!isCPeptidesObjConstructed) {
@@ -289,8 +290,9 @@ public class FASTACPDBLoader {
                             rInfo = CPeptideInfo.getInfo(cPeptide, false);
                             if (!hs.contains(info.toString()) && !hs.contains(rInfo.toString())) {
                                 hs.add(info.toString());
-                                headers.add(new StringBuilder().append(info).append("\t").append(labelInfo).append("\n"));
-                                bw.write(new StringBuilder().append(info).append("\t").append(labelInfo).append("\n").toString());
+                                headerInfo = new StringBuilder().append(info).append("\t").append(labelInfo).append("\n");
+                                headers.add(headerInfo);
+                                bw.write(headerInfo.toString());
                             }
                         } else {
                             cPeptide.setProteinA(proteinA.toString());
@@ -307,8 +309,9 @@ public class FASTACPDBLoader {
                             }
                             if (!hs.contains(info.toString()) && !hs.contains(rInfo.toString())) {
                                 hs.add(info.toString());
-                                headers.add(new StringBuilder().append(info).append("\t").append(labelInfo).append("\n"));
-                                bw.write(new StringBuilder().append(info).append("\t").append(labelInfo).append("\n").toString());
+                                headerInfo = new StringBuilder().append(info).append("\t").append(labelInfo).append("\n");
+                                headers.add(headerInfo);
+                                bw.write(headerInfo.toString());
                             }
                         }
                         isCPeptidesObjConstructed = true;
@@ -325,20 +328,24 @@ public class FASTACPDBLoader {
             HashMap<String, Integer> acc_and_length) throws XmlPullParserException, IOException {
         // This part for Contaminant sequence
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
+        ArrayList<Peptide> contaminantAs = new ArrayList<Peptide>();
+        ArrayList<ModificationMatch> fixedPTM_contaminant = new ArrayList<ModificationMatch>();
+        ArrayList<GetPTMs.PTMNameIndex> possiblePTMsContaminant = new ArrayList<GetPTMs.PTMNameIndex>();
+        StringBuilder sb = null;
         for (String header : header_sequence.keySet()) {
             if (!header.isEmpty() && header.startsWith("contaminant")) {
                 String contaminant_seq = header_sequence.get(header).toString();
                 // check if tryptic peptide contains protein termini
                 boolean containsProteinNTermini = checkProteinContainsProteinTermini(header, true, acc_and_length), // if contains the first amino acid of a protein (protein N-termini)
                         containsProteinCTermini = checkProteinContainsProteinTermini(header, false, acc_and_length); // ifcontains the last amino acid of a protein (protein C-termini
-                ArrayList<ModificationMatch> fixedPTM_contaminant = GetPTMs.getPTM(ptmFactory, fixedModifications, contaminant_seq, false, containsProteinNTermini, containsProteinCTermini);
-                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsContaminant = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, contaminant_seq, true, containsProteinNTermini, containsProteinCTermini);
-                ArrayList<Peptide> contaminantAs = getPeptidesVarPTMs(possiblePTMsContaminant, new StringBuilder(contaminant_seq), fixedPTM_contaminant, max_mods_per_peptide);
+                fixedPTM_contaminant = GetPTMs.getPTM(ptmFactory, fixedModifications, contaminant_seq, false, containsProteinNTermini, containsProteinCTermini);
+                possiblePTMsContaminant = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, contaminant_seq, true, containsProteinNTermini, containsProteinCTermini);
+                contaminantAs = getPeptidesVarPTMs(possiblePTMsContaminant, new StringBuilder(contaminant_seq), fixedPTM_contaminant, max_mods_per_peptide);
                 for (Peptide c : contaminantAs) {
                     String fixedModPepB = getPTMName(c.getModificationMatches(), false),
                             varModPep = getPTMName(c.getModificationMatches(), true);
                     double mass = c.getMass();
-                    StringBuilder sb = new StringBuilder(header).append("\t").append("-").append("\t").append(contaminant_seq).append("\t").append("-").append("\t").append("-")
+                    sb = new StringBuilder(header).append("\t").append("-").append("\t").append(contaminant_seq).append("\t").append("-").append("\t").append("-")
                             .append("\t").append("-").append("\t").append(fixedModPepB).append("\t").append("-").append("\t").append(varModPep).append("\t").append("-").append("\t").append(mass).append("\n");
                     bw.write(sb.toString());
                     headers.add(sb);
