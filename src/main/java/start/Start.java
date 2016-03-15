@@ -172,7 +172,9 @@ public class Start {
         } else if (labeledOption.equals("T")) {
             linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
         }
-        boolean isSideReactionConsidered = checkEnablingSideReactionOption(crossLinkerName);
+        boolean isSideReactionConsidered_S = checkEnablingSideReactionOption(crossLinkerName, 0),
+                isSideReactionConsidered_T = checkEnablingSideReactionOption(crossLinkerName, 1),
+                isSideReactionConsidered_Y = checkEnablingSideReactionOption(crossLinkerName, 2);
         // Maybe heavy and light labeled linkers are used
         LOGGER.info("The settings are ready to perform the search!");
         LOGGER.info("Checking if a previously constructed CX database exists for the same search settings!");
@@ -222,7 +224,7 @@ public class Start {
                     minLen, // minimum length for each in silico digested peptide
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
-                    isLabeled, isSideReactionConsidered); //
+                    isLabeled, isSideReactionConsidered_S, isSideReactionConsidered_T, isSideReactionConsidered_Y);
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             // in silico digested contaminant database
             if (!contaminantDBName.isEmpty()) {
@@ -262,7 +264,7 @@ public class Start {
                     maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                     does_link_to_itself, // if a peptide itself links to itself..
                     isLabeled,
-                    isSideReactionConsidered); //
+                    isSideReactionConsidered_S, isSideReactionConsidered_T, isSideReactionConsidered_Y);
             headers_sequences = instanceToCreateDB.getHeadersAndSequences();
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(indexMonoLinkFile));
             for (CrossLinker linker : linkers) {
@@ -351,7 +353,10 @@ public class Start {
                             info = new ArrayList<Result>(),
                             percolatorInfoResults = new ArrayList<Result>();
                     ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
+                    int total_spectra = fct.getSpectrumTitles(mgf.getName()).size(),
+                            tmp_total_spectra = 0;
                     for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                        tmp_total_spectra++;                        
 //                        if (title.equals("File3966 Spectrum5072 scans: 8747")) {
                         MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
                         // first remove any isotopic peaks derived from precursor peak.                        
@@ -360,8 +365,9 @@ public class Start {
                         // then deisotoping and harge state deconvolution
                         deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
                         ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
-//                        msNum++;
-//                        LOGGER.info(msNum+ "\t Spectrum name is " + ms.getSpectrumTitle());
+                        if (tmp_total_spectra % 500 == 0) {
+                            LOGGER.info("Number of total ID spectra is "+tmp_total_spectra +" in total "+total_spectra+" spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
+                        }
                         // making sure that a spectrum contains peaks after preprocessing..
                         if (!ms.getPeakList().isEmpty()) {
                             // here comes to check each mgf several mass windows..
@@ -496,7 +502,6 @@ public class Start {
         List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
         // now check all spectra to collect all required calculations...
         // now get query range..
-        LOGGER.info("MS=" + ms.getSpectrumTitle());
         ArrayList<CrossLinking> selectedCPeptides = new ArrayList<CrossLinking>();
         for (PeptideTol pepTol : pepTols) {
             double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
@@ -958,10 +963,16 @@ public class Start {
         return pep_tols;
     }
 
-    private static boolean checkEnablingSideReactionOption(String crossLinkerName) {
+    private static boolean checkEnablingSideReactionOption(String crossLinkerName, int option) {
         boolean isEnabled = false;
         if (crossLinkerName.equals("DSS") || crossLinkerName.equals("BS3")) {
-            isEnabled = ConfigHolder.getInstance().getBoolean("isConsideredSideReaction");
+            if (option == 0) {
+                isEnabled = ConfigHolder.getInstance().getBoolean("isConsideredSideReactionSerine");
+            } else if (option == 1) {
+                isEnabled = ConfigHolder.getInstance().getBoolean("isConsideredSideReactionThreonine");
+            } else if (option == 2) {
+                isEnabled = ConfigHolder.getInstance().getBoolean("isConsideredSideReactionTyrosine");
+            }
         }
         return isEnabled;
     }
