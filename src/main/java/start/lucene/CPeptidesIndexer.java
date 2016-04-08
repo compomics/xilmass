@@ -74,7 +74,7 @@ public class CPeptidesIndexer {
             // The following is to create an in-memory index: Directory index = new RAMDirectory();
 
             // vairous types of analyzers but only standardAnalyzer is used
-            IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, new StandardAnalyzer());
+            IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_4, new StandardAnalyzer());
             // now each index file is reconstructed from scrath
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             indexWriter = new IndexWriter(dir, config);

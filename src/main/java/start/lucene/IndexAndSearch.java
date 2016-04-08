@@ -79,8 +79,8 @@ public class IndexAndSearch {
     }
 
     /**
-     * This method returns a list of CPeptides at their masses within a given mass range (inclusive
-     * lower and upper mass)
+     * This method returns a list of CPeptides at their masses within a given
+     * mass range (inclusive lower and upper mass)
      *
      * @param from smaller value (inclusive)
      * @param to bigger value (inclusive)
@@ -103,6 +103,10 @@ public class IndexAndSearch {
             }
             // also add Contaminant-derived objects
             if (cp instanceof Contaminant) {
+                selected.add(cp);
+            }
+            // also add Monolinked peptides 
+            if (cp instanceof MonoLinkedPeptides) {
                 selected.add(cp);
             }
         }
@@ -168,7 +172,7 @@ public class IndexAndSearch {
                 selected = tmpCpeptide;
             }
         } // This means only monolinked peptide...    
-        else if (!proteinA.startsWith("contaminant")) {
+        else if (!proteinA.contains("contaminant") && proteinB.equals("-")) {
             Integer linkerPosPeptideA = Integer.parseInt(linkA);
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
             // Start putting them on a list which will contain also variable PTMs
@@ -180,7 +184,7 @@ public class IndexAndSearch {
             Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA);
             MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, selectedLinker, fragMode);
             selected = mP;
-        } else if (proteinA.startsWith("contaminant")) {
+        } else if (proteinA.contains("contaminant")) {
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
             // Start putting them on a list which will contain also variable PTMs
             ArrayList<ModificationMatch> ptms_peptideA = new ArrayList<ModificationMatch>(fixedPTM_peptideA);
