@@ -348,9 +348,9 @@ public class MatchAndScore {
                                 tmps.add(new MatchedPeak(p, tmpCPeak, tmp_diff));
                                 matched_theoretical_and_matched_peaks.put(tmpCPeak, tmps);
                             }
-//                             if a peak is much smaller than the current peak..
-//                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
-//                            i = theoXLPeaksAL.size();
+//                           leave the loop if a theoretical peak in selection has m/z is out of the fragment tolerance for the given experimental peak
+                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
+                            i = theoXLPeaksAL.size();
                         }
                     }
                 }
@@ -405,10 +405,6 @@ public class MatchAndScore {
             int charge_value = possibleCharges.get(possibleCharges.size() - 1).value;
             double observedPrecMass = (expMS2.getPrecursor().getMass(charge_value)),
                     calculatedPrecMass = (cPeptides.getTheoretical_xlinked_mass());
-//                    protonMass = ElementaryIon.proton.getTheoreticMass(),
-//                    observedPrecMZ = expMS2.getPrecursor().getMz(),
-//                    calculatedPrecMZ = (cPeptides.getTheoretical_xlinked_mass() + (charge_value * protonMass)) / (double) charge_value;
-
             // now calculates MS1 error with precursor mass and theoretical mass of crosslinked peptide-make sure that both masses are singly charged to calculate MS1Err
             // Based on the calcaulation of two values: ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), (observedMass - protonMass));
             // following one only computes theoretical cpeptide mass, but do not do anything with experimental spectrum precursor. 
