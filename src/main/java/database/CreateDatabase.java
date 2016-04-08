@@ -232,6 +232,52 @@ public class CreateDatabase {
         return header_sequence;
     }
 
+    public HashMap<String, StringBuilder> getMonolinkedHeadersAndSequences() throws IOException {
+        HashMap<String, StringBuilder> monolinkeds = new HashMap<String, StringBuilder>();
+        // perform in silico digestion..
+        DBLoader loader = DBLoaderLoader.loadDB(inSilicoPeptideDB);
+        Protein startProtein = null;
+        long start = System.currentTimeMillis();
+        // get a crossLinkerName object        
+        while ((startProtein = loader.nextProtein()) != null) {
+            boolean doesStartProContainProteinNtermini = false,
+                    doesStartProContainProteinCtermini = false;
+            String startHeader = startProtein.getHeader().getAccession();
+            int startLen = startProtein.getSequence().getSequence().length();
+            // check if a header comes from a generic! 
+            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
+                doesStartProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, true, accession_and_length);
+                doesStartProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, false, accession_and_length);
+            }
+            // a start sequence must be at least #minLen amino acids
+            if (startLen >= minLen) {
+                // find if there is a possible linker locations.                
+                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
+                        isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y),
+                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
+                                isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y);
+                for (LinkedResidue first : linkedStartResiduesOnFirstPart) {
+                    StringBuilder[] header_and_sequence = construct_header_and_monolinkedsequence(first);
+                    StringBuilder rev_header = reverse(header_and_sequence);
+                    if (!header_sequence.containsKey(rev_header.toString())) {
+                        header_sequence.put(header_and_sequence[0].append("-monolinked").toString(), header_and_sequence[1]);
+                    }
+                }
+                for (LinkedResidue linked : linkedStartResiduesOnSecondPart) {
+                    StringBuilder[] header_and_sequence = construct_header_and_monolinkedsequence(linked);
+                    StringBuilder rev_header = reverse(header_and_sequence);
+                    if (!header_sequence.containsKey(rev_header.toString())) {
+                        header_sequence.put(header_and_sequence[0].append("-monolinked").toString(), header_and_sequence[1]);
+                    }
+                }
+            }
+
+        }
+        long end = System.currentTimeMillis();
+        LOGGER.info("Mono-linked peptides are generated in " + ((end - start) / 1000) + " seconds.");
+        return monolinkeds;
+    }
+
     /**
      * This method performs in silico peptide digestion, then creates
      * cross-linked peptide combinations
@@ -286,10 +332,13 @@ public class CreateDatabase {
                 // The stuff we've received as input seems to be OK.
                 // Get the props for the AutoDBLoader...
                 Properties p = null;
+
                 try {
-                    InputStream is = EnzymeDigest.class.getClassLoader().getResourceAsStream("DBLoaders.properties");
+                    InputStream is = EnzymeDigest.class
+                            .getClassLoader().getResourceAsStream("DBLoaders.properties");
                     p = new Properties();
-                    if (is != null) {
+                    if (is
+                            != null) {
                         p.load(is);
                         is.close();
                     }
@@ -368,14 +417,17 @@ public class CreateDatabase {
                 if (filter != null) {
                     try {
                         Properties props = new Properties();
-                        InputStream in = EnzymeDigest.class.getClassLoader().getResourceAsStream("filters.properties");
-                        if (in == null) {
+                        InputStream in = EnzymeDigest.class
+                                .getClassLoader().getResourceAsStream("filters.properties");
+                        if (in
+                                == null) {
                             throw new IOException("File 'filters.properties' not found in current classpath!");
                         }
 
                         props.load(in);
                         String filterParams = props.getProperty(filter);
-                        if (filterParams == null) {
+                        if (filterParams
+                                == null) {
                             flagError("The filter you specified (" + filter + ") is not found in the 'filters.properties' file!");
                         }
                         StringTokenizer st = new StringTokenizer(filterParams, ",");
@@ -478,15 +530,15 @@ public class CreateDatabase {
             boolean doesStartProContainProteinNtermini = false,
                     doesStartProContainProteinCtermini = false;
             String startHeader = startProtein.getHeader().getAccession(),
-                    tmpStartAccession = startProtein.getHeader().getAccession(),
+                    startAccession = startProtein.getHeader().getAccession(),
                     nextHeader = "",
-                    tmpNextAccession = "";
+                    nextAccession = "";
             int startLen = startProtein.getSequence().getSequence().length();
             // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                 doesStartProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, true, accession_and_length);
                 doesStartProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, false, accession_and_length);
-                tmpStartAccession = startHeader.substring(0, startHeader.indexOf("("));
+                startAccession = startHeader.substring(0, startHeader.indexOf("("));
             }
             // a start sequence must be at least #minLen amino acids
             if (startLen >= minLen) {
@@ -504,19 +556,22 @@ public class CreateDatabase {
                             toConjugate = false;
                     // now start building a cross linked peptides...
                     nextHeader = nextProtein.getHeader().getAccession();
-                    tmpNextAccession = nextProtein.getHeader().getAccession();
+                    nextAccession = nextProtein.getHeader().getAccession();
                     int nextLen = nextProtein.getSequence().getSequence().length(),
                             totalLen = startLen + nextLen;
+
                     if (nextHeader.matches(".*[^0-9].*-.*[^0-9].*") && nextProtein.getSequence().getSequence().length() >= minLen) {
-                        tmpNextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
+                        nextAccession = nextHeader.substring(0, nextHeader.indexOf("("));
                         doesNextProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(nextHeader, true, accession_and_length);
                         doesNextProContainProteinCtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(nextHeader, false, accession_and_length);
                     }
-                    if ((tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.toLowerCase().equals("intra") || crossLinkedProteinTypes.toLowerCase().equals("both")))
-                            || (!tmpNextAccession.equals(tmpStartAccession) && (crossLinkedProteinTypes.toLowerCase().equals("inter") || crossLinkedProteinTypes.toLowerCase().equals("both")))
-                            && (nextLen >= minLen && totalLen <= maxLen_for_combined)
-                            && (does_a_peptide_link_to_itself && startProtein.getSequence().equals(nextProtein.getSequence())
-                            || (!nextProtein.getSequence().equals(startProtein.getSequence())))) {
+
+                    if (nextLen >= minLen && totalLen <= maxLen_for_combined
+                            && (((nextAccession.equals(startAccession) && (crossLinkedProteinTypes.toLowerCase().equals("intra") || crossLinkedProteinTypes.toLowerCase().equals("both")))
+                            || (!nextAccession.equals(startAccession) && (crossLinkedProteinTypes.toLowerCase().equals("inter") || crossLinkedProteinTypes.toLowerCase().equals("both"))))
+                            && ((does_a_peptide_link_to_itself && startProtein.getSequence().equals(nextProtein.getSequence()))
+                            || (!nextProtein.getSequence().equals(startProtein.getSequence()))))) {
+
                         toConjugate = true;
                         linkedNextResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, true, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini,
                                 isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y);
@@ -628,6 +683,39 @@ public class CreateDatabase {
         }
         header_and_sequence[0] = tmp_header;
         header_and_sequence[1] = tmp_sequence;
+        return header_and_sequence;
+    }
+
+    /**
+     * For given for two linkedResidues, headers and sequences are constructed.
+     * If a sequence of @param next is longer than a sequence of @param start;
+     * then the first written part comes from @param next.
+     *
+     *
+     * @param linkedResidue
+     * @param next
+     * @return an array of StringBuilder with first element is a constructed
+     * header and the second element is a constructed sequence
+     * @throws IOException
+     */
+    public static StringBuilder[] construct_header_and_monolinkedsequence(LinkedResidue linkedResidue) throws IOException {
+        String inputSequence = linkedResidue.getSequence(),
+                inputHeader = linkedResidue.getProtein().getHeader().getAccession();
+        int positionToStartStartSeq = 0,
+                positionLinkedResStartSeq = linkedResidue.getPosition();
+        // making sure that a sequence starts from the second residue, right after M! 
+        if (linkedResidue.getResType().equals(LinkedResidueType.NTerminiIncludesM)) {
+            inputHeader = inputHeader.replace("(1-", "(2-");
+            inputSequence = inputSequence.substring(1);
+        }
+        StringBuilder sequence = new StringBuilder(inputSequence.substring(positionToStartStartSeq, positionLinkedResStartSeq + 1))
+                .append("*")
+                .append(inputSequence.substring(positionLinkedResStartSeq + 1)),
+                header = new StringBuilder(inputHeader.replace(" ", ""))
+                .append("_").append(positionLinkedResStartSeq + 1);
+        StringBuilder[] header_and_sequence = new StringBuilder[2];
+        header_and_sequence[0] = header;
+        header_and_sequence[1] = sequence;
         return header_and_sequence;
     }
 

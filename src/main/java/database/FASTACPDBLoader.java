@@ -9,6 +9,7 @@ import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
+import crossLinker.CrossLinkerType;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -219,7 +220,7 @@ public class FASTACPDBLoader {
         CPeptides cPeptide = null;
         // Read each header to construct CrossLinkedPeptide object
         for (String header : header_sequence.keySet()) {
-            if (!header.startsWith("contaminant") && !header.isEmpty()) {
+            if (!header.startsWith("contaminant") && !header.contains("monolinked") && !header.isEmpty()) {
                 StringBuilder proteinA = new StringBuilder(),
                         proteinB = new StringBuilder(),
                         peptideAseq = new StringBuilder(),
@@ -278,43 +279,49 @@ public class FASTACPDBLoader {
                         rInfo = new StringBuilder(),
                         headerInfo = new StringBuilder();
                 for (Peptide pA : peptideAs) {
-                    for (Peptide pB : peptideBs) {
-                        if (!isCPeptidesObjConstructed) {
-                            cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB,
-                                    fragMode, isContrastLinkedAttachmentOn);
-                            String labelInfo = "lightLabeled";
-                            if (cPeptide.getLinker().isIsLabeled()) {
-                                labelInfo = "heavyLabeled";
-                            }
-                            info = CPeptideInfo.getInfo(cPeptide, true);
-                            rInfo = CPeptideInfo.getInfo(cPeptide, false);
-                            if (!hs.contains(info.toString()) && !hs.contains(rInfo.toString())) {
-                                hs.add(info.toString());
-                                headerInfo = new StringBuilder().append(info).append("\t").append(labelInfo).append("\n");
-                                headers.add(headerInfo);
-                                bw.write(headerInfo.toString());
-                            }
-                        } else {
-                            cPeptide.setProteinA(proteinA.toString());
-                            cPeptide.setProteinB(proteinB.toString());
-                            cPeptide.setPeptideA(pA);
-                            cPeptide.setPeptideB(pB);
-                            cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
-                            cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
-                            info = CPeptideInfo.getInfo(cPeptide, true);
-                            rInfo = CPeptideInfo.getInfo(cPeptide, false);
-                            String labelInfo = "lightLabeled";
-                            if (cPeptide.getLinker().isIsLabeled()) {
-                                labelInfo = "heavyLabeled";
-                            }
-                            if (!hs.contains(info.toString()) && !hs.contains(rInfo.toString())) {
-                                hs.add(info.toString());
-                                headerInfo = new StringBuilder().append(info).append("\t").append(labelInfo).append("\n");
-                                headers.add(headerInfo);
-                                bw.write(headerInfo.toString());
+                    boolean isLinkableA = checkIsLinkable(pA, linker, linkerPosPeptideA, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini);
+                    if (isLinkableA) {
+                        for (Peptide pB : peptideBs) {
+                            boolean isLinkableB = checkIsLinkable(pB, linker, linkerPosPeptideB, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
+                            if (isLinkableB) {
+                                if (!isCPeptidesObjConstructed) {
+                                    cPeptide = new CPeptides(proteinA.toString(), proteinB.toString(), pA, pB, linker, linkerPosPeptideA, linkerPosPeptideB,
+                                            fragMode, isContrastLinkedAttachmentOn);
+                                    String labelInfo = "lightLabeled";
+                                    if (cPeptide.getLinker().isIsLabeled()) {
+                                        labelInfo = "heavyLabeled";
+                                    }
+                                    info = CPeptideInfo.getInfo(cPeptide, true);
+                                    rInfo = CPeptideInfo.getInfo(cPeptide, false);
+                                    if (!hs.contains(info.toString()) && !hs.contains(rInfo.toString())) {
+                                        hs.add(info.toString());
+                                        headerInfo = new StringBuilder().append(info).append("\t").append(labelInfo).append("\n");
+                                        headers.add(headerInfo);
+                                        bw.write(headerInfo.toString());
+                                    }
+                                } else {
+                                    cPeptide.setProteinA(proteinA.toString());
+                                    cPeptide.setProteinB(proteinB.toString());
+                                    cPeptide.setPeptideA(pA);
+                                    cPeptide.setPeptideB(pB);
+                                    cPeptide.setLinker_position_on_peptideA(linkerPosPeptideA);
+                                    cPeptide.setLinker_position_on_peptideB(linkerPosPeptideB);
+                                    info = CPeptideInfo.getInfo(cPeptide, true);
+                                    rInfo = CPeptideInfo.getInfo(cPeptide, false);
+                                    String labelInfo = "lightLabeled";
+                                    if (cPeptide.getLinker().isIsLabeled()) {
+                                        labelInfo = "heavyLabeled";
+                                    }
+                                    if (!hs.contains(info.toString()) && !hs.contains(rInfo.toString())) {
+                                        hs.add(info.toString());
+                                        headerInfo = new StringBuilder().append(info).append("\t").append(labelInfo).append("\n");
+                                        headers.add(headerInfo);
+                                        bw.write(headerInfo.toString());
+                                    }
+                                }
+                                isCPeptidesObjConstructed = true;
                             }
                         }
-                        isCPeptidesObjConstructed = true;
                     }
                 }
             }
@@ -408,95 +415,61 @@ public class FASTACPDBLoader {
      * @throws XmlPullParserException
      * @throws IOException
      */
-    public static HashSet<StringBuilder> generate_peptide_mass_index_monoLink(BufferedWriter bw, HashMap<String, StringBuilder> header_sequence,
+    public static HashSet<StringBuilder> generate_peptide_mass_index_monoLink(
+            BufferedWriter bw, HashMap<String, StringBuilder> header_sequence,
             PTMFactory ptmFactory, ArrayList<String> fixedModifications, ArrayList<String> variableModifications, int max_mods_per_peptide,
             CrossLinker linker, FragmentationMode fragMode, HashMap<String, Integer> acc_and_length) throws XmlPullParserException, IOException {
         HashSet<StringBuilder> headers = new HashSet<StringBuilder>();
+        HashSet<String> hs = new HashSet<String>();
+
         boolean isMonoLinkedPeptideObjConstructed = false;
-        StringBuilder proteinA,
-                proteinB,
-                peptideAseq,
-                peptideBseq;
+        String proteinA,
+                peptideAseq;
         MonoLinkedPeptides mPeptides = null;
         // Read each header to construct CrossLinkedPeptide object
         for (String header : header_sequence.keySet()) {
-            if (!header.startsWith("contaminant") && !header.isEmpty()) {
-                String[] split = header.split("_");
-                int pepAIndex = 1,
-                        pepBIndex = 3;
-                int writen_linkerPositionPeptideA = Integer.parseInt(split[pepAIndex]),
-                        writen_linkerPositionPeptideB = Integer.parseInt(split[pepBIndex]);
-                // indices for linker positions necessary for constructing a CrossLinkedPeptide object...
-                int linkerPosPeptideA = writen_linkerPositionPeptideA - 1,
-                        linkerPosPeptideB = writen_linkerPositionPeptideB - 1;
-                // now get protein names
-                String[] headerSplit = header.substring(0).split("_");
-                String proteinBStr = headerSplit[2];
+            if (header.contains("monolinked") && !header.isEmpty()) {
+                proteinA = header.substring(0, header.lastIndexOf("-"));
+                String split[] = proteinA.split("_");
+                // making sure spliting for reversed sequences..
+                int index = 1;
+                if (header.contains("REVERSE") || header.contains("SHUFFLE")) {
+                    index++;
+                }
+                int linkerPosPeptideA = Integer.parseInt(split[index]) - 1;
 
-                proteinA = new StringBuilder(headerSplit[0]);
-                proteinB = new StringBuilder(proteinBStr);
-                // example proteinA is P04233REVERSED(165-201)
                 // check if tryptic peptide contains protein termini
-                boolean containsPeptideAProteinNTermini = checkProteinContainsProteinTermini(proteinA.toString(), true, acc_and_length), // peptide contains the first amino acid of a protein (protein N-termini)
-                        containsPeptideBProteinNTermini = checkProteinContainsProteinTermini(proteinB.toString(), true, acc_and_length), // peptide contains the first amino acid of a protein(protein N-termini)
-                        containsPeptideAProteinCTermini = checkProteinContainsProteinTermini(proteinA.toString(), false, acc_and_length),// peptide contains the last amino acid of a protein (protein C-termini)
-                        containsPeptideBProteinCTermini = checkProteinContainsProteinTermini(proteinB.toString(), false, acc_and_length);// peptide contains the last amino acid of a protein (protein C-termini)
-
+                boolean containsPeptideAProteinNTermini = checkProteinContainsProteinTermini(proteinA, true, acc_and_length), // peptide contains the first amino acid of a protein (protein N-termini)
+                        containsPeptideAProteinCTermini = checkProteinContainsProteinTermini(proteinA, false, acc_and_length);// peptide contains the last amino acid of a protein (protein C-termini)
                 // and now peptide sequences..
-                peptideAseq = new StringBuilder(header_sequence.get(header).substring(0, header_sequence.get(header).indexOf("|")).replace("*", ""));
-                peptideBseq = new StringBuilder(header_sequence.get(header).substring((header_sequence.get(header).indexOf("|") + 1), header_sequence.get(header).length()).replace("*", ""));
+                peptideAseq = header_sequence.get(header).toString().replace("*", "");
                 // First, find fixed variable modifications to construct a Peptide object!
-                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
-                        fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideBseq.toString(), false, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
+                ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModifications, peptideAseq.toString(), false, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini);
                 // Then, get all variable PTMs locations for a given Peptide sequence
-                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini),
-                        possiblePTMsPepB = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideBseq.toString(), true, containsPeptideBProteinNTermini, containsPeptideBProteinCTermini);
-                // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
-                ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, peptideAseq, fixedPTM_peptideA, max_mods_per_peptide),
-                        peptideBs = getPeptidesVarPTMs(possiblePTMsPepB, peptideBseq, fixedPTM_peptideB, max_mods_per_peptide);
+                ArrayList<GetPTMs.PTMNameIndex> possiblePTMsPepA = GetPTMs.getPTMwithPTMNameIndex(ptmFactory, variableModifications, peptideAseq.toString(), true, containsPeptideAProteinNTermini, containsPeptideAProteinCTermini);                // Now generate all possible variable PTMs combinations derived from a given peptide sequence and modifications       
+                ArrayList<Peptide> peptideAs = getPeptidesVarPTMs(possiblePTMsPepA, new StringBuilder(peptideAseq), fixedPTM_peptideA, max_mods_per_peptide);
                 // fill all monolinked peptides here...
+                String labelInfo = "lightLabeled";
+                if (linker.isIsLabeled()) {
+                    labelInfo = "heavyLabeled";
+                }
+                StringBuilder info = null;
                 for (Peptide pA : peptideAs) {
                     if (!isMonoLinkedPeptideObjConstructed) {
                         mPeptides = new MonoLinkedPeptides(pA, proteinA.toString(), linkerPosPeptideA, linker, fragMode);
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
-                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info.append("\n"));
-                            bw.write(info + "\n");
-                        }
+                        info = CPeptideInfo.getInfo(mPeptides, false).append("\t").append(labelInfo);
+                        isMonoLinkedPeptideObjConstructed = true;
                     } else {
                         mPeptides.setPeptide(pA);
                         mPeptides.setProtein(proteinA.toString());
                         mPeptides.setLinker_position(linkerPosPeptideA);
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
-                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info.append("\n"));
-                            bw.write(info + "\n");
-                        }
+                        info = CPeptideInfo.getInfo(mPeptides, false).append("\t").append(labelInfo);
                     }
-                }
-                isMonoLinkedPeptideObjConstructed = true;
-                for (Peptide pB : peptideBs) {
-                    if (!isMonoLinkedPeptideObjConstructed) {
-                        isMonoLinkedPeptideObjConstructed = true;
-                        mPeptides = new MonoLinkedPeptides(pB, proteinB.toString(), linkerPosPeptideB, linker, fragMode);
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
-                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info.append("\n"));
-                            bw.write(info + "\n");
-                        }
-                    } else {
-                        mPeptides.setPeptide(pB);
-                        mPeptides.setProtein(proteinB.toString());
-                        mPeptides.setLinker_position(linkerPosPeptideB);
-                        StringBuilder info = CPeptideInfo.getInfo(mPeptides, true),
-                                rInfo = CPeptideInfo.getInfo(mPeptides, true);
-                        if (!headers.contains(info) && !header.contains(rInfo)) {
-                            headers.add(info.append("\n"));
-                            bw.write(info + "\n");
-                        }
+                    if (!hs.contains(info.toString())) {
+                        hs.add(info.toString());
+                        headers.add(info);
+                        bw.write(info.toString());
+                        bw.newLine();
                     }
                 }
             }
@@ -540,4 +513,33 @@ public class FASTACPDBLoader {
         }
         return doesContainTermini;
     }
+
+    /**
+     * This method checks if a given peptide has reactive group which is not
+     * modified (no PTMs) Currently, only checking for AMINE-TO-AMINE or
+     * CARBOXYL_TO_AMINE
+     *
+     * @param peptide a peptide object
+     * @param linker a cross-linker
+     * @param linkerPositionPeptide a linker position on peptide sequence
+     * @param doesContainsProteinNTermini T: a peptide has protein n-termini ,
+     * F: a peptide has not protein n-termini
+     * @param doesContainsProteinCTermini T: a peptide has protein c-termini ,
+     * F: a peptide has not protein c-termini
+     * @return
+     */
+    public static boolean checkIsLinkable(Peptide peptide, CrossLinker linker, int linkerPositionPeptide, boolean doesContainsProteinNTermini, boolean doesContainsProteinCTermini) {
+
+        boolean isLinkable = true;
+        if (linker.getType().equals(CrossLinkerType.AMINE_TO_AMINE)) {
+
+        } else if (linker.getType().equals(CrossLinkerType.CARBOXYL_TO_AMINE)) {
+
+        } else {
+            System.err.println("Contact to a developer. Currently supporting only AMINE-TO-AMINE and CARBOXYL_TO_AMINE cross-linkers.");
+            System.exit(1);
+        }
+        return isLinkable;
+    }
+
 }
