@@ -18,6 +18,7 @@ import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.CrossLinking;
+import theoretical.MonoLinkedPeptides;
 
 /**
  * This method keeps results spectrum-cross linked peptide score calculation via
@@ -35,6 +36,7 @@ public class Result {
     private HashSet<CPeptidePeak> matchedCTheoPeaks; // list of theoretical peaks matched on a theoretical spectrum
     private double ionFrac, // ionFrac for scoring...
             lnNumSpec, // natural logarithm of number of matched peptides on DB for a selected MSnSpectrum
+            lnNumXSpec, // natural logarithm of number of matched peptides with different cross-linking sites on a DB for a selected MSnSpectrum
             deltaScore, // difference in score between the best ranked score and next best match for a selected MSnSpectrum
             ionFracA, // fraction of found theoretical ion over all theoretical ions for PeptideAlpha
             ionFracB, // fraction of found theoretical ion over all theoretical ions for PeptideBeta
@@ -64,19 +66,21 @@ public class Result {
      * @param deltaMass
      * @param absDeltaMass
      * @param lnNumSpec
+     * @param lnNumXSpec
      * @param matchedTheoA matched theoretical peaks from peptideA
      * @param matchedTheoB matched theoretical peaks from peptideB
      * @param doesContainCPeptidePattern true: there is a CPeptidePattern
      * @param doesContainIonFrac - true: there is ion fraction
      */
     public Result(MSnSpectrum msms, CrossLinking cp, ScoreName scoreName, double score, double deltaScore, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks,
-            double weight, double ionFracA, double ionFacB, double observedMass, double deltaMass, double absDeltaMass, double lnNumSpec, int matchedTheoA, int matchedTheoB,
+            double weight, double ionFracA, double ionFacB, double observedMass, double deltaMass, double absDeltaMass, double lnNumSpec, double lnNumXSpec, int matchedTheoA, int matchedTheoB,
             boolean doesContainCPeptidePattern, boolean doesContainIonFrac) {
         this.msms = msms;
         this.cp = cp;
         this.score = score;
         this.deltaScore = deltaScore;
         this.lnNumSpec = lnNumSpec;
+        this.lnNumXSpec = lnNumXSpec;
         this.scoreName = scoreName;
         this.matchedPeaks = matchedPeaks;
         this.matchedCTheoPeaks = matchedCTheoPeaks;
@@ -188,6 +192,14 @@ public class Result {
         this.lnNumSpec = lnNumSpec;
     }
 
+    public double getLnNumXSpec() {
+        return lnNumXSpec;
+    }
+
+    public void setLnNumXSpec(double lnNumXSpec) {
+        this.lnNumXSpec = lnNumXSpec;
+    }
+
     public double getDeltaScore() {
         return deltaScore;
     }
@@ -256,11 +268,12 @@ public class Result {
                 + observedMass + "\t" + charge + "\t" + calculatedMass + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
                 + score + "\t"
-                + lnNumSpec + "\t"
+                + deltaScore + "\t"
+                + lnNumSpec + "\t" + lnNumXSpec + "\t"
                 + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"
                 + printPeaks(matchedPLists) + "\t"
                 + printCPeaks(matchedCTheoPLists);
-        if (cp instanceof CPeptides) {
+        if (cp instanceof CPeptides || cp instanceof MonoLinkedPeptides) {
             boolean isHeavyLabel = cp.getLinker().isIsLabeled();
             if (isHeavyLabel) {
                 result += "\t" + "Heavy_Labeled_Linker";

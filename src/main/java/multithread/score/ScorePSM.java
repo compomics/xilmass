@@ -88,10 +88,11 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                 HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalCPeaks();
 
                 boolean control = hasEnoughPeaks(new ArrayList<CPeptidePeak>(matchedTheoreticalCPeaks), peakRequiredForImprovedSearch);
-                if (control) {
+                if ((control && tmpCPeptide instanceof CPeptides) || tmpCPeptide instanceof MonoLinkedPeptides) {
                     int matchedTheoA = obj.getMatchedTheoPeaksPepA(),
                             matchedTheoB = obj.getMatchedTheoPeaksPepB();
-                    Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta, observedMass, deltaMass, absDeltaMass, 0, matchedTheoA, matchedTheoB, doesKeepPattern, doesKeepWeight);
+                    Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta, 
+                            observedMass, deltaMass, absDeltaMass, 0, 0, matchedTheoA, matchedTheoB, doesKeepPattern, doesKeepWeight);
                     results.add(r);
                 }
             }
@@ -172,7 +173,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
         // if there is only one element on a results list, delta score equals to score!
         if (results.size() == 1) {
             results.get(0).setLnNumSpec(lnNumSp);
-            results.get(0).setDeltaScore(results.get(0).getScore());
+            results.get(0).setDeltaScore(1);
         } else {
             Collections.sort(results, Result.ScoreDESC);
             double deltaScore = 0;
@@ -183,12 +184,13 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                 double nextBestScore = results.get(j).getScore();
                 if (score != nextBestScore) {
                     till = j;
-                    deltaScore = score - nextBestScore;
+                    deltaScore = (score - nextBestScore) / score;
                     break;
                 }
             }
             if (till == 0) {
                 till = results.size(); // because apparently all elements have the same score..
+                deltaScore= 1;
             }
             ArrayList<Result> toRemove = new ArrayList<Result>();
             for (int i = 0; i < results.size(); i++) {
@@ -196,6 +198,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                 if (i < till) {
                     r.setDeltaScore(deltaScore);
                     r.setLnNumSpec(lnNumSp);
+                    r.setLnNumXSpec(results.size());
                 } else {
                     toRemove.add(r);
                 }
