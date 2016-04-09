@@ -6,6 +6,7 @@
 package analyse.CXPSM.outcome;
 
 import java.util.Comparator;
+import java.util.regex.Pattern;
 
 /**
  * This class holds information XilmassResults from a tab-limited text document
@@ -23,25 +24,27 @@ public class XilmassResult extends Outcome {
             expMatchedPeakList, // a list of matched peaks
             theoMatchedPeakList, // a list of theoretical matched peaks 
             cPeptidePattern = "",
-            ionWeight = ""; // identified ion weights
-    private int scanNr, // scan number
-            charge, // precursor charge
+            ionWeight = "", // identified ion weights
+            scanNr = "";// because the scan numbers can be merged!
+    private int charge, // precursor charge
             linkPeptideA, // linked index on peptideA
-            linkPeptideB; // linked index on peptideB
+            linkPeptideB = -1; // linked index on peptideB
     private double retentionTime, // retention time
             observedMass, // observed mass
             ms1Err, // precursor tolerance
             absMS1err, // absolute value of difference in calculated and observed mass in ppm
             score, // Xilmass XPSM score
+            deltaScore,
             lnNumSp,// Natural logarithm of #peptide in database within precursor tolerance for MS/MS spectrum
+            lnNumXSp,
             calculatedMass; // calculated theoretical cross-linked peptides
 
     public XilmassResult(String line, boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights, String ScoringFunctionName) {
         String[] sp = line.split("\t");
-        calculatedMass=Double.parseDouble(sp[6]);
+        calculatedMass = Double.parseDouble(sp[6]);
         super.spectrumFileName = sp[0];
         super.spectrumTitle = sp[1];
-        scanNr = Integer.parseInt(sp[2]);
+        scanNr = sp[2];
         retentionTime = Double.parseDouble(sp[3]);
         observedMass = Double.parseDouble(sp[4]);
         charge = Integer.parseInt(sp[5]);
@@ -50,33 +53,52 @@ public class XilmassResult extends Outcome {
         super.peptideA = sp[9];
         proteinA = sp[10];
         modA = sp[11];
+        // check if type is indeed cross-linked...
+        type = sp[19];
+
         super.peptideB = sp[12];
         proteinB = sp[13];
-        super.accProteinA = proteinA.substring(0, proteinA.indexOf("("));
-        super.accProteinB = proteinB.substring(0, proteinB.indexOf("("));
+        modB = sp[14];
+
         super.target_decoy = "";
         super.trueCrossLinking = "";
-        modB = sp[14];
+
         linkPeptideA = Integer.parseInt(sp[15]);
-        linkPeptideB = Integer.parseInt(sp[16]);
+        if (!type.equals("MonoLinked")) {
+            linkPeptideB = Integer.parseInt(sp[16]);
+        }
+
         super.crossLinkedSitePro1 = Integer.parseInt(sp[17]);
-        super.crossLinkedSitePro2 = Integer.parseInt(sp[18]);
-        type = sp[19];
+        if (!type.equals("MonoLinked")) {
+            super.crossLinkedSitePro2 = Integer.parseInt(sp[18]);
+        }
         score = Double.parseDouble(sp[20]);
         scoringFunctionName = ScoringFunctionName;
-        lnNumSp = Double.parseDouble(sp[21]);
-        expMatchedPeakList = sp[24];
-        theoMatchedPeakList = sp[25];
-        super.label = sp[26];
+        deltaScore = Double.parseDouble(sp[21]);
+        lnNumSp = Double.parseDouble(sp[22]);
+        lnNumXSp = Double.parseDouble(sp[23]);
+
+        expMatchedPeakList = sp[26];
+        theoMatchedPeakList = sp[27];
+        super.label = sp[28];
         if (doesKeepCPeptideFragmPattern && doesKeepWeights) {
-            cPeptidePattern = sp[27];
-            ionWeight = sp[28];
+            cPeptidePattern = sp[29];
+            ionWeight = sp[30];
         } else if (doesKeepCPeptideFragmPattern && !doesKeepWeights) {
-            cPeptidePattern = sp[27];
+            cPeptidePattern = sp[29];
             ionWeight = "";
         } else if (!doesKeepCPeptideFragmPattern && doesKeepWeights) {
             cPeptidePattern = "";
-            ionWeight = sp[27];
+            ionWeight = sp[29];
+        }
+        // remove the part from "(" on the accession names such as PROTEINACC(START-END)
+        String inSilicoInfo = "(()(\\d+)(-)(\\d+)())";
+        Pattern p = Pattern.compile(inSilicoInfo);
+        if (p.matcher(proteinA).find()) {
+            super.accProteinA = proteinA.split("\\(")[0];
+        }
+        if (p.matcher(proteinB).find()) {
+            super.accProteinB = proteinB.split("\\(")[0];
         }
     }
 
@@ -152,11 +174,11 @@ public class XilmassResult extends Outcome {
         this.cPeptidePattern = cPeptidePattern;
     }
 
-    public int getScanNr() {
+    public String getScanNr() {
         return scanNr;
     }
 
-    public void setScanNr(int scanNr) {
+    public void setScanNr(String scanNr) {
         this.scanNr = scanNr;
     }
 
@@ -183,7 +205,7 @@ public class XilmassResult extends Outcome {
     public void setLinkPeptideB(int linkPeptideB) {
         this.linkPeptideB = linkPeptideB;
     }
-    
+
     public double getRetentionTime() {
         return retentionTime;
     }
@@ -248,7 +270,7 @@ public class XilmassResult extends Outcome {
         hash = 79 * hash + (this.expMatchedPeakList != null ? this.expMatchedPeakList.hashCode() : 0);
         hash = 79 * hash + (this.theoMatchedPeakList != null ? this.theoMatchedPeakList.hashCode() : 0);
         hash = 79 * hash + (this.cPeptidePattern != null ? this.cPeptidePattern.hashCode() : 0);
-        hash = 79 * hash + this.scanNr;
+        hash = 79 * hash + (this.scanNr != null ? this.scanNr.hashCode() : 0);
         hash = 79 * hash + this.charge;
         hash = 79 * hash + this.linkPeptideA;
         hash = 79 * hash + this.linkPeptideB;
@@ -262,23 +284,29 @@ public class XilmassResult extends Outcome {
     /**
      * Return a String object to write down the validated PSMs for Xilmass
      *
+     * @param hasPredictions true: if Xwalk predictions avaliable from
+     * customized file, false: no Xwalk prediction
+     *
      * @return
      */
-    public String toPrint() {
+    public String toPrint(boolean hasPredictions) {
 
         String toPrint = spectrumFileName + "\t" + spectrumTitle + "\t"
                 + observedMass + "\t" + charge + "\t" + retentionTime + "\t" + scanNr + "\t"
-                + ms1Err + "\t" + absMS1err + "\t" +calculatedMass+"\t"
-                + peptideA + "\t" + proteinA + "\t" + modA + "\t"
-                + peptideB + "\t" + proteinB + "\t" + modB + "\t"
+                + ms1Err + "\t" + absMS1err + "\t" + calculatedMass + "\t"
+                + peptideA + "\t" + super.accProteinA + "\t" + modA + "\t"
+                + peptideB + "\t" + super.accProteinB + "\t" + modB + "\t"
                 + type + "\t"
-                + linkPeptideA + "\t" + linkPeptideB + "\t" + super.crossLinkedSitePro1 + "\t" +super.crossLinkedSitePro2 + "\t"
-                + scoringFunctionName + "\t" + score + "\t"
+                + linkPeptideA + "\t" + linkPeptideB + "\t" + super.crossLinkedSitePro1 + "\t" + super.crossLinkedSitePro2 + "\t"
+                + scoringFunctionName + "\t" + score + "\t" + deltaScore + "\t"
+                + lnNumSp + "\t" + lnNumXSp + "\t"
                 + expMatchedPeakList + "\t" + theoMatchedPeakList + "\t"
-                + lnNumSp + "\t"
                 + target_decoy + "\t"
-                + super.label + "\t"
-                + trueCrossLinking;
+                + super.label;
+
+        if (hasPredictions) {
+            toPrint += "\t" + trueCrossLinking;
+        }
         if (!cPeptidePattern.isEmpty()) {
             toPrint += "\t" + cPeptidePattern;
         }
@@ -301,7 +329,7 @@ public class XilmassResult extends Outcome {
                 + ", type=" + type + ", scoringFunctionName=" + scoringFunctionName
                 + ", expMatchedPeakList=" + expMatchedPeakList + ", theoMatchedPeakList=" + theoMatchedPeakList
                 + ", cPeptidePattern=" + cPeptidePattern + ", labeling=" + label
-                + ", scanNr=" + scanNr + ", charge=" + charge
+                + ", Scan=" + scanNr + ", charge=" + charge
                 + ", linkPeptideA=" + linkPeptideA + ", linkPeptideB=" + linkPeptideB + ", linkProteinA=" + super.crossLinkedSitePro1 + ", linkProteinB=" + super.crossLinkedSitePro2
                 + ", retentionTime=" + retentionTime
                 + ", observedMass=" + observedMass + ", ms1Err=" + ms1Err + ", absMS1err=" + absMS1err + ", score=" + score + ", lnNumSp=" + lnNumSp + '}';
