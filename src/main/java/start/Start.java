@@ -5,6 +5,7 @@
  */
 package start;
 
+import analyse.CXPSM.NameTargetDecoy;
 import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.interfaces.DBLoader;
 import com.compomics.util.experiment.biology.PTMFactory;
@@ -68,11 +69,12 @@ public class Start {
                     lowMass = ConfigHolder.getInstance().getString("lowerMass"),
                     highMass = ConfigHolder.getInstance().getString("higherMass"),
                     mgfs = ConfigHolder.getInstance().getString("mgfs"),
-                    resultFile = ConfigHolder.getInstance().getString("resultFolder"),
+                    resultFolder = ConfigHolder.getInstance().getString("resultFolder"),
                     fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
                     variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
                     fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-                    scoring = ConfigHolder.getInstance().getString("scoringFunctionName"),
+                    // scoring = ConfigHolder.getInstance().getString("scoringFunctionName"), was required for testing
+                    scoring = "AndromedaD",
                     labeledOption = ConfigHolder.getInstance().getString("isLabeled");
             // load enzyme and modification files from a resource folder          
             String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
@@ -110,7 +112,8 @@ public class Start {
             int minLen = ConfigHolder.getInstance().getInt("minLen"),
                     maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
                     //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
-                    intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),
+                    //intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),-was for testing scoring types.
+                    intensity_option = 0,
                     minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
                     maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
                     threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
@@ -235,7 +238,6 @@ public class Start {
                 // add mono-linked peptides to a cross-linked database
                 if (searcForAlsoMonoLink) {
                     headers_sequences.putAll(instanceToCreateDB.getMonolinkedHeadersAndSequences());
-                    System.out.println("header sequence=" + headers_sequences.size());
                 }
                 // first write down a cross-linked peptide database
                 WriteCXDB.writeCXDB(headers_sequences, cxDBName);
@@ -266,12 +268,8 @@ public class Start {
                             fixedModifications, variableModifications, maxModsPerPeptide,
                             linker, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
                     all_headers.addAll(tmp_headers);
-                    System.out.println("Cross-linked peptides masses are ready now");
-
                     // mono-linked peptides
                     if (searcForAlsoMonoLink) {
-                        System.out.println("Mono-linked peptides masses are being prepared now");
-
                         tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw, headers_sequences, ptmFactory,
                                 fixedModifications, variableModifications, maxModsPerPeptide,
                                 linker, fragMode, acc_and_length);
@@ -279,7 +277,7 @@ public class Start {
                     }
                 }
                 bw.close();
-                
+
                 // delete a file containing all mass indexes for cross-linked peptides with possible modification
                 indexFile.delete();
                 LOGGER.info("An index file (including peptides and masses) bas been created!");
@@ -306,14 +304,14 @@ public class Start {
             for (File mgf : new File(mgfs).listFiles()) {
                 if (mgf.getName().endsWith(".mgf")) {
                     LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
-                    LOGGER.debug(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                    LOGGER.debug(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
                     File percolatorIntra,
                             percolatorInter;
                     BufferedWriter bw_intra = null,
                             bw_inter = null;
                     if (isPercolatorAsked) {
-                        percolatorIntra = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-                        percolatorInter = new File(resultFile + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
+                        percolatorIntra = new File(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                        percolatorInter = new File(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
                         bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
                         bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
                         bw_intra.write(percolatorInputTitle + "\n");
@@ -321,7 +319,7 @@ public class Start {
                     }
 
                     // write results on output file for each mgf
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
                     bw.write("Xilmass version " + version);
                     bw.newLine();
                     StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
@@ -417,6 +415,18 @@ public class Start {
             long end = System.currentTimeMillis();
             LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
             excService.shutdown();
+            // here validate the results!        
+            String analysis = "11",
+                    xilmassResFolder = resultFolder,
+                    scoringFunctionName = "Andromeda",
+                    output = ConfigHolder.getInstance().getString("tdfile"),
+                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"),
+                    isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
+                    fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
+                    fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
+                    fdr = ConfigHolder.getInstance().getString("fdr");
+            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, output, allXPSMsName,
+            fdrInterPro, fdrIntraPro, fdr,isImprovedFDR});
         } catch (IOException ex) {
             LOGGER.error(ex);
         }
