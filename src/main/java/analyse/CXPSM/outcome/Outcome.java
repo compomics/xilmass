@@ -15,8 +15,8 @@ public abstract class Outcome {
 
     protected String[] target_proteins;
     
-    protected String accProteinA, // accession number of proteinA
-            accProteinB, // accession number of proteinB
+    protected String accProteinA="", // accession number of proteinA
+            accProteinB ="", // accession number of proteinB
             
             peptideA,
             peptideB,
@@ -31,7 +31,7 @@ public abstract class Outcome {
             spectrumTitle  ;
     
     protected int crossLinkedSitePro1,
-            crossLinkedSitePro2;
+            crossLinkedSitePro2 = -1;
     
     
     public String getSpectrumTitle() {
