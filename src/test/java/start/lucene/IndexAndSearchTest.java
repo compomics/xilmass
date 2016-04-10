@@ -5,7 +5,12 @@
  */
 package start.lucene;
 
+import com.compomics.pride_asa_pipeline.model.Modification;
 import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.identification.matches.ModificationMatch;
+import crossLinker.CrossLinker;
+import crossLinker.type.DSS;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -151,4 +156,27 @@ public class IndexAndSearchTest {
         System.out.println("numeric_query is \t" + numeric_query.toString());
     }
 
+    /**
+     * Test of canCrosslinkerAttach method, of class IndexAndSearch.
+     */
+    @Test
+    public void testcanCrosslinkerAttach() throws Exception {
+        System.out.println("canCrosslinkerAttach");
+        ArrayList<ModificationMatch> mods = new ArrayList<ModificationMatch>();
+        CrossLinker l = new DSS(false);
+        Peptide p = new Peptide("MAGO", mods);
+        boolean canLink = IndexAndSearch.canCrosslinkerAttach(p, l, 1, 1);
+        assertTrue(canLink);
+
+        mods.add(new ModificationMatch("Oxidation of M", false, 1));
+        p = new Peptide("MAGO", mods);
+        canLink = IndexAndSearch.canCrosslinkerAttach(p, l, 1, 1);
+        assertTrue(canLink);
+
+        mods.add(new ModificationMatch("Acetylation of protein N-term", false, 1));
+        p = new Peptide("MAGO", mods);
+        canLink = IndexAndSearch.canCrosslinkerAttach(p, l, 1, 1);
+        assertFalse(canLink);
+
+    }
 }

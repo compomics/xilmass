@@ -5,22 +5,20 @@
  */
 package start.lucene;
 
+import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import crossLinker.CrossLinker;
+import crossLinker.CrossLinkerType;
 import crossLinker.GetCrossLinker;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
@@ -60,7 +58,7 @@ public class IndexAndSearch {
      * @throws Exception
      */
     public IndexAndSearch(HashSet<StringBuilder> headers, File folder, PTMFactory ptmFactory, FragmentationMode fragMode, String linkerName) throws IOException, Exception {
-        // check if index files exist on given folder
+        // canCrosslinkerAttach if index files exist on given folder
         boolean reader = DirectoryReader.indexExists(FSDirectory.open(folder));
         // if an index folder is absent, first index 
         if (!reader) {
@@ -138,7 +136,8 @@ public class IndexAndSearch {
                 fixedModB = doc.get(FieldName.FIXMODB),
                 variableModA = doc.get(FieldName.VARMODA),
                 variableModB = doc.get(FieldName.VARMODB);
-        boolean isContrastLinkedAttachmentOn = false;
+        boolean isContrastLinkedAttachmentOn = false,
+                isPossible = false;
         if (!proteinA.startsWith("contaminant")) {
             String labelInfo = doc.get(FieldName.LABEL).replace("\n", "");
             if (labelInfo.equalsIgnoreCase("heavyLabeled")) {
@@ -150,6 +149,8 @@ public class IndexAndSearch {
         if (!proteinB.equals("-")) {
             Integer linkerPosPeptideA = Integer.parseInt(linkA),
                     linkerPosPeptideB = Integer.parseInt(linkB);
+            int linkerPosProteinA = Integer.parseInt(proteinA.substring(proteinA.indexOf("(") + 1, proteinA.lastIndexOf("-"))) + linkerPosPeptideA,
+                    linkerPosProteinB = Integer.parseInt(proteinB.substring(proteinB.indexOf("(") + 1, proteinB.lastIndexOf("-"))) + linkerPosPeptideB;
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false),
                     fixedPTM_peptideB = GetPTMs.getPTM(ptmFactory, fixedModB, false);
             // Start putting them on a list which will contain also variable PTMs
@@ -163,11 +164,16 @@ public class IndexAndSearch {
             // First peptideA
             Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA),
                     peptideB = new Peptide(peptideBseq, ptms_peptideB);
-            if (peptideA.getSequence().length() > peptideB.getSequence().length()) {
+            boolean canLinkToPeptideA = canCrosslinkerAttach(peptideA, selectedLinker, linkerPosPeptideA, linkerPosProteinA),
+                    canLinkToPeptideB = canCrosslinkerAttach(peptideB, selectedLinker, linkerPosPeptideB, linkerPosProteinB);
+            if (canLinkToPeptideA && canLinkToPeptideB) {
+                isPossible = true;
+            }
+            if (peptideA.getSequence().length() > peptideB.getSequence().length() && isPossible) {
                 // now generate peptide...
                 CPeptides tmpCpeptide = new CPeptides(proteinA, proteinB, peptideA, peptideB, selectedLinker, linkerPosPeptideA, linkerPosPeptideB, fragMode, isContrastLinkedAttachmentOn);
                 selected = tmpCpeptide;
-            } else {
+            } else if (isPossible) {
                 CPeptides tmpCpeptide = new CPeptides(proteinB, proteinA, peptideB, peptideA, selectedLinker, linkerPosPeptideB, linkerPosPeptideA, fragMode, isContrastLinkedAttachmentOn);
                 selected = tmpCpeptide;
             }
@@ -182,8 +188,12 @@ public class IndexAndSearch {
             ptms_peptideA.addAll(variablePTM_peptideA);
             // First peptideA
             Peptide peptideA = new Peptide(peptideAseq, ptms_peptideA);
-            MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, selectedLinker, fragMode);
-            selected = mP;
+            int linkerPosProteinA = Integer.parseInt(proteinA.substring(proteinA.indexOf("(") + 1, proteinA.lastIndexOf("-"))) + linkerPosPeptideA;
+            isPossible = canCrosslinkerAttach(peptideA, selectedLinker, linkerPosPeptideA, linkerPosProteinA);
+            if (isPossible) {
+                MonoLinkedPeptides mP = new MonoLinkedPeptides(peptideA, proteinA, linkerPosPeptideA, selectedLinker, fragMode);
+                selected = mP;
+            }
         } else if (proteinA.contains("contaminant")) {
             ArrayList<ModificationMatch> fixedPTM_peptideA = GetPTMs.getPTM(ptmFactory, fixedModA, false);
             // Start putting them on a list which will contain also variable PTMs
@@ -197,6 +207,49 @@ public class IndexAndSearch {
             selected = mP;
         }
         return selected;
+    }
+
+    /**
+     * This method checks given peptide if PTM allows making a covalent bound
+     * with cross-linker. Currently, only Amine-to-Amine cross-linkers are
+     * supporting. Modification on protein N-terminus and peptide N-terminus
+     * target amine-group, therefore these PTMs do not allow any cross-linking
+     * by Amine-to-Amine cross-linkers.
+     *
+     *
+     * @param peptide a Peptide with PTMs
+     * @param crossLinker a cross-linker
+     * @param linkPositionPeptide the position on a peptide that a cross-linker
+     * attaches
+     * @param linkPosProtein the position on a protein that a cross-linker
+     * attaches
+     * @return true if cross-linking is possible for a given peptide; false if a
+     * cross-linking is not possible for a given peptide
+     *
+     */
+    public static boolean canCrosslinkerAttach(Peptide peptide, CrossLinker crossLinker, int linkPositionPeptide, int linkPosProtein) {
+        boolean possible = true;
+        PTMFactory ptmFactory = PTMFactory.getInstance();
+        if (crossLinker.getType().equals(CrossLinkerType.AMINE_TO_AMINE)) {
+            // canCrosslinkerAttach protein and peptide n-termini cases..
+            ArrayList<ModificationMatch> modifications = peptide.getModificationMatches();
+            if (peptide.getModificationMatches() != null) {
+                for (ModificationMatch modificationMatch : modifications) {
+                    if (modificationMatch.getModificationSite() == 1) {
+                        PTM ptm = ptmFactory.getPTM(modificationMatch.getTheoreticPtm());
+                        if (ptm.getType() == PTM.MODN && linkPosProtein == 1) {
+                            possible = false;
+                        }
+                        if (ptm.getType() == PTM.MODNP && linkPositionPeptide == 1) {
+                            possible = false;
+                        }
+                    }
+                }
+            }
+        } else {
+            throw new UnsupportedOperationException("Contact to a developer! Given crosslinker is not supported yet, only amine-to-amine cross-linkers");
+        }
+        return possible;
     }
 
 }
