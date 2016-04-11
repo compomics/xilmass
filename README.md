@@ -22,7 +22,7 @@ Chemical cross-linking coupled with mass spectrometry (CX-MS/MS) plays an import
 ----
 ## Downloads
 
-Download [Xilmass algorithm] (http://genesis.ugent.be/maven2/com/compomics/xilmass/0.1/xilmass-0.1.zip).  
+Download [Xilmass algorithm] (http://genesis.ugent.be/maven2/com/compomics/xilmass/0.2/xilmass-0.2.zip).  
 
 Download [a simple Xilmass-visualization tool] (http://genesis.ugent.be/maven2/com/compomics/xilmass-visualize/0.1/xilmass-visualize-0.1.zip).
 
