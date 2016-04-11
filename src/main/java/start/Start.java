@@ -280,13 +280,13 @@ public class Start {
                 bw.close();
 
                 // delete a file containing all mass indexes for cross-linked peptides with possible modification
-//                indexFile.delete();
+                indexFile.delete();
                 LOGGER.info("An index file (including peptides and masses) bas been created!");
                 // delete in silico DBs
                 File f = new File(inSilicoPeptideDBName),
                         cF = new File(insilicoContaminantDBName);
-//                f.delete();
-//                cF.delete();
+                f.delete();
+                cF.delete();
             }
 
             // STEP 5: PREPARE LUCENCE INDEXING!  
