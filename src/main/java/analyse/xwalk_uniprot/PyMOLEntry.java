@@ -158,4 +158,11 @@ public class PyMOLEntry {
     public void setCommand(String command) {
         this.command = command;
     }
+
+    @Override
+    public String toString() {
+        return "PyMOLEntry{" + "pdb=" + pdb + ", atomA=" + atomA + ", atomB=" + atomB + ", idDis=" + idDis + ", type=" + type + ", uniprotAccA=" + uniprotAccA + ", uniprotIndexA=" + uniprotIndexA + ", uniprotAccB=" + uniprotAccB + ", uniprotIndexB=" + uniprotIndexB + ", sas=" + sas + ", betaDist=" + betaDist + ", alphaDist=" + alphaDist + ", command=" + command + '}';
+    }
+    
+    
 }

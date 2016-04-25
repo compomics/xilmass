@@ -15,8 +15,8 @@ public abstract class Outcome {
 
     protected String[] target_proteins;
     
-    protected String accProteinA, // accession number of proteinA
-            accProteinB, // accession number of proteinB
+    protected String accProteinA="", // accession number of proteinA
+            accProteinB ="", // accession number of proteinB
             
             peptideA,
             peptideB,
@@ -31,7 +31,7 @@ public abstract class Outcome {
             spectrumTitle  ;
     
     protected int crossLinkedSitePro1,
-            crossLinkedSitePro2;
+            crossLinkedSitePro2 = -1;
     
     
     public String getSpectrumTitle() {
@@ -137,4 +137,11 @@ public abstract class Outcome {
     public void setCrossLinkedSitePro2(int crossLinkedSitePro2) {
         this.crossLinkedSitePro2 = crossLinkedSitePro2;
     }
+
+    @Override
+    public String toString() {
+        return "target_proteins=" + target_proteins + ", accProteinA=" + accProteinA + ", accProteinB=" + accProteinB + ", peptideA=" + peptideA + ", peptideB=" + peptideB + ", label=" + label + ", target_decoy=" + target_decoy + ", trueCrossLinking=" + trueCrossLinking + ", scanNumber=" + scanNumber + ", spectrumFileName=" + spectrumFileName + ", spectrumTitle=" + spectrumTitle + ", crossLinkedSitePro1=" + crossLinkedSitePro1 + ", crossLinkedSitePro2=" + crossLinkedSitePro2 + '}';
+    }
+    
+    
 }

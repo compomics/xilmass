@@ -86,8 +86,8 @@ public class AnalyzePLinkValidatedResult extends AnalyzeOutcomes {
                 score = Double.parseDouble(split[5]);
                 isSpecFileInfoChecked = true;
                 // TODO: This part may vary from one to another pLink runs
-                spectrumFile = spectrumTitle.substring(spectrumTitle.indexOf("File:") + 5);
-                spectrumFile = spectrumFile.substring(1, spectrumFile.indexOf(".raw")) + ".mgf"; // start from 1 to remove "
+//                spectrumFile = spectrumTitle.substring(spectrumTitle.indexOf("File:") + 5);
+//                spectrumFile = spectrumFile.substring(1, spectrumFile.indexOf(".raw")) + ".mgf"; // start from 1 to remove "
                 scanNum = spectrumTitle.substring(spectrumTitle.indexOf("scan=") + 5);
                 scanNum = scanNum.replace("\"", "");
             }

@@ -5,6 +5,7 @@
  */
 package multithread.score;
 
+import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import scoringFunction.ScoreName;
 import theoretical.CPeptidePeak;
 import theoretical.CPeptides;
 import theoretical.CrossLinking;
+import theoretical.MonoLinkedPeptides;
 
 /**
  * This method keeps results spectrum-cross linked peptide score calculation via
@@ -34,12 +36,14 @@ public class Result {
     private HashSet<CPeptidePeak> matchedCTheoPeaks; // list of theoretical peaks matched on a theoretical spectrum
     private double ionFrac, // ionFrac for scoring...
             lnNumSpec, // natural logarithm of number of matched peptides on DB for a selected MSnSpectrum
+            lnNumXSpec, // natural logarithm of number of matched peptides with different cross-linking sites on a DB for a selected MSnSpectrum
             deltaScore, // difference in score between the best ranked score and next best match for a selected MSnSpectrum
             ionFracA, // fraction of found theoretical ion over all theoretical ions for PeptideAlpha
             ionFracB, // fraction of found theoretical ion over all theoretical ions for PeptideBeta
             observedMass, // singly charged precursor ion of a selected MSnSpectrum
             deltaMass, // difference in mass between the calculated and observed spectra in ppm
-            absDeltaMass; // absolute difference in mass between the calculated and observed spectra in ppm
+            absDeltaMass, // absolute difference in mass between the calculated and observed spectra in ppm
+            calculatedMass; // theoratical cross-linked peptide mass
     private int matchedTheoA, // matched theoretical peaks from peptideA
             matchedTheoB; // matched theoretical peaks from peptideB
     private boolean doesContainCPeptidePattern,
@@ -62,19 +66,21 @@ public class Result {
      * @param deltaMass
      * @param absDeltaMass
      * @param lnNumSpec
+     * @param lnNumXSpec
      * @param matchedTheoA matched theoretical peaks from peptideA
      * @param matchedTheoB matched theoretical peaks from peptideB
      * @param doesContainCPeptidePattern true: there is a CPeptidePattern
      * @param doesContainIonFrac - true: there is ion fraction
      */
     public Result(MSnSpectrum msms, CrossLinking cp, ScoreName scoreName, double score, double deltaScore, HashSet<Peak> matchedPeaks, HashSet<CPeptidePeak> matchedCTheoPeaks,
-            double weight, double ionFracA, double ionFacB, double observedMass, double deltaMass, double absDeltaMass, double lnNumSpec, int matchedTheoA, int matchedTheoB,
+            double weight, double ionFracA, double ionFacB, double observedMass, double deltaMass, double absDeltaMass, double lnNumSpec, double lnNumXSpec, int matchedTheoA, int matchedTheoB,
             boolean doesContainCPeptidePattern, boolean doesContainIonFrac) {
         this.msms = msms;
         this.cp = cp;
         this.score = score;
         this.deltaScore = deltaScore;
         this.lnNumSpec = lnNumSpec;
+        this.lnNumXSpec = lnNumXSpec;
         this.scoreName = scoreName;
         this.matchedPeaks = matchedPeaks;
         this.matchedCTheoPeaks = matchedCTheoPeaks;
@@ -88,6 +94,7 @@ public class Result {
         this.matchedTheoB = matchedTheoB;
         this.doesContainCPeptidePattern = doesContainCPeptidePattern;
         this.doesContainIonFract = doesContainIonFrac;
+        calculatedMass = cp.getTheoretical_xlinked_mass() + ElementaryIon.proton.getTheoreticMass();
         if (!msms.getScanNumber().isEmpty()) {
             scanNum = msms.getScanNumber();
         } else if (msms.getSpectrumTitle().contains("scan")) {
@@ -185,6 +192,14 @@ public class Result {
         this.lnNumSpec = lnNumSpec;
     }
 
+    public double getLnNumXSpec() {
+        return lnNumXSpec;
+    }
+
+    public void setLnNumXSpec(double lnNumXSpec) {
+        this.lnNumXSpec = lnNumXSpec;
+    }
+
     public double getDeltaScore() {
         return deltaScore;
     }
@@ -246,18 +261,19 @@ public class Result {
         double rt = msms.getPrecursor().getRt();
         // Sort them to write down on a result file
         ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
-        Collections.sort(matchedPLists, Peak.ASC_mz_order);
+        Collections.sort(matchedPLists, Peak.AscendingMzComparator);
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
         String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"
-                + observedMass + "\t" + charge + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
+                + observedMass + "\t" + charge + "\t" + calculatedMass + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
                 + score + "\t"
-                + lnNumSpec + "\t"
-                + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"                
+                + deltaScore + "\t"
+                + lnNumSpec + "\t" + lnNumXSpec + "\t"
+                + matchedPLists.size() + "\t" + matchedCTheoPLists.size() + "\t"
                 + printPeaks(matchedPLists) + "\t"
                 + printCPeaks(matchedCTheoPLists);
-        if (cp instanceof CPeptides) {
+        if (cp instanceof CPeptides || cp instanceof MonoLinkedPeptides) {
             boolean isHeavyLabel = cp.getLinker().isIsLabeled();
             if (isHeavyLabel) {
                 result += "\t" + "Heavy_Labeled_Linker";
@@ -279,7 +295,7 @@ public class Result {
                         linkerPositionPeptideA, linkerPositionPeptideB,
                         peptideALen, peptideBLen);
                 name = p.getName();
-            } 
+            }
             result += "\t" + name;
         }
         if (doesContainIonFract) {

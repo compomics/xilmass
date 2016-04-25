@@ -193,7 +193,7 @@ public final class LinkedPeptideFragmentIon {
         // Left branching...
         // get mass of node...then add it to a list...
         char node = linkedPeptide.getSequence().charAt(linker_position_on_linkedPeptide);
-        double startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        double startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
         String nodeName = rootName + "_" + linker_position_on_linkedPeptide;
         CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
         nTerminiCPepIons_Branching.add(cPepIonNode);
@@ -201,7 +201,7 @@ public final class LinkedPeptideFragmentIon {
         for (int i = startInd + 1; i < pepLen - 1; i++) {
             char start = linkedPeptide.getSequence().charAt(i);
             // here, select all aminoacids to the right side...             
-            startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
+            startMass += AminoAcid.getAminoAcid(start).getMonoisotopicMass();
             if (i == 0) {
                 startMass += nTerminiMassAddition;
             }
@@ -210,11 +210,11 @@ public final class LinkedPeptideFragmentIon {
             CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
             nTerminiCPepIons_Branching.add(cPepIon);
         }
-        startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
         // here prepare residues derived from the left of the linked one!
         for (int i = startInd - 1; i >= 0; i--) {
             char tmp_char_start_i = linkedPeptide.getSequence().charAt(i);
-            double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
+            double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).getMonoisotopicMass();
             startMass += leftRes;
             if (i == 0) {
                 startMass += nTerminiMassAddition;
@@ -257,7 +257,7 @@ public final class LinkedPeptideFragmentIon {
         // Left branching...
         // get mass of node...then add it to a list...
         char node = linkedPeptide.getSequence().charAt(linker_position_on_linkedPeptide);
-        double startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        double startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
         int index_for_naming = linker_position_on_linkedPeptide + 1;
         String nodeName = rootName + "_" + index_for_naming;
         CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
@@ -266,7 +266,7 @@ public final class LinkedPeptideFragmentIon {
         for (int i = startInd + 1; i < pepLen; i++) {
             char start = linkedPeptide.getSequence().charAt(i);
             // here, select all aminoacids to the right side...             
-            startMass += AminoAcid.getAminoAcid(start).monoisotopicMass;
+            startMass += AminoAcid.getAminoAcid(start).getMonoisotopicMass();
             if (i == pepLen - 1) {
                 startMass += cTerminiMassAddition;
             }
@@ -275,11 +275,11 @@ public final class LinkedPeptideFragmentIon {
             CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
             cTerminiCPepIons_Branching.add(cPepIon);
         }
-        startMass = AminoAcid.getAminoAcid(node).monoisotopicMass;
+        startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
         // here prepare residues derived from the left of the linked one!
         for (int i = startInd - 1; i > 0; i--) {
             char tmp_char_start_i = linkedPeptide.getSequence().charAt(i);
-            double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).monoisotopicMass;
+            double leftRes = AminoAcid.getAminoAcid(tmp_char_start_i).getMonoisotopicMass();
             startMass += leftRes;
             int naming_index = pepLen - i;
             String name = rootName + "_" + naming_index;

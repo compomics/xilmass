@@ -17,8 +17,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * This abstract class enables preparing the same outcome obtained from the different outcomes by different algorithms.
- * 
+ * This abstract class enables preparing the same outcome obtained from the
+ * different outcomes by different algorithms.
+ *
  * @author Sule
  */
 public abstract class AnalyzeOutcomes {
@@ -30,6 +31,7 @@ public abstract class AnalyzeOutcomes {
     protected boolean areReversedDecoys = true, // true:target/decoy (reversed or shuffled) approach and false: Pfu is decoy ## TODO: for the future...
             isPIT = false, //true: all_decoy/all_target false: (half_decoy-full_decoy)/all_target
             areContaminantMSMSReady = false; // in order to fill out a list of validated contaminant peptide derived PSMs
+    protected String scoringFunctionName;
 
     /**
      * This method analyze a given PSM list for a software
@@ -55,7 +57,46 @@ public abstract class AnalyzeOutcomes {
         if (trueLinkings.isEmpty()) {
             prepareTrueLinkings();
         }
-        String res = "Not-predicted" + "\t" + "-" + "\t" + "-";
+        String res = "Not-predicted" + "\t" + "-" + "\t" + "-" + "\t" + "-";
+        for (TrueLinking tl : trueLinkings) {
+            if (tl.getProteinA().equals(uniprotProAacces)
+                    && tl.getProteinB().equals(uniprotProBacces)
+                    && tl.getIndexA() == uniprotLinkingSiteA
+                    && tl.getIndexB() == uniprotLinkingSiteB) {
+                res = tl.getClassification() + "\t" + tl.getSas_distance() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
+            }
+            if (tl.getProteinA().equals(uniprotProBacces)
+                    && tl.getProteinB().equals(uniprotProAacces)
+                    && tl.getIndexA() == uniprotLinkingSiteB
+                    && tl.getIndexB() == uniprotLinkingSiteA) {
+                res = tl.getClassification() + "\t" + tl.getSas_distance() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
+            }
+        }
+        return res;
+    }
+
+    /**
+     * This method checks given proteinA and proteinB with their indices to
+     * decide if they are possible cross linking sites
+     *
+     * @param uniprotProAacces Uniprot proteinA accession number
+     * @param uniprotProBacces Uniprot proteinB accession number
+     * @param uniprotLinkingSiteA linking location on proteinA (based on uniprot
+     * sequence)
+     * @param uniprotLinkingSiteB linking location on proteinB (based on uniprot
+     * sequence)
+     * @return
+     * @throws IOException
+     */
+    protected String assetTrueLinking(String uniprotProAacces, String uniprotProBacces, String peptideA, String peptideB,
+            int uniprotLinkingSiteA, int uniprotLinkingSiteB) throws IOException {
+        if (trueLinkings.isEmpty()) {
+            prepareTrueLinkings();
+        }
+        String res = "Not-predicted" + "\t" + "-" + "\t" + "-" + "\t" + "-";
+        if (!peptideA.contains("K") || !peptideB.contains("K")) {
+            res = "NoPossLinkingSite" + "\t" + "-" + "\t" + "-" + "\t" + "-";
+        }
         for (TrueLinking tl : trueLinkings) {
             if (tl.getProteinA().equals(uniprotProAacces)
                     && tl.getProteinB().equals(uniprotProBacces)
@@ -79,10 +120,12 @@ public abstract class AnalyzeOutcomes {
      *
      * @param res a list of all outputs
      * @param fdr FDR cutoff
+     * @param isCrossLinkedXPSMs true: validated PSMs are cross-linked;
+     * otherwise only mono-linked PSMs
      * @return
      * @throws IOException
      */
-    protected ArrayList<Outcome> getValidatedPSMs(ArrayList<Outcome> res, double fdr) throws IOException {
+    protected ArrayList<Outcome> getValidatedPSMs(ArrayList<Outcome> res, double fdr, boolean isCrossLinkedXPSMs) throws IOException {
         ArrayList<Outcome> tmpValidatedPSMlist = new ArrayList<Outcome>();
         double tmp_fdr = 0.00;
         int targets = 0,
@@ -91,40 +134,51 @@ public abstract class AnalyzeOutcomes {
         boolean isBiggerFDR = false;
         for (int i = 0; i < res.size(); i++) {
             Outcome o = res.get(i);
-            boolean isTarget = false,
-                    isHalfDecoy = false,
-                    isDecoy = false;
-            if (o.getTarget_decoy().equals("TT")) {
-                isTarget = true;
-            } else if (o.getTarget_decoy().equals("TD")) {
-                isHalfDecoy = true;
-            } else if (o.getTarget_decoy().equals("DD")) {
-                isDecoy = true;
-            }
-            if (isTarget) {
-                targets++;
-            } else if (isHalfDecoy) {
-                half_decoys++;
-            } else if (isDecoy) {
-                full_decoys++;
-            }
-            // means any decoy divided by all target..
-            if (isPIT && targets > 0) {
-                tmp_fdr = (double) (full_decoys + half_decoys) / (double) targets;
-                // means pLink based calculation..    
-            } else if (!isPIT && (targets > 0)) {
-                if (half_decoys - full_decoys > 0) {
-                    tmp_fdr = (double) (half_decoys - full_decoys) / (double) targets;
-                } else {
-                    tmp_fdr = (double) full_decoys / (double) targets;
-                }
-            }
-            if (fdr >= tmp_fdr && !isBiggerFDR) {
+            if ((isCrossLinkedXPSMs && !o.getAccProteinB().equals("-"))
+                    || (!isCrossLinkedXPSMs && o.getAccProteinB().equals("-"))) {
+
+                boolean isTarget = false,
+                        isHalfDecoy = false,
+                        isDecoy = false;
                 if (o.getTarget_decoy().equals("TT")) {
-                    tmpValidatedPSMlist.add(o);
+                    isTarget = true;
+                } else if (o.getTarget_decoy().equals("TD")) {
+                    isHalfDecoy = true;
+                } else if (o.getTarget_decoy().equals("DD")) {
+                    isDecoy = true;
+                } else if (o.getTarget_decoy().equals("T")) {
+                    isTarget = true;
+                } else if (o.getTarget_decoy().equals("D")) {
+                    isDecoy = true;
                 }
-            } else if (isBiggerFDR && fdr <= tmp_fdr) {
-                isBiggerFDR = true;
+
+                if (isTarget) {
+                    targets++;
+                } else if (isHalfDecoy) {
+                    half_decoys++;
+                } else if (isDecoy) {
+                    full_decoys++;
+                }
+                // means any decoy divided by all target..
+                if (isPIT && targets > 0) {
+                    tmp_fdr = (double) (full_decoys + half_decoys) / (double) targets;
+                    // means pLink based calculation..    
+                } else if (!isPIT && (targets > 0)) {
+                    if (half_decoys - full_decoys > 0) {
+                        tmp_fdr = (double) (half_decoys - full_decoys) / (double) targets;
+                    } else {
+                        tmp_fdr = (double) full_decoys / (double) targets;
+                    }
+                }
+                if (fdr >= tmp_fdr && !isBiggerFDR) {
+                    if (o.getTarget_decoy().equals("TT")) {
+                        tmpValidatedPSMlist.add(o);
+                    } else {
+//                        System.out.println(o.toString());
+                    }
+                } else if (isBiggerFDR && fdr <= tmp_fdr) {
+                    isBiggerFDR = true;
+                }
             }
         }
         return tmpValidatedPSMlist;
@@ -166,8 +220,8 @@ public abstract class AnalyzeOutcomes {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    protected HashMap<String, HashSet<String>> getContaminant_MSMSMap() throws FileNotFoundException, IOException {
-        HashMap<String, HashSet<String>> contaminants = new HashMap<String, HashSet<String>>();
+    protected HashMap<String, HashSet<Integer>> getContaminant_specFile_and_scans() throws FileNotFoundException, IOException {
+        HashMap<String, HashSet<Integer>> contaminants = new HashMap<String, HashSet<Integer>>();
         if (!areContaminantMSMSReady) {
             BufferedReader br = new BufferedReader(new FileReader(psms_contaminant));
             String line = "";
@@ -175,13 +229,14 @@ public abstract class AnalyzeOutcomes {
                 if (!line.startsWith("Protein")) {
                     String[] split = line.split("\t");
                     String spectrumFile = split[7], //Probe2_v_x1_top15HCD-precolumn-1.mgf
-                            specTitle = split[8], //File2244 Spectrum3004 scans: 4650
-                            scan = specTitle.substring(specTitle.indexOf(":") + 1).replace(" ", "");
+                            specTitle = split[8], //QEplus009907.7333.7333.2 File:"QEplus009907.raw", NativeID:"controllerType=0 controllerNumber=1 scan=7333"
+                            scan = specTitle.substring(specTitle.indexOf("scan=") + 5).replace("\"", "");
+//                    System.out.println("title="+"\t"+specTitle+"\t"+scan);
                     if (contaminants.containsKey(spectrumFile)) {
-                        contaminants.get(spectrumFile).add(scan);
+                        contaminants.get(spectrumFile).add(Integer.parseInt(scan));
                     } else {
-                        HashSet<String> scns = new HashSet<String>();
-                        scns.add(scan);
+                        HashSet<Integer> scns = new HashSet<Integer>();
+                        scns.add(Integer.parseInt(scan));
                         contaminants.put(spectrumFile, scns);
                     }
                 }
@@ -192,61 +247,49 @@ public abstract class AnalyzeOutcomes {
     }
 
     /**
-     * This method checks if a given pair of protein is either target or decoy
-     * or half-decoy
-     *
-     * @param proteinAacess - uniprot accession number from ProteinA
-     * @param proteinBasses - uniprot accession number from ProteinB
-     * @param target_names - list of uniprot accession numbers for proteins
-     * @return
-     */
-//    protected String getTargetType(String proteinAacess, String proteinBasses, String[] target_names) {
-//        String first_target_name = target_names[0],
-//                second_target_name = target_names[1];
-//        String type = "";
-//        if (areReversedDecoys) {
-//            type = "half-decoy";
-//            if ((!proteinAacess.contains("decoy")) && (!proteinBasses.contains("decoy"))) {
-//                type = "target";
-//            } else if ((proteinAacess.contains("decoy")) && (proteinBasses.contains("decoy"))) {
-//                type = "decoy";
-//            }
-//        } else {
-//            type = "half-decoy";
-//            if ((proteinAacess.equals(first_target_name) || proteinAacess.equals(second_target_name))
-//                    && (proteinBasses.equals(first_target_name) || proteinBasses.equals(second_target_name))) {
-//                type = "target";
-//            }
-//            if ((!proteinAacess.equals(first_target_name) && !proteinAacess.equals(second_target_name))
-//                    && (!proteinBasses.equals(first_target_name) && !proteinBasses.equals(second_target_name))) {
-//                type = "decoy";
-//            }
-//        }
-//        return type;
-//    }
-    /**
-     * It decided given two proteins are either target or full_decoy or
+     * It decides based on the given two proteins either target or full_decoy or
      * half_decoy
      *
      * @param proteinA the accession number of proteinA
      * @param proteinB the accession number of proteinB
      * @return
      */
-    protected String getTargetDecoy(String proteinA, String proteinB) {
-        boolean isProteinAdecoy = false,
-                isProteinBdecoy = false;
-        String targetName = "TD";
+    protected static String getTargetDecoy(String proteinA, String proteinB) {
+        boolean isProteinAdecoy = false;
+        int proteinBtype = 1; //-1: nothing, 0:decoy, 1:target
+        String targetName = "";
         // First decide on a name
         if (proteinA.contains("REVERSED") || proteinA.contains("SHUFFLED") || proteinA.contains("DECOY")) {
             isProteinAdecoy = true;
         }
         if (proteinB.contains("REVERSED") || proteinB.contains("SHUFFLED") || proteinB.contains("DECOY")) {
-            isProteinBdecoy = true;
+            proteinBtype = 0;
+        } else if (proteinB.equals("-")|| proteinB.isEmpty()) {
+            proteinBtype = -1;
         }
-        if (isProteinAdecoy && isProteinBdecoy) {
-            targetName = "DD";
-        } else if (!isProteinAdecoy && !isProteinBdecoy) {
-            targetName = "TT";
+
+        switch (proteinBtype) {
+            case -1:// so it is monolinked..
+                if (isProteinAdecoy) {
+                    targetName = "D";
+                } else {
+                    targetName = "T";
+                }
+                break;
+            case 0: // crosslinked but the proteinB is a decoy...
+                if (isProteinAdecoy) {
+                    targetName = "DD";
+                } else {
+                    targetName = "TD";
+                }
+                break;
+            case 1:// crosslinked but the proteinB is a TARGET...
+                if (isProteinAdecoy) {
+                    targetName = "TD";
+                } else {
+                    targetName = "TT";
+                }
+                break;
         }
         return targetName;
     }
@@ -264,8 +307,9 @@ public abstract class AnalyzeOutcomes {
         while ((line = br.readLine()) != null) {
             if (!line.startsWith("PDB")) {
 //                PDBStructure	AtomInfoA	AtomInfoB	IdistanceSequence	Type	UniprotAccProA	UniprotIndexProA	UniprotAccProB	UniprotIndexProB	SASDistance(A)	EucDist(Beta_Beta)	EucDist(Alpha_Alpha)
-                String[] split = line.split(",");
-                String betaMeasuredDistanceStr = split[10],
+                String[] split = line.split("\t");
+                String sasDistStr = split[9],
+                        betaMeasuredDistanceStr = split[10],
                         alphaMeasuredDistanceStr = split[11],
                         classification = split[4],
                         uniprotAcc1 = split[5],
@@ -274,9 +318,13 @@ public abstract class AnalyzeOutcomes {
                         uniprotAcc2Index = split[8];
                 int indexA = Integer.parseInt(uniprotAcc1Index),
                         indexB = Integer.parseInt(uniprotAcc2Index);
-                double betaMeasuredDistance = Double.parseDouble(betaMeasuredDistanceStr),
+                double sasDist = -1,
+                        betaMeasuredDistance = Double.parseDouble(betaMeasuredDistanceStr),
                         alphaMeasuredDistance = Double.parseDouble(alphaMeasuredDistanceStr);
-                TrueLinking tl = new TrueLinking(uniprotAcc1, uniprotAcc2, classification, indexA, indexB, alphaMeasuredDistance, betaMeasuredDistance);
+                if (!sasDistStr.equals("-")) {
+                    sasDist = Double.parseDouble(sasDistStr);
+                }
+                TrueLinking tl = new TrueLinking(uniprotAcc1, uniprotAcc2, classification, indexA, indexB, alphaMeasuredDistance, betaMeasuredDistance, sasDist);
                 trueLinkings.add(tl);
             }
         }

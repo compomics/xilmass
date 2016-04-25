@@ -62,8 +62,8 @@ public class MatchAndScore {
             doesFindAllMatchedPeaks = false, // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
             isCPeptide = false,
             isPPM = false;
-    /* Constructor */
 
+    /* Constructor */
     public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinking cPeptides,
             double fragTol, int intensityOption, int minFPeakNum, int maxFPeakNum,
             double massWindow, boolean doesFindAllMatchedPeaks, boolean isPPM) {
@@ -188,6 +188,7 @@ public class MatchAndScore {
      */
     public void setTheoreticalCXMS2ions(HashSet<CPeptideIon> theoreticalCXMS2ions) {
         this.theoXLMS2ions = theoreticalCXMS2ions;
+        isTheoXLPeaksReady = false;
         theoXLPeaks = getTheoreticalCXPeaks();
     }
 
@@ -269,14 +270,14 @@ public class MatchAndScore {
      *
      * @return
      */
-    public double getCXPSMScore() {
+    public double getXPSMScore() {
         if (!isFoundAndMatched) {
             int totalTheoN = getTheoreticalCXPeaks().size(); // all theoretical peaks...
             ArrayList<Double> scores = new ArrayList<Double>();
-            for (int numHighestPeak = minFPeaks; numHighestPeak < maxFPeaks; numHighestPeak++) {
+            for (int numHighestPeak = minFPeaks; numHighestPeak <= maxFPeaks; numHighestPeak++) {
                 Filter filter = new Filter(expMS2, numHighestPeak, massWindow);
                 ArrayList<Peak> filteredPeaks = filter.getFilteredCPeaks();
-                Collections.sort(filteredPeaks, Peak.ASC_mz_order);
+                Collections.sort(filteredPeaks, Peak.AscendingMzComparator);
                 double probability = (double) numHighestPeak / (double) (filter.getWindowSize());
                 int n = 0;
                 HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = new HashMap<CPeptidePeak, MatchedPeak>();
@@ -347,6 +348,9 @@ public class MatchAndScore {
                                 tmps.add(new MatchedPeak(p, tmpCPeak, tmp_diff));
                                 matched_theoretical_and_matched_peaks.put(tmpCPeak, tmps);
                             }
+//                           leave the loop if a theoretical peak in selection has m/z is out of the fragment tolerance for the given experimental peak
+                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
+                            i = theoXLPeaksAL.size();
                         }
                     }
                 }
@@ -362,40 +366,49 @@ public class MatchAndScore {
                     explainedIntensities = getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks, fragTol);
                 }
                 n = matchedPeaks.size();
+                double tmp_score = 0;
                 // MSAmanda_derived with expertimentatl spectrum
                 if (scoreName.equals(ScoreName.MSAmandaD)) {
                     MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
-                    double tmp_score = object.getScore();
+                    tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // Andromeda_derived with theoretical spectra size
                 } else if (scoreName.equals(ScoreName.AndromedaD)) {
                     Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n);
-                    double tmp_score = object.getScore();
+                    tmp_score = object.getScore();
                     scores.add(tmp_score);
                     // MSAmanda_derived with theoretical spectra size
                 } else if (scoreName.equals(ScoreName.TheoMSAmandaD)) {
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
-                    double tmp_score = object.getScore();
+                    tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.AndromedaDWeighted)) {
                     calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
                     Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
-                    double tmp_score = object.getScore();
+                    tmp_score = object.getScore();
                     scores.add(tmp_score);
                 } else if (scoreName.equals(ScoreName.TheoMSAmandaDWeighted)) {
                     calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
                     MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
-                    double tmp_score = object.getScore();
+                    tmp_score = object.getScore();
                     scores.add(tmp_score);
                 }
             }
             isFoundAndMatched = true;
             cXPSMScore = Collections.max(scores);
+
             // now calculate observed mass and mass error
             observedMass = calculateObservedMass(expMS2);
-            double protonMass = ElementaryIon.proton.getTheoreticMass();
+
+            // select observed and calculated PrecMZ
+            ArrayList<Charge> possibleCharges = expMS2.getPrecursor().getPossibleCharges();
+            int charge_value = possibleCharges.get(possibleCharges.size() - 1).value;
+            double observedPrecMass = (expMS2.getPrecursor().getMass(charge_value)),
+                    calculatedPrecMass = (cPeptides.getTheoretical_xlinked_mass());
             // now calculates MS1 error with precursor mass and theoretical mass of crosslinked peptide-make sure that both masses are singly charged to calculate MS1Err
-            ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), (observedMass - protonMass));
+            // Based on the calcaulation of two values: ms1Err = calculateMS1Err(isPPM, cPeptides.getTheoretical_xlinked_mass(), (observedMass - protonMass));
+            // following one only computes theoretical cpeptide mass, but do not do anything with experimental spectrum precursor. 
+            ms1Err = CalculateMS1Err.getMS1Err(isPPM, calculatedPrecMass, observedPrecMass);
             absMS1Err = Math.abs(ms1Err);
         }
         return cXPSMScore;
@@ -485,7 +498,7 @@ public class MatchAndScore {
      */
     public HashSet<Peak> getMatchedPeaks() {
         if (!isFoundAndMatched) {
-            getCXPSMScore();
+            getXPSMScore();
         }
         return matchedPeaks;
     }
@@ -498,7 +511,7 @@ public class MatchAndScore {
      */
     public HashSet<CPeptidePeak> getMatchedTheoreticalCPeaks() {
         if (!isFoundAndMatched) {
-            getCXPSMScore();
+            getXPSMScore();
         }
         return matchedTheoXLPeaks;
     }
@@ -747,20 +760,6 @@ public class MatchAndScore {
                 protonMass = ElementaryIon.proton.getTheoreticMass(),
                 tmp_observed_mass = precMass + protonMass;
         return tmp_observed_mass;
-    }
-
-    /**
-     * This method calculates difference between an observed and calculated
-     * mass.
-     *
-     * @param isPPM true: ms1Err is in PPM
-     * @param observedMass
-     * @param calculatedMass
-     * @return
-     */
-    private double calculateMS1Err(boolean isPPM, double calculatedMass, double observedMass) {
-        double mS1Err = CalculateMS1Err.getMS1Err(isPPM, calculatedMass, observedMass);
-        return mS1Err;
     }
 
 }

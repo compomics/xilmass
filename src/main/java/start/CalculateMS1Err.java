@@ -19,21 +19,21 @@ public class CalculateMS1Err {
      * 
      * 
      * @param isPPM true: PPM based, false: Dalton based
-     * @param theoreticalPrecursorMass - Theoretical precursor mass
-     * @param measuredPrecusorMass - Observed mass
+     * @param theoreticalPrecMZ - Theoretical precursor mass
+     * @param observedPrecMZ - Observed mass
      * @return ms1err
      */
-    public static double getMS1Err(boolean isPPM, double theoreticalPrecursorMass, double measuredPrecusorMass) {
+    public static double getMS1Err(boolean isPPM, double theoreticalPrecMZ, double observedPrecMZ) {
 //        System.out.println("isPPM="+isPPM+"\t and theorMass="+theoreticalPrecursorMass+"\t and measuredMass="+measuredPrecusorMass);
         double error = 0;        
         if (isPPM) {
             // This PPM calculation was from bioinformatics-for-proteomics
-            double diff = measuredPrecusorMass - theoreticalPrecursorMass;
-            double ppm_error = (diff) / theoreticalPrecursorMass;
+            double diff = observedPrecMZ - theoreticalPrecMZ;
+            double ppm_error = (diff) / theoreticalPrecMZ;
             ppm_error = ppm_error * 1000000;
             error = ppm_error;
         } else {
-            double mz_error = theoreticalPrecursorMass - measuredPrecusorMass;
+            double mz_error = theoreticalPrecMZ - observedPrecMZ;
             error = mz_error;
         }
         return error;

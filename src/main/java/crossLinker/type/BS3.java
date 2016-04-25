@@ -11,14 +11,15 @@ import crossLinker.CrossLinkerName;
 import crossLinker.CrossLinkerType;
 
 /**
- *
+ * bis(sulfosuccinimidyl)suberate
+ * 
  * @author Sule
  */
 public class BS3 extends CrossLinker {
 
     public BS3() {
         this.name = CrossLinkerName.BS3d0;
-        this.type = CrossLinkerType.homobifunctional; // K-K     
+        this.type = CrossLinkerType.AMINE_TO_AMINE; // primary amines (K or n-termini)     
         double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * Atom.H.getMonoisotopicMass());
         super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
         super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass());
@@ -32,7 +33,7 @@ public class BS3 extends CrossLinker {
      */
     public BS3(boolean isLabeled) {
         super.isLabeled = isLabeled;
-        this.type = CrossLinkerType.homobifunctional; // K-K     
+        this.type = CrossLinkerType.AMINE_TO_AMINE; // primary amines (K or n-termini)    
         double hydrogen_mass = Atom.H.getMonoisotopicMass(),
                 deuterium_mass = Atom.H.getIsotopeMass(1);
         if (isLabeled) {

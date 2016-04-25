@@ -19,9 +19,8 @@ public abstract class CrossLinker {
     protected CrossLinkerName name; // name
     protected double massShift_Type2, // when a linker connected to both peptides - intra protein
             massShift_Type0; // when a linker only connected to one peptide - monolink/dead end
-    protected CrossLinkerType type; // either homobifunctional or heterobifunctional
-    protected boolean isLabeled;
-
+    protected CrossLinkerType type; // amine_to_amine; or carboxyl_to_amine or any other one
+    protected boolean isLabeled; // is heavy labeled or not
 
     /**
      * Return true if a cross linker is labeled
@@ -58,8 +57,8 @@ public abstract class CrossLinker {
     }
 
     /**
-     * Either homobifunctional (links K-K) or heterobifunctional (i.e. EDC with
-     * K either D or E)
+     * Cross linker type. Either amine-to-amine cross-linker or any other
+     * cross-linker type
      *
      * @return an enum type of CrossLinkerType
      */
@@ -72,7 +71,7 @@ public abstract class CrossLinker {
     }
 
     /**
-     * A name of a cross linker agent - DSS, BS3, etc.
+     * A name of a cross linker agent - DSSd0, BS3d0, etc.
      *
      * @return an enum type of a CrossLinkerName
      */
@@ -100,5 +99,5 @@ public abstract class CrossLinker {
         this.massShift_Type0 = massShift_Type0;
     }
 
-    protected abstract void calculateMassShifts(boolean isLabeled) ;
+    protected abstract void calculateMassShifts(boolean isLabeled);
 }

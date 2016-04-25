@@ -24,7 +24,8 @@ public class MonoLinkedPeptides extends CrossLinking {
 
     private Peptide peptide;
     private String protein;
-    private int linker_position;
+    private int linker_position,
+            linker_position_protein;
     private HashMap<Integer, ArrayList<Ion>> product_ions = new HashMap<Integer, ArrayList<Ion>>();
 
     public MonoLinkedPeptides(Peptide peptide, String protein,
@@ -35,6 +36,7 @@ public class MonoLinkedPeptides extends CrossLinking {
         this.peptide = peptide;
         super.linker = linker;
         this.linker_position = linkerPosition;
+        linker_position_protein = Integer.parseInt(protein.substring(protein.indexOf("(") + 1, protein.lastIndexOf("-"))) + linker_position;
         this.fragmentation_mode = fragmentation_mode;
         product_ions = fragmentFactory.getFragmentIons(peptide).get(0); // only peptide fragment ions
         super.linkingType = CrossLinkingType.MONOLINK;
@@ -185,9 +187,12 @@ public class MonoLinkedPeptides extends CrossLinking {
 
     @Override
     public String toPrint() {
+        int peptide_pos = linker_position + 1,
+                protein_pos = linker_position_protein + 1;
         return peptide.getSequenceWithLowerCasePtms() + "\t" + protein + "\t" + getModificationInfo(peptide) + "\t"
                 + "-" + "\t" + "-" + "\t" + "-" + "\t"
-                + linker_position + "\t" + "-" + "\t"
+                + peptide_pos + "\t" + "-" + "\t"
+                + protein_pos + "\t" + "-" + "\t"
                 + "MonoLinked";
     }
 

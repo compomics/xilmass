@@ -29,16 +29,15 @@ public class WriteCXDB {
      * @param cxDBName is a name of a constructed cxdb file
      * @throws IOException
      */
-    public static void writeCXDB(HashMap<String, String> header_sequence, String cxDBName) throws IOException {
-        LOGGER.info("CX database is writing!");
+    public static void writeCXDB(HashMap<String, StringBuilder> header_sequence, String cxDBName) throws IOException {
         File crossLinkedDB = new File(cxDBName + ".fastacp");
         BufferedWriter bw = new BufferedWriter(new FileWriter(crossLinkedDB));
         for (String header : header_sequence.keySet()) {
-            String sequence = header_sequence.get(header);
+            StringBuilder sequence = header_sequence.get(header);
             bw.write(">" + header + "\n" + sequence + "\n");
         }
         bw.close();
-        LOGGER.info("CX database is READY!");
+        LOGGER.info("CX database is constructed and stored in " + crossLinkedDB.getName() + "!");
     }
 
 }

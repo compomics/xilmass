@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package util;
 
+import java.io.File;
 import org.apache.log4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -18,27 +18,29 @@ import org.springframework.core.io.Resource;
 public class ResourceUtils {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceUtils.class);
+    private static final String RESOURCES_FOLDER = "resources";
 
     /**
      * Gets a resource by its relative path. If the resource is not found on the
      * file system, the classpath is searched. If nothing is found, null is
      * returned.
      *
-     * @param relativePath the relative path of the resource
+     * @param fileName the name of the resource
      * @return the found resource
      */
-    public static Resource getResourceByRelativePath(String relativePath) {       
-        Resource resource = new FileSystemResource(relativePath);
-
+    public static Resource getResourceByRelativePath(String fileName) {
+        Resource resource = new FileSystemResource(RESOURCES_FOLDER + File.separator + fileName);
         if (!resource.exists()) {
             //try to find it on the classpath
-            resource = new ClassPathResource(relativePath);
-
+            resource = new ClassPathResource(fileName);
             if (!resource.exists()) {
-                resource = null;
+                // making sure to run on Netbeans..
+                resource = new FileSystemResource("src" + File.separator + "main" + File.separator + RESOURCES_FOLDER + File.separator + fileName);
+                if (!resource.exists()) {
+                    resource = null;
+                }
             }
         }
-
         return resource;
     }
 
@@ -51,7 +53,6 @@ public class ResourceUtils {
      */
     public static boolean isExistingFile(String relativePath) {
         boolean isExistingResource = Boolean.FALSE;
-
         Resource resource = new FileSystemResource(relativePath);
         if (resource.exists()) {
             isExistingResource = true;

@@ -69,8 +69,8 @@ public class CPeptidesTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
-                peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide(peptideA_str, modifications_test),
+                peptideB = new Peptide(peptideB_str, modifications_test);
         CrossLinker linker = new DSS();
         CPeptides o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();
@@ -109,8 +109,9 @@ public class CPeptidesTest extends TestCase {
 
         // Test a problematic case...
         // PepA=AILVNFKAR	 PepB=KMRPEVR	 at 6	0
-        peptideA = new Peptide("AILVNFKAR", parent_proteins_test, modifications_test);
-        peptideB = new Peptide("KMRPEVR", parent_proteins_test, modifications_test);
+        // add modifications..
+        peptideA = new Peptide("AILVNFKAR", modifications_test);
+        peptideB = new Peptide("KMRPEVR", modifications_test);
         o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 6, 0, FragmentationMode.CID, false);
         result = o.getTheoretical_ions();
 //        assertEquals(60, result.size());
@@ -143,8 +144,8 @@ public class CPeptidesTest extends TestCase {
         parent_proteins_test.add("Pro1(5-9");
         parent_proteins_test_2.add("Pro1(12-15)");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptideA = new Peptide("MLSDA", parent_proteins_test, modifications_test),
-                peptideB = new Peptide("AIKN", parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide("MLSDA", modifications_test),
+                peptideB = new Peptide("AIKN", modifications_test);
         CrossLinker linker = new DSS();
         CPeptides instance = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
@@ -164,8 +165,8 @@ public class CPeptidesTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1(20-25)");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptideA = new Peptide(peptideAstr, parent_proteins_test, modifications_test),
-                peptideB = new Peptide(peptideBstr, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide(peptideAstr, modifications_test),
+                peptideB = new Peptide(peptideBstr, modifications_test);
         CrossLinker linker = new DSS();
         CPeptides instance = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 3, 2, FragmentationMode.CID, false);
 
@@ -317,20 +318,21 @@ public class CPeptidesTest extends TestCase {
     public void testGetlinked_ions_modifications() throws XmlPullParserException, IOException {
         String peptideSequence = "MLCSDAIK";
         // Importing PTMs
-        File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\compomics-utilities\\src/test/resources/experiment/mods.xml");
+        File modsFile = new File("C:\\Users\\Sule\\Documents\\NetBeansProjects\\CrossLinkedPeptides\\src\\main\\resources/mods.xml");
         PTMFactory ptmFactory = PTMFactory.getInstance();
-        ptmFactory.importModifications(modsFile, false);
         // Getting one fixed PTMs
         ArrayList<String> theoreticPTMs = new ArrayList<String>();
         theoreticPTMs.add("acetylation of protein n-term");
 //        theoreticPTMs.add("propionamide c");
 //        theoreticPTMs.add("pyro-cmc");
 //        theoreticPTMs.add("oxidation of m");
-        ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true);
+        boolean containsProteinNTermini = true,
+                containsProteinCTermini = false;
+        ArrayList<ModificationMatch> result = GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true, containsProteinNTermini, containsProteinCTermini);
 //        theoreticPTMs = new ArrayList<String>();
 //        theoreticPTMs.add("propionamide c");
 //        theoreticPTMs.add("oxidation of m");
-        result.addAll(GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true));
+        result.addAll(GetPTMs.getPTM(ptmFactory, theoreticPTMs, peptideSequence, true, containsProteinNTermini, containsProteinCTermini));
         Peptide peptideA = new Peptide(peptideSequence, result);
 
         for (ModificationMatch m : peptideA.getModificationMatches()) {
@@ -400,8 +402,8 @@ public class CPeptidesTest extends TestCase {
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
         parent_proteins_test.add("Pro1");
         ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
-        Peptide peptideA = new Peptide(peptideA_str, parent_proteins_test, modifications_test),
-                peptideB = new Peptide(peptideB_str, parent_proteins_test, modifications_test);
+        Peptide peptideA = new Peptide(peptideA_str, modifications_test),
+                peptideB = new Peptide(peptideB_str, modifications_test);
         CrossLinker linker = new DSS();
         CPeptides o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();

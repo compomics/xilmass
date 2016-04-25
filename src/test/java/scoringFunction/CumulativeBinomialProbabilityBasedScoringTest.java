@@ -37,34 +37,7 @@ public class CumulativeBinomialProbabilityBasedScoringTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of calculateScore method, of class
-     * CumulativeBinomialProbabilityBasedScoring.
-     */
-    @Test
-    public void testCalculateScore() {
-        System.out.println("calculateScore");
-        CumulativeBinomialProbabilityBasedScoring instance = new CumulativeBinomialProbabilityBasedScoringImpl();
-        instance.calculateScore();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getScore method, of class
-     * CumulativeBinomialProbabilityBasedScoring.
-     */
-    @Test
-    public void testGetScore() {
-        System.out.println("getScore");
-        CumulativeBinomialProbabilityBasedScoring instance = new CumulativeBinomialProbabilityBasedScoringImpl();
-        double expResult = 0.0;
-        double result = instance.getScore();
-        assertEquals(expResult, result, 0.0);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
+   
     /**
      * Test of calculateCumulativeBinominalProbability method, of class
      * CumulativeBinomialProbabilityBasedScoring.
