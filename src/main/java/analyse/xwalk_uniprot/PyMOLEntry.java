@@ -6,9 +6,10 @@
 package analyse.xwalk_uniprot;
 
 /**
- * 
- * This class contains information from a cross-linked peptide to prepare a PyMol script
- * 
+ *
+ * This class contains information from a cross-linked peptide to prepare a
+ * PyMol script
+ *
  * @author Sule
  */
 public class PyMOLEntry {
@@ -25,10 +26,11 @@ public class PyMOLEntry {
             sas,
             betaDist,
             alphaDist,
-            command = "";
+            command = "",
+            crossLinkingSite;
 
     public PyMOLEntry(String pdb, String name, String atomA, String atomB, String idDis, String type, String uniprotAccA, String uniprotIndexA, String uniprotAccB, String uniprotIndexB,
-            String sas, String betaDist, String alphaDist, boolean isCarbonAlpha) {
+            String sas, String betaDist, String alphaDist, boolean isCarbonAlpha, boolean isPredicted,String crossLinkingSite) {
         this.pdb = pdb;
         this.atomA = atomA;
         this.atomB = atomB;
@@ -41,10 +43,17 @@ public class PyMOLEntry {
         this.sas = sas;
         this.betaDist = betaDist;
         this.alphaDist = alphaDist;
-
+        this.crossLinkingSite =crossLinkingSite;
         String structure = pdb.substring(0, pdb.indexOf(".pdb"));
-        String[] firsts = atomA.split("-"),
-                seconds = atomB.split("-");
+        String[] firsts,
+                seconds;
+        if (isPredicted) {
+            firsts = atomA.split("-");
+            seconds = atomB.split("-");
+        } else {
+            firsts = atomA.split("_");
+            seconds = atomB.split("_");
+        }
         String firstInfo = "/" + structure + "//" + firsts[2] + "/" + firsts[0] + "`" + firsts[1] + "/" + "CA",
                 secondInfo = "/" + structure + "//" + seconds[2] + "/" + seconds[0] + "`" + seconds[1] + "/" + "CA";
         if (!isCarbonAlpha) {
@@ -52,9 +61,18 @@ public class PyMOLEntry {
             secondInfo = "/" + structure + "//" + seconds[2] + "/" + seconds[0] + "`" + seconds[1] + "/" + "CB";
         }
         // write also pymol command here...
-        command = "dst=cmd.distance('" + name + "','" + firstInfo + "','" + secondInfo + "')";
+        command = "dst=cmd.distance('" + name+ "_"+crossLinkingSite + "','" + firstInfo + "','" + secondInfo + "')";
     }
 
+    public String getCrossLinkingSite() {
+        return crossLinkingSite;
+    }
+
+    public void setCrossLinkingSite(String crossLinkingSite) {
+        this.crossLinkingSite = crossLinkingSite;
+    }
+
+    
     public String getPdb() {
         return pdb;
     }
@@ -163,6 +181,49 @@ public class PyMOLEntry {
     public String toString() {
         return "PyMOLEntry{" + "pdb=" + pdb + ", atomA=" + atomA + ", atomB=" + atomB + ", idDis=" + idDis + ", type=" + type + ", uniprotAccA=" + uniprotAccA + ", uniprotIndexA=" + uniprotIndexA + ", uniprotAccB=" + uniprotAccB + ", uniprotIndexB=" + uniprotIndexB + ", sas=" + sas + ", betaDist=" + betaDist + ", alphaDist=" + alphaDist + ", command=" + command + '}';
     }
-    
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + (this.pdb != null ? this.pdb.hashCode() : 0);
+        hash = 43 * hash + (this.atomA != null ? this.atomA.hashCode() : 0);
+        hash = 43 * hash + (this.atomB != null ? this.atomB.hashCode() : 0);
+        hash = 43 * hash + (this.uniprotAccA != null ? this.uniprotAccA.hashCode() : 0);
+        hash = 43 * hash + (this.uniprotIndexA != null ? this.uniprotIndexA.hashCode() : 0);
+        hash = 43 * hash + (this.uniprotIndexB != null ? this.uniprotIndexB.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PyMOLEntry other = (PyMOLEntry) obj;
+        if ((this.pdb == null) ? (other.pdb != null) : !this.pdb.equals(other.pdb)) {
+            return false;
+        }
+        if ((this.atomA == null) ? (other.atomA != null) : !this.atomA.equals(other.atomA)) {
+            return false;
+        }
+        if ((this.atomB == null) ? (other.atomB != null) : !this.atomB.equals(other.atomB)) {
+            return false;
+        }
+        if ((this.uniprotAccA == null) ? (other.uniprotAccA != null) : !this.uniprotAccA.equals(other.uniprotAccA)) {
+            return false;
+        }
+        if ((this.uniprotIndexA == null) ? (other.uniprotIndexA != null) : !this.uniprotIndexA.equals(other.uniprotIndexA)) {
+            return false;
+        }
+        if ((this.uniprotAccB == null) ? (other.uniprotAccB != null) : !this.uniprotAccB.equals(other.uniprotAccB)) {
+            return false;
+        }
+        if ((this.uniprotIndexB == null) ? (other.uniprotIndexB != null) : !this.uniprotIndexB.equals(other.uniprotIndexB)) {
+            return false;
+        }
+        return true;
+    }
 }

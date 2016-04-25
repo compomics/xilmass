@@ -32,10 +32,11 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
     private HashMap<String, String> accs;
     private boolean isXilmass = false;
     private double qvalue = 0.0500;
-    private boolean checkLysine;
+    private boolean checkLysine,
+            isBasedOnManualValidation;
     private static final Logger LOGGER = Logger.getLogger(AnalyzePercolator.class);
 
-    public AnalyzePercolator(File output, File folder, File prediction, File psms, String[] protein_names, HashMap<String, String> accs, double qvalue, boolean checkLysine) throws IOException, FileNotFoundException, ClassNotFoundException, IOException, IllegalArgumentException, InterruptedException {
+    public AnalyzePercolator(File output, File folder, File prediction, File psms, String[] protein_names, HashMap<String, String> accs, double qvalue, boolean checkLysine, boolean isBasedOnManualValidation) throws IOException, FileNotFoundException, ClassNotFoundException, IOException, IllegalArgumentException, InterruptedException {
         super.prediction_file = prediction;
         super.psms_contaminant = psms;
         super.target_names = target_names;
@@ -44,9 +45,10 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
         this.accs = accs;
         this.qvalue = qvalue;
         this.checkLysine = checkLysine;
+        this.isBasedOnManualValidation = isBasedOnManualValidation;
     }
 
-    public AnalyzePercolator(File output, File folder, File prediction, File psms, String[] protein_names, HashMap<String, String> accs, boolean isXilmass, double qvalue, boolean checkLysine) throws IOException, FileNotFoundException, ClassNotFoundException, IOException, IllegalArgumentException, InterruptedException {
+    public AnalyzePercolator(File output, File folder, File prediction, File psms, String[] protein_names, HashMap<String, String> accs, boolean isXilmass, double qvalue, boolean checkLysine, boolean isBasedOnManualValidation) throws IOException, FileNotFoundException, ClassNotFoundException, IOException, IllegalArgumentException, InterruptedException {
         super.prediction_file = prediction;
         super.psms_contaminant = psms;
         super.target_names = target_names;
@@ -56,12 +58,13 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
         this.isXilmass = isXilmass;
         this.qvalue = qvalue;
         this.checkLysine = checkLysine;
+        this.isBasedOnManualValidation = isBasedOnManualValidation;
     }
 
     @Override
     public void run() throws FileNotFoundException, IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(output));
-        HashMap<String, HashSet<String>> contaminant_MSMSMap = super.getContaminant_MSMSMap();
+        HashMap<String, HashSet<Integer>> contaminant_MSMSMap = super.getContaminant_specFile_and_scans();
         HashMap<String, ArrayList<PercolatorResult>> id_and_percolatorResults = new HashMap<String, ArrayList<PercolatorResult>>();
         System.out.println(folder.getName());
         for (File file : folder.listFiles()) {
@@ -69,9 +72,9 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
                 BufferedReader br = new BufferedReader(new FileReader(file));
                 String line = "",
                         mgfName = "",
-                        type = "intra_protein";
+                        type = "intraProtein";
                 if (file.getName().toLowerCase().contains("inter")) {
-                    type = "inter_protein";
+                    type = "interProtein";
                 }
                 if (!isXilmass) {
                     mgfName = file.getName().substring(0, file.getName().indexOf("_percolator")) + ".mgf";
@@ -95,12 +98,12 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
                         PercolatorResult o = new PercolatorResult(mgfName, psmID, peptides, proteins, type, score, qValue, posterior_error, accs, isXilmass, checkLysine);
                         // check if a spectrum is assigned to any contaminants...
                         if (contaminant_MSMSMap.containsKey(mgfName)) {
-                            HashSet<String> contaminants = contaminant_MSMSMap.get(mgfName);
-                            for (String tmpTitle : contaminants) {
-                                Integer scan = Integer.parseInt(tmpTitle.substring(tmpTitle.indexOf("scan") + 5, tmpTitle.length() - 1));
-                                if (scan == (o.getScan())) {
+                            HashSet<Integer> contaminants = contaminant_MSMSMap.get(mgfName);
+                            for (Integer tmpScan : contaminants) {
+                                if (tmpScan == (o.getScan())) {
                                     isContaminant = true;
-                                    LOGGER.info("spectra=" + mgfName + "\t" + "contaminant scan=" + scan + "\t" + "qvalue=" + qValue);
+                                    System.out.println("Contaminant derived spectrum: scannum=" + tmpScan + "\t mgfName=" + mgfName + "\t" + "qvalue=" + qValue);
+                                    LOGGER.info("spectra=" + mgfName + "\t" + "contaminant scan=" + tmpScan + "\t" + "qvalue=" + qValue);
                                 }
                             }
                         }
@@ -123,17 +126,17 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
         // write down findings
         String title = "SpectrumFile" + "\t" + "Scan" + "\t" + "Score" + "\t" + "q-value" + "\t" + "posterior_error_prob" + "\t"
                 + "proteinA" + "\t" + "proteinB" + "\t" + "peptideA" + "\t" + "peptideB" + "\t" + "XLtype" + "\t"
-                + "linkA" + "\t" + "linkB" + "\t"
-                + "Predicted" + "\t" + "Euclidean_distance beta(A)" + "\t" + "Euclidean_distance alpha(A)";
+                + "linkA" + "\t" + "linkB" + "\t" + "pepLinkA" + "\t" + "pepLinkB" + "\t"
+                + "Predicted" + "\t" + "SASDist" + "\t" + "Euclidean_distance beta(A)" + "\t" + "Euclidean_distance alpha(A)";
         bw.write(title + "\n");
         for (PercolatorResult o : filtered) {
             String trueCrossLinking = assetTrueLinking(o.getProteinA(), o.getProteinB(), o.getLinkA(), o.getLinkB());
-            if (!o.isIsXLinkingPossible()) {
-                trueCrossLinking = "NoLinkableResidue";
-            }
+            int pepLinkA = o.getLinkA() - accs.get(o.getProteinA()).indexOf(o.getPeptideA()),
+                    pepLinkB = o.getLinkB() - accs.get(o.getProteinB()).indexOf(o.getPeptideB());
+            // now write out..
             bw.write(o.getMgfName() + "\t" + o.getScan() + "\t" + o.getScore() + "\t" + o.getQvalue() + "\t" + o.getPosterior_error() + "\t"
                     + o.getProteinA() + "\t" + o.getProteinB() + "\t" + o.getPeptideA() + "\t" + o.getPeptideB() + "\t" + o.getType() + "\t"
-                    + o.getLinkA() + "\t" + o.getLinkB() + "\t"
+                    + o.getLinkA() + "\t" + o.getLinkB() + "\t" + pepLinkA + "\t" + pepLinkB + "\t"
                     + trueCrossLinking + "\n");
         }
         bw.close();
@@ -158,50 +161,63 @@ public class AnalyzePercolator extends AnalyzeOutcomes {
         // for each spectrum identification, check all percolator outputs..
         for (String id : id_and_percolatorResults.keySet()) {
             ArrayList<PercolatorResult> res = id_and_percolatorResults.get(id);
-            ArrayList<PercolatorResult> all = new ArrayList<PercolatorResult>(),
-                    poss = new ArrayList<PercolatorResult>(),
-                    likelyposs = new ArrayList<PercolatorResult>(),
-                    notpreds = new ArrayList<PercolatorResult>(),
-                    impossible = new ArrayList<PercolatorResult>(),
-                    likelyimpossible = new ArrayList<PercolatorResult>();
-            for (PercolatorResult r : res) {
-                all.add(r);
-                String trueCrossLinking = assetTrueLinking(r.getProteinA(), r.getProteinB(), r.getPeptideA(), r.getPeptideB(), r.getLinkA(), r.getLinkB()).split("\t")[0];
-                if (trueCrossLinking.equals(LinkingProbability.POSSIBLE.toString())) {
-                    poss.add(r);
-                } else if (trueCrossLinking.equals("LIKELYPOSSIBLE")) {
-                    likelyposs.add(r);
-                } else if (trueCrossLinking.equals("Not-predicted")) {
-                    notpreds.add(r);
-                } else if (trueCrossLinking.equals("IMPOSSIBLE")) {
-                    impossible.add(r);
-                } else if (trueCrossLinking.equals("Not-predicted")) {
-                    likelyimpossible.add(r);
+            ArrayList<PercolatorResult> all = new ArrayList<PercolatorResult>();
+            if (isBasedOnManualValidation) {
+                ArrayList<PercolatorResult> poss = new ArrayList<PercolatorResult>(),
+                        likelyposs = new ArrayList<PercolatorResult>(),
+                        notpreds = new ArrayList<PercolatorResult>(),
+                        impossible = new ArrayList<PercolatorResult>(),
+                        likelyimpossible = new ArrayList<PercolatorResult>();
+                for (PercolatorResult r : res) {
+                    all.add(r);
+                    String trueCrossLinking = assetTrueLinking(r.getProteinA(), r.getProteinB(), r.getPeptideA(), r.getPeptideB(), r.getLinkA(), r.getLinkB()).split("\t")[0];
+                    if (trueCrossLinking.equals(LinkingProbability.POSSIBLE.toString())) {
+                        poss.add(r);
+                    } else if (trueCrossLinking.equals("LIKELYPOSSIBLE")) {
+                        likelyposs.add(r);
+                    } else if (trueCrossLinking.equals("Not-predicted")) {
+                        notpreds.add(r);
+                    } else if (trueCrossLinking.equals("IMPOSSIBLE")) {
+                        impossible.add(r);
+                    } else if (trueCrossLinking.equals("Not-predicted")) {
+                        likelyimpossible.add(r);
+                    }
                 }
-            }
-            // if there is only one Percolator result, it is possible to select the first one only..
-            PercolatorResult toAdd = all.get(0);
-            if (all.size() > 1) {
-                // now selects first possible one..
-                if (!poss.isEmpty()) {
-                    int index = AnalyzePercolator.returnRandomIndex(poss.size());
-                    toAdd = poss.get(index);
-                } else if (!likelyposs.isEmpty()) {
-                    int index = AnalyzePercolator.returnRandomIndex(likelyposs.size());
-                    toAdd = likelyposs.get(index);
-                } else if (!likelyimpossible.isEmpty()) {
-                    int index = AnalyzePercolator.returnRandomIndex(likelyimpossible.size());
-                    toAdd = impossible.get(index);
-                } else if (!impossible.isEmpty()) {
-                    int index = AnalyzePercolator.returnRandomIndex(impossible.size());
-                    toAdd = impossible.get(index);
-                } else if (!notpreds.isEmpty()) {
-                    int index = AnalyzePercolator.returnRandomIndex(notpreds.size());
-                    toAdd = notpreds.get(index);
+                // if there is only one Percolator result, it is possible to select the first one only..
+                PercolatorResult toAdd = all.get(0);
+                if (all.size() > 1) {
+                    // now selects first possible one..
+                    if (!poss.isEmpty()) {
+                        int index = AnalyzePercolator.returnRandomIndex(poss.size());
+                        toAdd = poss.get(index);
+                    } else if (!likelyposs.isEmpty()) {
+                        int index = AnalyzePercolator.returnRandomIndex(likelyposs.size());
+                        toAdd = likelyposs.get(index);
+                    } else if (!likelyimpossible.isEmpty()) {
+                        int index = AnalyzePercolator.returnRandomIndex(likelyimpossible.size());
+                        toAdd = impossible.get(index);
+                    } else if (!impossible.isEmpty()) {
+                        int index = AnalyzePercolator.returnRandomIndex(impossible.size());
+                        toAdd = impossible.get(index);
+                    } else if (!notpreds.isEmpty()) {
+                        int index = AnalyzePercolator.returnRandomIndex(notpreds.size());
+                        toAdd = notpreds.get(index);
+                    }
                 }
+                // put the filtered output into the list
+                filteredRes.add(toAdd);
+            } else {
+                for (PercolatorResult r : res) {
+                    all.add(r);
+                }// if there is only one Percolator result, it is possible to select the first one only..
+                PercolatorResult toAdd = all.get(0);
+                if (all.size() > 1) {
+                    int index = AnalyzePercolator.returnRandomIndex(res.size());
+                    toAdd = res.get(index);
+                }
+                // put the filtered output into the list
+                filteredRes.add(toAdd);
             }
-            // put the filtered output into the list
-            filteredRes.add(toAdd);
         }
         return filteredRes;
     }

@@ -25,8 +25,8 @@ public class ModifyPercolatorInput {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        File folder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\mc4_TMSAm_HCD_MODS_minPeaks2_maxPeaks15_noCleaning\\elitea2_b2/percolator_input/"),
-                newPercolatorInputFolder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\mc4_TMSAm_HCD_MODS_minPeaks2_maxPeaks15_noCleaning\\elitea2_b2/percolator_input_updated/");
+        File folder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\12012016_Xilmass\\PercolatorInput_TheoMSAmandaIP/"),
+                newPercolatorInputFolder = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\12012016_Xilmass\\PercolatorInput_TheoMSAmandaIP_WOScore/");
 
         for (File f : folder.listFiles()) {
             removeLnNumSp(f, new File(newPercolatorInputFolder.getAbsolutePath() + "/" + f.getName()));
@@ -40,10 +40,12 @@ public class ModifyPercolatorInput {
         while ((line = br.readLine()) != null) {
             String[] sp = line.split("\t");
             String info = "";
-            for (int i = 0; i < 11; i++) {
+            for (int i = 0; i < 13; i++) {
+                if(i!=4){
                 info += sp[i] + "\t";
+                }
             }
-            info += sp[12] + "\t" + sp[13] + "\n";
+            info +=  sp[13] + "\n";
             bw.write(info);
         }
         bw.close();

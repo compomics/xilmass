@@ -38,7 +38,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
     private HashSet<KojakResult> validatedPSMs = new HashSet<KojakResult>();
     private boolean isValidatedPSMs = false;
     //true: (full_decoy+half_decoy)/target and false:(half_decoy-full_decoy)/target
-    private HashMap<String, HashSet<String>> contaminant_MSMSMap;
+    private HashMap<String, HashSet<Integer>> contaminant_MSMSMap;
 
     public AnalyzeKojak(File output, File kojakResultFolder, File prediction_file, File psms_contaminant, File database, String[] target_names, double fdr, boolean isConventionalFDR) throws IOException {
         super.target_names = target_names;
@@ -48,7 +48,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
         this.kojakResultFolder = kojakResultFolder;
         super.psms_contaminant = psms_contaminant;
         this.database = database;
-        contaminant_MSMSMap = super.getContaminant_MSMSMap();
+        contaminant_MSMSMap = super.getContaminant_specFile_and_scans();
         super.isPIT = isConventionalFDR;
         this.fdr = fdr;
     }
@@ -72,8 +72,8 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
         for (int i = 0; i < res.size(); i++) {
             res2.add(res.get(i));
         }
-        // select PSMs with a given FDR value
-        ArrayList<Outcome> validatedOutcome = getValidatedPSMs(res2, fdr);
+        // select PSMs with a given FDR value for XPSMs
+        ArrayList<Outcome> validatedOutcome = getValidatedPSMs(res2, fdr, true);
         for (Outcome o : validatedOutcome) {
             if (o instanceof KojakResult) {
                 validatedPSMs.add((KojakResult) o);
@@ -165,8 +165,8 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                         KojakResult kr = new KojakResult(mgfFileName, scanNumber, obsMass, charge, psmMass, ppmErr, score, dScore,
                                 pepDiff, peptide1, link1, protein1, peptide2, link2, protein2, linkerMass, target_names, database, td);
                         if (contaminant_MSMSMap.containsKey(mgfFileName)) {
-                            for (String tmpsScans : contaminant_MSMSMap.get(mgfFileName)) {
-                                if (tmpsScans.equals(scanNumber)) {
+                            for (Integer tmpsScan : contaminant_MSMSMap.get(mgfFileName)) {
+                                if (tmpsScan == Integer.parseInt(scanNumber)) {
                                     isContaminantDerived = true;
                                 }
                             }
@@ -198,7 +198,7 @@ public class AnalyzeKojak extends AnalyzeOutcomes {
                 + "LinkPeptideA" + "\t" + "LinkPeptideB" + "\t" + "LinkProteinA" + "\t" + "LinkProteinB" + "\t"
                 + "TargetDecoy" + "\t"
                 + "LinkerLabeling" + "\t"
-                + "Predicted" + "\t" + "EuclideanDistance(Carbon-betas-A)" + "\t" + "EuclideanDistance (Carbon alphas-A)";
+                + "Predicted" + "\t" + "SASDist" + "\t" + "EuclideanDistance(Carbon-betas-A)" + "\t" + "EuclideanDistance (Carbon alphas-A)";
 
         return title;
     }

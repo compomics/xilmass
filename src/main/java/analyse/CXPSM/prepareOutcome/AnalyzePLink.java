@@ -52,7 +52,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
 
     @Override
     public void run() throws FileNotFoundException, IOException {
-        HashMap<String, HashSet<String>> contaminant_MSMSMap = super.getContaminant_MSMSMap();
+        HashMap<String, HashSet<Integer>> contaminant_MSMSMap = super.getContaminant_specFile_and_scans();
         // There need to be a folder which all files are stored.
         for (File f : folder.listFiles()) {
             if (f.getName().endsWith("qry.proteins.txt")) {
@@ -67,7 +67,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
         // select PSMs with a given FDR value       
         ArrayList<Outcome> res = new ArrayList<Outcome>(allResults);
         // select PSMs with a given FDR value
-        ArrayList<Outcome> validatedOutcome = getValidatedPSMs(res, fdr);
+        ArrayList<Outcome> validatedOutcome = getValidatedPSMs(res, fdr, true);
         ArrayList<PLinkResult> validatedPSMs = new ArrayList<PLinkResult>();
         for (Outcome o : validatedOutcome) {
             if (o instanceof PLinkResult) {
@@ -244,7 +244,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
         }
     }
 
-    private void prepareAllList(File f, HashMap<String, HashSet<String>> contaminant_MSMSMap) throws NumberFormatException, FileNotFoundException, IOException {
+    private void prepareAllList(File f, HashMap<String, HashSet<Integer>> contaminant_MSMSMap) throws NumberFormatException, FileNotFoundException, IOException {
         System.out.println("My name is " + f.getName());
         BufferedReader br = new BufferedReader(new FileReader(f));
         String line = "";
@@ -387,11 +387,12 @@ public class AnalyzePLink extends AnalyzeOutcomes {
 
             if (line.startsWith("NO1_Beta_Modify_Name")) {
                 modNameBeta = line.split("=")[1];
-            // here is parsing end. check if it derives from contaminants and construct an object
+                // here is parsing end. check if it derives from contaminants and construct an object
                 // now generate a object to keep all...
                 if (contaminant_MSMSMap.containsKey(spectrumFile)) {
-                    for (String contaminant : contaminant_MSMSMap.get(spectrumFile)) {
-                        if (contaminant.equals(spectrumTitle)) {
+                    for (Integer scan : contaminant_MSMSMap.get(spectrumFile)) {
+                        String tmpScanInfo = "scan=" + scan + "\"";
+                        if (spectrumTitle.contains(tmpScanInfo)) {
                             isContaminant = true;
                         }
                     }
@@ -463,7 +464,7 @@ public class AnalyzePLink extends AnalyzeOutcomes {
                 + "ProteinAlpha_Accession" + "\t" + "ModNameAlpha" + "\t" + "ModLocsAlpha" + "\t" + "PeptideAlpha" + "\t" + "LinkedSiteAlpha" + "\t"
                 + "ProteinBeta_Accession" + "\t" + "ModNameBeta" + "\t" + "ModLocsBeta" + "\t" + "PeptideBeta" + "\t" + "LinkedSiteBeta" + "\t"
                 + "Target_Decoy" + "\t"
-                + "Predicted" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)" + "\t"
+                + "Predicted" + "\t" + "SASDist" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)" + "\t"
                 + "ValidCandidate" + "\t" + "CandidateTotal";
         return title;
     }

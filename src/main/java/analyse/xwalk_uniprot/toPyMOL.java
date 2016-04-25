@@ -24,40 +24,93 @@ import java.util.HashSet;
  */
 public class toPyMOL {
 
-    private File xilmass,
+    private File input,
             prediction,
             findingToPyMOLScript;
     private boolean isCarbonAlpha = true,
-            is4Q57Asked = false;
+            is4Q57Asked = false,
+            hasDeltaScores = false;
     private HashMap<String, PyMOLEntry> commands = new HashMap<String, PyMOLEntry>();
     private HashMap<String, String> names = new HashMap<String, String>();
     private HashMap<PyMOLEntry, String> all = new HashMap<PyMOLEntry, String>();
-    private int xlinkingIndex,
-            typeIndex;
+    private int xlinkingProsAndSitesIndex,
+            typeIndex,
+            pepASeqIndex = 9,
+            pepBSeqIndex = 12,
+            proteinAAccIndex = 10,
+            proteinBAccIndex = 13,
+            proteinALinkIndex = 18,
+            proteinBLinkIndex = 19,
+            peptideALinkIndex = 16,
+            peptideBLinkIndex = 17;
 
-    public toPyMOL(File xilmass, File prediction, File findingToPyMOLScript,
-            boolean isCarbonAlpha, boolean is4Q57Asked) {
-        this.xilmass = xilmass;
+    public toPyMOL(File input, File prediction, File findingToPyMOLScript, boolean isCarbonAlpha, boolean is4Q57Asked) {
+        this.input = input;
         this.prediction = prediction;
         this.findingToPyMOLScript = findingToPyMOLScript;
         this.isCarbonAlpha = isCarbonAlpha;
         this.is4Q57Asked = is4Q57Asked;
-        xlinkingIndex = 16;
-        typeIndex = 12;
+        xlinkingProsAndSitesIndex = 32;
+        typeIndex = 15;
     }
 
-    private void plotIDentifiedXLinkingSites() throws IOException {
+    public toPyMOL(File input, File prediction, File findingToPyMOLScript, boolean isCarbonAlpha, boolean is4Q57Asked, boolean hasDeltaScores) {
+        this.input = input;
+        this.prediction = prediction;
+        this.findingToPyMOLScript = findingToPyMOLScript;
+        this.isCarbonAlpha = isCarbonAlpha;
+        this.is4Q57Asked = is4Q57Asked;
+        xlinkingProsAndSitesIndex = 35;
+        typeIndex = 15;
+        this.hasDeltaScores = hasDeltaScores;
+    }
+
+    public toPyMOL(File xilmass, File prediction, File findingToPyMOLScript, boolean isCarbonAlpha, boolean is4Q57Asked,
+            int xlinkingProsAndSitesIndex, int typeIndex,
+            int pepASeqIndex, int pepBSeqIndex,
+            int proAccIndex, int proBAccIndex,
+            int proteinALinkIndex, int proteinBLinkIndex,
+            int peptideALinkIndex, int peptideBLinkIndex) {
+        this.input = xilmass;
+        this.prediction = prediction;
+        this.findingToPyMOLScript = findingToPyMOLScript;
+        this.isCarbonAlpha = isCarbonAlpha;
+        this.is4Q57Asked = is4Q57Asked;
+        this.xlinkingProsAndSitesIndex = xlinkingProsAndSitesIndex;
+        this.typeIndex = typeIndex;
+        this.pepASeqIndex = pepASeqIndex;
+        this.pepBSeqIndex = pepBSeqIndex;
+        this.proteinAAccIndex = proAccIndex;
+        this.proteinBAccIndex = proBAccIndex;
+        this.proteinALinkIndex = proteinALinkIndex;
+        this.proteinBLinkIndex = proteinBLinkIndex;
+        this.peptideALinkIndex = peptideALinkIndex;
+        this.peptideBLinkIndex = peptideBLinkIndex;
+    }
+
+    private void plotIDentifiedXLinkingSitesAlt() throws IOException {
         // read each line on prediction file
         getPredictions(prediction, isCarbonAlpha);
         String line = "";
-        BufferedReader br = new BufferedReader(new FileReader(xilmass));
+        BufferedReader br = new BufferedReader(new FileReader(input));
         BufferedWriter bw = new BufferedWriter(new FileWriter(findingToPyMOLScript));
         int times = 1;
+        HashSet<PyMOLEntry> uniqueCrossLinkingSites = new HashSet<PyMOLEntry>();
         while ((line = br.readLine()) != null) {
             if (!line.startsWith("SpectrumFile")) {
                 String[] sp = line.split("\t");
-                String crossLinkingSite = sp[xlinkingIndex].replace(" ", ""),
-                        type = sp[typeIndex].replace(" ", "");
+                String crossLinkingSite = sp[xlinkingProsAndSitesIndex].replace(" ", ""),
+                        type = sp[typeIndex].replace(" ", ""),
+                        pepAseq = sp[pepASeqIndex].replace(" ", ""),
+                        pepBseq = sp[pepBSeqIndex].replace(" ", ""),
+                        firstAcc = sp[proteinAAccIndex].replace(" ", ""),
+                        secondAcc = sp[proteinBAccIndex].replace(" ", "");
+                int firstIndexPeptide = Integer.parseInt(sp[proteinALinkIndex].replace(" ", "")),
+                        secondIndexPeptide = Integer.parseInt(sp[proteinBLinkIndex].replace(" ", "")),
+                        linkAprotein = Integer.parseInt(sp[peptideALinkIndex].replace(" ", "")),
+                        linkBprotein = Integer.parseInt(sp[peptideBLinkIndex].replace(" ", ""));
+                char residueA = pepAseq.charAt(linkAprotein - 1),
+                        residueB = pepBseq.charAt(linkBprotein - 1);
                 if (commands.containsKey(crossLinkingSite)) {
                     PyMOLEntry entry = commands.get(crossLinkingSite);
                     String pdb = entry.getPdb();
@@ -68,80 +121,108 @@ public class toPyMOL {
                         System.out.println(crossLinkingSite + "\t" + entry.getCommand());
                     }
                 } else {
-                    String[] tmpXLinkingSites = crossLinkingSite.replace(" ", "").split("_");
-                    String first = tmpXLinkingSites[0],
-                            second = tmpXLinkingSites[2];
-                    int firstIndex = Integer.parseInt(tmpXLinkingSites[1].replace(" ", "")),
-                            secondIndex = Integer.parseInt(tmpXLinkingSites[3].replace(" ", ""));
-                    // do something.. these are not predicted...
                     String pdbName = "4Q57.pdb";
                     PyMOLEntry entry = null;
-                    if (first.equals("P62158") && second.equals("P62158") && !is4Q57Asked) {
+                    if (crossLinkingSite.equals("4Q57:B_80_P62158_31")) {
+//                        System.out.println("here...");
+                    }
+                    if (firstAcc.equals("P62158") && secondAcc.equals("P62158") && !is4Q57Asked) {
                         pdbName = "2F3Y.pdb";
-                        int tmpFirstIndex = firstIndex - 1,
-                                tmpSecondIndex = secondIndex - 1;
-                        entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "A", times, bw, crossLinkingSite);
-                    } else if (!first.equals("P62158") && second.equals("P62158") && is4Q57Asked) {
-                        int tmpFirstIndex = firstIndex + 21,
-                                tmpSecondIndex = secondIndex - 1;
+                        int tmpFirstIndex = firstIndexPeptide - 1,
+                                tmpSecondIndex = secondIndexPeptide - 1;
+                        if (tmpFirstIndex <= 3 || tmpSecondIndex <= 3 || tmpFirstIndex >= 148 || tmpSecondIndex == 148) {
+                            String missing = type + "_missing";
+                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, missing, "A", "A", times, bw, crossLinkingSite);
+                        } else {
+                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "A", times, bw, crossLinkingSite);
+                        }
+                    } else if (!firstAcc.equals("P62158") && secondAcc.equals("P62158") && is4Q57Asked) {
+                        int tmpFirstIndex = firstIndexPeptide + 19,
+                                tmpSecondIndex = secondIndexPeptide - 1;
+                        if (firstIndexPeptide < 3) {
+                            tmpFirstIndex = firstIndexPeptide - 4;
+                        }
                         // only partial info...
-                        if (tmpSecondIndex < 72) {
-                            entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, type, "B", "A", times, bw, crossLinkingSite);
+                        if (tmpSecondIndex <= 73 && tmpSecondIndex >= 9) {
+                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, type, "B", "A", times, bw, crossLinkingSite);
                         } else {
                             String missing = type + "_missing";
-                            entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, missing, "B", "A", times, bw, crossLinkingSite);
+                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, missing, "B", "A", times, bw, crossLinkingSite);
                         }
-                    } else if (first.equals("P62158") && !second.equals("P62158") && is4Q57Asked) {
-                        int tmpFirstIndex = firstIndex - 1,
-                                tmpSecondIndex = secondIndex + 21;
-                        if (tmpFirstIndex < 72) {
-                            entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "B", times, bw, crossLinkingSite);
+                    } else if (firstAcc.equals("P62158") && !secondAcc.equals("P62158") && is4Q57Asked) {
+                        int tmpFirstIndex = firstIndexPeptide - 1,
+                                tmpSecondIndex = secondIndexPeptide + 19;
+                        if (secondIndexPeptide < 3) {
+                            tmpSecondIndex = secondIndexPeptide - 4;
+                        }
+                        if (tmpFirstIndex <= 73 && tmpFirstIndex >= 9) {
+                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "B", times, bw, crossLinkingSite);
                         } else {
                             String missing = type + "_missing";
-                            entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, missing, "A", "B", times, bw, crossLinkingSite);
+                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, missing, "A", "B", times, bw, crossLinkingSite);
                         }
-                    } else if (!first.equals("P62158") && !second.equals("P62158") && is4Q57Asked) {
-                        int tmpFirstIndex = firstIndex + 21,
-                                tmpSecondIndex = secondIndex + 21;
-                        entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, type, "B", "B", times, bw, crossLinkingSite);
-                    } else if (first.equals("P62158") && second.equals("P62158") && !is4Q57Asked) {
-                        pdbName = "2F3Y.pdb";
+                    } else if (!firstAcc.equals("P62158") && !secondAcc.equals("P62158") && is4Q57Asked) {
+                        int tmpFirstIndex = firstIndexPeptide + 19,
+                                tmpSecondIndex = secondIndexPeptide + 19;
+                        if (firstIndexPeptide < 3) {
+                            tmpFirstIndex = firstIndexPeptide - 4;
+                        }
+                        if (secondIndexPeptide < 3) {
+                            tmpSecondIndex = secondIndexPeptide - 4;
+                        }
+                        entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, type, "B", "B", times, bw, crossLinkingSite);
+                    } else if (firstAcc.equals("P62158") && secondAcc.equals("P62158") && is4Q57Asked) {
                         // indices -1
-                        int tmpFirstIndex = firstIndex - 1,
-                                tmpSecondIndex = secondIndex - 1;
-                        entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "A", times, bw, crossLinkingSite);
-                    } else if (first.equals("P62158") && second.equals("P62158") && is4Q57Asked) {
-                        // indices -1
-                        int tmpFirstIndex = firstIndex - 1,
-                                tmpSecondIndex = secondIndex - 1;
-                        if (tmpFirstIndex < 72 && tmpSecondIndex < 72) {
-                            entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "A", times, bw, crossLinkingSite);
-                        } else {
-                            String check23FY = "check2F3Y";
-                            entry = preparePyMolCommand(pdbName, tmpFirstIndex, tmpSecondIndex, check23FY, "A", "A", times, bw, crossLinkingSite);
+                        int tmpFirstIndex = firstIndexPeptide - 1,
+                                tmpSecondIndex = secondIndexPeptide - 1;
+                        if (tmpFirstIndex <= 73 && tmpFirstIndex >= 9 && tmpSecondIndex <= 73 && tmpSecondIndex >= 9) {
+//                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, type, "A", "A", times, bw, crossLinkingSite);
+                        } else if ((tmpFirstIndex <= 3 || tmpFirstIndex >= 148) || (tmpSecondIndex <= 3 || tmpSecondIndex >= 148)) {
+                            String missing = type + "_missing";
+                            // This will be retrieve from only 2F3Y structure.
+//                            entry = preparePyMolCommand(residueA, residueB, pdbName, tmpFirstIndex, tmpSecondIndex, missing, "A", "A", times, bw, crossLinkingSite);
                         }
                     }
                     if (entry != null) {
-                        times++;
-                        String name = names.get(crossLinkingSite);
-                        write(bw, entry, type, name);
-                        System.out.println(crossLinkingSite + "\t" + entry.getCommand());
+                        uniqueCrossLinkingSites.add(entry);
                     }
                 }
             }
         }
+        // now write all identified cross-linking sites to map onto structure.
+        int occ = 0;
+        for (PyMOLEntry e : uniqueCrossLinkingSites) {
+            times++;
+            String name = names.get(e.getCrossLinkingSite()) + "_" + occ;
+            write(bw, e, e.getType(), name);
+        }
         bw.close();
     }
 
-    private PyMOLEntry preparePyMolCommand(String pdbName, int tmpFirstIndex, int tmpSecondIndex, String type, String infoA, String infoB, int times, BufferedWriter bw, String crossLinkingSite) throws IOException {
-        String atomA = "LYS-" + tmpFirstIndex + "-" + infoA + "-CB",
-                atomB = "LYS-" + tmpSecondIndex + "-" + infoB + "-CB",
+    private PyMOLEntry preparePyMolCommand(char resA, char resB, String pdbName, int tmpFirstIndex, int tmpSecondIndex, String type,
+            String infoA, String infoB, int times, BufferedWriter bw, String crossLinkingSite) throws IOException {
+        String atomA = decideLetter(resA, tmpFirstIndex, infoA),
+                atomB = decideLetter(resB, tmpSecondIndex, infoB),
                 name = type + times;
-        PyMOLEntry entry = new PyMOLEntry(pdbName, name, atomA, atomB, "", "", "", "", "", "", "", "", "", isCarbonAlpha);
+        PyMOLEntry entry = new PyMOLEntry(pdbName, name, atomA, atomB, "", "", "", "", "", "", "", "", "", isCarbonAlpha, false, crossLinkingSite);
         write(bw, entry, type, name);
         commands.put(crossLinkingSite, entry);
         names.put(crossLinkingSite, name);
         return entry;
+    }
+
+    private String decideLetter(char resA, int tmpFirstIndex, String infoA) {
+        String atom = "LYS_" + tmpFirstIndex + "_" + infoA + "_CB";
+        if (resA == 'G') {
+            atom = "GLY_" + tmpFirstIndex + "_" + infoA + "_CB";
+        } else if (resA == 'A') {
+            atom = "ALA_" + tmpFirstIndex + "_" + infoA + "_CB";
+        } else if (resA == 'P') {
+            atom = "PRO_" + tmpFirstIndex + "_" + infoA + "_CB";
+        } else if (resA == 'M') {
+            atom = "MET_" + tmpFirstIndex + "_" + infoA + "_CB";
+        }
+        return atom;
     }
 
     public HashMap<PyMOLEntry, String> getAll() {
@@ -184,10 +265,9 @@ public class toPyMOL {
     private void getPredictions(File prediction, boolean isCarbonAlpha) throws FileNotFoundException, IOException {
         BufferedReader br = new BufferedReader(new FileReader(prediction));
         String line = "";
-        int times = 1;
         while ((line = br.readLine()) != null) {
             if (!line.startsWith("PDBS")) {
-                String[] sp = line.split(",");
+                String[] sp = line.split("\t");
                 String pdb = sp[0],
                         atomA = sp[1],
                         atomB = sp[2],
@@ -206,11 +286,10 @@ public class toPyMOL {
                 if ((uniprotIndB > uniprotIndA) && uniprotAccA.equals(uniprotAccB)) {
                     crossLinkingSite = uniprotAccB + "_" + uniprotIndexB + "_" + uniprotAccA + "_" + uniprotIndexA;
                 }
-                String name = type + "_" + times;
-                PyMOLEntry o = new PyMOLEntry(pdb, name, atomA, atomB, idDis, type, uniprotAccA, uniprotIndexA, uniprotAccB, uniprotIndexB, sas, betaDist, alphaDist, isCarbonAlpha);
+                String name = type;
+                PyMOLEntry o = new PyMOLEntry(pdb, name, atomA, atomB, idDis, type, uniprotAccA, uniprotIndexA, uniprotAccB, uniprotIndexB, sas, betaDist, alphaDist, isCarbonAlpha, true, crossLinkingSite);
                 commands.put(crossLinkingSite, o);
                 names.put(crossLinkingSite, name);
-                times++;
             }
         }
     }
@@ -221,35 +300,102 @@ public class toPyMOL {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         boolean isCarbonAlpha = true,
                 toWrite = false,
-                isTitleReady = false,
-                is4Q57Asked = false;
+                is4Q57Asked = true;
+        // 0-10-20 for Xilmass, 1-11-21 for Kojak and 2-12-22 for pLink
+        int algorithm = 22;
+        boolean hasDeltaScores = true;
+
+        String algorithm_name = "xilmass",
+                n = "xilmass";
+        if (algorithm == 1) {
+            algorithm_name = "kojak";
+            n = "kojak";
+        } else if (algorithm == 2) {
+            algorithm_name = "pLink";
+            n = "pLink";
+        } else if (algorithm == 10) {
+            algorithm_name = "xilmassCommon";
+            n = "xilmassCommon";
+        } else if (algorithm == 11) {
+            algorithm_name = "kojakCommon";
+            n = "kojakCommon";
+        } else if (algorithm == 12) {
+            algorithm_name = "pLinkCommon";
+            n = "pLinkCommon";
+        } else if (algorithm == 20) {
+            algorithm_name = "xilmassOnly";
+            n = "xilmassOnly";
+        } else if (algorithm == 21) {
+            algorithm_name = "kojakOnly";
+            n = "kojakOnly";
+        } else if (algorithm == 22) {
+            algorithm_name = "pLinkOnly";
+            n = "pLinkOnly";
+        }
         String structureInfo = "2F3Y";
         if (is4Q57Asked) {
             structureInfo = "4Q57";
         }
-        //figure2_3_softwareComparison\all_toPymol
-        String algorithm = "kojak_v136";
-        //String algorithm = "xilmass";
-        //String dataset = "elite";
-        String dataset = "qexactive";
-        File xilmass = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\results_diff_no/figure2_3_softwareComparison/all_toPymol/" + algorithm + "_003Da_" + dataset + "_FDR005.txt"),
-                prediction = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_pymol_manul_autoAAcal.txt"),
+
+        String dataset = "qexactiveplus";
+        File //input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\optqexactive/validated_list\\cross_linking_sites/" + n + "_crosslinkingsites.txt"),
+                //input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\xilmass\\runs\\incl_monolinkeds\\allFDR/td_incl_monolinked_bestsetting_xilmass_allFDR_crosslinkingsites.txt"),
+                //input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\optqexactive/intersectXilmassXPSMs.txt"),
+                //input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\optqexactive/only_xilmass_SplitFDR005.txt"), // option=Xilmass-Specific
+                //input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\optqexactive/only_kojak_SplitFDR005.txt"), // option=Kojak-Specific
+                input = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\optqexactive/only_pLink_SplitFDR005.txt"),
+                prediction = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_pymol_manul_autoAAcal_4Q57B.txt"),
                 f = new File(""),
                 pymolScript = new File(""),
-                calculatedDistance = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/final/final_" + algorithm + "_003Da_" + dataset + "_FDR005_" + structureInfo + "_DistToCompute.pml"),
-                findingToPyMOLScript = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/final/final_" + algorithm + "_003Da_" + dataset + "_FDR005_" + structureInfo + ".pml"),
-                finalText = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/final/final_" + algorithm + "_003Da_" + dataset + "_FDR005_" + structureInfo + "_to_plot.pml");
+                calculatedDistance = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/optQExactivePlus/xilmass/inclMono/" + algorithm_name + "_" + dataset + "_SplitFDR005_" + structureInfo + "_DistToCompute.pml"),
+                findingToPyMOLScript = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/optQExactivePlus/xilmass/inclMono/" + algorithm_name + "_" + dataset + "_SplitFDR005_" + structureInfo + ".pml"),
+                finalText = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/optQExactivePlus/xilmass/inclMono/" + algorithm_name + "_" + dataset + "_SplitFDR005_" + structureInfo + "_to_plot.pml");
         // xilmass = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\competetives\\results\\figure2_3softwareComparison/xilmass_qexactive_percolatorFDR005.txt");
-        String distanceOutput = "C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/final/final_" + algorithm + "_003Da_" + dataset + "_FDR005_" + structureInfo + "_computedDistance.txt";
+        String distanceOutput = "C:\\Users\\Sule\\Documents\\PhD\\XLinked\\PyMol/optQExactivePlus/xilmass/inclMono/" + algorithm_name + "_" + dataset + "_ALLFDR005_" + structureInfo + "_computedDistance.txt";
+        int xlinkingProsAndSitesIndex = 19,
+                typeIndex = 9,
+                pepASeqIndex = 7,
+                pepBSeqIndex = 8,                
+                proAAccIndex = 5,
+                proBAccIndex = 6,                
+                proteinALinkIndex = 10,
+                proteinBLinkIndex = 11,
+                peptideALinkIndex = 12,
+                peptideBLinkIndex = 13;
+        int option = 2;
+        toPyMOL obj = null;
+        if (algorithm == 0 || algorithm == 10 || algorithm == 20) {
+            obj = new toPyMOL(input, prediction, findingToPyMOLScript, isCarbonAlpha, is4Q57Asked, hasDeltaScores);
+            // Kojak identifications...
+        } else if (algorithm == 1 || algorithm == 11 || algorithm == 21) {
+            obj = new toPyMOL(input, prediction, findingToPyMOLScript, isCarbonAlpha, is4Q57Asked,
+                    xlinkingProsAndSitesIndex, typeIndex,
+                    pepASeqIndex, pepBSeqIndex, proAAccIndex, proBAccIndex,
+                    proteinALinkIndex, proteinBLinkIndex, peptideALinkIndex, peptideBLinkIndex);
+            // pLink identifications
+        } else if (algorithm == 2 || algorithm == 12 || algorithm == 22) {
+            xlinkingProsAndSitesIndex = 25;
+            typeIndex = 19;
+            pepASeqIndex = 11;
+            pepBSeqIndex = 15;
+            proAAccIndex = 10;
+            proBAccIndex = 14;
+            proteinALinkIndex = 12;
+            proteinBLinkIndex = 16;
+            peptideALinkIndex = 13;
+            peptideBLinkIndex = 17;
 
-        int option = 2; // print cross-linking parts..
+            obj = new toPyMOL(input, prediction, findingToPyMOLScript, isCarbonAlpha, is4Q57Asked,
+                    xlinkingProsAndSitesIndex, typeIndex,
+                    pepASeqIndex, pepBSeqIndex, proAAccIndex, proBAccIndex,
+                    proteinALinkIndex, proteinBLinkIndex, peptideALinkIndex, peptideBLinkIndex);
+        }
+
+        // print cross-linking parts..
         if (option == 0) {
-            toPyMOL obj = new toPyMOL(xilmass, prediction, findingToPyMOLScript, isCarbonAlpha, is4Q57Asked);
-            obj.plotIDentifiedXLinkingSites();
-
+            obj.plotIDentifiedXLinkingSitesAlt();
         } else if (option == 2) {
-            toPyMOL obj = new toPyMOL(xilmass, prediction, findingToPyMOLScript, isCarbonAlpha, is4Q57Asked);
-            obj.plotIDentifiedXLinkingSites();
+            obj.plotIDentifiedXLinkingSitesAlt();
             String line = "";
             BufferedReader br = new BufferedReader(new FileReader(findingToPyMOLScript));
             BufferedWriter bw = new BufferedWriter(new FileWriter(calculatedDistance));

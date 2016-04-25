@@ -19,29 +19,31 @@ import java.util.HashSet;
 
 /**
  * This class combines all given files from different pLink validated PSM
- * results on a given folder. It merges these all together and then also assess their
- * target/decoy and true linking situations. Note that on a given pLink validated
- * PSM result, there is only one cross linked peptides matched! They keep the
- * best scored on on their files!
+ * results on a given folder. It merges these all together and then also assess
+ * their target/decoy and true linking situations. Note that on a given pLink
+ * validated PSM result, there is only one cross linked peptides matched! They
+ * keep the best scored on on their files!
  *
  * @author Sule
  */
 public class AnalyzePLinkValidatedResult extends AnalyzeOutcomes {
 
-    private File file, // a folder which contains all ".xls" result files to be merged
+    private File file,
             output; // a merged validated PSM resuts
+    private HashMap<String, String> accs;
 
-    public AnalyzePLinkValidatedResult(File file, File output, File prediction_file, File psms_contaminant, String[] target_names) {
+    public AnalyzePLinkValidatedResult(File file, File output, File prediction_file, File psms_contaminant, String[] target_names, HashMap<String, String> accs) {
         this.file = file;
         this.output = output;
         super.prediction_file = prediction_file;
         super.psms_contaminant = psms_contaminant;
         super.target_names = target_names;
+        this.accs = accs;
     }
 
     @Override
     public void run() throws FileNotFoundException, IOException {
-        HashMap<String, HashSet<String>> contaminant_MSMSMap = super.getContaminant_MSMSMap();
+        HashMap<String, HashSet<Integer>> contaminant_MSMSMap = super.getContaminant_specFile_and_scans();
         ArrayList<PLinkValidatedResult> results = new ArrayList<PLinkValidatedResult>();
         // There need to be a folder which all files are stored.
         System.out.println("My name is " + file.getName());
@@ -65,9 +67,10 @@ public class AnalyzePLinkValidatedResult extends AnalyzeOutcomes {
 
                 // before check if it is assigned to contaminants
                 if (contaminant_MSMSMap.containsKey(spectrumFile)) {
-                    for (String contaminant : contaminant_MSMSMap.get(spectrumFile)) {
-                        if (contaminant.equals(spectrumTitle)) {
+                    for (Integer contaminant_scan : contaminant_MSMSMap.get(spectrumFile)) {
+                        if (contaminant_scan == Integer.parseInt(scanNum)) {
                             isContaminant = true;
+                            System.out.println("Contaminant.." + spectrumFile + "\t" + spectrumTitle + "\t" + line);
                         }
                     }
                 }
@@ -78,6 +81,8 @@ public class AnalyzePLinkValidatedResult extends AnalyzeOutcomes {
                     results.add(r);
                     isSpecFileInfoChecked = false;
                 }
+                isSpecFileInfoChecked = false;
+                isContaminant = false;
                 spectrumFile = "";
                 scanNum = "";
             } else if (!line.startsWith("#") && !isSpecFileInfoChecked && !line.startsWith("*")) {
@@ -85,8 +90,9 @@ public class AnalyzePLinkValidatedResult extends AnalyzeOutcomes {
                 spectrumTitle = split[1];
                 score = Double.parseDouble(split[5]);
                 isSpecFileInfoChecked = true;
+                isContaminant = false;
                 // TODO: This part may vary from one to another pLink runs
-//                spectrumFile = spectrumTitle.substring(spectrumTitle.indexOf("File:") + 5);
+                spectrumFile = spectrumTitle.substring(0, spectrumTitle.indexOf(".")) + ".mgf";
 //                spectrumFile = spectrumFile.substring(1, spectrumFile.indexOf(".raw")) + ".mgf"; // start from 1 to remove "
                 scanNum = spectrumTitle.substring(spectrumTitle.indexOf("scan=") + 5);
                 scanNum = scanNum.replace("\"", "");
@@ -96,20 +102,30 @@ public class AnalyzePLinkValidatedResult extends AnalyzeOutcomes {
         BufferedWriter bw = new BufferedWriter(new FileWriter(output));
         String title = "SpectrumFile" + "\t" + "SpectrumTitle" + "\t" + "Scan" + "\t" + "Score(E-value)" + "\t" + "Calc_M" + "\t" + "Delta_M" + "\t" + "PPM" + "\t"
                 + "Labeled" + "\t" + "PeptidePairs" + "\t" + "Modification" + "\t"
-                + "proteinA" + "\t" + "peptideA" + "\t" + "linkA" + "\t"
-                + "proteinB" + "\t" + "peptideB" + "\t" + "linkB" + "\t"
-                + "Target_Decoy" + "\t"
-                + "Predicted" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)";
+                + "proteinA" + "\t" + "peptideA" + "\t" + "linkA" + "\t" + "pepLinkA" + "\t"
+                + "proteinB" + "\t" + "peptideB" + "\t" + "linkB" + "\t" + "pepLinkB" + "\t"
+                + "Target_Decoy" + "\t" + "XLtype" + "\t"
+                + "Predicted" + "\t" + "SASDist" + "\t" + "Euclidean_distance_Alpha(A)" + "\t" + "Euclidean_distance_Beta(A)";
         bw.write(title + "\n");
         for (PLinkValidatedResult r : results) {
-            String toWrite =r.getSpectrumFileName() + "\t" + r.getSpectrumTitle() + "\t" + r.getScanNumber() + "\t"
+            String type = "inter_protein";
+            if (r.getAccProteinA().equals(r.getAccProteinB())) {
+                type = "intra_protein";
+            }
+            String xltype = "intraProtein";
+            if (!r.getAccProteinA().equals(r.getAccProteinB())) {
+                xltype = "interProtein";
+            }
+            int linkA = r.getCrossLinkedSitePro1() - accs.get(r.getAccProteinA()).indexOf(r.getPeptideA()),
+                    linkB = r.getCrossLinkedSitePro2() - accs.get(r.getAccProteinB()).indexOf(r.getPeptideB());
+
+            String toWrite = r.getSpectrumFileName() + "\t" + r.getSpectrumTitle() + "\t" + r.getScanNumber() + "\t"
                     + r.getpLinkScore() + "\t" + r.getCalc_m() + "\t" + r.getDelta_m() + "\t" + r.getPpm() + "\t"
                     + r.getLabel() + "\t" + r.getPeptide_pairs() + "\t" + r.getModifications() + "\t"
-                    + r.getAccProteinA()+ "\t" + r.getPeptideA() + "\t" + r.getCrossLinkedSitePro1() + "\t"
-                    + r.getAccProteinB()+ "\t" + r.getPeptideB() + "\t" + r.getCrossLinkedSitePro2() + "\t"
-                    + getTargetDecoy(r.getAccProteinA(), r.getAccProteinB()) + "\t" 
+                    + r.getAccProteinA() + "\t" + r.getPeptideA() + "\t" + r.getCrossLinkedSitePro1() + "\t" + linkA + "\t"
+                    + r.getAccProteinB() + "\t" + r.getPeptideB() + "\t" + r.getCrossLinkedSitePro2() + "\t" + linkB + "\t"
+                    + getTargetDecoy(r.getAccProteinA(), r.getAccProteinB()) + "\t" + xltype + "\t"
                     + assetTrueLinking(r.getAccProteinA(), r.getAccProteinB(), r.getCrossLinkedSitePro1(), r.getCrossLinkedSitePro2());
-            System.out.println(toWrite);
             bw.write(toWrite + "\n");
         }
         bw.close();
