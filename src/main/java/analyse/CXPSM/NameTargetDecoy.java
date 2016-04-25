@@ -43,12 +43,6 @@ public class NameTargetDecoy {
                 prediction = null,
                 // The validated PSM list from contaminants
                 psms_contamination = null,
-                pLinkCombValidatedFile = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLink.validated.file")),
-                pLinkFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLink.folder")),
-                pLinkAllOutput = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("pLinkalloutput")),
-                percolatorKojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.kojak")),
-                percolatorXilmassFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("percolator.output.folder.xilmass")),
-                kojakFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("kojak.folder")),
                 database = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("database.file"));
 
         // get every protein entry on database with their accession numbers
@@ -109,21 +103,6 @@ public class NameTargetDecoy {
                 case 11:
                     o = new AnalyzeXilmass(xilmassResFolder, td, psms_contamination, fdr_cutoff, doesSplitFDR, isPITFDR, isMS1ErrPPM,
                             fdr_interPro, fdr_intraPro, allXPSMs, scoringFunctionName);
-                    break;
-                case 1:
-                    o = new AnalyzeKojak(td, kojakFolder, prediction, psms_contamination, database, protein_names, fdr_cutoff, isPITFDR);
-                    break;
-                case 2:
-                    o = new AnalyzePLink(pLinkFolder, pLinkAllOutput, td, prediction, psms_contamination, protein_names, fdr_cutoff, isPITFDR);
-                    break;
-                case 3:
-                    o = new AnalyzePLinkValidatedResult(pLinkCombValidatedFile, td, prediction, psms_contamination, protein_names, accs);
-                    break;
-                case 4:
-                    o = new AnalyzePercolator(td, percolatorXilmassFolder, prediction, psms_contamination, protein_names, accs, true, qvalue, doesCheckLysine, isBasedOnManualValidation);
-                    break;
-                case 5:
-                    o = new AnalyzePercolator(td, percolatorKojakFolder, prediction, psms_contamination, protein_names, accs, qvalue, doesCheckLysine, isBasedOnManualValidation);
                     break;
             }
             o.run();
