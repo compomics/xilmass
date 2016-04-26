@@ -61,7 +61,6 @@ public class XilmassResult extends Outcome {
         modB = sp[14];
 
         super.target_decoy = "";
-        super.trueCrossLinking = "";
 
         linkPeptideA = Integer.parseInt(sp[15]);
         if (!type.equals("MonoLinked")) {
@@ -303,10 +302,7 @@ public class XilmassResult extends Outcome {
                 + expMatchedPeakList + "\t" + theoMatchedPeakList + "\t"
                 + target_decoy + "\t"
                 + super.label;
-
-        if (hasPredictions) {
-            toPrint += "\t" + trueCrossLinking;
-        }
+        
         if (!cPeptidePattern.isEmpty()) {
             toPrint += "\t" + cPeptidePattern;
         }
