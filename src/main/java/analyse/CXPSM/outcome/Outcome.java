@@ -5,7 +5,6 @@
  */
 package analyse.CXPSM.outcome;
 
-
 /**
  * This class hold information from each Xlinking algorithms
  *
@@ -14,26 +13,20 @@ package analyse.CXPSM.outcome;
 public abstract class Outcome {
 
     protected String[] target_proteins;
-    
-    protected String accProteinA="", // accession number of proteinA
-            accProteinB ="", // accession number of proteinB
-            
-            peptideA,
-            peptideB,
-            
-            label,
-            
-            target_decoy,
-            trueCrossLinking,
-            
-            scanNumber,
-            spectrumFileName,
-            spectrumTitle  ;
-    
-    protected int crossLinkedSitePro1,
-            crossLinkedSitePro2 = -1;
-    
-    
+
+    protected String accProteinA = "", // accession number of proteinA
+            accProteinB = "", // accession number of proteinB           
+            peptideA,// peptide sequence of peptideA from proteinA
+            peptideB,// peptide sequence of peptideB from proteinB
+            label,// either light- or heavy-labeled cross-linker
+            target_decoy,// target-decoy namy
+            scanNumber,// scan number
+            spectrumFileName,// spectrum file name
+            spectrumTitle;// spectrum title
+
+    protected int crossLinkedSitePro1, // cross-linked site on proteinA (starting from 1)
+            crossLinkedSitePro2 = -1;  // cross-linked site on proteinB (starting from 1), -1 shows this is indeed monolinked peptide
+
     public String getSpectrumTitle() {
         return spectrumTitle;
     }
@@ -72,14 +65,6 @@ public abstract class Outcome {
 
     public void setSpectrumFileName(String spectrumFileName) {
         this.spectrumFileName = spectrumFileName;
-    }
-
-    public String getTrueCrossLinking() {
-        return trueCrossLinking;
-    }
-
-    public void setTrueCrossLinking(String trueCrossLinking) {
-        this.trueCrossLinking = trueCrossLinking;
     }
 
     public String getTarget_decoy() {
@@ -140,8 +125,9 @@ public abstract class Outcome {
 
     @Override
     public String toString() {
-        return "target_proteins=" + target_proteins + ", accProteinA=" + accProteinA + ", accProteinB=" + accProteinB + ", peptideA=" + peptideA + ", peptideB=" + peptideB + ", label=" + label + ", target_decoy=" + target_decoy + ", trueCrossLinking=" + trueCrossLinking + ", scanNumber=" + scanNumber + ", spectrumFileName=" + spectrumFileName + ", spectrumTitle=" + spectrumTitle + ", crossLinkedSitePro1=" + crossLinkedSitePro1 + ", crossLinkedSitePro2=" + crossLinkedSitePro2 + '}';
+        return "target_proteins=" + target_proteins + ", accProteinA=" + accProteinA + ", accProteinB=" + accProteinB + ", peptideA=" + peptideA + ", peptideB=" + peptideB
+                + ", label=" + label + ", target_decoy=" + target_decoy + ", scanNumber=" + scanNumber + ", spectrumFileName=" + spectrumFileName + ", spectrumTitle=" + spectrumTitle 
+                + ", crossLinkedSitePro1=" + crossLinkedSitePro1 + ", crossLinkedSitePro2=" + crossLinkedSitePro2 + '}';
     }
-    
-    
+
 }

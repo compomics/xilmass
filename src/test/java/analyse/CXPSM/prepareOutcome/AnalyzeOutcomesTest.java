@@ -5,7 +5,6 @@
  */
 package analyse.CXPSM.prepareOutcome;
 
-import analyse.CXPSM.prepareOutcome.AnalyzeOutcomes;
 import analyse.CXPSM.outcome.Outcome;
 import analyse.CXPSM.outcome.XilmassResult;
 import java.io.BufferedReader;
@@ -61,28 +60,7 @@ public class AnalyzeOutcomesTest {
         fail("The test case is a prototype.");
     }
 
-    /**
-     * Test of assetTrueLinking method, of class AnalyzeOutcomes.
-     */
-    @Test
-    public void testAssetTrueLinking() throws Exception {
-        System.out.println("assetTrueLinking");
-        String uniprotProAacces = "P62158";
-        String uniprotProBacces = "P62158";
-        int uniprotLinkingSiteA = 14;
-        int uniprotLinkingSiteB = 22;
-        AnalyzeOutcomes instance = new AnalyzeOutcomesImpl();
-        instance.prediction_file = new File("C:\\Users\\Sule\\Documents\\PhD\\XLinked\\XLinkData_Freiburg\\structure\\predicted_cross_linking/xwalk_prediction_uniprot2.txt");
-
-        String result = instance.assetTrueLinking(uniprotProAacces, uniprotProBacces, uniprotLinkingSiteA, uniprotLinkingSiteB);
-        assertTrue(result.startsWith("POSSIBLE"));
-
-        result = instance.assetTrueLinking(uniprotProAacces, uniprotProBacces, 9, uniprotLinkingSiteB);
-        assertFalse(result.startsWith("POSSIBLE"));
-        assertTrue(result.startsWith("Not-pre"));
-
-    }
-
+    
     /**
      * Test of getContaminant_MSMS method, of class AnalyzeOutcomes.
      */
