@@ -107,13 +107,16 @@ public class MSAmanda_derived extends CumulativeBinomialProbabilityBasedScoring 
             double tmp = 0;
             double probability_based_score = super.calculateCumulativeBinominalProbability(),
                     intensity_part = (double) explainedIntensity / (double) intensity;
+            // 0: SQRT intensity ratio
             if (intensityOption == 0 && probability_based_score != 0) {
                 tmp = -10 * (Math.log10(probability_based_score));
                 intensity_part = (Math.sqrt(intensity_part));
                 score = tmp * intensity_part;
+            // 1: Raw intensity ratio
             } else if (intensityOption == 1 && probability_based_score != 0) {
                 tmp = - 10 * (Math.log10(probability_based_score));
                 score = tmp * intensity_part;
+            // 2: log10(1/intensity)
             } else if (intensityOption == 2 && probability_based_score != 0) {
                 score = -10 * (Math.log10(probability_based_score / intensity_part));
             }
