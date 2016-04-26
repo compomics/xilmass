@@ -46,7 +46,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
             doesContainsIonWeight, // to store ion weights..
             isMS1PPM, // is MS1Err calculated with PPM... true:PPM false:Da - to write unit on the table
             doessplit = false, // doessplit=T means that given Xilmass input splits into two sub-groups
-            hasPredictions = true; // T: if Xwalk predictions are avaliable from a customized input; F: no Xwalk prediction
+            hasPredictions = false; // T: if Xwalk predictions are avaliable from a customized input; F: no Xwalk prediction
     private static final Logger LOGGER = Logger.getLogger(ConfigHolder.class);
 
     public AnalyzeXilmass(File xilmassFolder, File output, File prediction_file, File psms_contaminant,
@@ -255,13 +255,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
                     if (r.getTarget_decoy().isEmpty()) {
                         String td = getTargetDecoy(r.getAccProteinA(), r.getAccProteinB());
                         r.setTarget_decoy(td);
-                    }
-                    if (r.getTrueCrossLinking().isEmpty() && hasPredictions) {
-                        // set true cross linking info 
-//                        System.out.println(r.getAccProteinA() + "\t" + r.getCrossLinkedSitePro1() + "\t" + r.getAccProteinB() + "\t" + r.getCrossLinkedSitePro2());
-                        String trueCrossLinking = assetTrueLinking(r.getAccProteinA(), r.getAccProteinB(), r.getCrossLinkedSitePro1(), r.getCrossLinkedSitePro2());
-                        r.setTrueCrossLinking(trueCrossLinking);
-                    }
+                    }                    
                     res.add(r);
                 } else if (contaminant_MSMS.contains(specTitle)) {
 //                    System.out.println(line);
