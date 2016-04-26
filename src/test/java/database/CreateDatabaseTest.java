@@ -9,20 +9,11 @@ import com.compomics.dbtoolkit.io.DBLoaderLoader;
 import com.compomics.dbtoolkit.io.interfaces.DBLoader;
 import com.compomics.util.protein.Header;
 import com.compomics.util.protein.Protein;
-import crossLinker.CrossLinker;
-import crossLinker.CrossLinkerName;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import junit.framework.TestCase;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -57,7 +48,7 @@ public class CreateDatabaseTest extends TestCase {
         int minLen = 4,
                 maxLen_for_combined = 40;
         CreateDatabase instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing_testfastacp",
-                crossLinker, "Inter", "Trypsin", enzymeFile, "4", "350", "4000.0", minLen, maxLen_for_combined, true, true, false);
+                crossLinker, "Inter", "Trypsin", enzymeFile, "4", "350", "4000.0", minLen, maxLen_for_combined, true, true, false,false,false);
         // Note min mass=300 gives two RR.. but not 350.. min mass=350 might be good to start for in silico digestion
 
         instance.digest_insilico();
@@ -84,17 +75,17 @@ public class CreateDatabaseTest extends TestCase {
         int minLen = 4,
                 maxLen_for_combined = 40;
         CreateDatabase instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing1EntCX",
-                crossLinker, "Intra", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true, false);
+                crossLinker, "Intra", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true, false,false,false);
         HashMap<String, StringBuilder> headersAndSequences = instance.getHeadersAndSequences();
         assertEquals(10, headersAndSequences.size());
 
         instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing1EntCX",
-                crossLinker, "Inter", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true, false);
+                crossLinker, "Inter", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true, false,false,false);
         headersAndSequences = instance.getHeadersAndSequences();
         assertEquals(0, headersAndSequences.size());
 
         instance = new CreateDatabase(inputFileName, outputFileName, "Data/Test/database/art_testing1EntCX",
-                crossLinker, "Both", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true,false);
+                crossLinker, "Both", enzymeName, enzymeFile, "1", "350", "4000.0", minLen, maxLen_for_combined, true, true,false,false,false);
         headersAndSequences = instance.getHeadersAndSequences();
         assertEquals(10, headersAndSequences.size());
         for (String h : headersAndSequences.keySet()) {
@@ -136,7 +127,7 @@ public class CreateDatabaseTest extends TestCase {
                 maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
                 does_link_to_itself, // if a peptide itself links to itself..
                 isLabeled,
-                false); //
+                false,false,false);
         HashMap<String, Integer> acc_and_length = instance.getAccession_and_length(givenDBName);
         assertEquals(4, acc_and_length.size());
         assertTrue(acc_and_length.containsKey("P17152"));
