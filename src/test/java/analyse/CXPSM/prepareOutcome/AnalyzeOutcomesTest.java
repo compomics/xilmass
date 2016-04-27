@@ -47,48 +47,7 @@ public class AnalyzeOutcomesTest {
     @After
     public void tearDown() {
     }
-
-    /**
-     * Test of run method, of class AnalyzeOutcomes.
-     */
-    @Test
-    public void testRun() throws Exception {
-        System.out.println("run");
-        AnalyzeOutcomes instance = new AnalyzeOutcomesImpl();
-        instance.run();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    
-    /**
-     * Test of getContaminant_MSMS method, of class AnalyzeOutcomes.
-     */
-    @Test
-    public void testGetContaminant_MSMS() throws Exception {
-        System.out.println("getContaminant_MSMS");
-        AnalyzeOutcomes instance = new AnalyzeOutcomesImpl();
-        HashSet<String> expResult = null;
-        HashSet<String> result = instance.getContaminant_MSMS();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getContaminant_specFile_and_scans method, of class
-     * AnalyzeOutcomes.
-     */
-    @Test
-    public void testGetContaminant_MSMSMap() throws Exception {
-        System.out.println("getContaminant_MSMSMap");
-        AnalyzeOutcomes instance = new AnalyzeOutcomesImpl();
-        HashMap<String, HashSet<String>> expResult = null;
-        HashMap<String, HashSet<Integer>> result = instance.getContaminant_specFile_and_scans();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+  
 
     /**
      * Test of getTargetDecoy method, of class AnalyzeOutcomes.
@@ -166,7 +125,7 @@ public class AnalyzeOutcomesTest {
                 if (!line.startsWith("SpectrumFile") && (!line.startsWith("File")) && !line.isEmpty()) {
                     // make sure that a PSM is not contaminant-derived
                     if (!line.contains("contaminant")) {
-                        XilmassResult r = new XilmassResult(line, false, false, "ScoreName");
+                        XilmassResult r = new XilmassResult(line, "ScoreName");
                         // set if it is target or decoy..
                         r.setTarget_decoy(instance.getTargetDecoy(r.getProteinA(), r.getProteinB()));
                         res.add(r);

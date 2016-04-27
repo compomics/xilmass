@@ -11,6 +11,7 @@ import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import scoringFunction.Andromeda_derived;
@@ -277,7 +278,12 @@ public class MatchAndScore {
             for (int numHighestPeak = minFPeaks; numHighestPeak <= maxFPeaks; numHighestPeak++) {
                 Filter filter = new Filter(expMS2, numHighestPeak, massWindow);
                 ArrayList<Peak> filteredPeaks = filter.getFilteredCPeaks();
-                Collections.sort(filteredPeaks, Peak.AscendingMzComparator);
+                Collections.sort(filteredPeaks, new Comparator<Peak>() {
+                    @Override
+                    public int compare(Peak o1, Peak o2) {
+                        return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
+                    }
+                });
                 double probability = (double) numHighestPeak / (double) (filter.getWindowSize());
                 int n = 0;
                 HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = new HashMap<CPeptidePeak, MatchedPeak>();

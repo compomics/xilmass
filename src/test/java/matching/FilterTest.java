@@ -20,9 +20,9 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  *
  * @author Sule
  */
-public class FilteringTest extends TestCase {
+public class FilterTest extends TestCase {
 
-    public FilteringTest(String testName) {
+    public FilterTest(String testName) {
         super(testName);
     }
 
@@ -35,7 +35,6 @@ public class FilteringTest extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-
 
     /**
      * Test of getFilteredCPeaks method, of class Filter.
@@ -78,7 +77,14 @@ public class FilteringTest extends TestCase {
         assertEquals(280.70, result.get(2).getMz());
         assertEquals(300.00, result.get(5).getMz());
         assertEquals(310.00, result.get(4).getMz());
-    }
 
+        instance = new Filter(ms, 1);
+        result = instance.getFilteredCPeaks();
+        assertEquals(3, result.size());
+        assertEquals(199.20, result.get(0).getMz());
+        assertEquals(280.70, result.get(1).getMz());
+        assertEquals(310.00, result.get(2).getMz());
+
+    }
 
 }

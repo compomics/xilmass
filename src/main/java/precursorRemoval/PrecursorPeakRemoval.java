@@ -80,7 +80,7 @@ public class PrecursorPeakRemoval {
         // now clear peak list from possibly derived from precursor peaks
         peaks.removeAll(peaksToRemove);
         ms.getPeakList().clear();
-        ms.setMzOrdered(false);
+//        ms.setMzOrdered(false);
         ms.setPeaks(peaks);
     }
 

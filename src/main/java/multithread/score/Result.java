@@ -261,7 +261,12 @@ public class Result {
         double rt = msms.getPrecursor().getRt();
         // Sort them to write down on a result file
         ArrayList<Peak> matchedPLists = new ArrayList<Peak>(matchedPeaks);
-        Collections.sort(matchedPLists, Peak.AscendingMzComparator);
+        Collections.sort(matchedPLists, new Comparator<Peak>() {
+            @Override
+            public int compare(Peak o1, Peak o2) {
+                return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
+            }
+        });
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
         Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
         String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"

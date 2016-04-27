@@ -83,24 +83,6 @@ public class FASTACPDBLoaderTest {
     }
 
     /**
-     * Test of readFiletoGetCPeptideTheoMass method, of class FASTACPDBLoader.
-     */
-    @Test
-    public void testReadFiletoGetCPeptideTheoMass() throws Exception {
-        System.out.println("readFiletoGetCPeptideTheoMass");
-        File file = null;
-        PTMFactory ptmFactory = null;
-        CrossLinker linker = null;
-        FragmentationMode fragMode = null;
-        boolean isContrastLinkedAttachmentOn = false;
-        HashMap<CPeptides, Double> expResult = null;
-        HashMap<CPeptides, Double> result = FASTACPDBLoader.readFiletoGetCPeptideTheoMass(file, ptmFactory, linker, fragMode, isContrastLinkedAttachmentOn);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of generate_peptide_mass_index method, of class FASTACPDBLoader.
      */
     @Test
@@ -171,75 +153,6 @@ public class FASTACPDBLoaderTest {
         assertEquals(1711.96, result.get(8).getTheoretical_xlinked_mass(), 0.05);
         assertEquals(1843.00, result.get(9).getTheoretical_xlinked_mass(), 0.05);
 
-    }
-
-    /**
-     * Test of generate_peptide_mass_index method, of class FASTACPDBLoader.
-     */
-    @Test
-    public void testGenerate_peptide_mass_index_10args() throws Exception {
-        System.out.println("generate_peptide_mass_index");
-        BufferedWriter bw = null;
-        HashMap<String, StringBuilder> header_sequence = null;
-        PTMFactory ptmFactory = null;
-        ArrayList<String> fixedModifications = null;
-        ArrayList<String> variableModifications = null;
-        CrossLinker linker = null;
-        FragmentationMode fragMode = null;
-        boolean isContrastLinkedAttachmentOn = false;
-        int max_mods_per_peptide = 0;
-        HashMap<String, Integer> acc_and_length = null;
-        HashSet<StringBuilder> expResult = null;
-        HashSet<StringBuilder> result = FASTACPDBLoader.generate_peptide_mass_index(bw, header_sequence, ptmFactory, fixedModifications, variableModifications, max_mods_per_peptide, linker, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of generate_peptide_mass_index_for_contaminants method, of class
-     * FASTACPDBLoader.
-     */
-    @Test
-    public void testGenerate_peptide_mass_index_for_contaminants() throws Exception {
-        System.out.println("generate_peptide_mass_index_for_contaminants");
-        BufferedWriter bw = null;
-        HashMap<String, StringBuilder> header_sequence = null;
-        PTMFactory ptmFactory = null;
-        ArrayList<String> fixedModifications = null;
-        ArrayList<String> variableModifications = null;
-        FragmentationMode fragMode = null;
-        boolean isContrastLinkedAttachmentOn = false;
-        int max_mods_per_peptide = 0;
-        HashMap<String, Integer> acc_and_length = null;
-        HashSet<StringBuilder> expResult = null;
-        HashSet<StringBuilder> result = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw, header_sequence, ptmFactory, fixedModifications, variableModifications, max_mods_per_peptide, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of generate_peptide_mass_index_monoLink method, of class
-     * FASTACPDBLoader.
-     */
-    @Test
-    public void testGenerate_peptide_mass_index_monoLink() throws Exception {
-        System.out.println("generate_peptide_mass_index_monoLink");
-        BufferedWriter bw = null;
-        HashMap<String, StringBuilder> header_sequence = null;
-        PTMFactory ptmFactory = null;
-        ArrayList<String> fixedModifications = null;
-        ArrayList<String> variableModifications = null;
-        CrossLinker linker = null;
-        FragmentationMode fragMode = null;
-        int max_mods_per_peptide = 0;
-        HashMap<String, Integer> acc_and_length = null;
-        HashSet<StringBuilder> expResult = null;
-        HashSet<StringBuilder> result = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw, header_sequence, ptmFactory, fixedModifications, variableModifications, max_mods_per_peptide, linker, fragMode, acc_and_length);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 }

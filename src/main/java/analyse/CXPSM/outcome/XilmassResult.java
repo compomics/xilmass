@@ -101,6 +101,76 @@ public class XilmassResult extends Outcome {
         }
     }
 
+    /**
+     * This constructor is used for testing.
+     *
+     * @param line
+     * @param ScoringFunctionName
+     */
+    public XilmassResult(String line, String ScoringFunctionName) {
+        boolean doesKeepCPeptideFragmPattern = false,
+                doesKeepWeights = false;
+        String[] sp = line.split("\t");
+        calculatedMass = -1;
+        super.spectrumFileName = sp[0];
+        super.spectrumTitle = sp[1];
+        scanNr = sp[2];
+        retentionTime = Double.parseDouble(sp[3]);
+        observedMass = Double.parseDouble(sp[4]);
+        charge = Integer.parseInt(sp[5]);
+        ms1Err = Double.parseDouble(sp[6]);
+        absMS1err = Double.parseDouble(sp[7]);
+        super.peptideA = sp[8];
+        proteinA = sp[9];
+        modA = sp[10];
+        // check if type is indeed cross-linked...
+        type = sp[18];
+
+        super.peptideB = sp[11];
+        proteinB = sp[12];
+        modB = sp[13];
+
+        super.target_decoy = "";
+
+        linkPeptideA = Integer.parseInt(sp[14]);
+        if (!type.equals("MonoLinked")) {
+            linkPeptideB = Integer.parseInt(sp[15]);
+        }
+
+        super.crossLinkedSitePro1 = Integer.parseInt(sp[16]);
+        if (!type.equals("MonoLinked")) {
+            super.crossLinkedSitePro2 = Integer.parseInt(sp[17]);
+        }
+        score = Double.parseDouble(sp[19]);
+        scoringFunctionName = ScoringFunctionName;
+        deltaScore = -1;
+        lnNumSp = Double.parseDouble(sp[21]);
+        lnNumXSp = -1;
+
+        expMatchedPeakList = sp[28];
+        theoMatchedPeakList = sp[29];
+        super.label = sp[30];
+        if (doesKeepCPeptideFragmPattern && doesKeepWeights) {
+            cPeptidePattern = sp[29];
+            ionWeight = sp[30];
+        } else if (doesKeepCPeptideFragmPattern && !doesKeepWeights) {
+            cPeptidePattern = sp[29];
+            ionWeight = "";
+        } else if (!doesKeepCPeptideFragmPattern && doesKeepWeights) {
+            cPeptidePattern = "";
+            ionWeight = sp[29];
+        }
+        // remove the part from "(" on the accession names such as PROTEINACC(START-END)
+        String inSilicoInfo = "(()(\\d+)(-)(\\d+)())";
+        Pattern p = Pattern.compile(inSilicoInfo);
+        if (p.matcher(proteinA).find()) {
+            super.accProteinA = proteinA.split("\\(")[0];
+        }
+        if (p.matcher(proteinB).find()) {
+            super.accProteinB = proteinB.split("\\(")[0];
+        }
+    }
+
     public String getProteinA() {
         return proteinA;
     }
@@ -302,7 +372,7 @@ public class XilmassResult extends Outcome {
                 + expMatchedPeakList + "\t" + theoMatchedPeakList + "\t"
                 + target_decoy + "\t"
                 + super.label;
-        
+
         if (!cPeptidePattern.isEmpty()) {
             toPrint += "\t" + cPeptidePattern;
         }
