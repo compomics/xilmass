@@ -419,7 +419,7 @@ public class Start {
             // here validate the results!        
             String analysis = "11",
                     xilmassResFolder = resultFolder,
-                    scoringFunctionName = "Andromeda",
+                    scoringFunctionName = "AndromedaDerived",
                     output = ConfigHolder.getInstance().getString("tdfile"),
                     allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"),
                     isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
@@ -427,7 +427,7 @@ public class Start {
                     fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
                     fdr = ConfigHolder.getInstance().getString("fdr");
             NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, output, allXPSMsName,
-                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR});
+                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
         } catch (IOException ex) {
             LOGGER.error(ex);
         }

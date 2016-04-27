@@ -6,9 +6,7 @@
 package analyse.CXPSM;
 
 import analyse.CXPSM.prepareOutcome.*;
-import analyse.xwalk_uniprot.color30A.PyMolScriptCol;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import config.ConfigHolder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,79 +16,54 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
-import org.apache.commons.configuration.ConfigurationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * This class selects the best scored XPSM for each spectrum.
+ * This class selects the best scored XPSM for each spectrum for Xilmass.
  *
  * @author Sule
  */
 public class NameTargetDecoy {
 
-    /**
-     *
-     * @param args
-     * @throws IOException
-     * @throws FileNotFoundException
-     * @throws IllegalArgumentException
-     * @throws InterruptedException
-     * @throws ClassNotFoundException
-     * @throws ConfigurationException
-     */
-    public static void main(String[] args) throws IOException, FileNotFoundException, IllegalArgumentException, InterruptedException, ClassNotFoundException, ConfigurationException {
+    public static void main(String[] args) {
 
-        File xilmassResFolder = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("xilmass.results")),
+        // The method of FDR calculation:
+        // true: (full_decoy+half_decoy)/target and false:(half_decoy-full_decoy)/target (pLink-like)        
+        boolean isPITFDR = false;
+        boolean doesContainCPeptidePattern = false,
+                doesContainIonWeight = false;
+
+        int analysis = Integer.parseInt(args[0]);
+        File xilmassResFolder = new File(args[1]),
                 prediction = null,
                 // The validated PSM list from contaminants
-                psms_contamination = null,
-                database = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("database.file"));
+                psms_contamination = null;
+        String scoringFunctionName = args[2];
+        File td = new File(args[3]),
+                allXPSMs = new File(args[4]);
+        double fdr_interPro = Double.parseDouble(args[5]),
+                fdr_intraPro = Double.parseDouble(args[6]),
+                fdr_cutoff = Double.parseDouble(args[7]);
+        boolean doesSplitFDR = Boolean.parseBoolean(args[8]),
+                isMS1ErrPPM = Boolean.parseBoolean(args[9]);
 
-        // get every protein entry on database with their accession numbers
-        HashMap<String, String> accs = getAccs(database);
-        String proteinA = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinA"),
-                proteinB = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("proteinB"),
-                scoringFunctionName = ConfigHolder.getTargetDecoyAnalyzeInstance().getString("scoringFunctionName");
-
-        String[] protein_names = {proteinA, proteinB};
-        boolean isPITFDR = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.PIT.FDR"),
-                isMS1ErrPPM = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("is.ms1Err.ppm"),
-                doesContainCPeptidePattern = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainCPeptidePattern"),
-                doesContainIonWeight = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesContainIonWeight"),
-                doesCheckLysine = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("doesCheckLysine"),
-                isBasedOnManualValidation = false,
-                isRequiredPostprocessing = ConfigHolder.getTargetDecoyAnalyzeInstance().getBoolean("isRequiredPostprocessing");
-        double qvalue = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("qvalue"),
-                fdr_cutoff = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdr"),
-                fdr_interPro = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdrInterPro"),
-                fdr_intraPro = ConfigHolder.getTargetDecoyAnalyzeInstance().getDouble("fdrIntraPro");
-        int analysis = ConfigHolder.getTargetDecoyAnalyzeInstance().getInt("analysis"); // 1-Kojak/2-AllPLink 3-ValPLink 4-Xilmass 5-PercolatorKojak runs! 6-Percolator-Xilmass runs
-
-        File td = null,
-                allXPSMs = null;
-        boolean doesSplitFDR = true;
-        if (args.length > 1) {
-            analysis = Integer.parseInt(args[0]);
-            xilmassResFolder = new File(args[1]);
-            scoringFunctionName = args[2];
-            td = new File(args[3]);
-            allXPSMs = new File(args[4]);
-            fdr_interPro = Double.parseDouble(args[5]);
-            fdr_intraPro = Double.parseDouble(args[6]);
-            fdr_cutoff = Double.parseDouble(args[7]);
-            doesSplitFDR = Boolean.parseBoolean(args[8]);
-        } else {
-            td = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("output"));
-            allXPSMs = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("allXPSMOutputName"));
-            // Xwalk predicted and manullay curated cross linking sites
-            prediction = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("prediction"));
-            psms_contamination = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("psms.contaminant"));
+        try {
+            td.createNewFile();
+        } catch (IOException ex) {
+            System.out.println("An output file that contains validated XPSMs (by setting output) cannot be created! Check \"output\" properties");
+            Logger.getLogger(NameTargetDecoy.class.getName()).log(Level.SEVERE, null, ex);
         }
-        td.createNewFile();
-        allXPSMs.createNewFile();
+        try {
+            allXPSMs.createNewFile();
+        } catch (IOException ex) {
+            System.out.println("A file that contains all XPSMs (by setting allXPSMOutputName) cannot be created! Check \"allXPSMOutputName\" properties");
+            Logger.getLogger(NameTargetDecoy.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         // NOW RUN!!!
         AnalyzeOutcomes o = null;
-        if (!isRequiredPostprocessing) {
+        try {
             switch (analysis) {
                 case 0:
                     o = new AnalyzeXilmass(xilmassResFolder, td, prediction, psms_contamination, fdr_cutoff, isPITFDR, isMS1ErrPPM, doesContainCPeptidePattern, doesContainIonWeight,
@@ -108,10 +81,10 @@ public class NameTargetDecoy {
             o.run();
 
             // now check post-processing
-        } else {
-            File measuredDistOuputFile = new File(ConfigHolder.getTargetDecoyAnalyzeInstance().getString("measuredDistOuputFile"));
-            post_processing(td, measuredDistOuputFile);
+        } catch (IOException ex) {
+            Logger.getLogger(NameTargetDecoy.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     /**
@@ -164,7 +137,7 @@ public class NameTargetDecoy {
         BufferedReader br = new BufferedReader(new FileReader(output));
         BufferedWriter bw = new BufferedWriter(new FileWriter(outputWdists));
 
-        HashMap<String, Double> distName_and_computedDist = PyMolScriptCol.get_distName_and_computedDist(measuredDistOuputFile, true);
+        HashMap<String, Double> distName_and_computedDist = new HashMap<String, Double>();
 
         String line = "",
                 title = "";
