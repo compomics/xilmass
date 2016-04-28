@@ -90,7 +90,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>start.RunAndValidate</mainClass>
+                            <mainClass>start.Start</mainClass>
                             <!--mainClass>visualize.Visualize</mainClass-->
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
