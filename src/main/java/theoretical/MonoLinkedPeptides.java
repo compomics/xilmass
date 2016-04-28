@@ -189,7 +189,7 @@ public class MonoLinkedPeptides extends CrossLinking {
     public String toPrint() {
         int peptide_pos = linker_position + 1,
                 protein_pos = linker_position_protein + 1;
-        return peptide.getSequenceWithLowerCasePtms() + "\t" + protein + "\t" + getModificationInfo(peptide) + "\t"
+        return peptide.getSequence() + "\t" + protein + "\t" + getModificationInfo(peptide) + "\t"
                 + "-" + "\t" + "-" + "\t" + "-" + "\t"
                 + peptide_pos + "\t" + "-" + "\t"
                 + protein_pos + "\t" + "-" + "\t"
