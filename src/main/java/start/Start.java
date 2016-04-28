@@ -35,6 +35,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import precursorRemoval.MascotAdaptedPrecursorPeakRemoval;
 import specprocessing.DeisotopingAndDeconvoluting;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -48,7 +52,7 @@ public class Start {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-
+        sendAnalyticsEvent();
         try {
             long startTime = System.currentTimeMillis();
             Date startDate = new Date();
@@ -1002,6 +1006,25 @@ public class Start {
             }
         }
         return isEnabled;
+    }
+
+    /**
+     * Send an event to the google analytics server for tool start monitoring.
+     */
+    private static void sendAnalyticsEvent() {
+        String COLLECT_URL = "http://www.google-analytics.com/collect";
+        String POST = "v=1&tid=UA-36198780-12&cid=35119a79-1a05-49d7-b876-bb88420f825b&uid=asuueffeqqss&t=event&ec=usage&ea=toolstart&el=xilmass";
+
+        //spring rest template
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<String> request = new HttpEntity<String>(POST);
+        ResponseEntity<String> postForEntity
+                = restTemplate.postForEntity(COLLECT_URL,
+                        request, String.class);
+
+        if (postForEntity.getStatusCode().equals(HttpStatus.OK)) {
+            LOGGER.info("Successfully sent analytics event.");
+        }
     }
 
 }
