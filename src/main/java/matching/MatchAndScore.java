@@ -27,7 +27,7 @@ import theoretical.CrossLinking;
 /**
  *
  * This class finds matched peaks between a pair of an experimental and
- * theoretical spectrum. Then, it calculates a cXPSMScore!
+ * theoretical spectrum. Then, it calculates a score for a XPSM!
  *
  * @author Sule
  */
@@ -44,7 +44,7 @@ public class MatchAndScore {
             singlyChargedTheoXLPeaksAL = new ArrayList<CPeptidePeak>(),
             doublyChargedTheoXLPeaksAL = new ArrayList<CPeptidePeak>();
     private double fragTol, // fragment tolerance to select
-            cXPSMScore = 0, // A CX-PSM Score
+            xPSMScore = 0, // A XPSM Score
             massWindow = 100, // Mass window to filter out peaks from a given MSnSpectrum
             fracIonTheoPepA = 0, //numFoundTheoPeak/allTheoPeak)PepA
             fracIonTheoPepB = 0, //numFoundTheoPeak/allTheoPeak)PepB
@@ -73,7 +73,7 @@ public class MatchAndScore {
         this.cPeptides = cPeptides;
         if (cPeptides != null) {
             theoXLMS2ions = cPeptides.getTheoretical_ions();
-            theoXLPeaks = getTheoreticalCXPeaks();
+            theoXLPeaks = getTheoreticalXLPeaks();
             isTheoXLPeaksReady = true;
         }
         if (cPeptides instanceof CPeptides) {
@@ -152,7 +152,7 @@ public class MatchAndScore {
      *
      * @return
      */
-    public HashSet<CPeptideIon> getTheoreticalCXMS2ions() {
+    public HashSet<CPeptideIon> getTheoreticalXLMS2ions() {
         if (theoXLMS2ions.isEmpty()) {
             theoXLMS2ions = cPeptides.getTheoretical_ions();
         }
@@ -169,10 +169,15 @@ public class MatchAndScore {
         return cPeptides;
     }
 
-    public ArrayList<CPeptidePeak> getTheoreticalCXPeaksAL() {
+    /**
+     * Returns an arraylist of CPeptidePeaks for theoretical XPeaks.
+     *
+     * @return
+     */
+    public ArrayList<CPeptidePeak> getTheoreticalXPeaksAL() {
         if (!isTheoXLPeaksReady) {
             isFoundAndMatched = false;
-            getTheoreticalCXPeaks();
+            getTheoreticalXLPeaks();
         }
         return theoXLPeaksAL;
     }
@@ -190,7 +195,7 @@ public class MatchAndScore {
     public void setTheoreticalCXMS2ions(HashSet<CPeptideIon> theoreticalCXMS2ions) {
         this.theoXLMS2ions = theoreticalCXMS2ions;
         isTheoXLPeaksReady = false;
-        theoXLPeaks = getTheoreticalCXPeaks();
+        theoXLPeaks = getTheoreticalXLPeaks();
     }
 
     /**
@@ -202,9 +207,9 @@ public class MatchAndScore {
         isTheoXLPeaksReady = false;
         this.cPeptides = cPeptides;
         matchedPeaks = new HashSet<Peak>();
-        cXPSMScore = Double.MIN_VALUE;
+        xPSMScore = Double.MIN_VALUE;
         theoXLMS2ions = cPeptides.getTheoretical_ions();
-        theoXLPeaks = getTheoreticalCXPeaks();
+        theoXLPeaks = getTheoreticalXLPeaks();
         matchedTheoXLPeaks = new HashSet<CPeptidePeak>();
         isFoundAndMatched = false;
     }
@@ -266,14 +271,13 @@ public class MatchAndScore {
      * binomial probability based scoring_type based on three different
      * approaches
      *
-     * TODO: Future - Instead of weight calculation after finding matched peaks,
-     * count each matched peak while finding any match in order to speed up
      *
      * @return
      */
     public double getXPSMScore() {
         if (!isFoundAndMatched) {
-            int totalTheoN = getTheoreticalCXPeaks().size(); // all theoretical peaks...
+            Collections.sort(theoXLPeaksAL, CPeptidePeak.order_CPeptidePeak);
+            int totalTheoN = getTheoreticalXLPeaks().size(); // all theoretical peaks...
             ArrayList<Double> scores = new ArrayList<Double>();
             for (int numHighestPeak = minFPeaks; numHighestPeak <= maxFPeaks; numHighestPeak++) {
                 Filter filter = new Filter(expMS2, numHighestPeak, massWindow);
@@ -355,8 +359,8 @@ public class MatchAndScore {
                                 matched_theoretical_and_matched_peaks.put(tmpCPeak, tmps);
                             }
 //                           leave the loop if a theoretical peak in selection has m/z is out of the fragment tolerance for the given experimental peak
-                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
-                            i = theoXLPeaksAL.size();
+//                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
+//                            i = theoXLPeaksAL.size();
                         }
                     }
                 }
@@ -401,7 +405,7 @@ public class MatchAndScore {
                 }
             }
             isFoundAndMatched = true;
-            cXPSMScore = Collections.max(scores);
+            xPSMScore = Collections.max(scores);
 
             // now calculate observed mass and mass error
             observedMass = calculateObservedMass(expMS2);
@@ -417,7 +421,7 @@ public class MatchAndScore {
             ms1Err = CalculateMS1Err.getMS1Err(isPPM, calculatedPrecMass, observedPrecMass);
             absMS1Err = Math.abs(ms1Err);
         }
-        return cXPSMScore;
+        return xPSMScore;
     }
 
     /**
@@ -515,14 +519,14 @@ public class MatchAndScore {
      *
      * @return
      */
-    public HashSet<CPeptidePeak> getMatchedTheoreticalCPeaks() {
+    public HashSet<CPeptidePeak> getMatchedTheoreticalXLPeaks() {
         if (!isFoundAndMatched) {
             getXPSMScore();
         }
         return matchedTheoXLPeaks;
     }
 
-    public void setMatchedTheoreticalCPeaks(HashSet<CPeptidePeak> matchedTheoPeaks) {
+    public void setMatchedTheoreticalXLPeaks(HashSet<CPeptidePeak> matchedTheoPeaks) {
         this.matchedTheoXLPeaks = matchedTheoPeaks;
     }
 
@@ -532,52 +536,55 @@ public class MatchAndScore {
      * different charge state) and so such peaks are collapsed into one single
      * peak with combined/updated name
      *
-     * So it returns a hashset named theoXLPeaks containing mz values for all
-     * singly and doubly charged theoretical CXIons
+     * So it returns a hashset named theoXLPeaks containing m/z values for all
+     * singly and doubly charged theoretical XL ions
      *
      *
      * @return
      */
-    public HashSet<CPeptidePeak> getTheoreticalCXPeaks() {
+    public HashSet<CPeptidePeak> getTheoreticalXLPeaks() {
         if (!isTheoXLPeaksReady) {
             theoXLPeaks = new HashSet<CPeptidePeak>();
-            theoXLMS2ions = getTheoreticalCXMS2ions();
+            theoXLMS2ions = getTheoreticalXLMS2ions();
             HashSet<CPeptidePeak> cPeakList = new HashSet<CPeptidePeak>();
-            HashMap<CPeptidePeak, Double> singlyCharged_peak_and_mz = new HashMap<CPeptidePeak, Double>();
+            HashMap<Double, CPeptidePeak> mz_and_peaks = new HashMap<Double, CPeptidePeak>();
             for (CPeptideIon c : theoXLMS2ions) {
                 // singly and doubly charged ones..
                 String name = "singlyCharged_" + c.getName();
                 double singly_mz = c.get_theoretical_mz(1);
-                CPeptidePeak singly_charged = new CPeptidePeak(singly_mz, c.getIntensity(), 1, name);
-                singlyCharged_peak_and_mz.put(singly_charged, singly_mz);
-                cPeakList.add(singly_charged);
-                singlyChargedTheoXLPeaksAL.add(singly_charged);
-            }
+                // check if this mz value already mapped
+                if (mz_and_peaks.containsKey(singly_mz)) {
+                    // then update this
+                    CPeptidePeak tmp = mz_and_peaks.get(singly_mz);
+                    tmp.setName(tmp.getName() + "--" + name);
+                } else {
+                    CPeptidePeak singly_charged = new CPeptidePeak(singly_mz, c.getIntensity(), name);
+                    cPeakList.add(singly_charged);
+                    singlyChargedTheoXLPeaksAL.add(singly_charged);
+                    mz_and_peaks.put(singly_mz, singly_charged);
+                }
 
-            // if precursor charge is bigger than one, add only doubly charged ions
-            if (getPrecursorCharge() > 1) {
-                for (CPeptideIon c : theoXLMS2ions) {
-                    String name = "doublyCharged_" + c.getName();
+                if (getPrecursorCharge() > 1) {
+                    name = "doublyCharged_" + c.getName();
                     double doubly_mz = c.get_theoretical_mz(2);
-                    CPeptidePeak doubly_charged = new CPeptidePeak(doubly_mz, c.getIntensity(), 2, name);
-                    if (singlyCharged_peak_and_mz.containsValue(doubly_mz)) {
-                        for (CPeptidePeak cP : singlyCharged_peak_and_mz.keySet()) {
-                            if (singlyCharged_peak_and_mz.get(cP) == doubly_mz) {
-                                name = cP.getName() + "_" + name; // update name by combining...
-                                cP.setName(name);
-                            }
-                        }
+                    // check again if this m/z is already mapped
+                    if (mz_and_peaks.containsKey(doubly_mz)) {
+                        // then update this
+                        CPeptidePeak tmp = mz_and_peaks.get(doubly_mz);
+                        tmp.setName(tmp.getName() + "--" + name);
                     } else {
+                        CPeptidePeak doubly_charged = new CPeptidePeak(doubly_mz, c.getIntensity(), name);
                         cPeakList.add(doubly_charged);
                         doublyChargedTheoXLPeaksAL.add(doubly_charged);
+                        mz_and_peaks.put(doubly_mz, doubly_charged);
                     }
                 }
             }
             theoXLPeaks.addAll(cPeakList);
             theoXLPeaksAL = new ArrayList<CPeptidePeak>(theoXLPeaks);
-            Collections.sort(theoXLPeaksAL, CPeptidePeak.Peak_ASC_mz_order);
-            Collections.sort(singlyChargedTheoXLPeaksAL, CPeptidePeak.Peak_ASC_mz_order);
-            Collections.sort(doublyChargedTheoXLPeaksAL, CPeptidePeak.Peak_ASC_mz_order);
+            Collections.sort(theoXLPeaksAL, CPeptidePeak.order_CPeptidePeak);
+            Collections.sort(singlyChargedTheoXLPeaksAL, CPeptidePeak.order_CPeptidePeak);
+            Collections.sort(doublyChargedTheoXLPeaksAL, CPeptidePeak.order_CPeptidePeak);
             isTheoXLPeaksReady = true;
             return cPeakList;
         } else {
