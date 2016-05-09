@@ -141,7 +141,7 @@ public class MatchAndScoreTest extends TestCase {
         assertEquals(1, result.size());
         assertEquals(288.19623, result.get(0).mz, 0.001);
 
-        ArrayList<CPeptidePeak> resultCPs = new ArrayList<CPeptidePeak>(instance.getMatchedTheoreticalCPeaks());
+        ArrayList<CPeptidePeak> resultCPs = new ArrayList<CPeptidePeak>(instance.getMatchedTheoreticalXLPeaks());
         assertEquals(1, resultCPs.size());
         assertEquals(288.21, resultCPs.get(0).getMz(), 0.01);
 
@@ -170,6 +170,51 @@ public class MatchAndScoreTest extends TestCase {
         result = new ArrayList<Peak>(instance.getMatchedPeaks());
         assertEquals(1, result.size());
         assertEquals(129.10219, result.get(0).mz, 0.001);
+    }
+
+    /**
+     * Test of Problem, of class MatchAndScore.
+     */
+    public void testProblem() throws IOException, FileNotFoundException, ClassNotFoundException, MzMLUnmarshallerException {
+        System.out.println("Problem");
+        String expMGFFolder = "Data\\Test\\matching/";
+        MSnSpectrum first_problem_ms = null;
+
+        for (File mgf : new File(expMGFFolder).listFiles()) {
+            if (mgf.getName().endsWith("problem.mgf")) {
+                SpectrumFactory fct = SpectrumFactory.getInstance();
+                fct.addSpectra(mgf);
+                for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                    if (title.equals("problem_stupid_uniform_testing_mgf")) {
+                        first_problem_ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                    }
+                }
+            }
+        }
+        double fragTol = 0.5;
+        // CPeptides must be already generated.. to prepare CPeptides object to score
+        ArrayList<ModificationMatch> mods = new ArrayList<ModificationMatch>();
+        // Fixed modification is Carbamidomethylation of C
+        String proteinA = "proA(9-20)",
+                proteinB = "proB(5-10)";
+        Peptide peptideA = new Peptide("FAERIEEESDTDKMKR", mods),
+                peptideB = new Peptide("EKGRMRFHK", mods);
+        DSS linker = new DSS(true);
+        CPeptides c = new CPeptides(proteinA, proteinB, peptideA, peptideB, linker, 14, 1, FragmentationMode.HCD, false);
+        MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 10, 100, true, true);
+
+        ArrayList<CPeptidePeak> theoreticalCXPeaksAL = instance.getTheoreticalXPeaksAL();
+        boolean exist = false;
+        for (CPeptidePeak cc : theoreticalCXPeaksAL) {
+            if (cc.getName().equals("doublyCharged_pepB_y8_lepA_y14--doublyCharged_pepA_y13")) {
+                exist = true;
+            } else if (cc.getName().equals("doublyCharged_pepA_y13--doublyCharged_pepB_y8_lepA_y14")) {
+                exist = true;
+            }
+        }
+        assertTrue(exist);
+        assertEquals(96, instance.getTheoreticalXLMS2ions().size());
+        assertEquals(180, instance.getTheoreticalXPeaksAL().size());
     }
 
     /**
@@ -245,7 +290,7 @@ public class MatchAndScoreTest extends TestCase {
         assertEquals(101.4, result.get(2).mz);
         assertEquals(102.4, result.get(3).mz);
         assertEquals(103.7, result.get(4).mz);
-        assertEquals(5, instance.getMatchedTheoreticalCPeaks().size());
+        assertEquals(5, instance.getMatchedTheoreticalXLPeaks().size());
 
         System.out.println("PSMScore = " + instance.getXPSMScore());
 
@@ -272,7 +317,7 @@ public class MatchAndScoreTest extends TestCase {
 
         assertEquals(10, result.size());
         //eventhough the number of the matched experimental peaks is 10, the number of the theoretical peak is 5 (cannot be bigger than what we have as a list)
-        assertEquals(5, instance.getMatchedTheoreticalCPeaks().size());
+        assertEquals(5, instance.getMatchedTheoreticalXLPeaks().size());
 
         // just printing to see matched peaks..
         for (Peak p : result) {
@@ -330,7 +375,7 @@ public class MatchAndScoreTest extends TestCase {
     }
 
     /**
-     * Test of getTheoreticalCXPeaks method, of class MatchAndScore.
+     * Test of getTheoreticalXLPeaks method, of class MatchAndScore.
      */
     @Test
     public void testGetTheoreticalCXPeaks() throws ClassNotFoundException, IOException, MzMLUnmarshallerException {
@@ -379,10 +424,10 @@ public class MatchAndScoreTest extends TestCase {
         CPeptides c = new CPeptides("proA(1-25)", "proB(1-25)", p1, p2, linker, 1, 1, FragmentationMode.CID, false);
 
         MatchAndScore instance = new MatchAndScore(first_problem_ms, ScoreName.AndromedaD, c, fragTol, 0, 1, 11, 100, false, false);
-        instance.getTheoreticalCXPeaks();
+        instance.getTheoreticalXLPeaks();
         instance.getXPSMScore();
 
-        HashSet<CPeptidePeak> result = instance.getTheoreticalCXPeaks();
+        HashSet<CPeptidePeak> result = instance.getTheoreticalXLPeaks();
         assertEquals(38, result.size());
     }
 
@@ -392,7 +437,7 @@ public class MatchAndScoreTest extends TestCase {
     @Test
     public void testGetWeightedExplainedIntensities() {
         System.out.println("getWeightedExplainedIntensities");
-        CPeptidePeak cp = new CPeptidePeak(304.18, 100, 1, "name");
+        CPeptidePeak cp = new CPeptidePeak(304.18, 100, "name");
         MatchedPeak m1 = new MatchedPeak(new Peak(304.16177, 100), null, 0.2),
                 m2 = new MatchedPeak(new Peak(304.19131, 120), null, 0.3);
         ArrayList<MatchedPeak> ms = new ArrayList<MatchedPeak>();
@@ -444,31 +489,31 @@ public class MatchAndScoreTest extends TestCase {
         }
 
         HashSet<CPeptidePeak> tmps = new HashSet<CPeptidePeak>();
-        tmps.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
-        tmps.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b1_mz=129.1022"));
-        tmps.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y1_pepB_y1_mz=147.1128"));
-        tmps.add(new CPeptidePeak(4, 1, 1, "doublyCharged_pepB_a3_lepA_monolink_a1_mz=242.6601"));
-        tmps.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
-        tmps.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
-        tmps.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
+        tmps.add(new CPeptidePeak(1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
+        tmps.add(new CPeptidePeak(2, 1, "singlyCharged_pepA_b1_mz=129.1022"));
+        tmps.add(new CPeptidePeak(3, 1, "singlyCharged_pepA_y1_pepB_y1_mz=147.1128"));
+        tmps.add(new CPeptidePeak(4, 1, "doublyCharged_pepB_a3_lepA_monolink_a1_mz=242.6601"));
+        tmps.add(new CPeptidePeak(5, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
+        tmps.add(new CPeptidePeak(6, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
+        tmps.add(new CPeptidePeak(7, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
 
         // 6-FoundA and 4-FoundB
         ArrayList<CPeptidePeak> alls = new ArrayList<CPeptidePeak>();
-        alls.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
-        alls.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b1_mz=129.1022"));
-        alls.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y1_pepB_y1_mz=147.1128"));
-        alls.add(new CPeptidePeak(4, 1, 1, "doublyCharged_pepB_a3_lepA_monolink_a1_mz=242.6601"));
-        alls.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
-        alls.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
-        alls.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
+        alls.add(new CPeptidePeak(1, 1, "doublyCharged_pepA_a1_lepB_monolink_a3_mz=129.0966"));
+        alls.add(new CPeptidePeak(2, 1, "singlyCharged_pepA_b1_mz=129.1022"));
+        alls.add(new CPeptidePeak(3, 1, "singlyCharged_pepA_y1_pepB_y1_mz=147.1128"));
+        alls.add(new CPeptidePeak(4, 1, "doublyCharged_pepB_a3_lepA_monolink_a1_mz=242.6601"));
+        alls.add(new CPeptidePeak(5, 1, "singlyCharged_pepA_a1_lepB_monolink_a3_mz=257.1859"));
+        alls.add(new CPeptidePeak(6, 1, "doublyCharged_pepA_b1_lepB_b4_mz=368.2418"));
+        alls.add(new CPeptidePeak(7, 1, "doublyCharged_pepA_y5_lepB_y4_mz=576.8655"));
 
-        alls.add(new CPeptidePeak(1, 1, 1, "doublyCharged_pepA_a2_lepB_monolink_a3_mz=129.0966"));
-        alls.add(new CPeptidePeak(2, 1, 1, "singlyCharged_pepA_b2_mz=129.1022"));
-        alls.add(new CPeptidePeak(3, 1, 1, "singlyCharged_pepA_y2_pepB_y2_mz=147.1128"));
-        alls.add(new CPeptidePeak(4, 1, 1, "doublyCharged_pepB_a4_lepA_monolink_a2_mz=242.6601"));
-        alls.add(new CPeptidePeak(5, 1, 1, "singlyCharged_pepA_a5_lepB_monolink_a2_mz=257.1859"));
-        alls.add(new CPeptidePeak(6, 1, 1, "doublyCharged_pepA_b5_lepB_b2_mz=368.2418"));
-        alls.add(new CPeptidePeak(7, 1, 1, "doublyCharged_pepA_y7_lepB_y6_mz=576.8655"));
+        alls.add(new CPeptidePeak(1, 1, "doublyCharged_pepA_a2_lepB_monolink_a3_mz=129.0966"));
+        alls.add(new CPeptidePeak(2, 1, "singlyCharged_pepA_b2_mz=129.1022"));
+        alls.add(new CPeptidePeak(3, 1, "singlyCharged_pepA_y2_pepB_y2_mz=147.1128"));
+        alls.add(new CPeptidePeak(4, 1, "doublyCharged_pepB_a4_lepA_monolink_a2_mz=242.6601"));
+        alls.add(new CPeptidePeak(5, 1, "singlyCharged_pepA_a5_lepB_monolink_a2_mz=257.1859"));
+        alls.add(new CPeptidePeak(6, 1, "doublyCharged_pepA_b5_lepB_b2_mz=368.2418"));
+        alls.add(new CPeptidePeak(7, 1, "doublyCharged_pepA_y7_lepB_y6_mz=576.8655"));
 
         // 6-FoundA and 4-FoundB 12-AllA 8-AllB
         // 6/12*4/8= 0.25         
