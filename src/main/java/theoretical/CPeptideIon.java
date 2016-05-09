@@ -24,6 +24,15 @@ public class CPeptideIon {
     private CPeptideIonType type;
     private String name;
 
+    /**
+     * To construct a CPeptideIon object
+     * 
+     * @param intensity
+     * @param mass
+     * @param type
+     * @param fragmentIonType
+     * @param name 
+     */
     public CPeptideIon(double intensity, double mass, CPeptideIonType type, int fragmentIonType, String name) {
         this.intensity = intensity;
         this.type = type;
@@ -165,13 +174,50 @@ public class CPeptideIon {
     }
 
     /**
-     * To sort CPeptideIon in a ascending mass order
+     * To sort CPeptideIon in a ascending mass order, if two peptide have the same mass, then the one on peptide backbone is selected. 
+     * In case that both from 
      */
     public static final Comparator<CPeptideIon> Ion_ASC_mass_order
             = new Comparator<CPeptideIon>() {
                 @Override
                 public int compare(CPeptideIon o1, CPeptideIon o2) {
-                    return o1.getMass() < o2.getMass() ? -1 : o1.getMass() == o2.getMass() ? 0 : 1;
+
+                    double diff = o1.getMass() - o2.getMass();
+                    // order peaks by first m/z order 
+                    if (diff < 0) {
+                        return -1;
+                    } else if (diff > 0) {
+                        return 1;
+                        // if two peaks have the same m/z values
+                    } else {
+                        boolean is_o1_peptideA = false,
+                        is_o2_peptideA = false,
+                        is_o1_peptideB = false,
+                        is_o2_peptideB = false;
+
+                        if (o1.getName().contains("pepA") && (!o1.getName().contains("lepB"))) {
+                            is_o1_peptideA = true;
+                        } else if (o1.getName().contains("pepB") && (!o1.getName().contains("lepA"))) {
+                            is_o1_peptideB = true;
+                        }
+                        if (o2.getName().contains("pepA") && (!o2.getName().contains("lepB"))) {
+                            is_o2_peptideA = true;
+                        } else if (o2.getName().contains("pepB") && (!o2.getName().contains("lepA"))) {
+                            is_o2_peptideB = true;
+                        }
+                        // first select the peak from a backbone
+                        if (is_o1_peptideA && !is_o1_peptideB && !is_o2_peptideA && !is_o2_peptideB) {
+                            return -1;
+                        } else if (!is_o1_peptideA && is_o1_peptideB && !is_o2_peptideA && !is_o2_peptideB) {
+                            return -1;
+                        } else if (!is_o1_peptideA && !is_o1_peptideB && is_o2_peptideA && !is_o2_peptideB) {
+                            return -1;
+                        } else if (!is_o1_peptideA && !is_o1_peptideB && !is_o2_peptideA && is_o2_peptideB) {
+                            return -1;
+                        } else {
+                            return -1;
+                        }
+                    }
                 }
             };
 

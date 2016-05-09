@@ -197,9 +197,9 @@ public class CPeptides extends CrossLinking {
         boolean isLinkedPeptideA = true,
                 isPeptideA = true;
         theoretical_ions.addAll(getBackbone(product_ions_peptideA, isPeptideA));
-        theoretical_ions.addAll(getBackbone(product_ions_peptideB, !isPeptideA));
+        theoretical_ions.addAll(getBackbone(product_ions_peptideB, !isPeptideA));        
         prepare_linkedBackbone(!isLinkedPeptideA);
-        prepare_linkedBackbone(isLinkedPeptideA);
+        prepare_linkedBackbone(isLinkedPeptideA);     
         // sort them all theoretical_ions - NOT SURE!
         ArrayList<CPeptideIon> theoretical_ions_al = new ArrayList<CPeptideIon>(theoretical_ions);
         Collections.sort(theoretical_ions_al, CPeptideIon.Ion_ASC_mass_order);
@@ -287,39 +287,23 @@ public class CPeptides extends CrossLinking {
      */
     public void prepare_linkedBackbone(boolean isLinkedPeptideA) {
         if (fragmentation_mode.equals(FragmentationMode.CID)) {
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA, false)); // b ions            
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA, false)); // y ions
-            if (isContrastLinkedAttachmentOn) {
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA, true)); // b ions            
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA, true)); // y ions
-            }
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA)); // b ions            
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA)); // y ions
+
         } else if (fragmentation_mode.equals(FragmentationMode.ETD)) {
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.C_ION, isLinkedPeptideA, false)); // c ions
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Z_ION, isLinkedPeptideA, false)); // z ions
-            if (isContrastLinkedAttachmentOn) {
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.C_ION, isLinkedPeptideA, true)); // c ions
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Z_ION, isLinkedPeptideA, true)); // z ions
-            }
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.C_ION, isLinkedPeptideA)); // c ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Z_ION, isLinkedPeptideA)); // z ions
+
         } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA, false)); // b ions
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA, false)); // a ions
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA, false)); // y ions
-            if (isContrastLinkedAttachmentOn) {
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA, true)); // b ions
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA, true)); // a ions
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA, true)); // y ions
-            }
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA)); // b ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA)); // a ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA)); // y ions
+
         } else if (fragmentation_mode.equals(FragmentationMode.HCD_all)) {
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA, false)); // a ions
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA, false)); // b ions
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.X_ION, isLinkedPeptideA, false)); // x ions
-            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA, false)); // y ions
-            if (isContrastLinkedAttachmentOn) {
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA, true)); // a ions with linked to 
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA, true)); // b ions
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.X_ION, isLinkedPeptideA, true)); // x ions
-                theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA, true)); // y ions
-            }
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.A_ION, isLinkedPeptideA)); // a ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.B_ION, isLinkedPeptideA)); // b ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.X_ION, isLinkedPeptideA)); // x ions
+            theoretical_ions.addAll(prepare_linked_peptides(PeptideFragmentIon.Y_ION, isLinkedPeptideA)); // y ions            
         }
     }
 
@@ -329,12 +313,10 @@ public class CPeptides extends CrossLinking {
      *
      * @param fragmentIonType
      * @param isLinkedPeptideA true/false - a linked peptide is peptideA or
-     * @param isContrastIonsLinked an attached fragment ions comes from
-     * containing other type of linking (is a peptideA has N-termini ions,
-     * attached peptideB has C-termini ions peptideB
+     *
      * @return
      */
-    public ArrayList<CPeptideIon> prepare_linked_peptides(int fragmentIonType, boolean isLinkedPeptideA, boolean isContrastIonsLinked) {
+    public ArrayList<CPeptideIon> prepare_linked_peptides(int fragmentIonType, boolean isLinkedPeptideA) {
         String lepName = "lepA",
                 pepName = "pepB";
         HashMap<Integer, ArrayList<Ion>> backbone_ions = product_ions_peptideB;
@@ -425,7 +407,7 @@ public class CPeptides extends CrossLinking {
                 int reader_index = i + 1;
                 String name = rootName + "_" + lepName + "_" + abbrIonType + reader_index;
                 tmp_ion.setName(name);
-                double tmp_mass = linkedIon.getTheoreticMass() + tmp_ion.getMass() + linker.getMassShift_Type2();
+                double tmp_mass = tmp_ion.getMass() + linkedIon.getTheoreticMass() + linker.getMassShift_Type2();
                 tmp_ion.setMass(tmp_mass);
                 // select to be removed one..
                 if ((isLinkedPeptideA && i == linker_position_on_peptideA && isNtermini)

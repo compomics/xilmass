@@ -577,8 +577,8 @@ public class Start {
         // now check all spectra to collect all required calculations...
         // now get query range..
         ArrayList<CrossLinking> selectedCPeptides = new ArrayList<CrossLinking>();
+        double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
         for (PeptideTol pepTol : pepTols) {
-            double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
             // C13 peaks might be selected over C12 peaks if precursor mass is higher than 2500Da,
             // we start observing C13 peaks more abundant than C12 peaks around 1800-2000Da
             if ((pepTol.getPeptide_tol_base() >= (DeisotopingAndDeconvoluting.getDiffC12C13() - fragTol) && precMass > minPrecMassIsotopicPeakSelected)

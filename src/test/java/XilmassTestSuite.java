@@ -4,12 +4,6 @@
  * and open the template in the editor.
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 import analyse.CXPSM.outcome.XilmassResultTest;
 import analyse.CXPSM.prepareOutcome.AnalyzeOutcomesTest;
@@ -19,6 +13,12 @@ import matching.FilterTest;
 import matching.MatchAndScoreTest;
 import multithread.score.ScorePSMTest;
 import naming.DefineIdCPeptideFragmentationPatternTest;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 import precursorRemoval.MascotAdaptedPrecursorPeakRemovalTest;
 import scoringFunction.Andromeda_derivedTest;
 import scoringFunction.CumulativeBinomialProbabilityBasedScoringTest;
@@ -29,6 +29,7 @@ import start.GetPTMsTest;
 import start.PeptideTolTest;
 import start.StartTest;
 import theoretical.CPeptideIonTest;
+import theoretical.CPeptidePeakTest;
 import theoretical.CPeptidesTest;
 import theoretical.CrossLinkingTest;
 import theoretical.LinkedPeptideFragmentIonTest;
@@ -80,7 +81,8 @@ import theoretical.MonoLinkedPeptidesTest;
     CPeptidesTest.class,
     CrossLinkingTest.class,
     LinkedPeptideFragmentIonTest.class,
-    MonoLinkedPeptidesTest.class
+    MonoLinkedPeptidesTest.class,
+    CPeptidePeakTest.class
 })
 
 public class XilmassTestSuite {

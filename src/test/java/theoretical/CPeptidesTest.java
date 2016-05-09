@@ -262,7 +262,7 @@ public class CPeptidesTest extends TestCase {
         int fragmentIonType = PeptideFragmentIon.B_ION;
         boolean isLinkedPeptideA = false;
 
-        ArrayList<CPeptideIon> result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        ArrayList<CPeptideIon> result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
@@ -275,7 +275,7 @@ public class CPeptidesTest extends TestCase {
         // Then, get N-termini ones with LinkedPeptideB!!
         isLinkedPeptideA = true;
 
-        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
         assertEquals(468.3 - 18, result.get(0).getMass(), 0.05);
@@ -288,7 +288,7 @@ public class CPeptidesTest extends TestCase {
         // Later, get C-termini one with LinkedPeptideA!!
         fragmentIonType = PeptideFragmentIon.Y_ION;
         isLinkedPeptideA = false;
-        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
@@ -299,7 +299,7 @@ public class CPeptidesTest extends TestCase {
         assertEquals(971.57, result.get(4).getMass(), 0.05);
 
         isLinkedPeptideA = true;
-        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
