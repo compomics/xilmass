@@ -85,13 +85,13 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
                 HashSet<Peak> matchedPeaks = obj.getMatchedPeaks();
 
                 // check if there is enough peaks from both peptides here
-                HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalCPeaks();
+                HashSet<CPeptidePeak> matchedTheoreticalCPeaks = obj.getMatchedTheoreticalXLPeaks();
 
                 boolean control = hasEnoughPeaks(new ArrayList<CPeptidePeak>(matchedTheoreticalCPeaks), peakRequiredForImprovedSearch);
                 if ((control && tmpCPeptide instanceof CPeptides) || tmpCPeptide instanceof MonoLinkedPeptides) {
                     int matchedTheoA = obj.getMatchedTheoPeaksPepA(),
                             matchedTheoB = obj.getMatchedTheoPeaksPepB();
-                    Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta, 
+                    Result r = new Result(ms, tmpCPeptide, scoreName, tmpScore, 0, matchedPeaks, matchedTheoreticalCPeaks, weight, fracIonPeptideAlpha, fracIonPeptideBeta,
                             observedMass, deltaMass, absDeltaMass, 0, 0, matchedTheoA, matchedTheoB, doesKeepPattern, doesKeepWeight);
                     results.add(r);
                 }
@@ -144,16 +144,29 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
      * @param requiredPeaks
      * @return
      */
-    private static boolean hasEnoughPeaks(ArrayList<CPeptidePeak> matchedCTheoPLists, int requiredPeaks) {
+    private boolean hasEnoughPeaks(ArrayList<CPeptidePeak> matchedCTheoPLists, int requiredPeaks) {
         boolean hasEnoughPeaks = false;
         int theoPepA = 0,
                 theoPepB = 0;
         for (CPeptidePeak cpP : matchedCTheoPLists) {
-            if (cpP.getName().contains("pepA") && (!cpP.getName().contains("lepB"))) {
-                theoPepA++;
-            }
-            if (cpP.getName().contains("pepB") && (!cpP.getName().contains("lepA"))) {
-                theoPepB++;
+            String name = cpP.getName();
+            if (name.contains("--")) {
+                String[] names = name.split("--");
+                for (String tmp : names) {
+                    if (tmp.contains("pepA") && (!tmp.contains("lepB"))) {
+                        theoPepA++;
+                    }
+                    if (tmp.contains("pepB") && (!tmp.contains("lepA"))) {
+                        theoPepB++;
+                    }
+                }
+            } else {
+                if (cpP.getName().contains("pepA") && (!cpP.getName().contains("lepB"))) {
+                    theoPepA++;
+                }
+                if (cpP.getName().contains("pepB") && (!cpP.getName().contains("lepA"))) {
+                    theoPepB++;
+                }
             }
         }
         if (theoPepA >= requiredPeaks && theoPepB >= requiredPeaks) {
@@ -190,7 +203,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
             }
             if (till == 0) {
                 till = results.size(); // because apparently all elements have the same score..
-                deltaScore= 1;
+                deltaScore = 1;
             }
             ArrayList<Result> toRemove = new ArrayList<Result>();
             for (int i = 0; i < results.size(); i++) {

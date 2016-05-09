@@ -268,7 +268,7 @@ public class Result {
             }
         });
         ArrayList<CPeptidePeak> matchedCTheoPLists = new ArrayList<CPeptidePeak>(matchedCTheoPeaks);
-        Collections.sort(matchedCTheoPLists, CPeptidePeak.Peak_ASC_mz_order);
+        Collections.sort(matchedCTheoPLists, CPeptidePeak.order_CPeptidePeak);
         String result = msms.getFileName() + "\t" + specTitle + "\t" + scanNum + "\t" + rt + "\t"
                 + observedMass + "\t" + charge + "\t" + calculatedMass + "\t" + deltaMass + "\t" + absDeltaMass + "\t"
                 + cp.toPrint() + "\t"
