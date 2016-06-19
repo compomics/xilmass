@@ -21,9 +21,10 @@ public class CPeptidePeak {
     private double mz,
             intensity,
             diff = Double.MAX_VALUE;
-//    private int charge;
+    private int charge;
     private boolean isFound = false;
     private String name;
+    private char aa_code;
     private Peak matchedPeak;
 
     /**
@@ -31,13 +32,65 @@ public class CPeptidePeak {
      *
      * @param mz
      * @param intensity
-     * @param charge
      * @param name
      */
     public CPeptidePeak(double mz, double intensity, String name) {
         this.mz = mz;
         this.intensity = intensity;
         this.name = name;
+    }
+
+    /**
+     * Construct a CPeptidePeak object
+     *
+     * @param mz
+     * @param intensity
+     * @param name
+     * @param aa_code
+     * @param charge
+     */
+    public CPeptidePeak(double mz, double intensity, String name, char aa_code, int charge) {
+        this.mz = mz;
+        this.intensity = intensity;
+        this.name = name;
+        this.aa_code = aa_code;
+        this.charge = charge;
+    }
+
+    /**
+     * Returns a charge value for a CPeptidePeak
+     *
+     * @return
+     */
+    public int getCharge() {
+        return charge;
+    }
+
+    /**
+     * Sets a charge value for a CPeptidePeak
+     *
+     * @param charge
+     */
+    public void setCharge(int charge) {
+        this.charge = charge;
+    }
+
+    /**
+     * Returns an amino acid single letter code for a CPeptidePeak
+     *
+     * @return
+     */
+    public char getAa_code() {
+        return aa_code;
+    }
+
+    /**
+     * Sets an amino acid single letter code for CPeptidePeak
+     *
+     * @param aa_code
+     */
+    public void setAa_code(char aa_code) {
+        this.aa_code = aa_code;
     }
 
     /**
@@ -179,7 +232,11 @@ public class CPeptidePeak {
     @Override
     public String toString() {
         double mz_to_show = Math.floor(mz * 10000) / 10000;
-        return name + "_mz=" + mz_to_show;
+        String toString = "(" + name + ")+" + "_mz=" + mz_to_show;
+        if (charge == 2) {
+            toString = "(" + name + ")++" + "_mz=" + mz_to_show;
+        }
+        return toString;
     }
 
     /**
@@ -190,44 +247,19 @@ public class CPeptidePeak {
      */
     public static final Comparator<CPeptidePeak> order_CPeptidePeak
             = new Comparator<CPeptidePeak>() {
-                @Override
-                public int compare(CPeptidePeak o1, CPeptidePeak o2) {
-                    double diff = o1.getMz() - o2.getMz();
-                    // order peaks by first m/z order 
-                    if (diff < 0) {
-                        return -1;
-                    } else if (diff > 0) {
-                        return 1;
-                        // if two peaks have the same m/z values
-                    } else {
-                        boolean is_o1_peptideA = false,
-                        is_o2_peptideA = false,
-                        is_o1_peptideB = false,
-                        is_o2_peptideB = false;
+        @Override
+        public int compare(CPeptidePeak o1, CPeptidePeak o2) {
+            double diff = o1.getMz() - o2.getMz();
+            // order peaks by first m/z order 
+            if (diff < 0) {
+                return 1;
+            } else if (diff > 0) {
+                return -1;
+                // if two peaks have the same m/z values
+            } else {
+                return 0;
 
-                        if (o1.getName().contains("pepA") && (!o1.getName().contains("lepB"))) {
-                            is_o1_peptideA = true;
-                        } else if (o1.getName().contains("pepB") && (!o1.getName().contains("lepA"))) {
-                            is_o1_peptideB = true;
-                        }
-                        if (o2.getName().contains("pepA") && (!o2.getName().contains("lepB"))) {
-                            is_o2_peptideA = true;
-                        } else if (o2.getName().contains("pepB") && (!o2.getName().contains("lepA"))) {
-                            is_o2_peptideB = true;
-                        }
-                        // first select the peak from a backbone, peptideA is in priority
-                        if (is_o1_peptideA && !is_o1_peptideB && !is_o2_peptideA && !is_o2_peptideB) {
-                            return -1;
-                        } else if (!is_o1_peptideA && is_o1_peptideB && !is_o2_peptideA && !is_o2_peptideB) {
-                            return -1;
-                        } else if (!is_o1_peptideA && !is_o1_peptideB && is_o2_peptideA && !is_o2_peptideB) {
-                            return 1;
-                        } else if (!is_o1_peptideA && !is_o1_peptideB && !is_o2_peptideA && is_o2_peptideB) {
-                            return 1;
-                        } else {
-                            return 1;
-                        }
-                    }
-                }
-            };
+            }
+        }
+    };
 }
