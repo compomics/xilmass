@@ -36,7 +36,8 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
     private int intensityOptionForMSAmanda, // fragment tolerance, requiring for MatchAndScore instantiation.
             minFilteredPeakNumber, // min number of filtered peak per window,, requiring for MatchAndScore instantiation.
             maxFilteredPeakNumber, // max number of filtered peak per window, requiring for MatchAndScore instantiation.  
-            peakRequiredForImprovedSearch;
+            peakRequiredForImprovedSearch,
+            neutralLossesCase; // 0: No neutral losses 1: Special cases (a water loss for D/E/S/T and an ammonia loss for K/N/Q/R with the presence of a parent ion) 2: All water and ammonia losses 
     private boolean doesFindAllMatchedPeaks,
             isPPM,
             doesKeepPattern,
@@ -44,7 +45,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
 
     public ScorePSM(ArrayList<CrossLinking> selectedCPeptides, MSnSpectrum ms, ScoreName scoreName,
             double fragTol, double massWindow, int intensityOptionForMSAmanda, int minFilteredPeakNumber, int maxFilteredPeakNumber,
-            boolean doesFindAllMatchedPeaks, boolean doesKeepPattern, boolean doesKeepWeight, boolean isPPM, int peakRequiredForImprovedSearch) {
+            boolean doesFindAllMatchedPeaks, boolean doesKeepPattern, boolean doesKeepWeight, boolean isPPM, int peakRequiredForImprovedSearch, int neutralLossesCase) {
         this.peakRequiredForImprovedSearch = peakRequiredForImprovedSearch;
         this.selectedCPeptides = selectedCPeptides;
         this.ms = ms;
@@ -58,6 +59,7 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
         this.isPPM = isPPM;
         this.doesKeepPattern = doesKeepPattern;
         this.doesKeepWeight = doesKeepWeight;
+        this.neutralLossesCase = neutralLossesCase;
     }
 
     /**
@@ -73,8 +75,10 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
         InnerIteratorSync<CrossLinking> iteratorCPeptides = new InnerIteratorSync(selectedCPeptides.iterator());
         while (iteratorCPeptides.iter.hasNext()) {
             CrossLinking tmpCPeptide = (CrossLinking) iteratorCPeptides.iter.next();
+            tmpCPeptide.setNeutralLossesCase(neutralLossesCase);
             synchronized (tmpCPeptide) {
-                MatchAndScore obj = new MatchAndScore(ms, scoreName, tmpCPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow, doesFindAllMatchedPeaks, isPPM);
+                MatchAndScore obj = new MatchAndScore(ms, scoreName, tmpCPeptide, fragTol, intensityOptionForMSAmanda, minFilteredPeakNumber, maxFilteredPeakNumber, massWindow,
+                        doesFindAllMatchedPeaks, isPPM);
                 double tmpScore = obj.getXPSMScore(),
                         weight = obj.getWeight(),
                         fracIonPeptideAlpha = obj.getFracIonTheoPepAs(),
@@ -153,18 +157,18 @@ public class ScorePSM implements Callable<ArrayList<Result>> {
             if (name.contains("--")) {
                 String[] names = name.split("--");
                 for (String tmp : names) {
-                    if (tmp.contains("pepA") && (!tmp.contains("lepB"))) {
+                    if (tmp.startsWith("A") && (!tmp.contains("B"))) {
                         theoPepA++;
                     }
-                    if (tmp.contains("pepB") && (!tmp.contains("lepA"))) {
+                    if (tmp.startsWith("B") && (!tmp.contains("A"))) {
                         theoPepB++;
                     }
                 }
             } else {
-                if (cpP.getName().contains("pepA") && (!cpP.getName().contains("lepB"))) {
+                if (cpP.getName().startsWith("A") && (!cpP.getName().contains("B"))) {
                     theoPepA++;
                 }
-                if (cpP.getName().contains("pepB") && (!cpP.getName().contains("lepA"))) {
+                if (cpP.getName().startsWith("B") && (!cpP.getName().contains("A"))) {
                     theoPepB++;
                 }
             }
