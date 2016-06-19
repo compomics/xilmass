@@ -4,7 +4,7 @@
     
     <groupId>com.compomics</groupId>
     <artifactId>xilmass</artifactId>
-    <version>0.2.1</version>
+    <version>0.3</version>
     <packaging>jar</packaging>
    
     <name>xilmass</name>
@@ -83,7 +83,7 @@
                 </executions>
             </plugin>           
             
-            <plugin>
+            <plugin>                
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
@@ -247,7 +247,7 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>4.2.4.RELEASE</version>
