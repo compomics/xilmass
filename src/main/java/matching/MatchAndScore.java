@@ -5,6 +5,7 @@
  */
 package matching;
 
+import com.compomics.util.experiment.biology.NeutralLoss;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
@@ -63,6 +64,9 @@ public class MatchAndScore {
             doesFindAllMatchedPeaks = false, // True: find all matched peaks False: if there is one experimental peak matched to a theoretical peak (or more than one), it will select the closest one
             isCPeptide = false,
             isPPM = false;
+    private static int NONEUTRALLOSS = 0,
+            WATERLOSS = 1,
+            AMMONIALOSS = 2;
 
     /* Constructor */
     public MatchAndScore(MSnSpectrum expMS2, ScoreName scoreName, CrossLinking cPeptides,
@@ -157,6 +161,10 @@ public class MatchAndScore {
             theoXLMS2ions = cPeptides.getTheoretical_ions();
         }
         return theoXLMS2ions;
+    }
+
+    public void setTheoXLMS2ions(HashSet<CPeptideIon> theoXLMS2ions) {
+        this.theoXLMS2ions = theoXLMS2ions;
     }
 
     /**
@@ -269,15 +277,26 @@ public class MatchAndScore {
      * This method selects experimental peaks closed to generated theoretical
      * peaks within given fragment tolerance. It then calculates cumulative
      * binomial probability based scoring_type based on three different
-     * approaches
+     * approaches if neutral losses are taken into account, theoretical XL peaks
+     * will have also peaks with neutral losses.
      *
+     *
+     * Neutral losses are include based on an attribute of neutralLossesCase
+     * with 3 options:
+     *
+     * 0-no neutral losses
+     *
+     * 1-neutral losses for parent ion specific selected amino acids
+     *
+     * 2-all neutral losses
      *
      * @return
      */
     public double getXPSMScore() {
         if (!isFoundAndMatched) {
-            Collections.sort(theoXLPeaksAL, CPeptidePeak.order_CPeptidePeak);
+            int neutralLossCase = cPeptides.neutralLossesCase();
             int totalTheoN = getTheoreticalXLPeaks().size(); // all theoretical peaks...
+            Collections.sort(theoXLPeaksAL, CPeptidePeak.order_CPeptidePeak);
             ArrayList<Double> scores = new ArrayList<Double>();
             for (int numHighestPeak = minFPeaks; numHighestPeak <= maxFPeaks; numHighestPeak++) {
                 Filter filter = new Filter(expMS2, numHighestPeak, massWindow);
@@ -290,77 +309,23 @@ public class MatchAndScore {
                 });
                 double probability = (double) numHighestPeak / (double) (filter.getWindowSize());
                 int n = 0;
-                HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak = new HashMap<CPeptidePeak, MatchedPeak>();
-                HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks = new HashMap<CPeptidePeak, ArrayList<MatchedPeak>>();
-                for (Peak p : filteredPeaks) {
-                    MatchedPeak mPeak = null;
+                HashMap<CPeptidePeak, MatchedPeak> matched_theopeak_and_matched_exppeak = new HashMap<CPeptidePeak, MatchedPeak>();
+                HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theopeak_and_matched_exppeaks = new HashMap<CPeptidePeak, ArrayList<MatchedPeak>>();
+                for (Peak fPeak : filteredPeaks) {
                     double diff = fragTol;// Based on Da.. not ppm... First it starts with FragmentTolerance
                     for (int i = 0; i < theoXLPeaksAL.size(); i++) {
                         CPeptidePeak tmpCPeak = theoXLPeaksAL.get(i);
-                        if (tmpCPeak.getMz() <= (p.mz + fragTol + 0.01)) { // making sure that now missing any theoretical peak..
-                            double theoMz = tmpCPeak.getMz(),
-                                    expMz = p.getMz(),
-                                    tmp_diff = Math.abs(expMz - theoMz);
-                            // A theoretical peak which is closest to an experimental peak is selected!
-                            // if two peaks are selected and two theoretical peaks withing fragment tolerance, only closest theoretical peak is selected
-                            // In case that a peak has matched to two theoretical peaks with the mass tolerance, only the left one is selected
-                            if (tmp_diff <= diff && !doesFindAllMatchedPeaks) {
-                                // first time this filtered peak is matched to a theoretical peak for ever
-                                if (mPeak == null && !peak_and_matchedPeak.containsKey(tmpCPeak)) {
-                                    diff = Math.abs(tmp_diff);
-                                    tmpCPeak.setDiff(diff);
-                                    mPeak = new MatchedPeak(p, tmpCPeak, Math.abs(tmp_diff));
-                                    peak_and_matchedPeak.put(tmpCPeak, mPeak);
-                                    // first time this filtered peak is matched to a theoretical peak, this theoretical peak, however, is already matched to another peak
-                                } else if (mPeak == null && peak_and_matchedPeak.containsKey(tmpCPeak)) {
-                                    double stored_diff = peak_and_matchedPeak.get(tmpCPeak).getDiff();
-                                    if (stored_diff > Math.abs(tmp_diff)) {
-                                        mPeak = new MatchedPeak(p, tmpCPeak, Math.abs(tmp_diff));
-                                        tmpCPeak.setDiff(diff);
-                                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
-                                        //  update with a currently found peak..
-                                        peak_and_matchedPeak.put(tmpCPeak, mPeak);
-                                        diff = Math.abs(tmp_diff);
-                                    }
-                                    // this filtered peak was matched to a theoretical peak before and a currently searched theoretical peak is also found for any filtered peak before...
-                                } else if (mPeak != null && peak_and_matchedPeak.containsKey(tmpCPeak)) { //
-                                    double stored_diff = peak_and_matchedPeak.get(tmpCPeak).getDiff();
-                                    // check if currently found peak has indeed smaller difference
-                                    if (stored_diff > Math.abs(tmp_diff)) {
-                                        diff = Math.abs(tmp_diff);
-                                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
-                                        mPeak.setDiff(diff);
-                                        tmpCPeak.setDiff(diff);
-                                        // update it with a new one
-                                        peak_and_matchedPeak.put(tmpCPeak, mPeak);
-                                    } else {
-                                        // this peak is stored twice with more than one - remove other ones with  holding a smaller diff
-                                        diff = Math.abs(tmp_diff);
-                                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
-                                    }
-                                    // this filtered peak was matched to a theoretical peak before and a currently searched theoretical peak is NOT found for any filtered peak before...
-                                } else if (mPeak != null && !peak_and_matchedPeak.containsKey(tmpCPeak)) { //
-                                    double storedDiff = mPeak.getDiff();
-                                    if (storedDiff > Math.abs(tmp_diff)) {
-                                        diff = Math.abs(tmp_diff);
-                                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
-                                        mPeak.setDiff(diff);
-                                        tmpCPeak.setDiff(diff);
-                                        peak_and_matchedPeak.put(tmpCPeak, mPeak);
-                                    }
-                                }
-                                // from now on we select any peak theoretical peaks/experimental peaks matched to another experimental/theoretical peak within a fragment tolerance
-                            } else if (tmp_diff <= diff && doesFindAllMatchedPeaks && matched_theoretical_and_matched_peaks.containsKey(tmpCPeak)) {
-                                MatchedPeak mp = new MatchedPeak(p, tmpCPeak, tmp_diff);
-                                matched_theoretical_and_matched_peaks.get(tmpCPeak).add(mp);
-                            } else if (tmp_diff <= diff && doesFindAllMatchedPeaks && !matched_theoretical_and_matched_peaks.containsKey(tmpCPeak)) {
-                                ArrayList<MatchedPeak> tmps = new ArrayList<MatchedPeak>();
-                                tmps.add(new MatchedPeak(p, tmpCPeak, tmp_diff));
-                                matched_theoretical_and_matched_peaks.put(tmpCPeak, tmps);
-                            }
-//                           leave the loop if a theoretical peak in selection has m/z is out of the fragment tolerance for the given experimental peak
-//                        } else if (tmpCPeak.getMz() > (p.mz + (2 * fragTol) + 0.01)) {
-//                            i = theoXLPeaksAL.size();
+                        double cPeakDiff_before = tmpCPeak.getDiff();
+                        MatchedPeak mPeak = match_theoretical_peaks(tmpCPeak, fPeak, diff, matched_theopeak_and_matched_exppeak, matched_theopeak_and_matched_exppeaks);
+                        double cPeakDiff_after = tmpCPeak.getDiff();
+                        // check for neutral losses here
+                        int neutralLossesType = getNeutralLossType(tmpCPeak);
+                        if (cPeakDiff_after != cPeakDiff_before && neutralLossesType != NONEUTRALLOSS && neutralLossCase == 1 && tmpCPeak.getCharge() == 1 && tmpCPeak.getAa_code() != '+') {
+                            //check for possible neutral losses from this peak...
+                            double diff_neutral_loss = fragTol; // reset for new peak searching 
+                            mPeak = checkForNeutralLosses(tmpCPeak, diff_neutral_loss, matched_theopeak_and_matched_exppeak, matched_theopeak_and_matched_exppeaks,
+                                    filteredPeaks, neutralLossesType);
+                            totalTheoN++;
                         }
                     }
                 }
@@ -369,39 +334,50 @@ public class MatchAndScore {
                 double explainedIntensities = 0,
                         intensities = getIntensities(filteredPeaks); // sum up all intensities from filtered peaks list
                 if (!doesFindAllMatchedPeaks) {
-                    fillForClosestPeak(peak_and_matchedPeak); // so matchedPeaks and matchedTheoreticalCXPeakscan be filled here...
+                    fillForClosestPeak(matched_theopeak_and_matched_exppeak); // so matchedPeaks and matchedTheoreticalCXPeakscan be filled here...
                     explainedIntensities = getExplainedIntensities(matchedPeaks); // sum up all intensities from matched experimental peaks
                 } else {
-                    fillForAllFoundPeaks(matched_theoretical_and_matched_peaks);
-                    explainedIntensities = getWeightedExplainedIntensities(matched_theoretical_and_matched_peaks, fragTol);
+                    fillForAllFoundPeaks(matched_theopeak_and_matched_exppeaks);
+                    explainedIntensities = getWeightedExplainedIntensities(matched_theopeak_and_matched_exppeaks, fragTol);
                 }
                 n = matchedPeaks.size();
                 double tmp_score = 0;
                 // MSAmanda_derived with expertimentatl spectrum
-                if (scoreName.equals(ScoreName.MSAmandaD)) {
-                    MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
-                    tmp_score = object.getScore();
-                    scores.add(tmp_score);
-                    // Andromeda_derived with theoretical spectra size
-                } else if (scoreName.equals(ScoreName.AndromedaD)) {
-                    Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n);
-                    tmp_score = object.getScore();
-                    scores.add(tmp_score);
-                    // MSAmanda_derived with theoretical spectra size
-                } else if (scoreName.equals(ScoreName.TheoMSAmandaD)) {
-                    MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
-                    tmp_score = object.getScore();
-                    scores.add(tmp_score);
-                } else if (scoreName.equals(ScoreName.AndromedaDWeighted)) {
-                    calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
-                    Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
-                    tmp_score = object.getScore();
-                    scores.add(tmp_score);
-                } else if (scoreName.equals(ScoreName.TheoMSAmandaDWeighted)) {
-                    calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
-                    MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
-                    tmp_score = object.getScore();
-                    scores.add(tmp_score);
+                switch (scoreName) {
+                    case MSAmandaD: {
+                        MSAmanda_derived object = new MSAmanda_derived(probability, filter.getFilteredCPeaks().size(), n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
+                        tmp_score = object.getScore();
+                        scores.add(tmp_score);
+                        // Andromeda_derived with theoretical spectra size
+                        break;
+                    }
+                    case AndromedaD: {
+                        Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n);
+                        tmp_score = object.getScore();
+                        scores.add(tmp_score);
+                        // MSAmanda_derived with theoretical spectra size
+                        break;
+                    }
+                    case TheoMSAmandaD: {
+                        MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName);
+                        tmp_score = object.getScore();
+                        scores.add(tmp_score);
+                        break;
+                    }
+                    case AndromedaDWeighted: {
+                        calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
+                        Andromeda_derived object = new Andromeda_derived(probability, totalTheoN, n, weight);
+                        tmp_score = object.getScore();
+                        scores.add(tmp_score);
+                        break;
+                    }
+                    case TheoMSAmandaDWeighted: {
+                        calculateWeightForTheoPeaks(matchedTheoXLPeaks, theoXLPeaksAL, isCPeptide);
+                        MSAmanda_derived object = new MSAmanda_derived(probability, totalTheoN, n, intensities, explainedIntensities, intensityOptionForMSAmandaDerived, scoreName, weight);
+                        tmp_score = object.getScore();
+                        scores.add(tmp_score);
+                        break;
+                    }
                 }
             }
             isFoundAndMatched = true;
@@ -422,6 +398,87 @@ public class MatchAndScore {
             absMS1Err = Math.abs(ms1Err);
         }
         return xPSMScore;
+    }
+
+    /**
+     * This method matches if given cPeak is within tolerances according to two
+     * different matching approaches.
+     *
+     * @param cPeak
+     * @param p
+     * @param diff
+     * @param peak_and_matchedPeak
+     * @param matched_theoretical_and_matched_peaks
+     * @return
+     */
+    private MatchedPeak match_theoretical_peaks(CPeptidePeak cPeak, Peak p, double diff,
+            HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak, HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks) {
+        MatchedPeak mPeak = null;
+        if (cPeak.getMz() <= (p.mz + fragTol + 0.01)) { // making sure that now missing any theoretical peak..
+            double theoMz = cPeak.getMz(),
+                    expMz = p.getMz(),
+                    tmp_diff = Math.abs(expMz - theoMz);
+            // A theoretical peak which is closest to an experimental peak is selected!
+            // if two peaks are selected and two theoretical peaks withing fragment tolerance, only closest theoretical peak is selected
+            // In case that a peak has matched to two theoretical peaks with the mass tolerance, only the left one is selected
+            if (tmp_diff <= diff && !doesFindAllMatchedPeaks) {
+                // first time this filtered peak is matched to a theoretical peak for ever
+                if (mPeak == null && !peak_and_matchedPeak.containsKey(cPeak)) {
+                    diff = Math.abs(tmp_diff);
+                    cPeak.setDiff(diff);
+                    mPeak = new MatchedPeak(p, cPeak, Math.abs(tmp_diff));
+                    peak_and_matchedPeak.put(cPeak, mPeak);
+                    // first time this filtered peak is matched to a theoretical peak, this theoretical peak, however, is already matched to another peak
+                } else if (mPeak == null && peak_and_matchedPeak.containsKey(cPeak)) {
+                    double stored_diff = peak_and_matchedPeak.get(cPeak).getDiff();
+                    if (stored_diff > Math.abs(tmp_diff)) {
+                        mPeak = new MatchedPeak(p, cPeak, Math.abs(tmp_diff));
+                        cPeak.setDiff(diff);
+                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
+                        //  update with a currently found peak..
+                        peak_and_matchedPeak.put(cPeak, mPeak);
+                        diff = Math.abs(tmp_diff);
+                    }
+                    // this filtered peak was matched to a theoretical peak before and a currently searched theoretical peak is also found for any filtered peak before...
+                } else if (mPeak != null && peak_and_matchedPeak.containsKey(cPeak)) { //
+                    double stored_diff = peak_and_matchedPeak.get(cPeak).getDiff();
+                    // check if currently found peak has indeed smaller difference
+                    if (stored_diff > Math.abs(tmp_diff)) {
+                        diff = Math.abs(tmp_diff);
+                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
+                        mPeak.setDiff(diff);
+                        cPeak.setDiff(diff);
+                        // update it with a new one
+                        peak_and_matchedPeak.put(cPeak, mPeak);
+                    } else {
+                        // this peak is stored twice with more than one - remove other ones with  holding a smaller diff
+                        diff = Math.abs(tmp_diff);
+                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
+                    }
+                    // this filtered peak was matched to a theoretical peak before and a currently searched theoretical peak is NOT found for any filtered peak before...
+                } else if (mPeak != null && !peak_and_matchedPeak.containsKey(cPeak)) { //
+                    double storedDiff = mPeak.getDiff();
+                    if (storedDiff > Math.abs(tmp_diff)) {
+                        diff = Math.abs(tmp_diff);
+                        removePreviousSelectedExpPeakWithHigherFragmentTolerance(peak_and_matchedPeak, mPeak);
+                        mPeak.setDiff(diff);
+                        cPeak.setDiff(diff);
+                        peak_and_matchedPeak.put(cPeak, mPeak);
+                    }
+                }
+                // from now on we select any peak theoretical peaks/experimental peaks matched to another experimental/theoretical peak within a fragment tolerance
+            } else if (tmp_diff <= diff && doesFindAllMatchedPeaks && matched_theoretical_and_matched_peaks.containsKey(cPeak)) {
+                MatchedPeak mp = new MatchedPeak(p, cPeak, tmp_diff);
+                matched_theoretical_and_matched_peaks.get(cPeak).add(mp);
+                cPeak.setDiff(tmp_diff);
+            } else if (tmp_diff <= diff && doesFindAllMatchedPeaks && !matched_theoretical_and_matched_peaks.containsKey(cPeak)) {
+                ArrayList<MatchedPeak> tmps = new ArrayList<MatchedPeak>();
+                tmps.add(new MatchedPeak(p, cPeak, tmp_diff));
+                matched_theoretical_and_matched_peaks.put(cPeak, tmps);
+                cPeak.setDiff(tmp_diff);
+            }
+        }
+        return mPeak;
     }
 
     /**
@@ -550,7 +607,7 @@ public class MatchAndScore {
             HashMap<Double, CPeptidePeak> mz_and_peaks = new HashMap<Double, CPeptidePeak>();
             for (CPeptideIon c : theoXLMS2ions) {
                 // singly and doubly charged ones..
-                String name = "singlyCharged_" + c.getName();
+                String name = c.getName();
                 double singly_mz = c.get_theoretical_mz(1);
                 // check if this mz value already mapped
                 if (mz_and_peaks.containsKey(singly_mz)) {
@@ -558,14 +615,14 @@ public class MatchAndScore {
                     CPeptidePeak tmp = mz_and_peaks.get(singly_mz);
                     tmp.setName(tmp.getName() + "--" + name);
                 } else {
-                    CPeptidePeak singly_charged = new CPeptidePeak(singly_mz, c.getIntensity(), name);
+                    CPeptidePeak singly_charged = new CPeptidePeak(singly_mz, c.getIntensity(), name, c.getAa_code(), 1);
                     cPeakList.add(singly_charged);
                     singlyChargedTheoXLPeaksAL.add(singly_charged);
                     mz_and_peaks.put(singly_mz, singly_charged);
                 }
 
                 if (getPrecursorCharge() > 1) {
-                    name = "doublyCharged_" + c.getName();
+                    name = c.getName();
                     double doubly_mz = c.get_theoretical_mz(2);
                     // check again if this m/z is already mapped
                     if (mz_and_peaks.containsKey(doubly_mz)) {
@@ -573,7 +630,7 @@ public class MatchAndScore {
                         CPeptidePeak tmp = mz_and_peaks.get(doubly_mz);
                         tmp.setName(tmp.getName() + "--" + name);
                     } else {
-                        CPeptidePeak doubly_charged = new CPeptidePeak(doubly_mz, c.getIntensity(), name);
+                        CPeptidePeak doubly_charged = new CPeptidePeak(doubly_mz, c.getIntensity(), name, c.getAa_code(), 2);
                         cPeakList.add(doubly_charged);
                         doublyChargedTheoXLPeaksAL.add(doubly_charged);
                         mz_and_peaks.put(doubly_mz, doubly_charged);
@@ -742,19 +799,14 @@ public class MatchAndScore {
      * the second element with numTheoPeaksPepB
      */
     public static int[] check(String theoreticalPeakName, int numTheoPeaksPepA, int numTheoPeaksPepB) {
-        String split[] = theoreticalPeakName.split("_");
+        String split[] = theoreticalPeakName.split("--");
         int[] vals = new int[2];
         for (int i = 0; i < split.length; i++) {
-            if (split[i].equals("pepA")) {
+            if (split[i].contains("A")) {
                 numTheoPeaksPepA++;
-            } else if (split[i].equals("pepB")) {
-                numTheoPeaksPepB++;
-            } else if (split[i].equals("lepA") && !split[i + 1].startsWith("mono")) {
-                numTheoPeaksPepA++;
-            } else if (split[i].equals("lepB") && !split[i + 1].startsWith("mono")) {
+            } else if (split[i].contains("B")) {
                 numTheoPeaksPepB++;
             }
-
         }
         vals[0] = numTheoPeaksPepA;
         vals[1] = numTheoPeaksPepB;
@@ -775,4 +827,63 @@ public class MatchAndScore {
         return tmp_observed_mass;
     }
 
+    /**
+     * Returning NeutralLossType for given tmpCPeak
+     *
+     * @param tmpCPeak is a cross-linked peptide peak
+     * @return an integer value to show NONEUTRALLOSS,WATERLOSS or AMMONIALOSS
+     */
+    private int getNeutralLossType(CPeptidePeak tmpCPeak) {
+        int code = NONEUTRALLOSS;
+        char aa = tmpCPeak.getAa_code();
+        switch (aa) {
+            case 'D':
+            case 'E':
+            case 'S':
+            case 'T':
+                code = WATERLOSS;
+                break;
+
+            case 'K':
+            case 'N':
+            case 'Q':
+            case 'R':
+                code = AMMONIALOSS;
+                break;
+
+        }
+        return code;
+    }
+
+    /**
+     * This method checks if there should be an fragment ion for a neutral loss
+     * (in case that a parent ion exist)
+     *
+     * @param tmpCPeak
+     * @param diff
+     * @param peak_and_matchedPeak
+     * @param matched_theoretical_and_matched_peaks
+     * @param filteredPeaks
+     * @param neutralLossesType
+     * @return
+     */
+    private MatchedPeak checkForNeutralLosses(CPeptidePeak tmpCPeak, double diff,
+            HashMap<CPeptidePeak, MatchedPeak> peak_and_matchedPeak, HashMap<CPeptidePeak, ArrayList<MatchedPeak>> matched_theoretical_and_matched_peaks,
+            ArrayList<Peak> filteredPeaks, int neutralLossesType) {
+        // a matched peak
+        MatchedPeak matched_peak = null;
+        // find CPeak with neutral losses..
+        double mz = tmpCPeak.getMz() - NeutralLoss.H2O.getMass();
+        String name = tmpCPeak.getName() + "°";
+        if (neutralLossesType == AMMONIALOSS) {
+            mz = tmpCPeak.getMz() - NeutralLoss.NH3.getMass();
+            name = tmpCPeak.getName() + "*";
+        }
+        // aa_code for '+' shows that this is any neutral loss. 
+        CPeptidePeak tmpCPeakNeutralLosses = new CPeptidePeak(mz, CrossLinking.intensity_neutralLosses, name, '+', 1);
+        for (Peak p : filteredPeaks) {
+            matched_peak = match_theoretical_peaks(tmpCPeakNeutralLosses, p, diff, peak_and_matchedPeak, matched_theoretical_and_matched_peaks);
+        }
+        return matched_peak;
+    }
 }
