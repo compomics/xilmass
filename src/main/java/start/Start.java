@@ -189,7 +189,8 @@ public class Start {
                     threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
                     //Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
                     peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("minRequiredPeaks"),
-                    maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
+                    maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide"),
+                    neutralLossesCase = ConfigHolder.getInstance().getInt("consider_neutrallosses");
             // multithreading
             ExecutorService excService = Executors.newFixedThreadPool(threadNum);
             // more cross linking option..;
@@ -206,7 +207,7 @@ public class Start {
                     isContrastLinkedAttachmentOn = false,
                     // settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
                     // doesFindAllMatchedPeaks=T
-                    doesFindAllMatchedPeaks = false,
+                    doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("isAllMatchedPeaks"),
                     isSettingRunBefore = true,
                     isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
                     // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
@@ -427,7 +428,8 @@ public class Start {
                                 try {
                                     // here comes to check each mgf several mass windows..
                                     futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected);
+                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
+                                            excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
                                 } catch (XmlPullParserException ex) {
                                     LOGGER.error(ex);
                                 } catch (Exception ex) {
@@ -572,7 +574,7 @@ public class Start {
             ExecutorService excService,
             IndexAndSearch search,
             int peakRequiredForImprovedSearch,
-            double minPrecMassIsotopicPeakSelected) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
+            double minPrecMassIsotopicPeakSelected, int neutralLossesCase) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
         List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
         // now check all spectra to collect all required calculations...
         // now get query range..
@@ -621,7 +623,7 @@ public class Start {
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
-                    doesKeepCPeptideFragmPattern, doesKeepWeight, shownInPPM, peakRequiredForImprovedSearch);
+                    doesKeepCPeptideFragmPattern, doesKeepWeight, shownInPPM, peakRequiredForImprovedSearch, neutralLossesCase);
             Future future = excService.submit(score);
             futureList.add(future);
         }
@@ -683,6 +685,7 @@ public class Start {
 
         // write down all scoring related parameters
         bw.write(new StringBuilder("##Scoring related parameters").append("\n").toString());
+        bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getString("consider_neutrallosses")).append("\n").toString());
         bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getString("fragModeName")).append("\n").toString());
         bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getString("peptide_tol_total")).append("\n").toString());
         // write each peptide-tolerance mass window on given setting-parameters
@@ -696,6 +699,9 @@ public class Start {
             bw.write(new StringBuilder(base).append("=").append(ConfigHolder.getInstance().getString(base)).append("\n").toString());
         }
         bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getString("msms_tol")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getString("report_in_ppm")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getString("minRequiredPeaks")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getString("isAllMatchedPeaks")).append("\n").append("\n").toString());
 
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
