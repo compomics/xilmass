@@ -63,7 +63,6 @@ import theoretical.MonoLinkedPeptidesTest;
     CreateDatabaseTest.class,
     FASTACPDBLoaderTest.class,
     FilterTest.class,
-    MatchAndScoreTest.class,
     ScorePSMTest.class,
     DefineIdCPeptideFragmentationPatternTest.class,
     Andromeda_derivedTest.class,

@@ -48,8 +48,8 @@ public class CPeptidePeakTest {
     public void testCompare() {
         System.out.println("toCompare");
 
-        CPeptidePeak p1 = new CPeptidePeak(1487.790583, 1000, "pepB_y8_lepA_y14"),
-                p2 = new CPeptidePeak(1487.790583, 1000,  "pepA_y13");
+        CPeptidePeak p1 = new CPeptidePeak(1487.790, 1000, "pepB_y8_lepA_y14"),
+                p2 = new CPeptidePeak(1487.790583, 1000, "pepA_y13");
         ArrayList<CPeptidePeak> ps = new ArrayList<CPeptidePeak>();
         ps.add(p1);
         ps.add(p2);
@@ -64,14 +64,14 @@ public class CPeptidePeakTest {
         assertEquals("pepA_y13", ps.get(0).getName());
         assertEquals("pepB_y8_lepA_y14", ps.get(1).getName());
 
-        CPeptidePeak p3 = new CPeptidePeak(1487.790583, 1000,  "pepB_y13");
+        CPeptidePeak p3 = new CPeptidePeak(1487.890583, 1000, "pepB_y13");
         ps = new ArrayList<CPeptidePeak>();
         ps.add(p2);
         ps.add(p1);
         ps.add(p3);
         Collections.sort(ps, CPeptidePeak.order_CPeptidePeak);
-        assertEquals("pepA_y13", ps.get(0).getName());
-        assertEquals("pepB_y13", ps.get(1).getName());
+        assertEquals("pepB_y13", ps.get(0).getName());
+        assertEquals("pepA_y13", ps.get(1).getName());
         assertEquals("pepB_y8_lepA_y14", ps.get(2).getName());
     }
 
