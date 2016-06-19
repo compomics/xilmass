@@ -106,7 +106,7 @@ public class Contaminant extends CrossLinking {
     private HashSet<CPeptideIon> getBackbone(HashMap<Integer, ArrayList<Ion>> product_ions) {
         HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
         // prepare for naming
-        String pepName = "pep";
+        String pepName = "";
         int pep_length = peptide.getSequence().length();
         int linked_index = linker_position;
         CPeptideIonType cPepIonType = CPeptideIonType.Backbone;
@@ -138,7 +138,7 @@ public class Contaminant extends CrossLinking {
             if (tmp_ion_type == PeptideFragmentIon.X_ION || tmp_ion_type == PeptideFragmentIon.Y_ION || tmp_ion_type == PeptideFragmentIon.Z_ION) {
                 index = pep_length - linked_index - 1;
             }
-            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, 0, pepName, cPepIonType, true));
+            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, 0, pepName, cPepIonType, true, peptide));
         }
         return backbones;
     }

@@ -109,7 +109,7 @@ public class MonoLinkedPeptides extends CrossLinking {
     private HashSet<CPeptideIon> getBackbone(HashMap<Integer, ArrayList<Ion>> product_ions) {
         HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
         // prepare for naming
-        String pepName = "pep";
+        String pepName = "";
         int pep_length = peptide.getSequence().length();
         int linked_index = linker_position;
         CPeptideIonType cPepIonType = CPeptideIonType.Backbone;
@@ -117,32 +117,39 @@ public class MonoLinkedPeptides extends CrossLinking {
         ArrayList<Integer> ion_types = new ArrayList<Integer>();
         // get only peptide fragment ions
         // 0= a, 1=b, 2=c, 3=x, 4=y, 5=z
-        if (fragmentation_mode.equals(FragmentationMode.CID)) {
-            // mostly b and y ions
-            ion_types.add(PeptideFragmentIon.B_ION);
-            ion_types.add(PeptideFragmentIon.Y_ION);
-        } else if (fragmentation_mode.equals(FragmentationMode.ETD)) {
-            // mostly c and z ions
-            ion_types.add(PeptideFragmentIon.C_ION);
-            ion_types.add(PeptideFragmentIon.Z_ION);
-        } else if (fragmentation_mode.equals(FragmentationMode.HCD)) {
-            // mostly y ions and then b and a ions
-            ion_types.add(PeptideFragmentIon.A_ION);
-            ion_types.add(PeptideFragmentIon.B_ION);
-            ion_types.add(PeptideFragmentIon.Y_ION);
-        } else if (fragmentation_mode.equals(FragmentationMode.HCD_all)) {
-            // mostly y ions and then b and a ions
-            ion_types.add(PeptideFragmentIon.A_ION);
-            ion_types.add(PeptideFragmentIon.B_ION);
-            ion_types.add(PeptideFragmentIon.X_ION);
-            ion_types.add(PeptideFragmentIon.Y_ION);
+        switch (fragmentation_mode) {
+            case CID:
+                // mostly b and y ions
+                ion_types.add(PeptideFragmentIon.B_ION);
+                ion_types.add(PeptideFragmentIon.Y_ION);
+                break;
+            case ETD:
+                // mostly c and z ions
+                ion_types.add(PeptideFragmentIon.C_ION);
+                ion_types.add(PeptideFragmentIon.Z_ION);
+                break;
+            case HCD:
+                // mostly y ions and then b and a ions
+                ion_types.add(PeptideFragmentIon.A_ION);
+                ion_types.add(PeptideFragmentIon.B_ION);
+                ion_types.add(PeptideFragmentIon.Y_ION);
+                break;
+            case HCD_all:
+                // mostly y ions and then b and a ions
+                ion_types.add(PeptideFragmentIon.A_ION);
+                ion_types.add(PeptideFragmentIon.B_ION);
+                ion_types.add(PeptideFragmentIon.X_ION);
+                ion_types.add(PeptideFragmentIon.Y_ION);
+                break;
+            default:
+                break;
         }
         for (Integer tmp_ion_type : ion_types) {
             int index = linked_index;
             if (tmp_ion_type == PeptideFragmentIon.X_ION || tmp_ion_type == PeptideFragmentIon.Y_ION || tmp_ion_type == PeptideFragmentIon.Z_ION) {
                 index = pep_length - linked_index - 1;
             }
-            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType, true));
+            backbones.addAll(prepareBackbone(product_ions, tmp_ion_type, index, mass_shift, pepName, cPepIonType, true, peptide));
         }
         return backbones;
     }
