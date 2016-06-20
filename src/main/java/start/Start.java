@@ -18,23 +18,37 @@ import crossLinker.GetCrossLinker;
 import database.CreateDatabase;
 import database.FASTACPDBLoader;
 import database.WriteCXDB;
-import multithread.score.Result;
-import multithread.score.ScorePSM;
-import org.apache.log4j.Logger;
-import org.xmlpull.v1.XmlPullParserException;
-import scoringFunction.ScoreName;
-import start.lucene.IndexAndSearch;
-import theoretical.*;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
-import util.ResourceUtils;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import multithread.score.Result;
+import multithread.score.ScorePSM;
+import org.apache.log4j.Logger;
+
+import org.xmlpull.v1.XmlPullParserException;
 import precursorRemoval.MascotAdaptedPrecursorPeakRemoval;
+import scoringFunction.ScoreName;
 import specprocessing.DeisotopingAndDeconvoluting;
+import start.lucene.IndexAndSearch;
+import theoretical.*;
+import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
+import util.ResourceUtils;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -48,7 +62,7 @@ public class Start {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-
+        sendAnalyticsEvent();
         try {
             long startTime = System.currentTimeMillis();
             Date startDate = new Date();
@@ -61,6 +75,8 @@ public class Start {
                     inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                     insilicoContaminantDBName = "",
                     cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
+                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
+                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
                     cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                     crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                     crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
@@ -78,6 +94,60 @@ public class Start {
                     labeledOption = ConfigHolder.getInstance().getString("isLabeled");
             // load enzyme and modification files from a resource folder          
             String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
+
+            // checking if paths for given input are avaliable
+            File f = null;
+            try {
+                f = new File(givenDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for givenDBName is not found!");
+            }
+            try {
+                f = new File(contaminantDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for contaminantDBName is not found!");
+            }
+            try {
+                f = new File(inSilicoPeptideDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for inSilicoPeptideDBName is not found!");
+            }
+            try {
+                f = new File(insilicoContaminantDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for insilicoContaminantDBName is not found!");
+            }
+            try {
+                f = new File(cxDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for cxDBName is not found!");
+            }
+            try {
+                f = new File(resultFolder);
+            } catch (Exception e) {
+                LOGGER.error("A given path for resultFolder is not found!");
+            }
+            try {
+                f = new File(resultFolder);
+            } catch (Exception e) {
+                LOGGER.error("A given path for resultFolder is not found!");
+            }
+            try {
+                f = new File(output);
+            } catch (Exception e) {
+                LOGGER.error("A given path for output is not found!");
+            }
+            try {
+                f = new File(allXPSMsName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for allXPSMsName is not found!");
+            }
+            try {
+                f = new File(mgfs);
+            } catch (Exception e) {
+                LOGGER.error("A given folder path for mgfs is not found!");
+            }
+
             // get a contaminant database...
             if (!contaminantDBName.isEmpty()) {
                 insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
@@ -119,7 +189,8 @@ public class Start {
                     threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
                     //Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
                     peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("minRequiredPeaks"),
-                    maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide");
+                    maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide"),
+                    neutralLossesCase = ConfigHolder.getInstance().getInt("consider_neutrallosses");
             // multithreading
             ExecutorService excService = Executors.newFixedThreadPool(threadNum);
             // more cross linking option..;
@@ -136,7 +207,7 @@ public class Start {
                     isContrastLinkedAttachmentOn = false,
                     // settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
                     // doesFindAllMatchedPeaks=T
-                    doesFindAllMatchedPeaks = false,
+                    doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("isAllMatchedPeaks"),
                     isSettingRunBefore = true,
                     isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
                     // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
@@ -188,6 +259,7 @@ public class Start {
             File cxDB = new File(cxDBName + ".fastacp"),
                     settings = new File(cxDB.getAbsoluteFile().getParent() + File.separator + "settings.txt"),
                     indexFile = new File(cxDBNameIndexFile);
+
             boolean isSame = false,
                     doesCXDBExist = false;
             HashMap<String, Integer> acc_and_length = CreateDatabase.getAccession_and_length(givenDBName),
@@ -199,13 +271,15 @@ public class Start {
                 isSame = isSameDBSetting(settings); // either the same/different/empty
                 // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
                 if (isSame) {
-                    for (File f : cxDB.getParentFile().listFiles()) {
-                        if (f.getName().equals(cxDB.getName())) {
-                            LOGGER.info("A previously constructed CX database file is found! The name is " + f.getName());
+                    for (File tmp : cxDB.getParentFile().listFiles()) {
+                        if (tmp.getName().equals(cxDB.getName())) {
+                            LOGGER.info("A previously constructed CX database file is found! The name is " + tmp.getName());
                             doesCXDBExist = true;
                         }
                     }
                 }
+            } else {
+
             }
 
             // STEP 3: CREATE A CROSS-LINKED DATABASE!!!                   
@@ -283,10 +357,10 @@ public class Start {
                 indexFile.delete();
                 LOGGER.info("An index file (including peptides and masses) bas been created!");
                 // delete in silico DBs
-                File f = new File(inSilicoPeptideDBName),
-                        cF = new File(insilicoContaminantDBName);
-                f.delete();
-                cF.delete();
+                File tmp_f = new File(inSilicoPeptideDBName),
+                        tmp_cF = new File(insilicoContaminantDBName);
+                tmp_f.delete();
+                tmp_cF.delete();
             }
 
             // STEP 5: PREPARE LUCENCE INDEXING!  
@@ -354,7 +428,8 @@ public class Start {
                                 try {
                                     // here comes to check each mgf several mass windows..
                                     futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights, excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected);
+                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
+                                            excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
                                 } catch (XmlPullParserException ex) {
                                     LOGGER.error(ex);
                                 } catch (Exception ex) {
@@ -419,15 +494,13 @@ public class Start {
             // here validate the results!        
             String analysis = "11",
                     xilmassResFolder = resultFolder,
-                    scoringFunctionName = "Andromeda",
-                    output = ConfigHolder.getInstance().getString("tdfile"),
-                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"),
+                    scoringFunctionName = "AndromedaDerived",
                     isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
                     fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
                     fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
                     fdr = ConfigHolder.getInstance().getString("fdr");
             NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, output, allXPSMsName,
-                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR});
+                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
         } catch (IOException ex) {
             LOGGER.error(ex);
         }
@@ -501,13 +574,13 @@ public class Start {
             ExecutorService excService,
             IndexAndSearch search,
             int peakRequiredForImprovedSearch,
-            double minPrecMassIsotopicPeakSelected) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
+            double minPrecMassIsotopicPeakSelected, int neutralLossesCase) throws IOException, MzMLUnmarshallerException, XmlPullParserException, Exception {
         List<Future<ArrayList<Result>>> futureList = new ArrayList<Future<ArrayList<Result>>>();
         // now check all spectra to collect all required calculations...
         // now get query range..
         ArrayList<CrossLinking> selectedCPeptides = new ArrayList<CrossLinking>();
+        double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
         for (PeptideTol pepTol : pepTols) {
-            double precMass = CalculatePrecursorMass.getPrecursorMass(ms);
             // C13 peaks might be selected over C12 peaks if precursor mass is higher than 2500Da,
             // we start observing C13 peaks more abundant than C12 peaks around 1800-2000Da
             if ((pepTol.getPeptide_tol_base() >= (DeisotopingAndDeconvoluting.getDiffC12C13() - fragTol) && precMass > minPrecMassIsotopicPeakSelected)
@@ -550,7 +623,7 @@ public class Start {
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
-                    doesKeepCPeptideFragmPattern, doesKeepWeight, shownInPPM, peakRequiredForImprovedSearch);
+                    doesKeepCPeptideFragmPattern, doesKeepWeight, shownInPPM, peakRequiredForImprovedSearch, neutralLossesCase);
             Future future = excService.submit(score);
             futureList.add(future);
         }
@@ -612,6 +685,7 @@ public class Start {
 
         // write down all scoring related parameters
         bw.write(new StringBuilder("##Scoring related parameters").append("\n").toString());
+        bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getString("consider_neutrallosses")).append("\n").toString());
         bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getString("fragModeName")).append("\n").toString());
         bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getString("peptide_tol_total")).append("\n").toString());
         // write each peptide-tolerance mass window on given setting-parameters
@@ -625,6 +699,9 @@ public class Start {
             bw.write(new StringBuilder(base).append("=").append(ConfigHolder.getInstance().getString(base)).append("\n").toString());
         }
         bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getString("msms_tol")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getString("report_in_ppm")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getString("minRequiredPeaks")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getString("isAllMatchedPeaks")).append("\n").append("\n").toString());
 
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
@@ -1002,6 +1079,27 @@ public class Start {
             }
         }
         return isEnabled;
+    }
+
+    /**
+     * Send an event to the google analytics server for tool start monitoring.
+     */
+    private static void sendAnalyticsEvent() {
+        String COLLECT_URL = "http://www.google-analytics.com/collect";
+        String POST = "v=1&tid=UA-36198780-12&cid=35119a79-1a05-49d7-b876-bb88420f825b&uid=asuueffeqqss&t=event&ec=usage&ea=toolstart&el=xilmass";
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpEntity<String> request = new HttpEntity<String>(POST);
+            ResponseEntity<String> postForEntity
+                    = restTemplate.postForEntity(COLLECT_URL,
+                            request, String.class);
+
+            if (postForEntity.getStatusCode().equals(HttpStatus.OK)) {
+                LOGGER.info("Successfully sent analytics event.");
+            }
+        } catch (RestClientException ex) {
+            LOGGER.getLogger("Failed to connect to internet.");
+        }
     }
 
 }

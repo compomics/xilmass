@@ -23,13 +23,63 @@ public class CPeptideIon {
     private boolean isFound = false;
     private CPeptideIonType type;
     private String name;
+    private char aa_code = '+';
 
+    /**
+     * To construct a CPeptideIon object
+     *
+     * @param intensity
+     * @param mass
+     * @param type
+     * @param fragmentIonType enumeration comes from PeptideFragmentIon class.
+     * Additionally, 6 shows a water loss and 7 shows ammonia loss!
+     * @param name
+     */
     public CPeptideIon(double intensity, double mass, CPeptideIonType type, int fragmentIonType, String name) {
         this.intensity = intensity;
         this.type = type;
         this.monoisotopic_mass = mass;
         this.fragmentIonType = fragmentIonType;
         this.name = name;
+    }
+
+    
+    /**
+     * To construct a CPeptideIon object
+     *
+     * @param intensity
+     * @param mass
+     * @param type
+     * @param fragmentIonType enumeration comes from PeptideFragmentIon class.
+     * Additionally, 6 shows a water loss and 7 shows ammonia loss!
+     * @param aa_code a single letter code of an amino acid for selected ion type
+     * @param name 
+     */
+    public CPeptideIon(double intensity, double mass, CPeptideIonType type, int fragmentIonType, String name, char aa_code) {
+        this.intensity = intensity;
+        this.type = type;
+        this.monoisotopic_mass = mass;
+        this.fragmentIonType = fragmentIonType;
+        this.name = name;
+        this.aa_code = aa_code;
+    }
+
+    /**
+     * Returns a amino acid single letter code for CPeptidePeak
+     *
+     * @return
+     */
+    public char getAa_code() {
+        return aa_code;
+    }
+
+    /**
+     * Sets a amino acid single letter code for CPeptidePeak
+     *
+     * @param aa_code
+     */
+    public void setAa_code(char aa_code) {
+        this.aa_code = aa_code;
     }
 
     public double getDiff() {
@@ -165,23 +215,35 @@ public class CPeptideIon {
     }
 
     /**
-     * To sort CPeptideIon in a ascending mass order
+     * To sort CPeptideIon in a ascending mass order, if two peptide have the
+     * same mass, then the one on peptide backbone is selected. In case that
+     * both from
      */
     public static final Comparator<CPeptideIon> Ion_ASC_mass_order
             = new Comparator<CPeptideIon>() {
-                @Override
-                public int compare(CPeptideIon o1, CPeptideIon o2) {
-                    return o1.getMass() < o2.getMass() ? -1 : o1.getMass() == o2.getMass() ? 0 : 1;
-                }
-            };
+        @Override
+        public int compare(CPeptideIon o1, CPeptideIon o2) {
+
+            double diff = o1.getMass() - o2.getMass();
+            // order peaks by first m/z order 
+            if (diff < 0) {
+                return -1;
+            } else if (diff > 0) {
+                return 1;
+                // if two peaks have the same m/z values
+            } else {
+                return 0;
+            }
+        }
+    };
 
     public static final Comparator<CPeptideIon> Ion_ASC_mass_order_IDCharged
             = new Comparator<CPeptideIon>() {
-                @Override
-                public int compare(CPeptideIon o1, CPeptideIon o2) {
+        @Override
+        public int compare(CPeptideIon o1, CPeptideIon o2) {
 
-                    return o1.get_theoretical_mz(o1.getIdentification_charge()) < o2.get_theoretical_mz(o2.getIdentification_charge()) ? -1 : o1.get_theoretical_mz(o1.getIdentification_charge()) == o2.get_theoretical_mz(o2.getIdentification_charge()) ? 0 : 1;
-                }
-            };
+            return o1.get_theoretical_mz(o1.getIdentification_charge()) < o2.get_theoretical_mz(o2.getIdentification_charge()) ? -1 : o1.get_theoretical_mz(o1.getIdentification_charge()) == o2.get_theoretical_mz(o2.getIdentification_charge()) ? 0 : 1;
+        }
+    };
 
 }

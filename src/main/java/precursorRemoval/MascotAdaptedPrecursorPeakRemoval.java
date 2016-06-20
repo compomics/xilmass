@@ -9,6 +9,7 @@ import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import specprocessing.DeisotopingAndDeconvoluting;
 import start.CalculatePrecursorMass;
 
@@ -86,7 +87,7 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
         // now clear the peak list from possibly derived from precursor peaks
         peaks.removeAll(peaksToRemove);
         ms.getPeakList().clear();
-        ms.setMzOrdered(false);
+//        ms.setMzOrdered(false);
         ms.setPeaks(peaks);
         arePrecursorPeaksRemoved = true;
     }
@@ -103,7 +104,12 @@ public class MascotAdaptedPrecursorPeakRemoval extends PrecursorPeakRemoval {
      */
     public static ArrayList<Peak> removeNotch(ArrayList<Peak> peaks, double lower, double upper, double fragTol) {
         ArrayList<Peak> peaksToRemove = new ArrayList<Peak>();
-        Collections.sort(peaks, Peak.AscendingMzComparator);
+        Collections.sort(peaks, new Comparator<Peak>() {
+            @Override
+            public int compare(Peak o1, Peak o2) {
+                return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
+            }
+        });
         for (Peak tmpPeak : peaks) {
             double tmpMZ = tmpPeak.getMz();
             if (tmpPeak.getMz() >= lower && tmpPeak.getMz() <= upper) {

@@ -9,6 +9,7 @@ import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * This class selects N peaks with highest intensity per each defined window
@@ -54,16 +55,29 @@ public class Filter {
     }
 
     private void process() {
-        double startMz = expMSnSpectrum.getOrderedMzValues()[0],
+        // make sure that this is indeed ordered.
+        ArrayList<Peak> peaks = new ArrayList<Peak>(expMSnSpectrum.getPeakList());
+        Collections.sort(peaks, new Comparator<Peak>() {
+            @Override
+                public int compare(Peak o1, Peak o2) {
+                    return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
+                }
+        });
+        double startMz = peaks.get(0).getMz(),
                 limitMz = startMz + windowSize;
         ArrayList<Peak> cPeaks = new ArrayList<Peak>();
-        for (int index_exp = 0; index_exp < expMSnSpectrum.getOrderedMzValues().length; index_exp++) {
-            double tmpMZ = expMSnSpectrum.getOrderedMzValues()[index_exp];
+        for (int index_exp = 0; index_exp < peaks.size(); index_exp++) {
+            double tmpMZ = peaks.get(index_exp).getMz();
             Peak tmpPeak = expMSnSpectrum.getPeakMap().get(tmpMZ);
             if (tmpMZ < limitMz) {
                 cPeaks.add(tmpPeak);
             } else {
-                Collections.sort(cPeaks, Peak.DescendingIntensityComparator);
+                Collections.sort(cPeaks, new Comparator<Peak>() {
+                    @Override
+                    public int compare(Peak o1, Peak o2) {
+                        return o1.getIntensity() > o2.getIntensity() ? -1 : o1.getIntensity() == o2.getIntensity() ? 0 : 1;
+                    }
+                });
                 int tmp_num = topN;
                 if (topN > cPeaks.size()) {
                     tmp_num = cPeaks.size();
@@ -78,7 +92,12 @@ public class Filter {
             }
         }
         if (!cPeaks.isEmpty()) {
-            Collections.sort(cPeaks, Peak.DescendingIntensityComparator);
+            Collections.sort(cPeaks, new Comparator<Peak>() {
+                @Override
+                public int compare(Peak o1, Peak o2) {
+                    return o1.getIntensity() > o2.getIntensity() ? -1 : o1.getIntensity() == o2.getIntensity() ? 0 : 1;
+                }
+            });
             int tmp_num = topN;
             if (topN > cPeaks.size()) {
                 tmp_num = cPeaks.size();
@@ -105,16 +124,15 @@ public class Filter {
     public void setWindowSize(double windowSize) {
         this.windowSize = windowSize;
     }
-    
 
     /**
      * This method returns a list of peaks which are filtered out from given
      * MSnSpectrum.
      *
      * First, it divides a spectrum into window according to a given window size
- (default=100Da). Then, for each window it picks topN peaks ordered by in
- DescendingIntensityComparator in that window. After picking such peaks, it put
- them all on an arraylist and return it as a final
+     * (default=100Da). Then, for each window it picks topN peaks ordered by in
+     * DescendingIntensityComparator in that window. After picking such peaks,
+     * it put them all on an arraylist and return it as a final
      *
      * @return
      */

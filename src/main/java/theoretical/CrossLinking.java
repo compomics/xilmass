@@ -7,6 +7,7 @@ package theoretical;
 
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
+import com.compomics.util.experiment.biology.NeutralLoss;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
@@ -34,13 +35,14 @@ public abstract class CrossLinking {
     protected IonFactory fragmentFactory = IonFactory.getInstance();
     protected boolean is_monoisotopic_mass = true,
             isMassCalculated = false;
-    protected double intensity = 100,
+    public static double intensity = 100,
+            intensity_neutralLosses = 100,
             theoretical_xlinked_mass = 0;
+    protected int neutralLossesCase; // 0: No neutral losses 1: Special cases (a water loss for D/E/S/T and an ammonia loss for K/N/Q/R with the presence of a parent ion) 2: All water and ammonia losses 
     protected CrossLinkingType linkingType;
     protected PTMFactory ptmFactory = PTMFactory.getInstance();
     private static final Logger LOGGER = Logger.getLogger(CrossLinking.class);
-    
-    
+
     /* getter and setter methods */
     public CrossLinker getLinker() {
         return linker;
@@ -52,6 +54,10 @@ public abstract class CrossLinking {
 
     public HashSet<CPeptideIon> getTheoretical_ions() {
         return theoretical_ions;
+    }
+
+    public void setTheoretical_ions(HashSet<CPeptideIon> theoretical_ions) {
+        this.theoretical_ions = theoretical_ions;
     }
 
     public IonFactory getFragmentFactory() {
@@ -75,11 +81,19 @@ public abstract class CrossLinking {
     }
 
     public void setTheoretical_xlinked_mass(double theoretical_xlinked_mass) {
-        this.theoretical_xlinked_mass = theoretical_xlinked_mass;
+        CrossLinking.theoretical_xlinked_mass = theoretical_xlinked_mass;
     }
 
     public CrossLinkingType getLinkingType() {
         return linkingType;
+    }
+
+    public int neutralLossesCase() {
+        return neutralLossesCase;
+    }
+
+    public void setNeutralLossesCase(int neutralLossesCase) {
+        this.neutralLossesCase = neutralLossesCase;
     }
 
     /**
@@ -97,48 +111,111 @@ public abstract class CrossLinking {
      * @return NI IONS!
      */
     public HashSet<CPeptideIon> prepareBackbone(HashMap<Integer, ArrayList<Ion>> product_ions,
-            int ion_type, int linked_index, double mass_shift, String pepName, CPeptideIonType cPepIonType, boolean isA2Required) {
+            int ion_type, int linked_index, double mass_shift, String pepName, CPeptideIonType cPepIonType, boolean isA2Required, Peptide peptide) {
+        // get the right CPeptideIonType for neutral losses
+        CPeptideIonType cPepIonTypeWaterLoss = getCPeptideIonTypeForNeutralLoss(cPepIonType),
+                cPepIonTypeAmmoniaLoss = getCPeptideIonTypeForNeutralLoss(cPepIonType);
+        // now prepare ions for backbones
         HashSet<CPeptideIon> backbones = new HashSet<CPeptideIon>();
         String abbrIonType = LinkedPeptideFragmentIon.getAbbrIonType(ion_type);
-        String rootName = pepName + "_" + abbrIonType;
+        String rootName = pepName + "" + abbrIonType;
         ArrayList<Ion> tmp_ions = product_ions.get(ion_type);
         if (isA2Required && ion_type == PeptideFragmentIon.A_ION) {
             Ion a2 = tmp_ions.get(1);
             tmp_ions = new ArrayList<Ion>();
             tmp_ions.add(a2);
         }
+        int seqIndex = 0;
         for (int index = 0; index < tmp_ions.size(); index++) {
             Ion ion = tmp_ions.get(index);
-            double ion_mass = ion.getTheoreticMass();
-            if (index > linked_index && linkingType.equals(CrossLinkingType.CROSSLINK)) { // from a linker index on a peptide, shift remaining ions with a mass of a linkedPeptide       
-                ion_mass += mass_shift + linker.getMassShift_Type2();
-            } else if (index >= linked_index && linkingType.equals(CrossLinkingType.MONOLINK)) {
-                ion_mass += mass_shift;
+            String name = ion.getName();
+            // there are some fragment ions with specific loss, this control allows to keep only standard ions (b/y/a etc..)
+            if (!name.contains("-")) {
+                char aaCode = peptide.getSequence().charAt(seqIndex);
+                if (ion_type == PeptideFragmentIon.X_ION || ion_type == PeptideFragmentIon.Y_ION || ion_type == PeptideFragmentIon.Z_ION) {
+                    aaCode = peptide.getSequence().charAt(peptide.getSequence().length() - seqIndex - 1);
+                }
+                seqIndex++;
+                double ion_mass = ion.getTheoreticMass();
+                if (index > linked_index && linkingType.equals(CrossLinkingType.CROSSLINK)) { // from a linker index on a peptide, shift remaining ions with a mass of a linkedPeptide       
+                    ion_mass += mass_shift + linker.getMassShift_Type2();
+                } else if (index >= linked_index && linkingType.equals(CrossLinkingType.MONOLINK)) {
+                    ion_mass += mass_shift;
+                } else {
+                }
+                int index_to_show = index + 1;
+                if (isA2Required && ion_type == PeptideFragmentIon.A_ION) {
+                    index_to_show++;
+                }
+                // check if there is an ion  with the same mass already...Because there are two N-terminis and C-terminis!
+                String ionName = rootName + index_to_show;
+                boolean isFound = isCPeptideIonWithSameMassPresent(ion_mass, ionName);
+                if (!isFound) {
+                    CPeptideIon cIon = new CPeptideIon(intensity, ion_mass, cPepIonType, ion_type, ionName, aaCode);
+                    // add all water and ammonia losses
+                    if (neutralLossesCase == 2) {
+                        CPeptideIon cIon_waterloss = new CPeptideIon(intensity_neutralLosses, (ion_mass - NeutralLoss.H2O.getMass()), cPepIonTypeWaterLoss, 6, (ionName + "°"), aaCode),
+                                cIon_ammoniaLoss = new CPeptideIon(intensity_neutralLosses, (ion_mass - NeutralLoss.NH3.getMass()), cPepIonTypeAmmoniaLoss, 7, (ionName + "*"), aaCode);
+                        backbones.add(cIon_waterloss);
+                        theoretical_ions.add(cIon_ammoniaLoss);
+                        backbones.add(cIon_waterloss);
+                        theoretical_ions.add(cIon_ammoniaLoss);
+                    }
+                    backbones.add(cIon);
+                    theoretical_ions.add(cIon);
+                }
             } else {
+                // the selected ion has already been updated via isCPeptideIonWithSameMassPresent method.. 
+            }
+        }
+        return backbones;
+    }
 
-            }
-            int index_to_show = index + 1;
-            if (isA2Required && ion_type == PeptideFragmentIon.A_ION) {
-                index_to_show++;
-            }
-            String ionName = rootName + index_to_show;
-            boolean isFound = false;
-            // check if there is an ion with the same mass already...Because there are two N-terminis and C-terminis!
-            for (CPeptideIon cPepTheo : theoretical_ions) {
-                double tmp_cpeptheo = cPepTheo.getMass();
-                if (Math.abs(tmp_cpeptheo - ion_mass) < 0.0000001) {
+    /**
+     * This method checks if there is an ion (from Ion or CPeptideIon class)
+     * with the same mass already... This might happen because there are two
+     * N-terminis and C-terminis!
+     *
+     * @param ion_mass is mass of ion (neutral, without charge)
+     * @param ionName
+     * @return
+     */
+    public boolean isCPeptideIonWithSameMassPresent(double ion_mass, String ionName) {
+        boolean isFound = false,
+                isSameName = false;
+        for (CPeptideIon cPepTheo : theoretical_ions) {
+            double tmp_cpeptheo = cPepTheo.getMass();
+            if (Math.abs(tmp_cpeptheo - ion_mass) < 0.0000001) {
+                // check also names.. because it might be an ion with Bb3Ab3, with the same mass of an ion of Ab3Bb3..      
+                if (ionName.contains("_")) {
+                    String[] parts = ionName.split("_");
+                    for (String part : parts) {
+                        int split_index = part.indexOf('A');
+                        if (split_index == 0) {
+                            // do nothing..because theoretical ions are calculated after getting ions from PeptideA, then comes PeptideB
+                        } else {
+                            String reversed = ionName.substring(split_index) + ionName.substring(0, split_index);
+                            if (reversed.equals(part)) {
+                                isSameName = true;
+                                isFound = true;
+                            }
+                        }
+                    }
+                } else if (ionName.contains("A") && ionName.contains("B")) {
+                    String reversed = ionName.substring(ionName.indexOf('A')) + ionName.substring(0, ionName.indexOf('A'));
+                    if (reversed.equals(ionName)) {
+                        isSameName = true;
+                        isFound = true;
+                    }
+                }
+                if (!isSameName) {
                     ionName = cPepTheo.getName() + "_" + ionName;
                     cPepTheo.setName(ionName);
                     isFound = true;
                 }
             }
-            if (!isFound) {
-                CPeptideIon cIon = new CPeptideIon(intensity, ion_mass, cPepIonType, ion_type, ionName);
-                backbones.add(cIon);
-                theoretical_ions.add(cIon);
-            }
         }
-        return backbones;
+        return isFound;
     }
 
     public abstract String toPrint();
@@ -222,10 +299,28 @@ public abstract class CrossLinking {
      */
     public static final Comparator<CrossLinking> Crosslinking_xlinked_mass_ASC_order
             = new Comparator<CrossLinking>() {
-                @Override
-                public int compare(CrossLinking o1, CrossLinking o2) {
-                    return o1.getTheoretical_xlinked_mass() < o2.getTheoretical_xlinked_mass() ? -1 : o1.getTheoretical_xlinked_mass() == o2.getTheoretical_xlinked_mass() ? 0 : 1;
-                }
-            };
+        @Override
+        public int compare(CrossLinking o1, CrossLinking o2) {
+            return o1.getTheoretical_xlinked_mass() < o2.getTheoretical_xlinked_mass() ? -1 : o1.getTheoretical_xlinked_mass() == o2.getTheoretical_xlinked_mass() ? 0 : 1;
+        }
+    };
+
+    /**
+     * This method finds the right ion-type of given cPepIonType. for a selected
+     * At the moment, there is no separation between water, or ammonia or the
+     * other losses.
+     *
+     * @param cPepIonType
+     * @return
+     */
+    private CPeptideIonType getCPeptideIonTypeForNeutralLoss(CPeptideIonType cPepIonType) {
+        CPeptideIonType neutralLossCPepIonType = CPeptideIonType.NeutralLoss;
+        if (cPepIonType.equals(CPeptideIonType.Backbone_PepA)) {
+            neutralLossCPepIonType = CPeptideIonType.NeutralLoss_Backbone_PepA;
+        } else if (cPepIonType.equals(CPeptideIonType.Backbone_PepB)) {
+            neutralLossCPepIonType = CPeptideIonType.NeutralLoss_Backbone_PepB;
+        }
+        return neutralLossCPepIonType;
+    }
 
 }

@@ -10,7 +10,7 @@
  * Date: 31-okt-02
  * Time: 19:41:43
  */
-package playground;
+package database;
 
 import com.compomics.dbtoolkit.gui.workerthreads.ProcessThread;
 import com.compomics.dbtoolkit.io.EnzymeLoader;

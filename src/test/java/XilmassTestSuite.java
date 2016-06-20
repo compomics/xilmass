@@ -4,10 +4,12 @@
  * and open the template in the editor.
  */
 
+
+import analyse.CXPSM.outcome.XilmassResultTest;
+import analyse.CXPSM.prepareOutcome.AnalyzeOutcomesTest;
 import database.CreateDatabaseTest;
 import database.FASTACPDBLoaderTest;
-import matching.FilteringTest;
-import matching.MatchAndScore;
+import matching.FilterTest;
 import matching.MatchAndScoreTest;
 import multithread.score.ScorePSMTest;
 import naming.DefineIdCPeptideFragmentationPatternTest;
@@ -17,13 +19,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import precursorRemoval.MascotAdaptedPrecursorPeakRemovalTest;
 import scoringFunction.Andromeda_derivedTest;
 import scoringFunction.CumulativeBinomialProbabilityBasedScoringTest;
 import scoringFunction.MSAmanda_derivedTest;
+import specprocessing.DeisotopingAndDeconvolutingTest;
 import start.CalculateMS1ErrTest;
 import start.GetPTMsTest;
+import start.PeptideTolTest;
 import start.StartTest;
 import theoretical.CPeptideIonTest;
+import theoretical.CPeptidePeakTest;
 import theoretical.CPeptidesTest;
 import theoretical.CrossLinkingTest;
 import theoretical.LinkedPeptideFragmentIonTest;
@@ -36,28 +42,48 @@ import theoretical.MonoLinkedPeptidesTest;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+    // analyse package
+//    XilmassResultTest.class,
+    AnalyzeOutcomesTest.class,
     // matching package
     CreateDatabaseTest.class,
     FASTACPDBLoaderTest.class,
-    FilteringTest.class,
     MatchAndScoreTest.class,
     ScorePSMTest.class,
     DefineIdCPeptideFragmentationPatternTest.class,
+    MascotAdaptedPrecursorPeakRemovalTest.class,
     Andromeda_derivedTest.class,
     CumulativeBinomialProbabilityBasedScoringTest.class,
     MSAmanda_derivedTest.class,
     // CPeptideSearcherTest.class,
     // CPeptidesIndexerTest.class,
+    // IndexAndSearchTest.class,@Suite.SuiteClasses({
+    // matching package
+    // matching package
+    CreateDatabaseTest.class,
+    FASTACPDBLoaderTest.class,
+    FilterTest.class,
+    ScorePSMTest.class,
+    DefineIdCPeptideFragmentationPatternTest.class,
+    Andromeda_derivedTest.class,
+    CumulativeBinomialProbabilityBasedScoringTest.class,
+    MSAmanda_derivedTest.class,
+    DeisotopingAndDeconvolutingTest.class,
+    // CPeptideSearcherTest.class,
+    // CPeptidesIndexerTest.class,
     // IndexAndSearchTest.class,
     CalculateMS1ErrTest.class,
     GetPTMsTest.class,
+    PeptideTolTest.class,
     StartTest.class,
     CPeptideIonTest.class,
     CPeptidesTest.class,
     CrossLinkingTest.class,
     LinkedPeptideFragmentIonTest.class,
-    MonoLinkedPeptidesTest.class
+    MonoLinkedPeptidesTest.class,
+    CPeptidePeakTest.class
 })
+
 public class XilmassTestSuite {
 
     @BeforeClass

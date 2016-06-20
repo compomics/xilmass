@@ -124,7 +124,7 @@ public final class LinkedPeptideFragmentIon {
             }
             String cPepIonTypeName = rootName + "_" + index_for_user;
             Ion ion = tmp_ions.get(ion_index);
-            CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), cPeptideIonType, fragmentIonType, cPepIonTypeName);
+            CPeptideIon cIon = new CPeptideIon(intensity, ion.getTheoreticMass(), cPeptideIonType, fragmentIonType, cPepIonTypeName, '+');
             terminiCPepIons.add(cIon);
         }
         return terminiCPepIons;
@@ -195,7 +195,7 @@ public final class LinkedPeptideFragmentIon {
         char node = linkedPeptide.getSequence().charAt(linker_position_on_linkedPeptide);
         double startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
         String nodeName = rootName + "_" + linker_position_on_linkedPeptide;
-        CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
+        CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName, '+');
         nTerminiCPepIons_Branching.add(cPepIonNode);
         // Since it is N-termini, we shall not go till the end...
         for (int i = startInd + 1; i < pepLen - 1; i++) {
@@ -207,7 +207,7 @@ public final class LinkedPeptideFragmentIon {
             }
             int naming_index = i + 1;
             String name = rootName + "_" + naming_index;
-            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name, '+');
             nTerminiCPepIons_Branching.add(cPepIon);
         }
         startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
@@ -221,7 +221,7 @@ public final class LinkedPeptideFragmentIon {
             }
             int naming_index = i + 1;
             String name = rootName + "_" + naming_index;
-            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name, '+');
             nTerminiCPepIons_Branching.add(cPepIon);
         }
 
@@ -260,7 +260,7 @@ public final class LinkedPeptideFragmentIon {
         double startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
         int index_for_naming = linker_position_on_linkedPeptide + 1;
         String nodeName = rootName + "_" + index_for_naming;
-        CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName);
+        CPeptideIon cPepIonNode = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, nodeName, '+');
         cTerminiCPepIons_Branching.add(cPepIonNode);
         // Since it is N-termini, we shall not go till the end...ONLY HERE C-TERMINI CAN BE FOUND!
         for (int i = startInd + 1; i < pepLen; i++) {
@@ -272,7 +272,7 @@ public final class LinkedPeptideFragmentIon {
             }
             int naming_index = pepLen - i;
             String name = rootName + "_" + naming_index;
-            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name, '+');
             cTerminiCPepIons_Branching.add(cPepIon);
         }
         startMass = AminoAcid.getAminoAcid(node).getMonoisotopicMass();
@@ -283,7 +283,7 @@ public final class LinkedPeptideFragmentIon {
             startMass += leftRes;
             int naming_index = pepLen - i;
             String name = rootName + "_" + naming_index;
-            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name);
+            CPeptideIon cPepIon = new CPeptideIon(intensity, startMass, cPeptideIonType, fragmentIonType, name, '+');
             cTerminiCPepIons_Branching.add(cPepIon);
         }
         return cTerminiCPepIons_Branching;

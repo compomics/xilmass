@@ -5,7 +5,6 @@
  */
 package start.lucene;
 
-import com.compomics.pride_asa_pipeline.model.Modification;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;

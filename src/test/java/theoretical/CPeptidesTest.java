@@ -175,9 +175,9 @@ public class CPeptidesTest extends TestCase {
         int ion_type = PeptideFragmentIon.B_ION,
                 linked_index = 3;
         double mass_shift = 572.365;
-        String lepName = "pepA_b_";
+        String lepName = "Ab";
         CPeptideIonType cPepIonType = CPeptideIonType.Backbone_PepA;
-        HashSet<CPeptideIon> backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
+        HashSet<CPeptideIon> backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true, peptideA);
         ArrayList<CPeptideIon> backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, backbone.size()); // 5-N-terminis
@@ -189,10 +189,10 @@ public class CPeptidesTest extends TestCase {
 
         product_ions = IonFactory.getInstance().getFragmentIons(peptideB).get(0);
         linked_index = 2;
-        lepName = "pepB_b_";
+        lepName = "Bb";
         mass_shift = 663.3262;
         cPepIonType = CPeptideIonType.Backbone_PepB;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true, peptideB);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(4, backbone.size()); // 4-N terminis
@@ -207,9 +207,9 @@ public class CPeptidesTest extends TestCase {
         ion_type = PeptideFragmentIon.Y_ION;
         linked_index = 6 - 3 - 1;
         mass_shift = 572.365;
-        lepName = "pepA_y_";
+        lepName = "pepAy";
         cPepIonType = CPeptideIonType.Backbone_PepA;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true, peptideA);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, backbone.size()); // 5-N-terminis
@@ -222,10 +222,10 @@ public class CPeptidesTest extends TestCase {
         product_ions = IonFactory.getInstance().getFragmentIons(peptideB).get(0);
         ion_type = PeptideFragmentIon.Y_ION;
         linked_index = 5 - 2 - 1;
-        lepName = "pepB_y_";
+        lepName = "pepBy";
         mass_shift = 663.3262;
         cPepIonType = CPeptideIonType.Backbone_PepB;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true, peptideB);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(3, backbone.size()); // 5-N-termini
@@ -236,7 +236,7 @@ public class CPeptidesTest extends TestCase {
 
         cPepIonType = CPeptideIonType.Backbone_PepB;
         ion_type = PeptideFragmentIon.A_ION;
-        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true);
+        backbone = instance.prepareBackbone(product_ions, ion_type, linked_index, mass_shift, lepName, cPepIonType, true, peptideB);
         backbone_al = new ArrayList<CPeptideIon>(backbone);
         Collections.sort(backbone_al, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(1, backbone.size()); // 4-N terminis
@@ -248,7 +248,6 @@ public class CPeptidesTest extends TestCase {
      */
     @Test
     public void testPrepare_linked_peptides_attaching() {
-
         System.out.println("prepare_linked_peptides-Attaching_ON");
         String peptideAstr = "MLSDAK",
                 peptideBstr = "AIKNK";
@@ -262,7 +261,7 @@ public class CPeptidesTest extends TestCase {
         int fragmentIonType = PeptideFragmentIon.B_ION;
         boolean isLinkedPeptideA = false;
 
-        ArrayList<CPeptideIon> result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        ArrayList<CPeptideIon> result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
@@ -275,7 +274,7 @@ public class CPeptidesTest extends TestCase {
         // Then, get N-termini ones with LinkedPeptideB!!
         isLinkedPeptideA = true;
 
-        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
         assertEquals(468.3 - 18, result.get(0).getMass(), 0.05);
@@ -288,7 +287,7 @@ public class CPeptidesTest extends TestCase {
         // Later, get C-termini one with LinkedPeptideA!!
         fragmentIonType = PeptideFragmentIon.Y_ION;
         isLinkedPeptideA = false;
-        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
@@ -299,7 +298,7 @@ public class CPeptidesTest extends TestCase {
         assertEquals(971.57, result.get(4).getMass(), 0.05);
 
         isLinkedPeptideA = true;
-        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA, false);
+        result = instance.prepare_linked_peptides(fragmentIonType, isLinkedPeptideA);
         Collections.sort(result, CPeptideIon.Ion_ASC_mass_order);
         assertEquals(5, result.size());
 
@@ -396,7 +395,6 @@ public class CPeptidesTest extends TestCase {
      */
     public void testGetTheoterical_ions2() throws FileNotFoundException, IOException {
         System.out.println("getTheoterical_ions2");
-
         String peptideA_str = "KMK",
                 peptideB_str = "KLEYLLGDAIIRK";
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
@@ -407,6 +405,24 @@ public class CPeptidesTest extends TestCase {
         CrossLinker linker = new DSS();
         CPeptides o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 0, 0, FragmentationMode.CID, false);
         HashSet<CPeptideIon> result = o.getTheoretical_ions();
+    }
+
+    /**
+     * Test of getTheoterical_ions method, of class CPeptides.
+     */
+    public void testPrepare_theoretical_spectrum() {
+        System.out.println("prepare_theoretical_spectrum");
+        String peptideA_str = "VQKKTFTKWVNK",
+                peptideB_str = "VQKK";
+        ArrayList<String> parent_proteins_test = new ArrayList<String>();
+        parent_proteins_test.add("Pro1");
+        ArrayList<ModificationMatch> modifications_test = new ArrayList<ModificationMatch>();
+        Peptide peptideA = new Peptide(peptideA_str, modifications_test),
+                peptideB = new Peptide(peptideB_str, modifications_test);
+        CrossLinker linker = new DSS();
+        CPeptides o = new CPeptides("ProteinA(20-25)", "ProteinB(20-25)", peptideA, peptideB, linker, 0, 0, FragmentationMode.HCD, false);
+        o.prepare_theoretical_spectrum();
+        assertEquals(38, o.getTheoretical_ions().size());
     }
 
     public class TestIon {
@@ -438,10 +454,10 @@ public class CPeptidesTest extends TestCase {
     }
     public static final Comparator<TestIon> Ion_ASC_mass_order
             = new Comparator<TestIon>() {
-                @Override
-                public int compare(TestIon o1, TestIon o2) {
-                    return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
-                }
-            };
+        @Override
+        public int compare(TestIon o1, TestIon o2) {
+            return o1.getMz() < o2.getMz() ? -1 : o1.getMz() == o2.getMz() ? 0 : 1;
+        }
+    };
 
 }

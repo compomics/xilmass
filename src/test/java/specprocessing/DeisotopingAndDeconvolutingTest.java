@@ -26,9 +26,9 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  *
  * @author Sule
  */
-public class DeconvolutionTest {
+public class DeisotopingAndDeconvolutingTest {
 
-    public DeconvolutionTest() {
+    public DeisotopingAndDeconvolutingTest() {
     }
 
     @BeforeClass

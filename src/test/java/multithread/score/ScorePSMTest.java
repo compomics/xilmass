@@ -66,10 +66,10 @@ public class ScorePSMTest {
         CPeptides cp = new CPeptides("proA(1-5)", "proB(2-5)",
                 new Peptide("pep", new ArrayList<ModificationMatch>()), new Peptide("pep", new ArrayList<ModificationMatch>()),
                 new DSS(), 1, 2, FragmentationMode.HCD_all, true);
-        Result r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false),
-                r1 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 8, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false),
-                r2 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 7, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false),
-                r3 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 6, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
+        Result r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false),
+                r1 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 8, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false),
+                r2 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 7, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false),
+                r3 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 6, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
         ArrayList<Result> rs = new ArrayList<Result>();
         rs.add(r);
         rs.add(r1);
@@ -80,13 +80,13 @@ public class ScorePSMTest {
         ScorePSM.updateResults(rs, lnNumSp);
         assertEquals(1, rs.size());
         assertEquals(10, rs.get(0).getScore(), 0);
-        assertEquals(2, rs.get(0).getDeltaScore(), 0);
+        assertEquals(2.0/ 10.0, rs.get(0).getDeltaScore(), 0);
         assertEquals(1.38, rs.get(0).getLnNumSpec(), 0);
 
-        r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
-        r1 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
-        r2 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 7, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
-        r3 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 6, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
+        r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
+        r1 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
+        r2 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 7, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
+        r3 = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 6, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
         rs = new ArrayList<Result>();
         rs.add(r);
         rs.add(r1);
@@ -98,12 +98,12 @@ public class ScorePSMTest {
         assertEquals(2, rs.size());
         assertEquals(10, rs.get(0).getScore(), 0);
         assertEquals(10, rs.get(1).getScore(), 0);
-        assertEquals(3, rs.get(0).getDeltaScore(), 0);
-        assertEquals(3, rs.get(1).getDeltaScore(), 0);
+        assertEquals(3.0 / 10.0, rs.get(0).getDeltaScore(), 0);
+        assertEquals(3.0 / 10.0, rs.get(1).getDeltaScore(), 0);
         assertEquals(1.38, rs.get(0).getLnNumSpec(), 0);
         assertEquals(1.38, rs.get(1).getLnNumSpec(), 0);
 
-        r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
+        r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
         rs = new ArrayList<Result>();
         rs.add(r);
 
@@ -111,7 +111,7 @@ public class ScorePSMTest {
         ScorePSM.updateResults(rs, lnNumSp);
         assertEquals(1, rs.size());
         assertEquals(10, rs.get(0).getScore(), 0);
-        assertEquals(10, rs.get(0).getDeltaScore(), 0);
+        assertEquals(10.0 / 10.0, rs.get(0).getDeltaScore(), 0);
         assertEquals(1.38, rs.get(0).getLnNumSpec(), 0);
 
     }

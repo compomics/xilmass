@@ -281,33 +281,7 @@ public class XilmassResultTest {
         fail("The test case is a prototype.");
     }
 
-    /**
-     * Test of getScanNr method, of class XilmassResult.
-     */
-    @Test
-    public void testGetScanNr() {
-        System.out.println("getScanNr");
-        XilmassResult instance = null;
-        int expResult = 0;
-        int result = instance.getScanNr();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setScanNr method, of class XilmassResult.
-     */
-    @Test
-    public void testSetScanNr() {
-        System.out.println("setScanNr");
-        int scanNr = 0;
-        XilmassResult instance = null;
-        instance.setScanNr(scanNr);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
+   
     /**
      * Test of getCharge method, of class XilmassResult.
      */
@@ -573,7 +547,7 @@ public class XilmassResultTest {
         System.out.println("toPrint");
         XilmassResult instance = null;
         String expResult = "";
-        String result = instance.toPrint();
+        String result = instance.toPrint(true);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

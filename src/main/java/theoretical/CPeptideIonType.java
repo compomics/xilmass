@@ -21,6 +21,9 @@ public enum CPeptideIonType {
     Backbone,
     Backbone_PepA,
     Backbone_PepB,
+    NeutralLoss,
+    NeutralLoss_Backbone_PepA,
+    NeutralLoss_Backbone_PepB,
     Linker,
     LinkedPeptideBackbone_PepA,
     LinkedPeptideBackbone_PepB

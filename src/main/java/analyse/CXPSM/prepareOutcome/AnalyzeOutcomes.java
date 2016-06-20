@@ -6,7 +6,7 @@
 package analyse.CXPSM.prepareOutcome;
 
 import analyse.CXPSM.outcome.Outcome;
-import analyse.xwalk_uniprot.TrueLinking;
+//import analyse.xwalk_uniprot.TrueLinking;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +27,6 @@ public abstract class AnalyzeOutcomes {
     protected File prediction_file, // a file which predicted linking locations are stores
             psms_contaminant; // a validated PSM list from PeptideShaker - default one, with spectrum index as 8
     protected String[] target_names; // target protein accession names
-    protected HashSet<TrueLinking> trueLinkings = new HashSet<TrueLinking>(); // a list of predicted cross linking sites
     protected boolean areReversedDecoys = true, // true:target/decoy (reversed or shuffled) approach and false: Pfu is decoy ## TODO: for the future...
             isPIT = false, //true: all_decoy/all_target false: (half_decoy-full_decoy)/all_target
             areContaminantMSMSReady = false; // in order to fill out a list of validated contaminant peptide derived PSMs
@@ -39,80 +38,6 @@ public abstract class AnalyzeOutcomes {
      * @throws java.io.FileNotFoundException
      */
     public abstract void run() throws FileNotFoundException, IOException;
-
-    /**
-     * This method checks given proteinA and proteinB with their indices to
-     * decide if they are possible cross linking sites
-     *
-     * @param uniprotProAacces Uniprot proteinA accession number
-     * @param uniprotProBacces Uniprot proteinB accession number
-     * @param uniprotLinkingSiteA linking location on proteinA (based on uniprot
-     * sequence)
-     * @param uniprotLinkingSiteB linking location on proteinB (based on uniprot
-     * sequence)
-     * @return
-     * @throws IOException
-     */
-    protected String assetTrueLinking(String uniprotProAacces, String uniprotProBacces, int uniprotLinkingSiteA, int uniprotLinkingSiteB) throws IOException {
-        if (trueLinkings.isEmpty()) {
-            prepareTrueLinkings();
-        }
-        String res = "Not-predicted" + "\t" + "-" + "\t" + "-" + "\t" + "-";
-        for (TrueLinking tl : trueLinkings) {
-            if (tl.getProteinA().equals(uniprotProAacces)
-                    && tl.getProteinB().equals(uniprotProBacces)
-                    && tl.getIndexA() == uniprotLinkingSiteA
-                    && tl.getIndexB() == uniprotLinkingSiteB) {
-                res = tl.getClassification() + "\t" + tl.getSas_distance() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
-            }
-            if (tl.getProteinA().equals(uniprotProBacces)
-                    && tl.getProteinB().equals(uniprotProAacces)
-                    && tl.getIndexA() == uniprotLinkingSiteB
-                    && tl.getIndexB() == uniprotLinkingSiteA) {
-                res = tl.getClassification() + "\t" + tl.getSas_distance() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
-            }
-        }
-        return res;
-    }
-
-    /**
-     * This method checks given proteinA and proteinB with their indices to
-     * decide if they are possible cross linking sites
-     *
-     * @param uniprotProAacces Uniprot proteinA accession number
-     * @param uniprotProBacces Uniprot proteinB accession number
-     * @param uniprotLinkingSiteA linking location on proteinA (based on uniprot
-     * sequence)
-     * @param uniprotLinkingSiteB linking location on proteinB (based on uniprot
-     * sequence)
-     * @return
-     * @throws IOException
-     */
-    protected String assetTrueLinking(String uniprotProAacces, String uniprotProBacces, String peptideA, String peptideB,
-            int uniprotLinkingSiteA, int uniprotLinkingSiteB) throws IOException {
-        if (trueLinkings.isEmpty()) {
-            prepareTrueLinkings();
-        }
-        String res = "Not-predicted" + "\t" + "-" + "\t" + "-" + "\t" + "-";
-        if (!peptideA.contains("K") || !peptideB.contains("K")) {
-            res = "NoPossLinkingSite" + "\t" + "-" + "\t" + "-" + "\t" + "-";
-        }
-        for (TrueLinking tl : trueLinkings) {
-            if (tl.getProteinA().equals(uniprotProAacces)
-                    && tl.getProteinB().equals(uniprotProBacces)
-                    && tl.getIndexA() == uniprotLinkingSiteA
-                    && tl.getIndexB() == uniprotLinkingSiteB) {
-                res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
-            }
-            if (tl.getProteinA().equals(uniprotProBacces)
-                    && tl.getProteinB().equals(uniprotProAacces)
-                    && tl.getIndexA() == uniprotLinkingSiteB
-                    && tl.getIndexB() == uniprotLinkingSiteA) {
-                res = tl.getClassification() + "\t" + tl.getEuclidean_distance_alpha() + "\t" + tl.getEuclidean_distance_beta();
-            }
-        }
-        return res;
-    }
 
     /**
      * This method returns a list of validated outputs with a given fd FDR is
@@ -231,7 +156,6 @@ public abstract class AnalyzeOutcomes {
                     String spectrumFile = split[7], //Probe2_v_x1_top15HCD-precolumn-1.mgf
                             specTitle = split[8], //QEplus009907.7333.7333.2 File:"QEplus009907.raw", NativeID:"controllerType=0 controllerNumber=1 scan=7333"
                             scan = specTitle.substring(specTitle.indexOf("scan=") + 5).replace("\"", "");
-//                    System.out.println("title="+"\t"+specTitle+"\t"+scan);
                     if (contaminants.containsKey(spectrumFile)) {
                         contaminants.get(spectrumFile).add(Integer.parseInt(scan));
                     } else {
@@ -264,7 +188,7 @@ public abstract class AnalyzeOutcomes {
         }
         if (proteinB.contains("REVERSED") || proteinB.contains("SHUFFLED") || proteinB.contains("DECOY")) {
             proteinBtype = 0;
-        } else if (proteinB.equals("-")|| proteinB.isEmpty()) {
+        } else if (proteinB.equals("-") || proteinB.isEmpty()) {
             proteinBtype = -1;
         }
 
@@ -292,42 +216,6 @@ public abstract class AnalyzeOutcomes {
                 break;
         }
         return targetName;
-    }
-
-    /**
-     * This method reads a given prediction file and fills a hashset of
-     * TrueLinking objects
-     *
-     *
-     * @throws IOException
-     */
-    private void prepareTrueLinkings() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(prediction_file));
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            if (!line.startsWith("PDB")) {
-//                PDBStructure	AtomInfoA	AtomInfoB	IdistanceSequence	Type	UniprotAccProA	UniprotIndexProA	UniprotAccProB	UniprotIndexProB	SASDistance(A)	EucDist(Beta_Beta)	EucDist(Alpha_Alpha)
-                String[] split = line.split("\t");
-                String sasDistStr = split[9],
-                        betaMeasuredDistanceStr = split[10],
-                        alphaMeasuredDistanceStr = split[11],
-                        classification = split[4],
-                        uniprotAcc1 = split[5],
-                        uniprotAcc1Index = split[6],
-                        uniprotAcc2 = split[7],
-                        uniprotAcc2Index = split[8];
-                int indexA = Integer.parseInt(uniprotAcc1Index),
-                        indexB = Integer.parseInt(uniprotAcc2Index);
-                double sasDist = -1,
-                        betaMeasuredDistance = Double.parseDouble(betaMeasuredDistanceStr),
-                        alphaMeasuredDistance = Double.parseDouble(alphaMeasuredDistanceStr);
-                if (!sasDistStr.equals("-")) {
-                    sasDist = Double.parseDouble(sasDistStr);
-                }
-                TrueLinking tl = new TrueLinking(uniprotAcc1, uniprotAcc2, classification, indexA, indexB, alphaMeasuredDistance, betaMeasuredDistance, sasDist);
-                trueLinkings.add(tl);
-            }
-        }
     }
 
 }

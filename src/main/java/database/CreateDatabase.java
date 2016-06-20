@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
-import playground.EnzymeDigest;
 
 /**
  *
