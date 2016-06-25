@@ -1,5 +1,6 @@
 package gui;
 
+import com.compomics.util.experiment.biology.PTMFactory;
 import config.ConfigHolder;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -10,6 +11,8 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -18,12 +21,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
-import main.ScorePipeline;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.apache.log4j.Priority;
 
 /**
  * This class is main controller for the graphical user interface (GUI).
@@ -32,33 +34,101 @@ import org.apache.log4j.Priority;
  */
 public class MainController {
 
+    /**
+     * Logger instance.
+     */
     private static final Logger LOGGER = Logger.getLogger(MainController.class);
 
     /**
      * The parameters properties names.
      */
-    private static final String SPECTRA_PROP = "spectra.folder";
-    private static final String COMP_SPECTRA_PROP = "spectra.to.compare.folder";
-    private static final String OUTPUT_PROP = "output.folder";
-    private static final String CHARGE_PROP = "is.charged.based";
-    private static final String PRECURSOR_PROP = "precursor.tolerance";
-    private static final String FRAGMENT_PROP = "fragment.tolerance";
-    private static final String MIN_MZ_PROP = "min.mz";
-    private static final String MAX_MZ_PROP = "max.mz";
-    private static final String NEIGHBOUR_SLICE_PROP = "calculate.only5";
-    private static final String FILE_NAME_SLICE_INDEX_PROP = "slice.index";
-    private static final String TRANSORMATION_PROP = "transformation";
-    private static final String NOISE_FILTER_PROP = "noise.filtering";
-    private static final String NUMBER_OF_PEAKS_CUTOFF_PROP = "topN";
-    private static final String PEAK_PERCENTAGE_CUTOFF = "percent";
-    private static final String PREPROCESSING_ORDER_PROP = "isNFTR";
-    private static final String PRECURSOR_PEAK_REMOVAL_PROP = "precursor.peak.removal";
-    private static final String NUMBER_OF_THREADS_PROP = "thread.numbers";
+    /**
+     * Input/Output parameters.
+     */
+    private static final String FASTA_DB_PATH = "givenDBName";
+    private static final String CONTAMINANTS_DB_PATH = "contaminantDBName";
+    private static final String SEARCH_DB_PATH = "cxDBName";
+    private static final String MGF_DIRECTORY_PATH = "mgfs";
+    private static final String OUTPUT_DIRECTORY_PATH = "resultFolder";
+    private static final String VALIDATED_TARGETS_PATH = "tdfile";
+    private static final String XPSMS_PATH = "allXPSMoutput";
+    /**
+     * Cross-linking parameters.
+     */
+    private static final String CROSS_LINKER = "crossLinkerName";
+    private static final String LABELING = "isLabeled";
+    private static final String SIDE_REACTION_SERINE = "isConsideredSideReactionSerine";
+    private static final String SIDE_REACTION_THREONINE = "isConsideredSideReactionThreonine";
+    private static final String SIDE_REACTION_TYROSINE = "isConsideredSideReactionTyrosine";
+    private static final String CROSS_LINKING_TYPE = "crossLinkedProteinTypes";
+    private static final String SEARCH_MONOLINK = "searcForAlsoMonoLink";
+    private static final String MIN_PEPTIDE_LENGTH = "minLen";
+    private static final String MAX_PEPTIDE_LENGTH = "maxLenCombined";
+    private static final String INTRA_LINKING = "allowIntraPeptide";
+    /**
+     * In-silico digestion.
+     */
+    private static final String ENZYME = "enzymeName";
+    private static final String MISSED_CLEAVAGES = "miscleavaged";
+    private static final String MIN_PEPTIDE_MASS = "lowerMass";
+    private static final String MAX_PEPTIDE_MASS = "higherMass";
+    /**
+     * Modifications.
+     */
+    private static final String FIXED_MODIFICATIONS = "fixedModification";
+    private static final String VARIABLE_MODIFICATIONS = "variableModification";
+    private static final String MAX_MOD_PEPTIDE = "maxModsPerPeptide";
+    /**
+     * Scoring.
+     */
+    private static final String NEUTRAL_LOSSES = "consider_neutrallosses";
+    private static final String FRAGMENTATION_MODE = "fragMode";
+    private static final String PEP_TOL_WINDOWS = "peptide_tol_total";
+    private static final String COMMON_PEPTIDE_MASS_WINDOW = "msms_tol";
+    private static final String COMMON_PEPTIDE_MASS_WINDOW_UNIT = "report_in_ppm";
+    private static final String FIRST_PEPTIDE_MASS_WINDOW = "peptide_tol1";
+    private static final String FIRST_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol1_base";
+    private static final String FIRST_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol1_PPM";
+    private static final String SECOND_PEPTIDE_MASS_WINDOW = "peptide_tol2";
+    private static final String SECOND_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol2_base";
+    private static final String SECOND_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol2_PPM";
+    private static final String THIRD_PEPTIDE_MASS_WINDOW = "peptide_tol3";
+    private static final String THIRD_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol3_base";
+    private static final String THIRD_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol3_PPM";
+    private static final String FOURTH_PEPTIDE_MASS_WINDOW = "peptide_tol4";
+    private static final String FOURTH_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol4_base";
+    private static final String FOURTH_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol4_PPM";
+    private static final String MIN_NUMBER_OF_PEAKS = "minRequiredPeaks";
+    private static final String PEAK_MATCHING = "isAllMatchedPeaks";
+    /**
+     * Spectrum preprocessing.
+     */
+    private static final String SPECTRUM_MASS_WINDOW = "massWindow";
+    private static final String WINDOW_MIN_NUMBER_OF_PEAKS = "minimumFiltedPeaksNumberForEachWindow";
+    private static final String WINDOW_MAX_NUMBER_OF_PEAKS = "maximumFiltedPeaksNumberForEachWindow";
+    private static final String LOWER_PREC_MASS_BOUND = "minPrecMassIsotopicPeakSelected";
+    private static final String DEISOTOPE_PRECISION = "deconvulatePrecision";
+    private static final String DECONVOLUTE_PRECISION = "deconvulatePrecision";
+    /**
+     * Spectrum preprocessing.
+     */
+    private static final String MULTI_THREADING = "threadNumbers";
+    private static final String WRITE_PERCOLATOR = "isPercolatorAsked";
+    private static final String INTER_PROTEIN_FDR = "fdrInterPro";
+    private static final String INTRA_PROTEIN_FDR = "fdrIntraPro";
+    private static final String GLOBAL_FDR = "fdr";
 
     /**
      * Model fields.
      */
-    private XilmassSwingWorker scorePipelineSwingWorker;
+    private List<String> utilitiesPtms = PTMFactory.getInstance().getPTMs();
+    private Comparator<String> stringComparator = new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+    };
+    private XilmassSwingWorker xilmassSwingWorker;
 
     /**
      * The views of this controller.
@@ -70,19 +140,18 @@ public class MainController {
      * Init the controller.
      */
     public void init() {
-        // add gui appender
+        //add gui appender
         LogTextAreaAppender logTextAreaAppender = new LogTextAreaAppender();
-        logTextAreaAppender.setThreshold(Priority.INFO);
+        logTextAreaAppender.setThreshold(Level.INFO);
         logTextAreaAppender.setImmediateFlush(true);
         PatternLayout layout = new org.apache.log4j.PatternLayout();
         layout.setConversionPattern("%d{yyyy-MM-dd HH:mm:ss} - %m%n");
         logTextAreaAppender.setLayout(layout);
 
-
         LOGGER.addAppender(logTextAreaAppender);
-        LOGGER.setLevel((Level) Level.INFO);
+        LOGGER.setLevel(Level.INFO);
 
-        mainFrame.setTitle("Spectrum similarity score pipeline " + ConfigHolder.getInstance().getString("score.pipeline.version", ""));
+        mainFrame.setTitle("Xilmass run graphical user interface " + ConfigHolder.getInstance().getString("xilmass.version", ""));
 
         runDialog = new RunDialog(mainFrame, true);
         runDialog.getLogTextArea().setText("..." + System.lineSeparator());
@@ -90,90 +159,140 @@ public class MainController {
         //get the appender for setting the text area
         logTextAreaAppender.setRunDialog(runDialog);
 
-        //disable the necessary text fields
-        mainFrame.getFileNameSliceIndexTextField().setEnabled(false);
-        mainFrame.getNumberOfPeaksCutoffTextField().setEnabled(false);
-        mainFrame.getPeakIntensityCutoffTextField().setEnabled(false);
+        //init the modification dual lists
+        mainFrame.getFixedModificationsDualList().init(stringComparator);
+        mainFrame.getVariableModificationsList().init(stringComparator);
 
+        //disable the necessary text fields
+//        mainFrame.getFileNameSliceIndexTextField().setEnabled(false);
+//        mainFrame.getNumberOfPeaksCutoffTextField().setEnabled(false);
+//        mainFrame.getPeakIntensityCutoffTextField().setEnabled(false);
         //init file choosers
         //disable select multiple files
-        mainFrame.getSpectraDirectoryChooser().setMultiSelectionEnabled(false);
-        mainFrame.getComparisonSpectraDirectoryChooser().setMultiSelectionEnabled(false);
-        mainFrame.getOutputDirectoryChooser().setMultiSelectionEnabled(false);
+        mainFrame.getFastaDbChooser().setMultiSelectionEnabled(false);
+        mainFrame.getSearchDbChooser().setMultiSelectionEnabled(false);
+        mainFrame.getDirectoryChooser().setMultiSelectionEnabled(false);
+        mainFrame.getFileChooser().setMultiSelectionEnabled(false);
         //set select directories only
-        mainFrame.getSpectraDirectoryChooser().setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        mainFrame.getComparisonSpectraDirectoryChooser().setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        mainFrame.getOutputDirectoryChooser().setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        mainFrame.getDirectoryChooser().setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        //set file filters
+        mainFrame.getFastaDbChooser().setFileFilter(new FastaFileFilter());
 
         //add action listeners
-        mainFrame.getSpectraDirectoryButton().addActionListener(new ActionListener() {
+        mainFrame.getFastaDbBrowseButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //in response to the button click, show open dialog
-                int returnVal = mainFrame.getSpectraDirectoryChooser().showOpenDialog(mainFrame);
+                int returnVal = mainFrame.getFastaDbChooser().showOpenDialog(mainFrame);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    //show spectra directory path in text field
-                    mainFrame.getSpectraDirectoryTextField().setText(mainFrame.getSpectraDirectoryChooser().getSelectedFile().getAbsolutePath());
+                    //show path in text field
+                    mainFrame.getFastaDbPathTextField().setText(mainFrame.getFastaDbChooser().getSelectedFile().getAbsolutePath());
                 }
             }
         });
 
-        mainFrame.getComparisonSpectraDirectoryButton().addActionListener(new ActionListener() {
+        mainFrame.getContaminantsFastaDbBrowseButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //in response to the button click, show open dialog
-                int returnVal = mainFrame.getComparisonSpectraDirectoryChooser().showOpenDialog(mainFrame);
+                int returnVal = mainFrame.getFastaDbChooser().showOpenDialog(mainFrame);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    //show spectra directory path in text field
-                    mainFrame.getComparisonSpectraDirectoryTextField().setText(mainFrame.getComparisonSpectraDirectoryChooser().getSelectedFile().getAbsolutePath());
+                    //show path in text field
+                    mainFrame.getContaminantsFastaDbPathTextField().setText(mainFrame.getFastaDbChooser().getSelectedFile().getAbsolutePath());
                 }
             }
         });
 
-        mainFrame.getOutputDirectoryButton().addActionListener(new ActionListener() {
+        mainFrame.getSearchDbBrowseButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //in response to the button click, show open dialog
-                int returnVal = mainFrame.getOutputDirectoryChooser().showOpenDialog(mainFrame);
+                int returnVal = mainFrame.getFileChooser().showOpenDialog(mainFrame);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    //show spectra directory path in text field
-                    mainFrame.getOutputDirectoryTextField().setText(mainFrame.getOutputDirectoryChooser().getSelectedFile().getAbsolutePath());
+                    //show path in text field
+                    mainFrame.getSearchDbPathTextField().setText(mainFrame.getFileChooser().getSelectedFile().getAbsolutePath());
                 }
             }
         });
 
-        mainFrame.getNeighbourSlicesOnlyCheckBox().addItemListener(new ItemListener() {
+        mainFrame.getMgfDirectoryBrowseButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //in response to the button click, show open dialog
+                int returnVal = mainFrame.getDirectoryChooser().showOpenDialog(mainFrame);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    //show path in text field
+                    mainFrame.getMgfDirectoryPathTextField().setText(mainFrame.getDirectoryChooser().getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+
+        mainFrame.getOutputDirectoryBrowseButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //in response to the button click, show open dialog
+                int returnVal = mainFrame.getDirectoryChooser().showOpenDialog(mainFrame);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    //show path in text field
+                    mainFrame.getOutputDirectoryPathTextField().setText(mainFrame.getDirectoryChooser().getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+
+        mainFrame.getValidatedTargetHitsBrowseButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //in response to the button click, show open dialog
+                int returnVal = mainFrame.getFileChooser().showOpenDialog(mainFrame);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    //show path in text field
+                    mainFrame.getValidatedTargetHitsPathTextField().setText(mainFrame.getFileChooser().getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+
+        mainFrame.getXpsmsBrowseButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //in response to the button click, show open dialog
+                int returnVal = mainFrame.getFileChooser().showOpenDialog(mainFrame);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    //show path in text field
+                    mainFrame.getXpsmsPathTextField().setText(mainFrame.getFileChooser().getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+
+        mainFrame.getCommonPeptideMassToleranceCheckBox().addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                if (mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected()) {
-                    mainFrame.getFileNameSliceIndexTextField().setEnabled(true);
-                } else {
-                    mainFrame.getFileNameSliceIndexTextField().setEnabled(false);
-                }
+                boolean notSelected = !mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
+
+                mainFrame.getCommonPeptideMassToleranceWindowTextField().setEnabled(!notSelected);
+                mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setEnabled(!notSelected);
+
+                mainFrame.getFirstPeptideMassToleranceWindowTextField().setEnabled(notSelected);
+                mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
+                mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
+                mainFrame.getSecondPeptideMassToleranceWindowTextField().setEnabled(notSelected);
+                mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
+                mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
+                mainFrame.getThirdPeptideMassToleranceWindowTextField().setEnabled(notSelected);
+                mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
+                mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
+                mainFrame.getFourthPeptideMassToleranceWindowTextField().setEnabled(notSelected);
+                mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
+                mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
             }
         });
 
-        mainFrame.getNoiseFilterComboBox().addActionListener(new ActionListener() {
+        mainFrame.getFdrCalcalationComboBox().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switch (mainFrame.getNoiseFilterComboBox().getSelectedIndex()) {
-                    case 2:
-                        mainFrame.getNumberOfPeaksCutoffTextField().setEnabled(true);
-                        mainFrame.getPeakIntensityCutoffTextField().setEnabled(false);
-                        break;
-                    case 3:
-                        mainFrame.getNumberOfPeaksCutoffTextField().setEnabled(false);
-                        mainFrame.getPeakIntensityCutoffTextField().setEnabled(true);
-                        break;
-                    default:
-                        if (mainFrame.getNumberOfPeaksCutoffTextField().isEnabled()) {
-                            mainFrame.getNumberOfPeaksCutoffTextField().setEnabled(false);
-                        }
-                        if (mainFrame.getPeakIntensityCutoffTextField().isEnabled()) {
-                            mainFrame.getPeakIntensityCutoffTextField().setEnabled(false);
-                        }
-                        break;
-                }
+                boolean globalSelected = mainFrame.getFdrCalcalationComboBox().getSelectedIndex() == 0;
+                mainFrame.getGlobalFdrValueTextField().setEnabled(globalSelected);
+                mainFrame.getInterProteinFdrValueTextField().setEnabled(!globalSelected);
+                mainFrame.getIntraProteinFdrValueTextField().setEnabled(!globalSelected);
             }
         });
 
@@ -203,8 +322,8 @@ public class MainController {
                         }
                     }
                     if (reply != JOptionPane.CANCEL_OPTION) {
-                        scorePipelineSwingWorker = new XilmassSwingWorker();
-                        scorePipelineSwingWorker.execute();
+                        xilmassSwingWorker = new XilmassSwingWorker();
+                        xilmassSwingWorker.execute();
 
                         //show the run dialog
                         centerRunDialog();
@@ -238,8 +357,6 @@ public class MainController {
         runDialog.getCancelButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                scorePipelineSwingWorker.cancel(true);
-//                runDialog.dispose();
                 System.exit(0);
             }
         });
@@ -261,22 +378,135 @@ public class MainController {
      * matching fields.
      */
     private void loadParameterValues() {
-        mainFrame.getSpectraDirectoryTextField().setText(ConfigHolder.getInstance().getString(SPECTRA_PROP));
-        mainFrame.getComparisonSpectraDirectoryTextField().setText(ConfigHolder.getInstance().getString(COMP_SPECTRA_PROP));
-        mainFrame.getOutputDirectoryTextField().setText(ConfigHolder.getInstance().getString(OUTPUT_PROP));
-        mainFrame.getChargeCheckBox().setSelected(ConfigHolder.getInstance().getBoolean(CHARGE_PROP));
-        mainFrame.getPrecursorToleranceTextField().setText(Double.toString(ConfigHolder.getInstance().getDouble(PRECURSOR_PROP)));
-        mainFrame.getFragmentToleranceTextField().setText(Double.toString(ConfigHolder.getInstance().getDouble(FRAGMENT_PROP)));
-        mainFrame.getNeighbourSlicesOnlyCheckBox().setSelected(ConfigHolder.getInstance().getBoolean(NEIGHBOUR_SLICE_PROP));
-        mainFrame.getFileNameSliceIndexTextField().setText(Integer.toString(ConfigHolder.getInstance().getInt(FILE_NAME_SLICE_INDEX_PROP)));
-        boolean preprocessingOrder = ConfigHolder.getInstance().getBoolean(PREPROCESSING_ORDER_PROP);
-        mainFrame.getPreprocessingOrderComboBox().setSelectedIndex(preprocessingOrder ? 0 : 1);
-        mainFrame.getTransformationComboBox().setSelectedIndex(ConfigHolder.getInstance().getInt(TRANSORMATION_PROP));
-        mainFrame.getNoiseFilterComboBox().setSelectedIndex(ConfigHolder.getInstance().getInt(NOISE_FILTER_PROP));
-        mainFrame.getRemovePrecursorIonPeaksCheckBox().setSelected(ConfigHolder.getInstance().getBoolean(PRECURSOR_PEAK_REMOVAL_PROP));
-        mainFrame.getNumberOfPeaksCutoffTextField().setText(Integer.toString(ConfigHolder.getInstance().getInt(NUMBER_OF_PEAKS_CUTOFF_PROP)));
-        mainFrame.getPeakIntensityCutoffTextField().setText(Double.toString(ConfigHolder.getInstance().getDouble(PEAK_PERCENTAGE_CUTOFF)));
-        mainFrame.getNumberOfThreadsTextField().setText(Integer.toString(ConfigHolder.getInstance().getInt(NUMBER_OF_THREADS_PROP)));
+        //Input/Output params
+        mainFrame.getFastaDbPathTextField().setText(ConfigHolder.getInstance().getString(FASTA_DB_PATH));
+        mainFrame.getContaminantsFastaDbPathTextField().setText(ConfigHolder.getInstance().getString(CONTAMINANTS_DB_PATH));
+        mainFrame.getSearchDbPathTextField().setText(ConfigHolder.getInstance().getString(SEARCH_DB_PATH));
+        mainFrame.getMgfDirectoryPathTextField().setText(ConfigHolder.getInstance().getString(MGF_DIRECTORY_PATH));
+        mainFrame.getOutputDirectoryPathTextField().setText(ConfigHolder.getInstance().getString(OUTPUT_DIRECTORY_PATH));
+        mainFrame.getValidatedTargetHitsPathTextField().setText(ConfigHolder.getInstance().getString(VALIDATED_TARGETS_PATH));
+        mainFrame.getXpsmsPathTextField().setText(ConfigHolder.getInstance().getString(XPSMS_PATH));
+        //Cross-linking params
+        String crossLinker = ConfigHolder.getInstance().getString(CROSS_LINKER);
+        mainFrame.getCrossLinkerComboBox().getModel().setSelectedItem(crossLinker);
+        String isLabeled = ConfigHolder.getInstance().getString(LABELING);
+        switch (isLabeled) {
+            case "T":
+                mainFrame.getLabelingComboBox().setSelectedIndex(1);
+                break;
+            case "F":
+                mainFrame.getLabelingComboBox().setSelectedIndex(0);
+                break;
+            case "B":
+                mainFrame.getLabelingComboBox().setSelectedIndex(2);
+                break;
+            default:
+                throw new IllegalArgumentException("Cross-linker label type not found.");
+        }
+        boolean serine = ConfigHolder.getInstance().getBoolean(SIDE_REACTION_SERINE);
+        mainFrame.getSerineCheckBox().setSelected(serine);
+        boolean threonine = ConfigHolder.getInstance().getBoolean(SIDE_REACTION_THREONINE);
+        mainFrame.getThreonineCheckBox().setSelected(threonine);
+        boolean tyrosine = ConfigHolder.getInstance().getBoolean(SIDE_REACTION_TYROSINE);
+        mainFrame.getTyrosineCheckBox().setSelected(tyrosine);
+        String linkingType = ConfigHolder.getInstance().getString(CROSS_LINKING_TYPE);
+        switch (linkingType) {
+            case "intra":
+                mainFrame.getCrosslinkingTypeComboBox().setSelectedIndex(0);
+                break;
+            case "inter":
+                mainFrame.getCrosslinkingTypeComboBox().setSelectedIndex(1);
+                break;
+            case "both":
+                mainFrame.getCrosslinkingTypeComboBox().setSelectedIndex(2);
+                break;
+            default:
+                throw new IllegalArgumentException("Cross-linker linking type not found.");
+        }
+        boolean doMonoLinkSearch = ConfigHolder.getInstance().getBoolean(SEARCH_MONOLINK);
+        mainFrame.getMonoLinkingCheckBox().setSelected(doMonoLinkSearch);
+        mainFrame.getMinimumPeptideLengthTextField().setText(ConfigHolder.getInstance().getString(MIN_PEPTIDE_LENGTH));
+        mainFrame.getMaximumPeptideLengthTextField().setText(ConfigHolder.getInstance().getString(MAX_PEPTIDE_LENGTH));
+        boolean intraLinking = ConfigHolder.getInstance().getBoolean(INTRA_LINKING);
+        mainFrame.getIntraLinkingCheckBox().setSelected(intraLinking);
+        //In-silico digestion params
+        mainFrame.getEnzymeComboBox().getModel().setSelectedItem(ConfigHolder.getInstance().getString(ENZYME));
+        mainFrame.getMissedCleavagesTextField().setText(ConfigHolder.getInstance().getString(MISSED_CLEAVAGES));
+        mainFrame.getMinimumPeptideMassTextField().setText(ConfigHolder.getInstance().getString(MIN_PEPTIDE_MASS));
+        mainFrame.getMaximumPeptideMassTextField().setText(ConfigHolder.getInstance().getString(MAX_PEPTIDE_MASS));
+        //modification params
+        String fixedModifications = ConfigHolder.getInstance().getString(FIXED_MODIFICATIONS);
+        String variableModifications = ConfigHolder.getInstance().getString(VARIABLE_MODIFICATIONS);
+        List<String> fixedModificationList = Arrays.asList(StringUtils.split(fixedModifications, ';'));
+        List<String> variableModificationList = Arrays.asList(StringUtils.split(variableModifications, ';'));
+        mainFrame.getFixedModificationsDualList().populateLists(utilitiesPtms, fixedModificationList);
+        mainFrame.getVariableModificationsList().populateLists(utilitiesPtms, variableModificationList);
+        mainFrame.getMaxModPeptideTextField().setText(ConfigHolder.getInstance().getString(MAX_MOD_PEPTIDE));
+        //scoring params
+        int neutralLosses = ConfigHolder.getInstance().getInt(NEUTRAL_LOSSES);
+        mainFrame.getNeutralLossesComboBox().setSelectedIndex(neutralLosses);
+        String fragmentationMode = ConfigHolder.getInstance().getString(FRAGMENTATION_MODE);
+        switch (fragmentationMode) {
+            case "HCD":
+                mainFrame.getFragmentationModeComboBox().setSelectedIndex(0);
+                break;
+            case "CID":
+                mainFrame.getFragmentationModeComboBox().setSelectedIndex(1);
+                break;
+            case "ETD":
+                mainFrame.getFragmentationModeComboBox().setSelectedIndex(2);
+                break;
+        }
+        int peptideToleranceWindows = ConfigHolder.getInstance().getInt(PEP_TOL_WINDOWS);
+        mainFrame.getPeptideToleranceSpinner().setValue(peptideToleranceWindows);
+        mainFrame.getFirstPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW));
+        mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_BASE));
+        boolean firstToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(FIRST_PEPTIDE_MASS_WINDOW_UNIT);
+        if (firstToleranceWindowUnit) {
+            mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        } else {
+            mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
+        }
+        mainFrame.getSecondPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW));
+        mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW_BASE));
+        boolean secondToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(SECOND_PEPTIDE_MASS_WINDOW_UNIT);
+        if (secondToleranceWindowUnit) {
+            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        } else {
+            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
+        }
+        mainFrame.getThirdPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW));
+        mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_BASE));
+        boolean thirdToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(THIRD_PEPTIDE_MASS_WINDOW_UNIT);
+        if (thirdToleranceWindowUnit) {
+            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        } else {
+            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
+        }
+        mainFrame.getFourthPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
+        mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_BASE));
+        boolean fourthToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(FOURTH_PEPTIDE_MASS_WINDOW_UNIT);
+        if (fourthToleranceWindowUnit) {
+            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        } else {
+            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
+        }
+        mainFrame.getCommonPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
+        boolean commonToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(COMMON_PEPTIDE_MASS_WINDOW_UNIT);
+        if (commonToleranceWindowUnit) {
+            mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        } else {
+            mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
+        }
+        mainFrame.getMinNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_NUMBER_OF_PEAKS));
+        boolean peakMatch = ConfigHolder.getInstance().getBoolean(PEAK_MATCHING);
+        if (peakMatch) {
+            mainFrame.getPeakMatchingComboBox().setSelectedIndex(0);
+        } else {
+            mainFrame.getPeakMatchingComboBox().setSelectedIndex(1);
+        }
+        //Spectrum preprocessing params
+
     }
 
     /**
@@ -284,26 +514,26 @@ public class MainController {
      * the pipeline.
      */
     private void copyParameterValues() {
-        ConfigHolder.getInstance().setProperty(SPECTRA_PROP, mainFrame.getSpectraDirectoryTextField().getText());
-        ConfigHolder.getInstance().setProperty(COMP_SPECTRA_PROP, mainFrame.getComparisonSpectraDirectoryTextField().getText());
-        ConfigHolder.getInstance().setProperty(OUTPUT_PROP, mainFrame.getOutputDirectoryTextField().getText());
-        ConfigHolder.getInstance().setProperty(CHARGE_PROP, mainFrame.getChargeCheckBox().isSelected());
-        ConfigHolder.getInstance().setProperty(PRECURSOR_PROP, mainFrame.getPrecursorToleranceTextField().getText());
-        ConfigHolder.getInstance().setProperty(FRAGMENT_PROP, mainFrame.getFragmentToleranceTextField().getText());
-        ConfigHolder.getInstance().setProperty(NEIGHBOUR_SLICE_PROP, mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected());
-        if (mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected()) {
-            ConfigHolder.getInstance().setProperty(FILE_NAME_SLICE_INDEX_PROP, mainFrame.getFileNameSliceIndexTextField().getText());
-        }
-        ConfigHolder.getInstance().setProperty(PREPROCESSING_ORDER_PROP, mainFrame.getPreprocessingOrderComboBox().getSelectedIndex() == 0);
-        ConfigHolder.getInstance().setProperty(TRANSORMATION_PROP, mainFrame.getTransformationComboBox().getSelectedIndex());
-        ConfigHolder.getInstance().setProperty(NOISE_FILTER_PROP, mainFrame.getNoiseFilterComboBox().getSelectedIndex());
-        if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 2) {
-            ConfigHolder.getInstance().setProperty(NUMBER_OF_PEAKS_CUTOFF_PROP, mainFrame.getNumberOfPeaksCutoffTextField().getText());
-        } else if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 3) {
-            ConfigHolder.getInstance().setProperty(PEAK_PERCENTAGE_CUTOFF, mainFrame.getPeakIntensityCutoffTextField().getText());
-        }
-        ConfigHolder.getInstance().setProperty(PRECURSOR_PEAK_REMOVAL_PROP, mainFrame.getRemovePrecursorIonPeaksCheckBox().isSelected());
-        ConfigHolder.getInstance().setProperty(NUMBER_OF_THREADS_PROP, mainFrame.getNumberOfThreadsTextField().getText());
+//        ConfigHolder.getInstance().setProperty(SPECTRA_PROP, mainFrame.getSpectraDirectoryTextField().getText());
+//        ConfigHolder.getInstance().setProperty(COMP_SPECTRA_PROP, mainFrame.getComparisonSpectraDirectoryTextField().getText());
+//        ConfigHolder.getInstance().setProperty(OUTPUT_PROP, mainFrame.getOutputDirectoryTextField().getText());
+//        ConfigHolder.getInstance().setProperty(CHARGE_PROP, mainFrame.getChargeCheckBox().isSelected());
+//        ConfigHolder.getInstance().setProperty(PRECURSOR_PROP, mainFrame.getPrecursorToleranceTextField().getText());
+//        ConfigHolder.getInstance().setProperty(FRAGMENT_PROP, mainFrame.getFragmentToleranceTextField().getText());
+//        ConfigHolder.getInstance().setProperty(NEIGHBOUR_SLICE_PROP, mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected());
+//        if (mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected()) {
+//            ConfigHolder.getInstance().setProperty(FILE_NAME_SLICE_INDEX_PROP, mainFrame.getFileNameSliceIndexTextField().getText());
+//        }
+//        ConfigHolder.getInstance().setProperty(PREPROCESSING_ORDER_PROP, mainFrame.getPreprocessingOrderComboBox().getSelectedIndex() == 0);
+//        ConfigHolder.getInstance().setProperty(TRANSORMATION_PROP, mainFrame.getTransformationComboBox().getSelectedIndex());
+//        ConfigHolder.getInstance().setProperty(NOISE_FILTER_PROP, mainFrame.getNoiseFilterComboBox().getSelectedIndex());
+//        if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 2) {
+//            ConfigHolder.getInstance().setProperty(NUMBER_OF_PEAKS_CUTOFF_PROP, mainFrame.getNumberOfPeaksCutoffTextField().getText());
+//        } else if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 3) {
+//            ConfigHolder.getInstance().setProperty(PEAK_PERCENTAGE_CUTOFF, mainFrame.getPeakIntensityCutoffTextField().getText());
+//        }
+//        ConfigHolder.getInstance().setProperty(PRECURSOR_PEAK_REMOVAL_PROP, mainFrame.getRemovePrecursorIonPeaksCheckBox().isSelected());
+//        ConfigHolder.getInstance().setProperty(NUMBER_OF_THREADS_PROP, mainFrame.getNumberOfThreadsTextField().getText());
     }
 
     /**
@@ -315,94 +545,93 @@ public class MainController {
     private List<String> validateInput() {
         List<String> validationMessages = new ArrayList<>();
 
-        if (mainFrame.getSpectraDirectoryTextField().getText().isEmpty()) {
-            validationMessages.add("Please provide a spectra input directory.");
-        }
-        if (mainFrame.getComparisonSpectraDirectoryTextField().getText().isEmpty()) {
-            validationMessages.add("Please provide a comparison spectra input directory.");
-        }
-        if (mainFrame.getOutputDirectoryTextField().getText().isEmpty()) {
-            validationMessages.add("Please provide an output directory.");
-        }
-        if (mainFrame.getPrecursorToleranceTextField().getText().isEmpty()) {
-            validationMessages.add("Please provide a precursor tolerance value.");
-        } else {
-            try {
-                Double tolerance = Double.valueOf(mainFrame.getPrecursorToleranceTextField().getText());
-                if (tolerance < 0.0) {
-                    validationMessages.add("Please provide a positive precursor tolerance value.");
-                }
-            } catch (NumberFormatException nfe) {
-                validationMessages.add("Please provide a numeric precursor tolerance value.");
-            }
-        }
-        if (mainFrame.getFragmentToleranceTextField().getText().isEmpty()) {
-            validationMessages.add("Please provide a fragment tolerance value.");
-        } else {
-            try {
-                Double tolerance = Double.valueOf(mainFrame.getFragmentToleranceTextField().getText());
-                if (tolerance < 0.0) {
-                    validationMessages.add("Please provide a positive fragment tolerance value.");
-                }
-            } catch (NumberFormatException nfe) {
-                validationMessages.add("Please provide a numeric fragment tolerance value.");
-            }
-        }
-
-        if (mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected()) {
-            if (mainFrame.getFileNameSliceIndexTextField().getText().isEmpty()) {
-                validationMessages.add("Please provide a file name slice index value.");
-            } else {
-                try {
-                    Integer index = Integer.valueOf(mainFrame.getFileNameSliceIndexTextField().getText());
-                    if (index < 0) {
-                        validationMessages.add("Please provide a positive file name slice index value.");
-                    }
-                } catch (NumberFormatException nfe) {
-                    validationMessages.add("Please provide a numeric file name slice index value.");
-                }
-            }
-        }
-        if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 2) {
-            if (mainFrame.getNumberOfPeaksCutoffTextField().getText().isEmpty()) {
-                validationMessages.add("Please a provide peak cutoff number when choosing the TopN intense peak selection filter.");
-            } else {
-                try {
-                    Integer number = Integer.valueOf(mainFrame.getNumberOfPeaksCutoffTextField().getText());
-                    if (number < 0) {
-                        validationMessages.add("Please provide a positive peak cutoff number value.");
-                    }
-                } catch (NumberFormatException nfe) {
-                    validationMessages.add("Please provide a numeric peak cutoff number value.");
-                }
-            }
-        } else if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 3) {
-            if (mainFrame.getPeakIntensityCutoffTextField().getText().isEmpty()) {
-                validationMessages.add("Please provide peak cutoff percentage when choosing the Discard peaks with less than x% of precursor-intensity filter.");
-            } else {
-                try {
-                    Double percentage = Double.valueOf(mainFrame.getPeakIntensityCutoffTextField().getText());
-                    if (percentage < 0.0) {
-                        validationMessages.add("Please provide a positive peak cutoff percentage value.");
-                    }
-                } catch (NumberFormatException nfe) {
-                    validationMessages.add("Please provide a numeric peak cutoff percentage value.");
-                }
-            }
-        }
-        if (mainFrame.getNumberOfThreadsTextField().getText().isEmpty()) {
-            validationMessages.add("Please provide a number of threads.");
-        } else {
-            try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getNumberOfThreadsTextField().getText());
-                if (numberOfThreads < 0) {
-                    validationMessages.add("Please provide a positive number of threads.");
-                }
-            } catch (NumberFormatException nfe) {
-                validationMessages.add("Please provide a numeric number of threads.");
-            }
-        }
-
+//        if (mainFrame.getSpectraDirectoryTextField().getText().isEmpty()) {
+//            validationMessages.add("Please provide a spectra input directory.");
+//        }
+//        if (mainFrame.getComparisonSpectraDirectoryTextField().getText().isEmpty()) {
+//            validationMessages.add("Please provide a comparison spectra input directory.");
+//        }
+//        if (mainFrame.getOutputDirectoryTextField().getText().isEmpty()) {
+//            validationMessages.add("Please provide an output directory.");
+//        }
+//        if (mainFrame.getPrecursorToleranceTextField().getText().isEmpty()) {
+//            validationMessages.add("Please provide a precursor tolerance value.");
+//        } else {
+//            try {
+//                Double tolerance = Double.valueOf(mainFrame.getPrecursorToleranceTextField().getText());
+//                if (tolerance < 0.0) {
+//                    validationMessages.add("Please provide a positive precursor tolerance value.");
+//                }
+//            } catch (NumberFormatException nfe) {
+//                validationMessages.add("Please provide a numeric precursor tolerance value.");
+//            }
+//        }
+//        if (mainFrame.getFragmentToleranceTextField().getText().isEmpty()) {
+//            validationMessages.add("Please provide a fragment tolerance value.");
+//        } else {
+//            try {
+//                Double tolerance = Double.valueOf(mainFrame.getFragmentToleranceTextField().getText());
+//                if (tolerance < 0.0) {
+//                    validationMessages.add("Please provide a positive fragment tolerance value.");
+//                }
+//            } catch (NumberFormatException nfe) {
+//                validationMessages.add("Please provide a numeric fragment tolerance value.");
+//            }
+//        }
+//
+//        if (mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected()) {
+//            if (mainFrame.getFileNameSliceIndexTextField().getText().isEmpty()) {
+//                validationMessages.add("Please provide a file name slice index value.");
+//            } else {
+//                try {
+//                    Integer index = Integer.valueOf(mainFrame.getFileNameSliceIndexTextField().getText());
+//                    if (index < 0) {
+//                        validationMessages.add("Please provide a positive file name slice index value.");
+//                    }
+//                } catch (NumberFormatException nfe) {
+//                    validationMessages.add("Please provide a numeric file name slice index value.");
+//                }
+//            }
+//        }
+//        if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 2) {
+//            if (mainFrame.getNumberOfPeaksCutoffTextField().getText().isEmpty()) {
+//                validationMessages.add("Please a provide peak cutoff number when choosing the TopN intense peak selection filter.");
+//            } else {
+//                try {
+//                    Integer number = Integer.valueOf(mainFrame.getNumberOfPeaksCutoffTextField().getText());
+//                    if (number < 0) {
+//                        validationMessages.add("Please provide a positive peak cutoff number value.");
+//                    }
+//                } catch (NumberFormatException nfe) {
+//                    validationMessages.add("Please provide a numeric peak cutoff number value.");
+//                }
+//            }
+//        } else if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 3) {
+//            if (mainFrame.getPeakIntensityCutoffTextField().getText().isEmpty()) {
+//                validationMessages.add("Please provide peak cutoff percentage when choosing the Discard peaks with less than x% of precursor-intensity filter.");
+//            } else {
+//                try {
+//                    Double percentage = Double.valueOf(mainFrame.getPeakIntensityCutoffTextField().getText());
+//                    if (percentage < 0.0) {
+//                        validationMessages.add("Please provide a positive peak cutoff percentage value.");
+//                    }
+//                } catch (NumberFormatException nfe) {
+//                    validationMessages.add("Please provide a numeric peak cutoff percentage value.");
+//                }
+//            }
+//        }
+//        if (mainFrame.getNumberOfThreadsTextField().getText().isEmpty()) {
+//            validationMessages.add("Please provide a number of threads.");
+//        } else {
+//            try {
+//                Integer numberOfThreads = Integer.valueOf(mainFrame.getNumberOfThreadsTextField().getText());
+//                if (numberOfThreads < 0) {
+//                    validationMessages.add("Please provide a positive number of threads.");
+//                }
+//            } catch (NumberFormatException nfe) {
+//                validationMessages.add("Please provide a numeric number of threads.");
+//            }
+//        }
         return validationMessages;
     }
 
@@ -459,7 +688,7 @@ public class MainController {
         @Override
         protected Void doInBackground() throws Exception {
             LOGGER.info("starting spectrum similarity score pipeline");
-            ScorePipeline.run(true);
+//            ScorePipeline.run(true);
 
             return null;
         }
