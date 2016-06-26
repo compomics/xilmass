@@ -13,7 +13,9 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import javax.swing.JFileChooser;
@@ -100,6 +102,7 @@ public class MainController {
     private static final String FOURTH_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol4_PPM";
     private static final String MIN_NUMBER_OF_PEAKS = "minRequiredPeaks";
     private static final String PEAK_MATCHING = "isAllMatchedPeaks";
+    private static final String MS1_REPORTING = "report_in_ppm";
     /**
      * Spectrum preprocessing.
      */
@@ -123,12 +126,20 @@ public class MainController {
      * Model fields.
      */
     private List<String> utilitiesPtms = PTMFactory.getInstance().getPTMs();
-    private Comparator<String> stringComparator = new Comparator<String>() {
+    private final Comparator<String> stringComparator = new Comparator<String>() {
         @Override
         public int compare(String o1, String o2) {
             return o1.compareTo(o2);
         }
     };
+    /**
+     * A mapping for the mass unit (key: ComboBox index; value: property value).
+     */
+    private final Map<Integer, String> unitGuiToPropertiesMapping = new HashMap();
+    /**
+     * A mapping for the mass unit (key: property value; value: ComboBox index).
+     */
+    private final Map<String, Integer> unitPropertiesToGuiMapping = new HashMap();
     private XilmassSwingWorker xilmassSwingWorker;
 
     /**
@@ -136,6 +147,16 @@ public class MainController {
      */
     private final MainFrame mainFrame = new MainFrame();
     private RunDialog runDialog;
+
+    /**
+     * No-arg constructor.
+     */
+    public MainController() {
+        unitGuiToPropertiesMapping.put(0, "T");
+        unitGuiToPropertiesMapping.put(1, "F");
+        unitPropertiesToGuiMapping.put("T", 0);
+        unitPropertiesToGuiMapping.put("F", 0);
+    }
 
     /**
      * Init the controller.
@@ -462,43 +483,23 @@ public class MainController {
         mainFrame.getPeptideToleranceSpinner().setValue(peptideToleranceWindows);
         mainFrame.getFirstPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW));
         mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_BASE));
-        boolean firstToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(FIRST_PEPTIDE_MASS_WINDOW_UNIT);
-        if (firstToleranceWindowUnit) {
-            mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
+        String firstToleranceWindowUnit = ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_UNIT);
+        mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(firstToleranceWindowUnit));
         mainFrame.getSecondPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW));
         mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW_BASE));
-        boolean secondToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(SECOND_PEPTIDE_MASS_WINDOW_UNIT);
-        if (secondToleranceWindowUnit) {
-            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
+        String secondToleranceWindowUnit = ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW_UNIT);
+        mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(secondToleranceWindowUnit));
         mainFrame.getThirdPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW));
         mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_BASE));
-        boolean thirdToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(THIRD_PEPTIDE_MASS_WINDOW_UNIT);
-        if (thirdToleranceWindowUnit) {
-            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
+        String thirdToleranceWindowUnit = ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_UNIT);
+        mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(thirdToleranceWindowUnit));
         mainFrame.getFourthPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
         mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_BASE));
-        boolean fourthToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(FOURTH_PEPTIDE_MASS_WINDOW_UNIT);
-        if (fourthToleranceWindowUnit) {
-            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
+        String fourthToleranceWindowUnit = ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_UNIT);
+        mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(fourthToleranceWindowUnit));
         mainFrame.getCommonPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
-        boolean commonToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(COMMON_PEPTIDE_MASS_WINDOW_UNIT);
-        if (commonToleranceWindowUnit) {
-            mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
+        String commonToleranceWindowUnit = ConfigHolder.getInstance().getString(COMMON_PEPTIDE_MASS_WINDOW_UNIT);
+        mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(commonToleranceWindowUnit));
         mainFrame.getMinNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_NUMBER_OF_PEAKS));
         boolean peakMatch = ConfigHolder.getInstance().getBoolean(PEAK_MATCHING);
         if (peakMatch) {
@@ -506,6 +507,8 @@ public class MainController {
         } else {
             mainFrame.getPeakMatchingComboBox().setSelectedIndex(1);
         }
+        String ms1ReportingUnit = ConfigHolder.getInstance().getString(MS1_REPORTING);
+        mainFrame.getMs1ReportingComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(ms1ReportingUnit));
         //Spectrum preprocessing params
         mainFrame.getSpectrumMassWindowValueTextField().setText(ConfigHolder.getInstance().getString(SPECTRUM_MASS_WINDOW));
         mainFrame.getMinimumNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MIN_NUMBER_OF_PEAKS));
@@ -613,76 +616,74 @@ public class MainController {
         ConfigHolder.getInstance().setProperty(VARIABLE_MODIFICATIONS, joinedVariableModifications);
         ConfigHolder.getInstance().setProperty(MAX_MOD_PEPTIDE, mainFrame.getMaxModPeptideTextField().getText());
         //scoring params
-        //continue here
-        int neutralLosses = ConfigHolder.getInstance().getInt(NEUTRAL_LOSSES);
-        mainFrame.getNeutralLossesComboBox().setSelectedIndex(neutralLosses);
-        String fragmentationMode = ConfigHolder.getInstance().getString(FRAGMENTATION_MODE);
+        ConfigHolder.getInstance().setProperty(NEUTRAL_LOSSES, mainFrame.getNeutralLossesComboBox().getSelectedIndex());
+        int fragmentationMode = mainFrame.getFragmentationModeComboBox().getSelectedIndex();
         switch (fragmentationMode) {
-            case "HCD":
-                mainFrame.getFragmentationModeComboBox().setSelectedIndex(0);
+            case 0:
+                ConfigHolder.getInstance().setProperty(FRAGMENTATION_MODE, "HCD");
                 break;
-            case "CID":
-                mainFrame.getFragmentationModeComboBox().setSelectedIndex(1);
+            case 1:
+                ConfigHolder.getInstance().setProperty(FRAGMENTATION_MODE, "CID");
                 break;
-            case "ETD":
-                mainFrame.getFragmentationModeComboBox().setSelectedIndex(2);
+            case 2:
+                ConfigHolder.getInstance().setProperty(FRAGMENTATION_MODE, "ETD");
                 break;
         }
-        int peptideToleranceWindows = ConfigHolder.getInstance().getInt(PEP_TOL_WINDOWS);
-        mainFrame.getPeptideToleranceSpinner().setValue(peptideToleranceWindows);
-        mainFrame.getFirstPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW));
-        mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_BASE));
-        boolean firstToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(FIRST_PEPTIDE_MASS_WINDOW_UNIT);
-        if (firstToleranceWindowUnit) {
-            mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        ConfigHolder.getInstance().setProperty(PEP_TOL_WINDOWS, mainFrame.getPeptideToleranceSpinner().getValue());
+        boolean useCommonMassToleranceWindow = mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
+        if (useCommonMassToleranceWindow) {
+            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getCommonPeptideMassToleranceWindowTextField().getText());
+            int commonToleranceWindowUnit = mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW_UNIT, commonToleranceWindowUnit);
         } else {
-            mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
+            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
+            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
+            int firstToleranceWindowUnit = mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, firstToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW, mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
+            int secondToleranceWindowUnit = mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, secondToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW, mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
+            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
+            int thirdToleranceWindowUnit = mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_UNIT, thirdToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW, mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
+            ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
+            int fourthToleranceWindowUnit = mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, fourthToleranceWindowUnit);
         }
-        mainFrame.getSecondPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW));
-        mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW_BASE));
-        boolean secondToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(SECOND_PEPTIDE_MASS_WINDOW_UNIT);
-        if (secondToleranceWindowUnit) {
-            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
+        ConfigHolder.getInstance().setProperty(MIN_NUMBER_OF_PEAKS, mainFrame.getMinNumberOfPeaksTextField());
+        int peakMatch = mainFrame.getPeakMatchingComboBox().getSelectedIndex();
+        if (peakMatch == 0) {
+            ConfigHolder.getInstance().setProperty(PEAK_MATCHING, "T");
         } else {
-            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
-        mainFrame.getThirdPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW));
-        mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_BASE));
-        boolean thirdToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(THIRD_PEPTIDE_MASS_WINDOW_UNIT);
-        if (thirdToleranceWindowUnit) {
-            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
-        mainFrame.getFourthPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
-        mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_BASE));
-        boolean fourthToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(FOURTH_PEPTIDE_MASS_WINDOW_UNIT);
-        if (fourthToleranceWindowUnit) {
-            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
-        mainFrame.getCommonPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
-        boolean commonToleranceWindowUnit = ConfigHolder.getInstance().getBoolean(COMMON_PEPTIDE_MASS_WINDOW_UNIT);
-        if (commonToleranceWindowUnit) {
-            mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(1);
-        }
-        mainFrame.getMinNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_NUMBER_OF_PEAKS));
-        boolean peakMatch = ConfigHolder.getInstance().getBoolean(PEAK_MATCHING);
-        if (peakMatch) {
-            mainFrame.getPeakMatchingComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getPeakMatchingComboBox().setSelectedIndex(1);
+            ConfigHolder.getInstance().setProperty(PEAK_MATCHING, "F");
         }
         //Spectrum preprocessing params
-        mainFrame.getSpectrumMassWindowValueTextField().setText(ConfigHolder.getInstance().getString(SPECTRUM_MASS_WINDOW));
-        mainFrame.getMinimumNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MIN_NUMBER_OF_PEAKS));
-        mainFrame.getMaximumNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MAX_NUMBER_OF_PEAKS));
-        mainFrame.getLowerPrecursorMassBoundTextField().setText(ConfigHolder.getInstance().getString(LOWER_PREC_MASS_BOUND));
-        mainFrame.getDeisotopePrecisionTextField().setText(ConfigHolder.getInstance().getString(DEISOTOPE_PRECISION));
-        mainFrame.getDeconvulatePrecisionTextField().setText(ConfigHolder.getInstance().getString(DECONVOLUTE_PRECISION));
+        ConfigHolder.getInstance().setProperty(SPECTRUM_MASS_WINDOW, mainFrame.getSpectrumMassWindowValueTextField().getText());
+        ConfigHolder.getInstance().setProperty(WINDOW_MIN_NUMBER_OF_PEAKS, mainFrame.getMinimumNumberOfPeaksTextField().getText());
+        ConfigHolder.getInstance().setProperty(WINDOW_MAX_NUMBER_OF_PEAKS, mainFrame.getMaximumNumberOfPeaksTextField().getText());
+        ConfigHolder.getInstance().setProperty(LOWER_PREC_MASS_BOUND, mainFrame.getLowerPrecursorMassBoundTextField().getText());
+        ConfigHolder.getInstance().setProperty(DEISOTOPE_PRECISION, mainFrame.getDeisotopePrecisionTextField().getText());
+        ConfigHolder.getInstance().setProperty(DEISOTOPE_PRECISION, mainFrame.getDeconvulatePrecisionTextField().getText());
+        //Multithreading and validation params
+        ConfigHolder.getInstance().setProperty(MULTI_THREADING, mainFrame.getNumberOfThreadsTextField().getText());
+        boolean writePrecolatorInput = mainFrame.getWritePercolatorInputFilesCheckBox().isSelected();
+        if (writePrecolatorInput) {
+            ConfigHolder.getInstance().setProperty(WRITE_PERCOLATOR, "T");
+        } else {
+            ConfigHolder.getInstance().setProperty(WRITE_PERCOLATOR, "F");
+        }
+        int improvedFdr = mainFrame.getFdrCalcalationComboBox().getSelectedIndex();
+        if (improvedFdr == 0) {
+            ConfigHolder.getInstance().setProperty(IMPROVED_FDR, "T");
+            ConfigHolder.getInstance().setProperty(INTER_PROTEIN_FDR, mainFrame.getInterProteinFdrValueTextField().getText());
+            ConfigHolder.getInstance().setProperty(INTRA_PROTEIN_FDR, mainFrame.getIntraProteinFdrValueTextField().getText());
+        } else {
+            ConfigHolder.getInstance().setProperty(IMPROVED_FDR, "F");
+            ConfigHolder.getInstance().setProperty(GLOBAL_FDR, mainFrame.getGlobalFdrValueTextField().getText());
+        }
     }
 
     /**

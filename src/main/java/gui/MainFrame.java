@@ -282,6 +282,10 @@ public class MainFrame extends javax.swing.JFrame {
         return variableModificationsDualList;
     }
 
+    public JComboBox<String> getMs1ReportingComboBox() {
+        return ms1ReportingComboBox;
+    }
+
     public JCheckBox getWritePercolatorInputFilesCheckBox() {
         return writePercolatorInputFilesCheckBox;
     }
@@ -422,6 +426,8 @@ public class MainFrame extends javax.swing.JFrame {
         minNumberOfPeaksTextField = new javax.swing.JTextField();
         peakMatchingLabel = new javax.swing.JLabel();
         peakMatchingComboBox = new javax.swing.JComboBox<>();
+        ms1ReportingLabel = new javax.swing.JLabel();
+        ms1ReportingComboBox = new javax.swing.JComboBox<>();
         spectrumPreprocessingPanel = new javax.swing.JPanel();
         spectrumMassWindowValueLabel = new javax.swing.JLabel();
         spectrumMassWindowValueTextField = new javax.swing.JTextField();
@@ -591,7 +597,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(inputOutputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(xpsmsPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(xpsmsBrowseButton))
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Input/Output", inputOutputPanel);
@@ -713,7 +719,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(intralinkingLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(intraLinkingCheckBox)
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Cross-linking", crossLinkingPanel);
@@ -780,7 +786,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(inSilicoDigestionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(maximumPeptideMassLabel)
                     .addComponent(maximumPeptideMassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(319, Short.MAX_VALUE))
+                .addContainerGap(336, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("In-silico digestion", inSilicoDigestionPanel);
@@ -811,7 +817,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(fixedModificationsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fixedModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE))
+                .addComponent(fixedModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -845,7 +851,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(variableModificationsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE))
+                .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1091,6 +1097,10 @@ public class MainFrame extends javax.swing.JFrame {
 
         peakMatchingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "find all matched theoretical peaks within a tolerance", "find only the closest theoretical peak within a tolerance " }));
 
+        ms1ReportingLabel.setText("MS1 mass difference reporting*:");
+
+        ms1ReportingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PPM", "DA" }));
+
         javax.swing.GroupLayout scoringPanelLayout = new javax.swing.GroupLayout(scoringPanel);
         scoringPanel.setLayout(scoringPanelLayout);
         scoringPanelLayout.setHorizontalGroup(
@@ -1108,15 +1118,19 @@ public class MainFrame extends javax.swing.JFrame {
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(peptideMassToleranceWindowsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(scoringPanelLayout.createSequentialGroup()
-                        .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(scoringPanelLayout.createSequentialGroup()
                                 .addComponent(minNumberOfPeaksLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(minNumberOfPeaksTextField))
+                                .addComponent(minNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(scoringPanelLayout.createSequentialGroup()
-                                .addComponent(peakMatchingLabel)
+                                .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(peakMatchingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(ms1ReportingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(peakMatchingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(peakMatchingComboBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         scoringPanelLayout.setVerticalGroup(
@@ -1140,6 +1154,10 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(peakMatchingLabel)
                     .addComponent(peakMatchingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ms1ReportingLabel)
+                    .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1221,7 +1239,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(deconvulatePrecisionLabel)
                     .addComponent(deconvulatePrecisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(260, Short.MAX_VALUE))
+                .addContainerGap(277, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Spectrum preprocessing", spectrumPreprocessingPanel);
@@ -1295,7 +1313,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(intraProteinFdrValueLabel)
                     .addComponent(intraProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(235, Short.MAX_VALUE))
+                .addContainerGap(252, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Multithreading and validation", multiThreadingAndValidationPanel);
@@ -1313,8 +1331,8 @@ public class MainFrame extends javax.swing.JFrame {
             topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(topPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(mainTabbedPane)
-                .addContainerGap())
+                .addComponent(mainTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         bottomPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
@@ -1363,10 +1381,9 @@ public class MainFrame extends javax.swing.JFrame {
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1377,7 +1394,9 @@ public class MainFrame extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 637, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
@@ -1468,6 +1487,8 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel modificationsPanel;
     private javax.swing.JCheckBox monoLinkingCheckBox;
     private javax.swing.JLabel monolinkingLabel;
+    private javax.swing.JComboBox<String> ms1ReportingComboBox;
+    private javax.swing.JLabel ms1ReportingLabel;
     private javax.swing.JPanel multiThreadingAndValidationPanel;
     private javax.swing.JComboBox<String> neutralLossesComboBox;
     private javax.swing.JLabel neutralLossesLabel;
