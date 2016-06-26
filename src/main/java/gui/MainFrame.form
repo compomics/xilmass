@@ -809,7 +809,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="variableModificationsList" pref="474" max="32767" attributes="0"/>
+                                      <Component id="variableModificationsDualList" pref="474" max="32767" attributes="0"/>
                                       <Group type="102" attributes="0">
                                           <Component id="variableModificationsLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -825,13 +825,13 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="variableModificationsLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="variableModificationsList" pref="421" max="32767" attributes="0"/>
+                                  <Component id="variableModificationsDualList" pref="421" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="gui.DualList" name="variableModificationsList">
+                        <Component class="gui.DualList" name="variableModificationsDualList">
                         </Component>
                         <Component class="javax.swing.JLabel" name="variableModificationsLabel">
                           <Properties>
@@ -1564,17 +1564,12 @@
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="writePercolatorInputFilesLabel" max="32767" attributes="0"/>
-                                          <Component id="numberOfThreadsLabel" max="32767" attributes="0"/>
-                                      </Group>
+                                      <Component id="numberOfThreadsLabel" min="-2" pref="237" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="numberOfThreadsTextField" pref="70" max="32767" attributes="0"/>
-                                          <Component id="writePercolatorInputFilesComboBox" max="32767" attributes="0"/>
-                                      </Group>
+                                      <Component id="numberOfThreadsTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="fdrCalcalationComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="writePercolatorInputFilesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace pref="245" max="32767" attributes="0"/>
                           </Group>
@@ -1589,11 +1584,8 @@
                                   <Component id="numberOfThreadsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="writePercolatorInputFilesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="writePercolatorInputFilesComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="writePercolatorInputFilesCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Component id="fdrCalculationLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="fdrCalcalationComboBox" min="-2" max="-2" attributes="0"/>
@@ -1612,7 +1604,7 @@
                                   <Component id="intraProteinFdrValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="intraProteinFdrValueTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="228" max="32767" attributes="0"/>
+                              <EmptySpace pref="235" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1624,24 +1616,6 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="numberOfThreadsTextField">
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="writePercolatorInputFilesLabel">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Write separate Percolator input files*:"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JComboBox" name="writePercolatorInputFilesComboBox">
-                      <Properties>
-                        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="2">
-                            <StringItem index="0" value="yes"/>
-                            <StringItem index="1" value="no"/>
-                          </StringArray>
-                        </Property>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="fdrCalculationLabel">
                       <Properties>
@@ -1681,6 +1655,11 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="intraProteinFdrValueTextField">
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="writePercolatorInputFilesCheckBox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Write separate Percolator input files*"/>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>

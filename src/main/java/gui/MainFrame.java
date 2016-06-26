@@ -278,12 +278,12 @@ public class MainFrame extends javax.swing.JFrame {
         return validatedTargetHitsPathTextField;
     }
 
-    public DualList getVariableModificationsList() {
-        return variableModificationsList;
+    public DualList getVariableModificationsDualList() {
+        return variableModificationsDualList;
     }
 
-    public JComboBox<String> getWritePercolatorInputFilesComboBox() {
-        return writePercolatorInputFilesComboBox;
+    public JCheckBox getWritePercolatorInputFilesCheckBox() {
+        return writePercolatorInputFilesCheckBox;
     }
 
     public JButton getXpsmsBrowseButton() {
@@ -372,7 +372,7 @@ public class MainFrame extends javax.swing.JFrame {
         fixedModificationsDualList = new gui.DualList();
         fixedModificationsLabel = new javax.swing.JLabel();
         variableModificationsPanel = new javax.swing.JPanel();
-        variableModificationsList = new gui.DualList();
+        variableModificationsDualList = new gui.DualList();
         variableModificationsLabel = new javax.swing.JLabel();
         otherModSettingsPanel = new javax.swing.JPanel();
         maxModPeptideLabel = new javax.swing.JLabel();
@@ -438,8 +438,6 @@ public class MainFrame extends javax.swing.JFrame {
         multiThreadingAndValidationPanel = new javax.swing.JPanel();
         numberOfThreadsLabel = new javax.swing.JLabel();
         numberOfThreadsTextField = new javax.swing.JTextField();
-        writePercolatorInputFilesLabel = new javax.swing.JLabel();
-        writePercolatorInputFilesComboBox = new javax.swing.JComboBox<>();
         fdrCalculationLabel = new javax.swing.JLabel();
         fdrCalcalationComboBox = new javax.swing.JComboBox<>();
         globalFdrValueLabel = new javax.swing.JLabel();
@@ -448,6 +446,7 @@ public class MainFrame extends javax.swing.JFrame {
         interProteinFdrValueTextField = new javax.swing.JTextField();
         intraProteinFdrValueLabel = new javax.swing.JLabel();
         intraProteinFdrValueTextField = new javax.swing.JTextField();
+        writePercolatorInputFilesCheckBox = new javax.swing.JCheckBox();
         bottomPanel = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         runButton = new javax.swing.JButton();
@@ -834,7 +833,7 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(variableModificationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(variableModificationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(variableModificationsList, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+                    .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
                     .addGroup(variableModificationsPanelLayout.createSequentialGroup()
                         .addComponent(variableModificationsLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -846,7 +845,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(variableModificationsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(variableModificationsList, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE))
+                .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1231,10 +1230,6 @@ public class MainFrame extends javax.swing.JFrame {
 
         numberOfThreadsLabel.setText("Number of threads*:");
 
-        writePercolatorInputFilesLabel.setText("Write separate Percolator input files*:");
-
-        writePercolatorInputFilesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "yes", "no" }));
-
         fdrCalculationLabel.setText("<html>FDR calculation.<br>Improved means seperate XPSMs lists (T) into inter- and intra-protein XL sites to compute FDR for each subset.*:</html>");
 
         fdrCalcalationComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "global", "improved" }));
@@ -1244,6 +1239,8 @@ public class MainFrame extends javax.swing.JFrame {
         interProteinFdrValueLabel.setText("Inter-protein improved FDR value*:");
 
         intraProteinFdrValueLabel.setText("Intra-protein improved FDR value*:");
+
+        writePercolatorInputFilesCheckBox.setText("Write separate Percolator input files*");
 
         javax.swing.GroupLayout multiThreadingAndValidationPanelLayout = new javax.swing.GroupLayout(multiThreadingAndValidationPanel);
         multiThreadingAndValidationPanel.setLayout(multiThreadingAndValidationPanelLayout);
@@ -1266,14 +1263,11 @@ public class MainFrame extends javax.swing.JFrame {
                             .addComponent(globalFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(interProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(multiThreadingAndValidationPanelLayout.createSequentialGroup()
-                        .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(writePercolatorInputFilesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(numberOfThreadsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(numberOfThreadsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(numberOfThreadsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                            .addComponent(writePercolatorInputFilesComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(fdrCalcalationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(numberOfThreadsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(fdrCalcalationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(writePercolatorInputFilesCheckBox))
                 .addContainerGap(245, Short.MAX_VALUE))
         );
         multiThreadingAndValidationPanelLayout.setVerticalGroup(
@@ -1284,9 +1278,7 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(numberOfThreadsLabel)
                     .addComponent(numberOfThreadsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(writePercolatorInputFilesLabel)
-                    .addComponent(writePercolatorInputFilesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(writePercolatorInputFilesCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(fdrCalculationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1303,7 +1295,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(intraProteinFdrValueLabel)
                     .addComponent(intraProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(228, Short.MAX_VALUE))
+                .addContainerGap(235, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Multithreading and validation", multiThreadingAndValidationPanel);
@@ -1524,11 +1516,10 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton validatedTargetHitsBrowseButton;
     private javax.swing.JLabel validatedTargetHitsPathLabel;
     private javax.swing.JTextField validatedTargetHitsPathTextField;
+    private gui.DualList variableModificationsDualList;
     private javax.swing.JLabel variableModificationsLabel;
-    private gui.DualList variableModificationsList;
     private javax.swing.JPanel variableModificationsPanel;
-    private javax.swing.JComboBox<String> writePercolatorInputFilesComboBox;
-    private javax.swing.JLabel writePercolatorInputFilesLabel;
+    private javax.swing.JCheckBox writePercolatorInputFilesCheckBox;
     private javax.swing.JButton xpsmsBrowseButton;
     private javax.swing.JLabel xpsmsPathLabel;
     private javax.swing.JTextField xpsmsPathTextField;
