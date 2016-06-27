@@ -49,7 +49,7 @@ public class RunDialog extends javax.swing.JDialog {
         clearButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Spectrum similarity score pipeline progress");
+        setTitle("Xilmass run progress");
 
         logTextArea.setEditable(false);
         logTextArea.setColumns(20);

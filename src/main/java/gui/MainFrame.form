@@ -451,13 +451,11 @@
                     <Component class="javax.swing.JComboBox" name="crossLinkerComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="6">
+                          <StringArray count="4">
                             <StringItem index="0" value="DSS"/>
                             <StringItem index="1" value="BS3"/>
                             <StringItem index="2" value="EDC"/>
                             <StringItem index="3" value="GA"/>
-                            <StringItem index="4" value=" "/>
-                            <StringItem index="5" value=" "/>
                           </StringArray>
                         </Property>
                       </Properties>
@@ -473,12 +471,10 @@
                     <Component class="javax.swing.JComboBox" name="labelingComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="5">
+                          <StringArray count="3">
                             <StringItem index="0" value="light"/>
                             <StringItem index="1" value="heavy"/>
                             <StringItem index="2" value="both"/>
-                            <StringItem index="3" value=" "/>
-                            <StringItem index="4" value=" "/>
                           </StringArray>
                         </Property>
                       </Properties>
@@ -514,12 +510,10 @@
                     <Component class="javax.swing.JComboBox" name="crosslinkingTypeComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="5">
+                          <StringArray count="3">
                             <StringItem index="0" value="intra (within same protein)"/>
                             <StringItem index="1" value="inter (between different proteins)"/>
                             <StringItem index="2" value="both"/>
-                            <StringItem index="3" value=" "/>
-                            <StringItem index="4" value=" "/>
                           </StringArray>
                         </Property>
                       </Properties>
@@ -931,14 +925,14 @@
                                                   <Component id="peakMatchingLabel" max="32767" attributes="0"/>
                                                   <Component id="ms1ReportingLabel" max="32767" attributes="0"/>
                                               </Group>
-                                              <EmptySpace max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="145" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="ms1ReportingComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="peakMatchingComboBox" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="peakMatchingComboBox" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="ms1ReportingComboBox" min="-2" pref="65" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
                                       </Group>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="186" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -986,12 +980,10 @@
                     <Component class="javax.swing.JComboBox" name="neutralLossesComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="5">
+                          <StringArray count="3">
                             <StringItem index="0" value="no neutral losses are taken into account"/>
                             <StringItem index="1" value="water losses for D/E/S/T and ammonia losses for K/N/Q/R (only singly charged)"/>
-                            <StringItem index="2" value="all water losses are considered (including doubly charged) "/>
-                            <StringItem index="3" value=" "/>
-                            <StringItem index="4" value=" "/>
+                            <StringItem index="2" value="all water losses are considered (including doubly charged)"/>
                           </StringArray>
                         </Property>
                       </Properties>
@@ -1007,12 +999,10 @@
                     <Component class="javax.swing.JComboBox" name="fragmentationModeComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="5">
+                          <StringArray count="3">
                             <StringItem index="0" value="HCD (b and y ions also a2)"/>
                             <StringItem index="1" value="CID (b and y ions)"/>
                             <StringItem index="2" value="ETD (c and z ions)"/>
-                            <StringItem index="3" value=" "/>
-                            <StringItem index="4" value=" "/>
                           </StringArray>
                         </Property>
                       </Properties>
@@ -1390,7 +1380,7 @@
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                           <StringArray count="2">
                             <StringItem index="0" value="find all matched theoretical peaks within a tolerance"/>
-                            <StringItem index="1" value="find only the closest theoretical peak within a tolerance "/>
+                            <StringItem index="1" value="find only the closest theoretical peak within a tolerance"/>
                           </StringArray>
                         </Property>
                       </Properties>
@@ -1400,7 +1390,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="ms1ReportingLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="MS1 mass difference reporting*:"/>
+                        <Property name="text" type="java.lang.String" value="MS1 mass differences reporting unit*:"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JComboBox" name="ms1ReportingComboBox">
@@ -1410,6 +1400,9 @@
                             <StringItem index="0" value="PPM"/>
                             <StringItem index="1" value="DA"/>
                           </StringArray>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[56, 25]"/>
                         </Property>
                       </Properties>
                       <AuxValues>
@@ -1472,7 +1465,7 @@
                                       </Group>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="215" max="32767" attributes="0"/>
+                              <EmptySpace pref="347" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1545,17 +1538,23 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="deisotopeLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Allowed tolerance between the C12 peak and the C12 with one C13 fragment peak (in Da)*:"/>
+                        <Property name="text" type="java.lang.String" value="Deisotope precision (in Da)*:"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="deisotopePrecisionTextField">
+                      <Properties>
+                        <Property name="toolTipText" type="java.lang.String" value="Allowed tolerance between the C12 peak and the C12 with one C13 fragment peak ."/>
+                      </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="deconvulatePrecisionLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Precision to select if a singly charged and its deconvoluted peak exist within this precision value (in Da)*:"/>
+                        <Property name="text" type="java.lang.String" value="Deconvolute precision (in Da)*:"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="deconvulatePrecisionTextField">
+                      <Properties>
+                        <Property name="toolTipText" type="java.lang.String" value="Precision to select if a singly charged and its deconvoluted peak exist within this precision value."/>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -1657,8 +1656,8 @@
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                           <StringArray count="2">
-                            <StringItem index="0" value="global"/>
-                            <StringItem index="1" value="improved"/>
+                            <StringItem index="0" value="improved"/>
+                            <StringItem index="1" value="global"/>
                           </StringArray>
                         </Property>
                       </Properties>

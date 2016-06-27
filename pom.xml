@@ -4,7 +4,7 @@
     
     <groupId>com.compomics</groupId>
     <artifactId>xilmass</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
     <packaging>jar</packaging>
    
     <name>xilmass</name>
@@ -51,6 +51,7 @@
                     <debug>true</debug>
                 </configuration>
             </plugin>
+            
             <!-- Resources plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -90,7 +91,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>start.Start</mainClass>
+                            <mainClass>gui.XilmassStarter</mainClass>
+                            <!--<mainClass>start.Start</mainClass>-->
                             <!--mainClass>visualize.Visualize</mainClass-->
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>

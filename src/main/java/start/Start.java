@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import multithread.score.Result;
 import multithread.score.ScorePSM;
 import org.apache.log4j.Logger;
@@ -38,14 +37,9 @@ import theoretical.*;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 import util.ResourceUtils;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -92,7 +86,7 @@ public class Start {
                     // scoring = ConfigHolder.getInstance().getString("scoringFunctionName"), was required for testing
                     scoring = "AndromedaD",
                     labeledOption = ConfigHolder.getInstance().getString("isLabeled");
-            // load enzyme and modification files from a resource folder          
+            // load enzyme and modification files from a resource folder
             String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
 
             // checking if paths for given input are avaliable
@@ -282,7 +276,7 @@ public class Start {
 
             }
 
-            // STEP 3: CREATE A CROSS-LINKED DATABASE!!!                   
+            // STEP 3: CREATE A CROSS-LINKED DATABASE!!!
             // Either the same settings but absent CXDB or not the same settings at all..
             HashMap<String, StringBuilder> headers_sequences = new HashMap<String, StringBuilder>();
             if ((isSame && !doesCXDBExist) || !isSame) {
@@ -363,7 +357,7 @@ public class Start {
                 tmp_cF.delete();
             }
 
-            // STEP 5: PREPARE LUCENCE INDEXING!  
+            // STEP 5: PREPARE LUCENCE INDEXING!
             IndexAndSearch search = null;
             try {
                 search = new IndexAndSearch(all_headers, folder, ptmFactory, fragMode, crossLinkerName);
@@ -491,7 +485,7 @@ public class Start {
             long end = System.currentTimeMillis();
             LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
             excService.shutdown();
-            // here validate the results!        
+            // here validate the results!
             String analysis = "11",
                     xilmassResFolder = resultFolder,
                     scoringFunctionName = "AndromedaDerived",
@@ -547,7 +541,7 @@ public class Start {
         ArrayList<String> mods = new ArrayList<String>();
         if (!ptmNames.isEmpty()) {
             String[] currMods = ptmNames.split(";");
-            // convert to all lower case            
+            // convert to all lower case
             for (String curModName : currMods) {
                 mods.add(curModName);
             }
@@ -824,11 +818,11 @@ public class Start {
         File contaminant = new File(contaminantDB);
         DBLoader loader = DBLoaderLoader.loadDB(contaminant);
         Protein startProtein = null;
-        // get a crossLinkerName object        
+        // get a crossLinkerName object
         while ((startProtein = loader.nextProtein()) != null) {
             String startHeader = startProtein.getHeader().getAccession(),
                     startSequence = startProtein.getSequence().getSequence();
-            // check if a header comes from a generic! 
+            // check if a header comes from a generic!
 //            if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
 //            if (startHeader.startsWith("contaminant")) {
             if (startSequence.length() > minLen && startSequence.length() <= maxLen) {
@@ -913,7 +907,7 @@ public class Start {
                 .append(pepALen).append("\t").append(pepBLen).append("\t").append(sumLen).append("\t")
                 .append(res.getLnNumSpec()).append("\t").append(res.getLnNumXSpec()).append("\t")
                 .append("-.").append(cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory)).append("(").append(linkerA).append(")").append("--") // PeptideA Sequence
-                .append(cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory)).append("(").append(linkerB).append(")").append(".-").append("\t") // PeptideBSequence part              
+                .append(cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory)).append("(").append(linkerB).append(")").append(".-").append("\t") // PeptideBSequence part
                 .append(cp.getProteinA()).append("-").append(cp.getProteinB());
         return input;
     }
@@ -963,7 +957,7 @@ public class Start {
                 .append(pepALen).append("\t").append(pepBLen).append("\t").append(sumLen).append("\t")
                 .append(res.getLnNumSpec()).append("\t").append(res.getLnNumXSpec()).append("\t")
                 .append("-.").append(cp.getSequenceWithPtms(cp.getPeptideA(), ptmFactory)).append("(").append(cp.getLinker_position_on_peptideA()).append(")").append("--") // PeptideA Sequence
-                .append(cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory)).append("(").append(cp.getLinker_position_on_peptideB()).append(")").append(".-") // PeptideBSequence part              
+                .append(cp.getSequenceWithPtms(cp.getPeptideB(), ptmFactory)).append("(").append(cp.getLinker_position_on_peptideB()).append(")").append(".-") // PeptideBSequence part
                 .append("\t").append(cp.getProteinA()).append("-").append(cp.getProteinB());
         return input;
     }
@@ -1044,21 +1038,21 @@ public class Start {
      */
     public static ArrayList<PeptideTol> getPepTols(ConfigHolder instance) {
         ArrayList<PeptideTol> pep_tols = new ArrayList<PeptideTol>();
-        //the total number of peptide tolerance mass windows 
+        //the total number of peptide tolerance mass windows
         int num_pep_tols = instance.getInt("peptide_tol_total");
         if (num_pep_tols > 5 && num_pep_tols < 1) {
             LOGGER.error("Xilmass cannot be executed! Invalid peptide_tol_total! Must be between 1 and 5!");
             System.exit(1);
         } else {
             LOGGER.info("There are currently " + num_pep_tols + " mass windows!");
-            // now feel all peptide mass tolerance mass windows.. 
+            // now feel all peptide mass tolerance mass windows..
             for (int tmp_pep_tol = 1; tmp_pep_tol <= num_pep_tols; tmp_pep_tol++) {
                 String key = "peptide_tol" + tmp_pep_tol;
-                // just making sure that actually ConfigHolder contains this key.. 
+                // just making sure that actually ConfigHolder contains this key..
                 if (instance.containsKey(key)) {
                     boolean is_peptide_tol_ppm = instance.getBoolean("is_" + key + "_PPM");
                     double peptide_tol = instance.getDouble(key),
-                            peptide_tol_base = instance.getDouble(key + "_base"); // 
+                            peptide_tol_base = instance.getDouble(key + "_base"); //
                     PeptideTol pep_tol = new PeptideTol(is_peptide_tol_ppm, peptide_tol, peptide_tol_base, key);
                     pep_tols.add(pep_tol);
                 }

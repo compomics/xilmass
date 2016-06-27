@@ -42,6 +42,17 @@ public class MainController {
     private static final Logger LOGGER = Logger.getLogger(MainController.class);
 
     /**
+     * The pane names.
+     */
+    private static final String INPUT_OUTPUT_PANE = "Input/Output: ";
+    private static final String CROSS_LINKING_PANE = "Cross-linking: ";
+    private static final String IN_SILICO_DIGESTION_PANE = "In-silico digestions: ";
+    private static final String MODIFICATIONS_PANE = "Modifications: ";
+    private static final String SCORING_PANE = "Scoring: ";
+    private static final String SPECTRUM_PRE_PROCESSING_PANE = "Spectrum preprocessing: ";
+    private static final String MULTITHREADING_AND_VALIDATION_PANE = "Multithreading and validation: ";
+
+    /**
      * The parameters properties names.
      */
     /**
@@ -133,13 +144,25 @@ public class MainController {
         }
     };
     /**
-     * A mapping for the mass unit (key: ComboBox index; value: property value).
+     * A mapping for boolean properties (key: Boolean value; value: property
+     * value).
      */
-    private final Map<Integer, String> unitGuiToPropertiesMapping = new HashMap();
+    private final Map<Boolean, String> booleanGuiToPropertiesMapping = new HashMap();
     /**
-     * A mapping for the mass unit (key: property value; value: ComboBox index).
+     * A mapping for boolean properties (key: property value; value: Boolean
+     * value).
      */
-    private final Map<String, Integer> unitPropertiesToGuiMapping = new HashMap();
+    private final Map<String, Boolean> booleanPropertiesToGuiMapping = new HashMap();
+    /**
+     * A mapping for boolean properties (key: ComboBox index; value: property
+     * value).
+     */
+    private final Map<Integer, String> booleanIndexGuiToPropertiesMapping = new HashMap();
+    /**
+     * A mapping for boolean properties (key: property value; value: ComboBox
+     * index).
+     */
+    private final Map<String, Integer> booleanIndexPropertiesToGuiMapping = new HashMap();
     private XilmassSwingWorker xilmassSwingWorker;
 
     /**
@@ -152,10 +175,14 @@ public class MainController {
      * No-arg constructor.
      */
     public MainController() {
-        unitGuiToPropertiesMapping.put(0, "T");
-        unitGuiToPropertiesMapping.put(1, "F");
-        unitPropertiesToGuiMapping.put("T", 0);
-        unitPropertiesToGuiMapping.put("F", 0);
+        booleanGuiToPropertiesMapping.put(true, "T");
+        booleanGuiToPropertiesMapping.put(false, "F");
+        booleanPropertiesToGuiMapping.put("T", true);
+        booleanPropertiesToGuiMapping.put("F", false);
+        booleanIndexGuiToPropertiesMapping.put(0, "T");
+        booleanIndexGuiToPropertiesMapping.put(1, "F");
+        booleanIndexPropertiesToGuiMapping.put("T", 0);
+        booleanIndexPropertiesToGuiMapping.put("F", 1);
     }
 
     /**
@@ -185,10 +212,6 @@ public class MainController {
         mainFrame.getFixedModificationsDualList().init(stringComparator);
         mainFrame.getVariableModificationsDualList().init(stringComparator);
 
-        //disable the necessary text fields
-//        mainFrame.getFileNameSliceIndexTextField().setEnabled(false);
-//        mainFrame.getNumberOfPeaksCutoffTextField().setEnabled(false);
-//        mainFrame.getPeakIntensityCutoffTextField().setEnabled(false);
         //init file choosers
         //disable select multiple files
         mainFrame.getFastaDbChooser().setMultiSelectionEnabled(false);
@@ -311,7 +334,7 @@ public class MainController {
         mainFrame.getFdrCalcalationComboBox().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boolean globalSelected = mainFrame.getFdrCalcalationComboBox().getSelectedIndex() == 0;
+                boolean globalSelected = mainFrame.getFdrCalcalationComboBox().getSelectedIndex() == 1;
                 mainFrame.getGlobalFdrValueTextField().setEnabled(globalSelected);
                 mainFrame.getInterProteinFdrValueTextField().setEnabled(!globalSelected);
                 mainFrame.getIntraProteinFdrValueTextField().setEnabled(!globalSelected);
@@ -484,31 +507,28 @@ public class MainController {
         mainFrame.getFirstPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW));
         mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_BASE));
         String firstToleranceWindowUnit = ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_UNIT);
-        mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(firstToleranceWindowUnit));
+        mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(firstToleranceWindowUnit));
         mainFrame.getSecondPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW));
         mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW_BASE));
         String secondToleranceWindowUnit = ConfigHolder.getInstance().getString(SECOND_PEPTIDE_MASS_WINDOW_UNIT);
-        mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(secondToleranceWindowUnit));
+        mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(secondToleranceWindowUnit));
         mainFrame.getThirdPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW));
         mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_BASE));
         String thirdToleranceWindowUnit = ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_UNIT);
-        mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(thirdToleranceWindowUnit));
+        System.out.println("-------" + booleanIndexPropertiesToGuiMapping.get(thirdToleranceWindowUnit));
+        mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(thirdToleranceWindowUnit));
         mainFrame.getFourthPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
         mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_BASE));
         String fourthToleranceWindowUnit = ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_UNIT);
-        mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(fourthToleranceWindowUnit));
+        mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(fourthToleranceWindowUnit));
         mainFrame.getCommonPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
         String commonToleranceWindowUnit = ConfigHolder.getInstance().getString(COMMON_PEPTIDE_MASS_WINDOW_UNIT);
-        mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(commonToleranceWindowUnit));
+        mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(commonToleranceWindowUnit));
         mainFrame.getMinNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_NUMBER_OF_PEAKS));
-        boolean peakMatch = ConfigHolder.getInstance().getBoolean(PEAK_MATCHING);
-        if (peakMatch) {
-            mainFrame.getPeakMatchingComboBox().setSelectedIndex(0);
-        } else {
-            mainFrame.getPeakMatchingComboBox().setSelectedIndex(1);
-        }
+        String peakMatch = ConfigHolder.getInstance().getString(PEAK_MATCHING);
+        mainFrame.getPeakMatchingComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(peakMatch));
         String ms1ReportingUnit = ConfigHolder.getInstance().getString(MS1_REPORTING);
-        mainFrame.getMs1ReportingComboBox().setSelectedIndex(unitPropertiesToGuiMapping.get(ms1ReportingUnit));
+        mainFrame.getMs1ReportingComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(ms1ReportingUnit));
         //Spectrum preprocessing params
         mainFrame.getSpectrumMassWindowValueTextField().setText(ConfigHolder.getInstance().getString(SPECTRUM_MASS_WINDOW));
         mainFrame.getMinimumNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MIN_NUMBER_OF_PEAKS));
@@ -520,12 +540,8 @@ public class MainController {
         mainFrame.getNumberOfThreadsTextField().setText(ConfigHolder.getInstance().getString(MULTI_THREADING));
         boolean writePrecolatorInput = ConfigHolder.getInstance().getBoolean(WRITE_PERCOLATOR);
         mainFrame.getWritePercolatorInputFilesCheckBox().setSelected(writePrecolatorInput);
-        boolean improvedFdr = ConfigHolder.getInstance().getBoolean(IMPROVED_FDR);
-        if (improvedFdr) {
-            mainFrame.getFdrCalcalationComboBox().setSelectedIndex(1);
-        } else {
-            mainFrame.getFdrCalcalationComboBox().setSelectedIndex(0);
-        }
+        String improvedFdr = ConfigHolder.getInstance().getString(IMPROVED_FDR);
+        mainFrame.getFdrCalcalationComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(improvedFdr));
         mainFrame.getGlobalFdrValueTextField().setText(ConfigHolder.getInstance().getString(GLOBAL_FDR));
         mainFrame.getInterProteinFdrValueTextField().setText(ConfigHolder.getInstance().getString(INTER_PROTEIN_FDR));
         mainFrame.getIntraProteinFdrValueTextField().setText(ConfigHolder.getInstance().getString(INTRA_PROTEIN_FDR));
@@ -559,23 +575,11 @@ public class MainController {
                 break;
         }
         boolean serine = mainFrame.getSerineCheckBox().isSelected();
-        if (serine) {
-            ConfigHolder.getInstance().setProperty(SIDE_REACTION_SERINE, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(SIDE_REACTION_SERINE, "F");
-        }
+        ConfigHolder.getInstance().setProperty(SIDE_REACTION_SERINE, booleanGuiToPropertiesMapping.get(serine));
         boolean threonine = mainFrame.getThreonineCheckBox().isSelected();
-        if (threonine) {
-            ConfigHolder.getInstance().setProperty(SIDE_REACTION_THREONINE, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(SIDE_REACTION_THREONINE, "F");
-        }
+        ConfigHolder.getInstance().setProperty(SIDE_REACTION_THREONINE, booleanGuiToPropertiesMapping.get(threonine));
         boolean tyrosine = mainFrame.getTyrosineCheckBox().isSelected();
-        if (tyrosine) {
-            ConfigHolder.getInstance().setProperty(SIDE_REACTION_TYROSINE, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(SIDE_REACTION_TYROSINE, "F");
-        }
+        ConfigHolder.getInstance().setProperty(SIDE_REACTION_TYROSINE, booleanGuiToPropertiesMapping.get(tyrosine));
         int linkingType = mainFrame.getCrosslinkingTypeComboBox().getSelectedIndex();
         switch (linkingType) {
             case 0:
@@ -589,19 +593,11 @@ public class MainController {
                 break;
         }
         boolean doMonoLinkSearch = mainFrame.getMonoLinkingCheckBox().isSelected();
-        if (doMonoLinkSearch) {
-            ConfigHolder.getInstance().setProperty(SEARCH_MONOLINK, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(SEARCH_MONOLINK, "F");
-        }
+        ConfigHolder.getInstance().setProperty(SEARCH_MONOLINK, booleanGuiToPropertiesMapping.get(doMonoLinkSearch));
         ConfigHolder.getInstance().setProperty(MIN_PEPTIDE_LENGTH, mainFrame.getMinimumPeptideLengthTextField().getText());
         ConfigHolder.getInstance().setProperty(MAX_PEPTIDE_LENGTH, mainFrame.getMaximumPeptideLengthTextField().getText());
         boolean intraLinking = mainFrame.getIntraLinkingCheckBox().isSelected();
-        if (intraLinking) {
-            ConfigHolder.getInstance().setProperty(INTRA_LINKING, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(INTRA_LINKING, "F");
-        }
+        ConfigHolder.getInstance().setProperty(INTRA_LINKING, booleanGuiToPropertiesMapping.get(intraLinking));
         //In-silico digestion params
         ConfigHolder.getInstance().setProperty(ENZYME, mainFrame.getEnzymeComboBox().getSelectedItem());
         ConfigHolder.getInstance().setProperty(MISSED_CLEAVAGES, mainFrame.getMissedCleavagesTextField().getText());
@@ -634,32 +630,30 @@ public class MainController {
         if (useCommonMassToleranceWindow) {
             ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getCommonPeptideMassToleranceWindowTextField().getText());
             int commonToleranceWindowUnit = mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW_UNIT, commonToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(commonToleranceWindowUnit));
         } else {
             ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
             ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
             int firstToleranceWindowUnit = mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, firstToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(firstToleranceWindowUnit));
             ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW, mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
             ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
             int secondToleranceWindowUnit = mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, secondToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(secondToleranceWindowUnit));
             ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW, mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
             ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
             int thirdToleranceWindowUnit = mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_UNIT, thirdToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(thirdToleranceWindowUnit));
             ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW, mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
             ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
             int fourthToleranceWindowUnit = mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, fourthToleranceWindowUnit);
+            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(fourthToleranceWindowUnit));
         }
         ConfigHolder.getInstance().setProperty(MIN_NUMBER_OF_PEAKS, mainFrame.getMinNumberOfPeaksTextField());
         int peakMatch = mainFrame.getPeakMatchingComboBox().getSelectedIndex();
-        if (peakMatch == 0) {
-            ConfigHolder.getInstance().setProperty(PEAK_MATCHING, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(PEAK_MATCHING, "F");
-        }
+        ConfigHolder.getInstance().setProperty(PEAK_MATCHING, booleanIndexGuiToPropertiesMapping.get(peakMatch));
+        int ms1ReportingUnit = mainFrame.getMs1ReportingComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(MS1_REPORTING, booleanIndexGuiToPropertiesMapping.get(ms1ReportingUnit));
         //Spectrum preprocessing params
         ConfigHolder.getInstance().setProperty(SPECTRUM_MASS_WINDOW, mainFrame.getSpectrumMassWindowValueTextField().getText());
         ConfigHolder.getInstance().setProperty(WINDOW_MIN_NUMBER_OF_PEAKS, mainFrame.getMinimumNumberOfPeaksTextField().getText());
@@ -670,19 +664,14 @@ public class MainController {
         //Multithreading and validation params
         ConfigHolder.getInstance().setProperty(MULTI_THREADING, mainFrame.getNumberOfThreadsTextField().getText());
         boolean writePrecolatorInput = mainFrame.getWritePercolatorInputFilesCheckBox().isSelected();
-        if (writePrecolatorInput) {
-            ConfigHolder.getInstance().setProperty(WRITE_PERCOLATOR, "T");
-        } else {
-            ConfigHolder.getInstance().setProperty(WRITE_PERCOLATOR, "F");
-        }
+        ConfigHolder.getInstance().setProperty(WRITE_PERCOLATOR, booleanGuiToPropertiesMapping.get(writePrecolatorInput));
         int improvedFdr = mainFrame.getFdrCalcalationComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(IMPROVED_FDR, booleanIndexGuiToPropertiesMapping.get(improvedFdr));
         if (improvedFdr == 0) {
-            ConfigHolder.getInstance().setProperty(IMPROVED_FDR, "T");
+            ConfigHolder.getInstance().setProperty(GLOBAL_FDR, mainFrame.getGlobalFdrValueTextField().getText());
+        } else {
             ConfigHolder.getInstance().setProperty(INTER_PROTEIN_FDR, mainFrame.getInterProteinFdrValueTextField().getText());
             ConfigHolder.getInstance().setProperty(INTRA_PROTEIN_FDR, mainFrame.getIntraProteinFdrValueTextField().getText());
-        } else {
-            ConfigHolder.getInstance().setProperty(IMPROVED_FDR, "F");
-            ConfigHolder.getInstance().setProperty(GLOBAL_FDR, mainFrame.getGlobalFdrValueTextField().getText());
         }
     }
 
@@ -695,93 +684,240 @@ public class MainController {
     private List<String> validateInput() {
         List<String> validationMessages = new ArrayList<>();
 
-//        if (mainFrame.getSpectraDirectoryTextField().getText().isEmpty()) {
-//            validationMessages.add("Please provide a spectra input directory.");
-//        }
-//        if (mainFrame.getComparisonSpectraDirectoryTextField().getText().isEmpty()) {
-//            validationMessages.add("Please provide a comparison spectra input directory.");
-//        }
-//        if (mainFrame.getOutputDirectoryTextField().getText().isEmpty()) {
-//            validationMessages.add("Please provide an output directory.");
-//        }
-//        if (mainFrame.getPrecursorToleranceTextField().getText().isEmpty()) {
-//            validationMessages.add("Please provide a precursor tolerance value.");
+        //Input/Output params
+        if (mainFrame.getFastaDbPathTextField().getText().isEmpty()) {
+            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a FASTA database file.");
+        }
+        if (mainFrame.getSearchDbPathTextField().getText().isEmpty()) {
+            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a search database file.");
+        }
+        if (mainFrame.getMgfDirectoryPathTextField().getText().isEmpty()) {
+            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a directory with MGF files.");
+        }
+        if (mainFrame.getOutputDirectoryPathTextField().getText().isEmpty()) {
+            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide an output directory.");
+        }
+        if (mainFrame.getValidatedTargetHitsPathTextField().getText().isEmpty()) {
+            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a validated list of target hits with a given FDR.");
+        }
+        if (mainFrame.getXpsmsPathTextField().getText().isEmpty()) {
+            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide list of merged XPSMs.");
+        }
+        //Cross-linking params
+        if (mainFrame.getMinimumPeptideLengthTextField().getText().isEmpty()) {
+            validationMessages.add(CROSS_LINKING_PANE + "Please provide the minimun peptide length.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumPeptideLengthTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(CROSS_LINKING_PANE + "Please provide a positive minimun peptide length.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add("Please provide a numeric minimun peptide length.");
+            }
+        }
+        if (mainFrame.getMaximumPeptideLengthTextField().getText().isEmpty()) {
+            validationMessages.add(CROSS_LINKING_PANE + "Please provide the maximum peptide length.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumPeptideLengthTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(CROSS_LINKING_PANE + "Please provide a positive maximum peptide length.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(CROSS_LINKING_PANE + "Please provide a numeric maximum peptide length.");
+            }
+        }
+        //In-silico digestion params
+        if (mainFrame.getMissedCleavagesTextField().getText().isEmpty()) {
+            validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide the number of allowed missed cleavages.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMissedCleavagesTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a positive number of allowed missed cleavages.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric number of allowed missed cleavages.");
+            }
+        }
+        if (mainFrame.getMinimumPeptideMassTextField().getText().isEmpty()) {
+            validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a minimum peptide mass.");
+        } else {
+            try {
+                Double tolerance = Double.valueOf(mainFrame.getMinimumPeptideMassTextField().getText());
+                if (tolerance < 0.0) {
+                    validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a positive minimum peptide mass.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric minimum peptide mass.");
+            }
+        }
+        if (mainFrame.getMaximumPeptideMassTextField().getText().isEmpty()) {
+            validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a maximum peptide mass.");
+        } else {
+            try {
+                Double tolerance = Double.valueOf(mainFrame.getMaximumPeptideMassTextField().getText());
+                if (tolerance < 0.0) {
+                    validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a positive maximum peptide mass.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric maximum peptide mass.");
+            }
+        }
+        //modification params
+        if (mainFrame.getMaxModPeptideTextField().getText().isEmpty()) {
+            validationMessages.add(MODIFICATIONS_PANE + "Please provide the number of allowed modifications per peptide.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMaxModPeptideTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(MODIFICATIONS_PANE + "Please provide a positive number of allowed modifications per peptide.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(MODIFICATIONS_PANE + "Please provide a numeric number of allowed modifications per peptide.");
+            }
+        }
+        //scoring params
+        //@TODO validate this
+//        ConfigHolder.getInstance().setProperty(PEP_TOL_WINDOWS, mainFrame.getPeptideToleranceSpinner().getValue());
+//        boolean useCommonMassToleranceWindow = mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
+//        if (useCommonMassToleranceWindow) {
+//            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getCommonPeptideMassToleranceWindowTextField().getText());
 //        } else {
-//            try {
-//                Double tolerance = Double.valueOf(mainFrame.getPrecursorToleranceTextField().getText());
-//                if (tolerance < 0.0) {
-//                    validationMessages.add("Please provide a positive precursor tolerance value.");
-//                }
-//            } catch (NumberFormatException nfe) {
-//                validationMessages.add("Please provide a numeric precursor tolerance value.");
-//            }
+//            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
+//            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
+//            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW, mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
+//            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
+//            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW, mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
+//            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
+//            ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW, mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
 //        }
-//        if (mainFrame.getFragmentToleranceTextField().getText().isEmpty()) {
-//            validationMessages.add("Please provide a fragment tolerance value.");
-//        } else {
-//            try {
-//                Double tolerance = Double.valueOf(mainFrame.getFragmentToleranceTextField().getText());
-//                if (tolerance < 0.0) {
-//                    validationMessages.add("Please provide a positive fragment tolerance value.");
-//                }
-//            } catch (NumberFormatException nfe) {
-//                validationMessages.add("Please provide a numeric fragment tolerance value.");
-//            }
-//        }
-//
-//        if (mainFrame.getNeighbourSlicesOnlyCheckBox().isSelected()) {
-//            if (mainFrame.getFileNameSliceIndexTextField().getText().isEmpty()) {
-//                validationMessages.add("Please provide a file name slice index value.");
-//            } else {
-//                try {
-//                    Integer index = Integer.valueOf(mainFrame.getFileNameSliceIndexTextField().getText());
-//                    if (index < 0) {
-//                        validationMessages.add("Please provide a positive file name slice index value.");
-//                    }
-//                } catch (NumberFormatException nfe) {
-//                    validationMessages.add("Please provide a numeric file name slice index value.");
-//                }
-//            }
-//        }
-//        if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 2) {
-//            if (mainFrame.getNumberOfPeaksCutoffTextField().getText().isEmpty()) {
-//                validationMessages.add("Please a provide peak cutoff number when choosing the TopN intense peak selection filter.");
-//            } else {
-//                try {
-//                    Integer number = Integer.valueOf(mainFrame.getNumberOfPeaksCutoffTextField().getText());
-//                    if (number < 0) {
-//                        validationMessages.add("Please provide a positive peak cutoff number value.");
-//                    }
-//                } catch (NumberFormatException nfe) {
-//                    validationMessages.add("Please provide a numeric peak cutoff number value.");
-//                }
-//            }
-//        } else if (mainFrame.getNoiseFilterComboBox().getSelectedIndex() == 3) {
-//            if (mainFrame.getPeakIntensityCutoffTextField().getText().isEmpty()) {
-//                validationMessages.add("Please provide peak cutoff percentage when choosing the Discard peaks with less than x% of precursor-intensity filter.");
-//            } else {
-//                try {
-//                    Double percentage = Double.valueOf(mainFrame.getPeakIntensityCutoffTextField().getText());
-//                    if (percentage < 0.0) {
-//                        validationMessages.add("Please provide a positive peak cutoff percentage value.");
-//                    }
-//                } catch (NumberFormatException nfe) {
-//                    validationMessages.add("Please provide a numeric peak cutoff percentage value.");
-//                }
-//            }
-//        }
-//        if (mainFrame.getNumberOfThreadsTextField().getText().isEmpty()) {
-//            validationMessages.add("Please provide a number of threads.");
-//        } else {
-//            try {
-//                Integer numberOfThreads = Integer.valueOf(mainFrame.getNumberOfThreadsTextField().getText());
-//                if (numberOfThreads < 0) {
-//                    validationMessages.add("Please provide a positive number of threads.");
-//                }
-//            } catch (NumberFormatException nfe) {
-//                validationMessages.add("Please provide a numeric number of threads.");
-//            }
-//        }
+        if (mainFrame.getMinNumberOfPeaksTextField().getText().isEmpty()) {
+            validationMessages.add(SCORING_PANE + "Please provide the minimum number of matched peaks.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumNumberOfPeaksTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(SCORING_PANE + "Please provide a positive minimum number of matched peaks.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SCORING_PANE + "Please provide a numeric minimum number of matched peaks.");
+            }
+        }
+        //Spectrum preprocessing params
+        if (mainFrame.getSpectrumMassWindowValueTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a spectrum scoring mass window value.");
+        } else {
+            try {
+                Double tolerance = Double.valueOf(mainFrame.getSpectrumMassWindowValueTextField().getText());
+                if (tolerance < 0.0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive spectrum scoring mass window value.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric spectrum scoring mass window value.");
+            }
+        }
+        if (mainFrame.getMinimumNumberOfPeaksTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide the minimum number of filtered peaks per window.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumNumberOfPeaksTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive minimum number of filtered peaks per window.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric minimum number of filtered peaks per window.");
+            }
+        }
+        if (mainFrame.getMaximumNumberOfPeaksTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide the maximum number of filtered peaks per window.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getMaximumNumberOfPeaksTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive maximum number of filtered peaks per window.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric maximum number of filtered peaks per window.");
+            }
+        }
+        if (mainFrame.getLowerPrecursorMassBoundTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a lower precursor mass bound value.");
+        } else {
+            try {
+                Double tolerance = Double.valueOf(mainFrame.getLowerPrecursorMassBoundTextField().getText());
+                if (tolerance < 0.0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive lower precursor mass bound value.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric lower precursor mass bound value.");
+            }
+        }
+        if (mainFrame.getDeisotopePrecisionTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a deisotope precision value.");
+        } else {
+            try {
+                Double tolerance = Double.valueOf(mainFrame.getDeisotopePrecisionTextField().getText());
+                if (tolerance < 0.0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive deisotope precision value.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric deisotope precision value.");
+            }
+        }
+        //Multithreading and validation params
+        if (mainFrame.getNumberOfThreadsTextField().getText().isEmpty()) {
+            validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide the number of threads.");
+        } else {
+            try {
+                Integer numberOfThreads = Integer.valueOf(mainFrame.getNumberOfThreadsTextField().getText());
+                if (numberOfThreads < 0) {
+                    validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a positive number threads.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric number of threads.");
+            }
+        }
+        int improvedFdr = mainFrame.getFdrCalcalationComboBox().getSelectedIndex();
+        if (improvedFdr == 0) {
+            if (mainFrame.getInterProteinFdrValueTextField().getText().isEmpty()) {
+                validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide an inter-protein FDR value.");
+            } else {
+                try {
+                    Double tolerance = Double.valueOf(mainFrame.getInterProteinFdrValueTextField().getText());
+                    if (tolerance < 0.0) {
+                        validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a positive inter-protein FDR value.");
+                    }
+                } catch (NumberFormatException nfe) {
+                    validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric inter-protein FDR value.");
+                }
+            }
+            if (mainFrame.getIntraProteinFdrValueTextField().getText().isEmpty()) {
+                validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide an intra-protein FDR value.");
+            } else {
+                try {
+                    Double tolerance = Double.valueOf(mainFrame.getIntraProteinFdrValueTextField().getText());
+                    if (tolerance < 0.0) {
+                        validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a positive intra-protein FDR value.");
+                    }
+                } catch (NumberFormatException nfe) {
+                    validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric intra-protein FDR value.");
+                }
+            }
+        } else if (mainFrame.getGlobalFdrValueTextField().getText().isEmpty()) {
+            validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a global FDR value.");
+        } else {
+            try {
+                Double tolerance = Double.valueOf(mainFrame.getGlobalFdrValueTextField().getText());
+                if (tolerance < 0.0) {
+                    validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a positive global FDR value.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric global FDR value.");
+            }
+        }
+
         return validationMessages;
     }
 
@@ -837,8 +973,9 @@ public class MainController {
 
         @Override
         protected Void doInBackground() throws Exception {
-            LOGGER.info("starting spectrum similarity score pipeline");
-//            ScorePipeline.run(true);
+            LOGGER.info("starting Xilmass run");
+
+            Thread.sleep(10000);
 
             return null;
         }
@@ -847,13 +984,13 @@ public class MainController {
         protected void done() {
             try {
                 get();
-                LOGGER.info("finished spectrum similarity score pipeline");
-                JOptionPane.showMessageDialog(runDialog, "The score pipeline has finished.");
+                LOGGER.info("finished Xilmass run");
+                JOptionPane.showMessageDialog(runDialog, "The Xilmass run has finished.");
             } catch (InterruptedException | ExecutionException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 showMessageDialog("Unexpected error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
             } catch (CancellationException ex) {
-                LOGGER.info("the spectrum similarity score pipeline run was cancelled");
+                LOGGER.info("the Xilmass run was cancelled");
             } finally {
 
             }

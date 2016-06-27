@@ -24,9 +24,7 @@ public class ConfigHolder extends PropertiesConfiguration {
         try {
             Resource propertiesResource = ResourceUtils.getResourceByRelativePath("xLink.properties");
             ourInstance = new ConfigHolder(propertiesResource);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-        } catch (ConfigurationException e) {
+        } catch (IOException | ConfigurationException e) {
             LOGGER.error(e.getMessage());
         }
     }

@@ -606,11 +606,11 @@ public class MainFrame extends javax.swing.JFrame {
 
         crossLinkerLabel.setText("Select the cross-linker*:");
 
-        crossLinkerComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DSS", "BS3", "EDC", "GA", " ", " " }));
+        crossLinkerComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DSS", "BS3", "EDC", "GA" }));
 
         crossLinkerLabel1.setText("Select the labeling*:");
 
-        labelingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "light", "heavy", "both", " ", " " }));
+        labelingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "light", "heavy", "both" }));
 
         sideReactionsLabel.setText("Consider side reactions (only for N-hydroxysuccinimide cross-linkers, such as DSS and BS3) for:");
 
@@ -622,7 +622,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         crossLinkingTypeLabel.setText("Select the labeling*:");
 
-        crosslinkingTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "intra (within same protein)", "inter (between different proteins)", "both", " ", " " }));
+        crosslinkingTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "intra (within same protein)", "inter (between different proteins)", "both" }));
 
         monolinkingLabel.setText("Mono-linking*:");
 
@@ -902,11 +902,11 @@ public class MainFrame extends javax.swing.JFrame {
 
         neutralLossesLabel.setText("Select the neutral losses to consider*:");
 
-        neutralLossesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "no neutral losses are taken into account", "water losses for D/E/S/T and ammonia losses for K/N/Q/R (only singly charged)", "all water losses are considered (including doubly charged) ", " ", " " }));
+        neutralLossesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "no neutral losses are taken into account", "water losses for D/E/S/T and ammonia losses for K/N/Q/R (only singly charged)", "all water losses are considered (including doubly charged)" }));
 
         fragmentationLabel.setText("Select the fragmentation mode*:");
 
-        fragmentationModeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "HCD (b and y ions also a2)", "CID (b and y ions)", "ETD (c and z ions)", " ", " " }));
+        fragmentationModeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "HCD (b and y ions also a2)", "CID (b and y ions)", "ETD (c and z ions)" }));
 
         peptideMassToleranceWindowsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Peptide mass tolerance windows"));
         peptideMassToleranceWindowsPanel.setOpaque(false);
@@ -1095,11 +1095,12 @@ public class MainFrame extends javax.swing.JFrame {
 
         peakMatchingLabel.setText("Peak matching*:");
 
-        peakMatchingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "find all matched theoretical peaks within a tolerance", "find only the closest theoretical peak within a tolerance " }));
+        peakMatchingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "find all matched theoretical peaks within a tolerance", "find only the closest theoretical peak within a tolerance" }));
 
-        ms1ReportingLabel.setText("MS1 mass difference reporting*:");
+        ms1ReportingLabel.setText("MS1 mass differences reporting unit*:");
 
         ms1ReportingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PPM", "DA" }));
+        ms1ReportingComboBox.setMaximumSize(new java.awt.Dimension(56, 25));
 
         javax.swing.GroupLayout scoringPanelLayout = new javax.swing.GroupLayout(scoringPanel);
         scoringPanel.setLayout(scoringPanelLayout);
@@ -1127,11 +1128,11 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(peakMatchingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(ms1ReportingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGap(145, 145, 145)
                                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(peakMatchingComboBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                                    .addComponent(peakMatchingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 186, Short.MAX_VALUE))))
         );
         scoringPanelLayout.setVerticalGroup(
             scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1173,9 +1174,13 @@ public class MainFrame extends javax.swing.JFrame {
 
         lowerPrecursorMassBoundLabel.setText("Lower precursor mass bound for selecting the C13 peak over the C12 peak (in Da)*:");
 
-        deisotopeLabel.setText("Allowed tolerance between the C12 peak and the C12 with one C13 fragment peak (in Da)*:");
+        deisotopeLabel.setText("Deisotope precision (in Da)*:");
 
-        deconvulatePrecisionLabel.setText("Precision to select if a singly charged and its deconvoluted peak exist within this precision value (in Da)*:");
+        deisotopePrecisionTextField.setToolTipText("Allowed tolerance between the C12 peak and the C12 with one C13 fragment peak .");
+
+        deconvulatePrecisionLabel.setText("Deconvolute precision (in Da)*:");
+
+        deconvulatePrecisionTextField.setToolTipText("Precision to select if a singly charged and its deconvoluted peak exist within this precision value.");
 
         javax.swing.GroupLayout spectrumPreprocessingPanelLayout = new javax.swing.GroupLayout(spectrumPreprocessingPanel);
         spectrumPreprocessingPanel.setLayout(spectrumPreprocessingPanelLayout);
@@ -1210,7 +1215,7 @@ public class MainFrame extends javax.swing.JFrame {
                             .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(deconvulatePrecisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(deisotopePrecisionTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(215, Short.MAX_VALUE))
+                .addContainerGap(347, Short.MAX_VALUE))
         );
         spectrumPreprocessingPanelLayout.setVerticalGroup(
             spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1250,7 +1255,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         fdrCalculationLabel.setText("<html>FDR calculation.<br>Improved means seperate XPSMs lists (T) into inter- and intra-protein XL sites to compute FDR for each subset.*:</html>");
 
-        fdrCalcalationComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "global", "improved" }));
+        fdrCalcalationComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "improved", "global" }));
 
         globalFdrValueLabel.setText("Global FDR value*:");
 
