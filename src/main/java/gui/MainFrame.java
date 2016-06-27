@@ -4,7 +4,9 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 /**
@@ -40,6 +42,14 @@ public class MainFrame extends javax.swing.JFrame {
 
     public JFileChooser getFileChooser() {
         return fileChooser;
+    }
+
+    public JTabbedPane getMainTabbedPane() {
+        return mainTabbedPane;
+    }
+
+    public JLabel getPaneInformationMessageLabel() {
+        return paneInformationMessageLabel;
     }
 
     public JButton getCloseButton() {
@@ -456,6 +466,7 @@ public class MainFrame extends javax.swing.JFrame {
         bottomPanel = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         runButton = new javax.swing.JButton();
+        paneInformationMessageLabel = new javax.swing.JLabel();
 
         jMenu1.setText("jMenu1");
 
@@ -1356,7 +1367,9 @@ public class MainFrame extends javax.swing.JFrame {
         bottomPanelLayout.setHorizontalGroup(
             bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bottomPanelLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(paneInformationMessageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(runButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1365,9 +1378,11 @@ public class MainFrame extends javax.swing.JFrame {
             bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bottomPanelLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(runButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(paneInformationMessageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(runButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -1503,6 +1518,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton outputDirectoryBrowseButton;
     private javax.swing.JLabel outputDirectoryPathLabel;
     private javax.swing.JTextField outputDirectoryPathTextField;
+    private javax.swing.JLabel paneInformationMessageLabel;
     private javax.swing.JComboBox<String> peakMatchingComboBox;
     private javax.swing.JLabel peakMatchingLabel;
     private javax.swing.JLabel peptideLengthsLabel;

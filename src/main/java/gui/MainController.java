@@ -23,6 +23,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -163,6 +165,11 @@ public class MainController {
      * index).
      */
     private final Map<String, Integer> booleanIndexPropertiesToGuiMapping = new HashMap();
+    /**
+     * A map that holds the information message for each pane of the tabbed
+     * pane.
+     */
+    private final Map<Integer, String> paneInformationMessages = new HashMap();
     private XilmassSwingWorker xilmassSwingWorker;
 
     /**
@@ -183,6 +190,14 @@ public class MainController {
         booleanIndexGuiToPropertiesMapping.put(1, "F");
         booleanIndexPropertiesToGuiMapping.put("T", 0);
         booleanIndexPropertiesToGuiMapping.put("F", 1);
+        paneInformationMessages.put(0, "Input and output related parameters.");
+        paneInformationMessages.put(1, "Cross-linking related parameters.");
+        paneInformationMessages.put(2, "In-silico digestion related parameters.");
+        paneInformationMessages.put(3, "Peptide modifications related parameters.");
+        paneInformationMessages.put(4, "Scoring algorithm related parameters.");
+        paneInformationMessages.put(5, "Spectrum preprocessing related parameters.");
+        paneInformationMessages.put(5, "Spectrum preprocessing related parameters.");
+        paneInformationMessages.put(6, "Validation related parameters.");
     }
 
     /**
@@ -223,7 +238,17 @@ public class MainController {
         //set file filters
         mainFrame.getFastaDbChooser().setFileFilter(new FastaFileFilter());
 
+        //set first pane information message
+        mainFrame.getPaneInformationMessageLabel().setText(paneInformationMessages.get(0));
+
         //add action listeners
+        mainFrame.getMainTabbedPane().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                mainFrame.getPaneInformationMessageLabel().setText(paneInformationMessages.get(mainFrame.getMainTabbedPane().getSelectedIndex()));
+            }
+        });
+
         mainFrame.getFastaDbBrowseButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
