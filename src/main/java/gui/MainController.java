@@ -540,7 +540,6 @@ public class MainController {
         mainFrame.getThirdPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW));
         mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_BASE));
         String thirdToleranceWindowUnit = ConfigHolder.getInstance().getString(THIRD_PEPTIDE_MASS_WINDOW_UNIT);
-        System.out.println("-------" + booleanIndexPropertiesToGuiMapping.get(thirdToleranceWindowUnit));
         mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(thirdToleranceWindowUnit));
         mainFrame.getFourthPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
         mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_BASE));
