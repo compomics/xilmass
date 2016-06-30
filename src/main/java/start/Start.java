@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import multithread.score.Result;
 import multithread.score.ScorePSM;
 import org.apache.log4j.Logger;
@@ -38,14 +37,9 @@ import theoretical.*;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 import util.ResourceUtils;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -75,8 +69,8 @@ public class Start {
                     inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                     insilicoContaminantDBName = "",
                     cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
-                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
-                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
+                    //                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
+                    //                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
                     cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                     crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                     crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
@@ -127,21 +121,7 @@ public class Start {
             } catch (Exception e) {
                 LOGGER.error("A given path for resultFolder is not found!");
             }
-            try {
-                f = new File(resultFolder);
-            } catch (Exception e) {
-                LOGGER.error("A given path for resultFolder is not found!");
-            }
-            try {
-                f = new File(output);
-            } catch (Exception e) {
-                LOGGER.error("A given path for output is not found!");
-            }
-            try {
-                f = new File(allXPSMsName);
-            } catch (Exception e) {
-                LOGGER.error("A given path for allXPSMsName is not found!");
-            }
+
             try {
                 f = new File(mgfs);
             } catch (Exception e) {
@@ -278,9 +258,7 @@ public class Start {
                         }
                     }
                 }
-            } else {
-
-            }
+            } 
 
             // STEP 3: CREATE A CROSS-LINKED DATABASE!!!                   
             // Either the same settings but absent CXDB or not the same settings at all..
@@ -379,14 +357,14 @@ public class Start {
             for (File mgf : new File(mgfs).listFiles()) {
                 if (mgf.getName().endsWith(".mgf")) {
                     LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
-                    LOGGER.debug(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                    LOGGER.debug(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
                     File percolatorIntra,
                             percolatorInter;
                     BufferedWriter bw_intra = null,
                             bw_inter = null;
                     if (isPercolatorAsked) {
-                        percolatorIntra = new File(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-                        percolatorInter = new File(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
+                        percolatorIntra = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                        percolatorInter = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
                         bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
                         bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
                         bw_intra.write(percolatorInputTitle + "\n");
@@ -394,7 +372,7 @@ public class Start {
                     }
 
                     // write results on output file for each mgf
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + File.separator + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
                     bw.write("Xilmass version " + version);
                     bw.newLine();
                     StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
@@ -499,8 +477,11 @@ public class Start {
                     fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
                     fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
                     fdr = ConfigHolder.getInstance().getString("fdr");
-            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, output, allXPSMsName,
+            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, "validatedXPSMs_list.txt", "allXPSMs_list.txt",
                 fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
+            // write settings on an output folder
+            writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
+
         } catch (IOException ex) {
             LOGGER.error(ex);
         }
@@ -654,8 +635,6 @@ public class Start {
         bw.write(new StringBuilder("cxDBName=").append(ConfigHolder.getInstance().getString("cxDBName")).append("\n").toString());
         bw.write(new StringBuilder("mgfs=").append(ConfigHolder.getInstance().getString("mgfs")).append("\n").toString());
         bw.write(new StringBuilder("resultFolder=").append(ConfigHolder.getInstance().getString("resultFolder")).append("\n").toString());
-        bw.write(new StringBuilder("tdfile=").append(ConfigHolder.getInstance().getString("tdfile")).append("\n").toString());
-        bw.write(new StringBuilder("allXPSMoutput=").append(ConfigHolder.getInstance().getString("allXPSMoutput")).append("\n").toString());
         bw.write(new StringBuilder("index=").append(file.getAbsolutePath()).append(File.separator).append("index").append("\n").append("\n").toString());
         // write down all cross-linking related parameters
         bw.write(new StringBuilder("##Cross-linking related parameters").append("\n").toString());
