@@ -6,8 +6,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -18,13 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultFormatter;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -65,8 +66,6 @@ public class MainController {
     private static final String SEARCH_DB_PATH = "cxDBName";
     private static final String MGF_DIRECTORY_PATH = "mgfs";
     private static final String OUTPUT_DIRECTORY_PATH = "resultFolder";
-    private static final String VALIDATED_TARGETS_PATH = "tdfile";
-    private static final String XPSMS_PATH = "allXPSMoutput";
     /**
      * Cross-linking parameters.
      */
@@ -99,8 +98,8 @@ public class MainController {
     private static final String NEUTRAL_LOSSES = "consider_neutrallosses";
     private static final String FRAGMENTATION_MODE = "fragMode";
     private static final String PEP_TOL_WINDOWS = "peptide_tol_total";
-    private static final String COMMON_PEPTIDE_MASS_WINDOW = "msms_tol";
-    private static final String COMMON_PEPTIDE_MASS_WINDOW_UNIT = "report_in_ppm";
+    private static final String FRAGMENT_MASS_TOLERANCE = "msms_tol";
+    private static final String FRAGMENT_MASS_TOLERANCE_UNIT = "report_in_ppm";
     private static final String FIRST_PEPTIDE_MASS_WINDOW = "peptide_tol1";
     private static final String FIRST_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol1_base";
     private static final String FIRST_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol1_PPM";
@@ -113,6 +112,9 @@ public class MainController {
     private static final String FOURTH_PEPTIDE_MASS_WINDOW = "peptide_tol4";
     private static final String FOURTH_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol4_base";
     private static final String FOURTH_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol4_PPM";
+    private static final String FIFTH_PEPTIDE_MASS_WINDOW = "peptide_tol5";
+    private static final String FIFTH_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol5_base";
+    private static final String FIFTH_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol5_PPM";
     private static final String MIN_NUMBER_OF_PEAKS = "minRequiredPeaks";
     private static final String PEAK_MATCHING = "isAllMatchedPeaks";
     private static final String MS1_REPORTING = "report_in_ppm";
@@ -241,6 +243,12 @@ public class MainController {
         //set first pane information message
         mainFrame.getPaneInformationMessageLabel().setText(paneInformationMessages.get(0));
 
+        //add this hack to the JSpinner
+        JComponent comp = mainFrame.getPeptideToleranceSpinner().getEditor();
+        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
+        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
+        formatter.setCommitsOnValidEdit(true);
+
         //add action listeners
         mainFrame.getMainTabbedPane().addChangeListener(new ChangeListener() {
             @Override
@@ -309,50 +317,74 @@ public class MainController {
             }
         });
 
-        mainFrame.getValidatedTargetHitsBrowseButton().addActionListener(new ActionListener() {
+        mainFrame.getPeptideToleranceSpinner().addChangeListener(new ChangeListener() {
+
             @Override
-            public void actionPerformed(ActionEvent e) {
-                //in response to the button click, show open dialog
-                int returnVal = mainFrame.getFileChooser().showOpenDialog(mainFrame);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    //show path in text field
-                    mainFrame.getValidatedTargetHitsPathTextField().setText(mainFrame.getFileChooser().getSelectedFile().getAbsolutePath());
+            public void stateChanged(ChangeEvent e) {
+                int value = (int) mainFrame.getPeptideToleranceSpinner().getValue();
+
+                switch (value) {
+                    case 5:
+                        mainFrame.getFifthPeptideMassToleranceWindowTextField().setEnabled(true);
+                        mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setEnabled(true);
+                        mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setEnabled(true);
+                    case 4:
+                        if (value == 4) {
+                            mainFrame.getFifthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                        }
+                        mainFrame.getFourthPeptideMassToleranceWindowTextField().setEnabled(true);
+                        mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setEnabled(true);
+                        mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setEnabled(true);
+                    case 3:
+                        if (value == 3) {
+                            mainFrame.getFifthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                        }
+                        mainFrame.getThirdPeptideMassToleranceWindowTextField().setEnabled(true);
+                        mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setEnabled(true);
+                        mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setEnabled(true);
+                    case 2:
+                        if (value == 2) {
+                            mainFrame.getFifthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                            mainFrame.getThirdPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                        }
+                        mainFrame.getSecondPeptideMassToleranceWindowTextField().setEnabled(true);
+                        mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setEnabled(true);
+                        mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setEnabled(true);
+                    case 1:
+                        if (value == 1) {
+                            mainFrame.getFifthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                            mainFrame.getThirdPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                            mainFrame.getSecondPeptideMassToleranceWindowTextField().setEnabled(false);
+                            mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setEnabled(false);
+                            mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setEnabled(false);
+                        }
+                        mainFrame.getFirstPeptideMassToleranceWindowTextField().setEnabled(true);
+                        mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setEnabled(true);
+                        mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setEnabled(true);
+                        break;
                 }
-            }
-        });
 
-        mainFrame.getXpsmsBrowseButton().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //in response to the button click, show open dialog
-                int returnVal = mainFrame.getFileChooser().showOpenDialog(mainFrame);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    //show path in text field
-                    mainFrame.getXpsmsPathTextField().setText(mainFrame.getFileChooser().getSelectedFile().getAbsolutePath());
-                }
-            }
-        });
-
-        mainFrame.getCommonPeptideMassToleranceCheckBox().addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                boolean notSelected = !mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
-
-                mainFrame.getCommonPeptideMassToleranceWindowTextField().setEnabled(!notSelected);
-                mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setEnabled(!notSelected);
-
-                mainFrame.getFirstPeptideMassToleranceWindowTextField().setEnabled(notSelected);
-                mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
-                mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
-                mainFrame.getSecondPeptideMassToleranceWindowTextField().setEnabled(notSelected);
-                mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
-                mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
-                mainFrame.getThirdPeptideMassToleranceWindowTextField().setEnabled(notSelected);
-                mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
-                mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
-                mainFrame.getFourthPeptideMassToleranceWindowTextField().setEnabled(notSelected);
-                mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setEnabled(notSelected);
-                mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setEnabled(notSelected);
             }
         });
 
@@ -454,8 +486,6 @@ public class MainController {
         mainFrame.getSearchDbPathTextField().setText(ConfigHolder.getInstance().getString(SEARCH_DB_PATH));
         mainFrame.getMgfDirectoryPathTextField().setText(ConfigHolder.getInstance().getString(MGF_DIRECTORY_PATH));
         mainFrame.getOutputDirectoryPathTextField().setText(ConfigHolder.getInstance().getString(OUTPUT_DIRECTORY_PATH));
-        mainFrame.getValidatedTargetHitsPathTextField().setText(ConfigHolder.getInstance().getString(VALIDATED_TARGETS_PATH));
-        mainFrame.getXpsmsPathTextField().setText(ConfigHolder.getInstance().getString(XPSMS_PATH));
         //Cross-linking params
         String crossLinker = ConfigHolder.getInstance().getString(CROSS_LINKER);
         mainFrame.getCrossLinkerComboBox().getModel().setSelectedItem(crossLinker);
@@ -529,6 +559,9 @@ public class MainController {
         }
         int peptideToleranceWindows = ConfigHolder.getInstance().getInt(PEP_TOL_WINDOWS);
         mainFrame.getPeptideToleranceSpinner().setValue(peptideToleranceWindows);
+        mainFrame.getFragmentMassToleranceValueTextField().setText(ConfigHolder.getInstance().getString(FRAGMENT_MASS_TOLERANCE));
+        String fragmentMassToleranceUnit = ConfigHolder.getInstance().getString(FRAGMENT_MASS_TOLERANCE_UNIT);
+        mainFrame.getFragmentMassToleranceUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(fragmentMassToleranceUnit));
         mainFrame.getFirstPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW));
         mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_BASE));
         String firstToleranceWindowUnit = ConfigHolder.getInstance().getString(FIRST_PEPTIDE_MASS_WINDOW_UNIT);
@@ -545,9 +578,10 @@ public class MainController {
         mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_BASE));
         String fourthToleranceWindowUnit = ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW_UNIT);
         mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(fourthToleranceWindowUnit));
-        mainFrame.getCommonPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FOURTH_PEPTIDE_MASS_WINDOW));
-        String commonToleranceWindowUnit = ConfigHolder.getInstance().getString(COMMON_PEPTIDE_MASS_WINDOW_UNIT);
-        mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(commonToleranceWindowUnit));
+        mainFrame.getFifthPeptideMassToleranceWindowTextField().setText(ConfigHolder.getInstance().getString(FIFTH_PEPTIDE_MASS_WINDOW));
+        mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIFTH_PEPTIDE_MASS_WINDOW_BASE));
+        String fifthToleranceWindowUnit = ConfigHolder.getInstance().getString(FIFTH_PEPTIDE_MASS_WINDOW_UNIT);
+        mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(fifthToleranceWindowUnit));
         mainFrame.getMinNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_NUMBER_OF_PEAKS));
         String peakMatch = ConfigHolder.getInstance().getString(PEAK_MATCHING);
         mainFrame.getPeakMatchingComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(peakMatch));
@@ -582,8 +616,6 @@ public class MainController {
         ConfigHolder.getInstance().setProperty(SEARCH_DB_PATH, mainFrame.getSearchDbPathTextField().getText());
         ConfigHolder.getInstance().setProperty(MGF_DIRECTORY_PATH, mainFrame.getMgfDirectoryPathTextField().getText());
         ConfigHolder.getInstance().setProperty(OUTPUT_DIRECTORY_PATH, mainFrame.getOutputDirectoryPathTextField().getText());
-        ConfigHolder.getInstance().setProperty(VALIDATED_TARGETS_PATH, mainFrame.getValidatedTargetHitsPathTextField().getText());
-        ConfigHolder.getInstance().setProperty(XPSMS_PATH, mainFrame.getXpsmsPathTextField().getText());
         //Cross-linking params
         ConfigHolder.getInstance().setProperty(CROSS_LINKER, mainFrame.getCrossLinkerComboBox().getSelectedItem());
         int isLabeled = mainFrame.getLabelingComboBox().getSelectedIndex();
@@ -650,29 +682,25 @@ public class MainController {
                 break;
         }
         ConfigHolder.getInstance().setProperty(PEP_TOL_WINDOWS, mainFrame.getPeptideToleranceSpinner().getValue());
-        boolean useCommonMassToleranceWindow = mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
-        if (useCommonMassToleranceWindow) {
-            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getCommonPeptideMassToleranceWindowTextField().getText());
-            int commonToleranceWindowUnit = mainFrame.getCommonPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(commonToleranceWindowUnit));
-        } else {
-            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
-            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
-            int firstToleranceWindowUnit = mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(firstToleranceWindowUnit));
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW, mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
-            int secondToleranceWindowUnit = mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(secondToleranceWindowUnit));
-            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW, mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
-            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
-            int thirdToleranceWindowUnit = mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(thirdToleranceWindowUnit));
-            ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW, mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
-            ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
-            int fourthToleranceWindowUnit = mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
-            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(fourthToleranceWindowUnit));
-        }
+        ConfigHolder.getInstance().setProperty(FRAGMENT_MASS_TOLERANCE, mainFrame.getFragmentMassToleranceValueTextField().getText());
+        int fragmentMassToleranceUnit = mainFrame.getFragmentMassToleranceUnitComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(FRAGMENT_MASS_TOLERANCE_UNIT, booleanIndexGuiToPropertiesMapping.get(fragmentMassToleranceUnit));
+        ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
+        ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
+        int firstToleranceWindowUnit = mainFrame.getFirstPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(firstToleranceWindowUnit));
+        ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW, mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
+        ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
+        int secondToleranceWindowUnit = mainFrame.getSecondPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(secondToleranceWindowUnit));
+        ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW, mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
+        ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
+        int thirdToleranceWindowUnit = mainFrame.getThirdPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(thirdToleranceWindowUnit));
+        ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW, mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
+        ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
+        int fourthToleranceWindowUnit = mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
+        ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(fourthToleranceWindowUnit));
         ConfigHolder.getInstance().setProperty(MIN_NUMBER_OF_PEAKS, mainFrame.getMinNumberOfPeaksTextField());
         int peakMatch = mainFrame.getPeakMatchingComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(PEAK_MATCHING, booleanIndexGuiToPropertiesMapping.get(peakMatch));
@@ -720,12 +748,6 @@ public class MainController {
         }
         if (mainFrame.getOutputDirectoryPathTextField().getText().isEmpty()) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide an output directory.");
-        }
-        if (mainFrame.getValidatedTargetHitsPathTextField().getText().isEmpty()) {
-            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a validated list of target hits with a given FDR.");
-        }
-        if (mainFrame.getXpsmsPathTextField().getText().isEmpty()) {
-            validationMessages.add(INPUT_OUTPUT_PANE + "Please provide list of merged XPSMs.");
         }
         //Cross-linking params
         if (mainFrame.getMinimumPeptideLengthTextField().getText().isEmpty()) {
@@ -807,7 +829,7 @@ public class MainController {
 //        ConfigHolder.getInstance().setProperty(PEP_TOL_WINDOWS, mainFrame.getPeptideToleranceSpinner().getValue());
 //        boolean useCommonMassToleranceWindow = mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
 //        if (useCommonMassToleranceWindow) {
-//            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getCommonPeptideMassToleranceWindowTextField().getText());
+//            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getFragmentMassToleranceValueTextField().getText());
 //        } else {
 //            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
 //            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());

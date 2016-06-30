@@ -34,15 +34,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="mainPanel" alignment="0" pref="1000" max="32767" attributes="0"/>
+          <Component id="mainPanel" alignment="0" pref="913" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="mainPanel" min="-2" pref="637" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
+          <Component id="mainPanel" min="-2" pref="664" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -63,7 +60,7 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="topPanel" pref="980" max="32767" attributes="0"/>
+                      <Component id="topPanel" pref="901" max="32767" attributes="0"/>
                       <Component id="bottomPanel" alignment="1" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -74,8 +71,8 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="topPanel" pref="569" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="topPanel" min="-2" pref="593" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
                   <Component id="bottomPanel" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -108,9 +105,8 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="mainTabbedPane" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
+                      <Component id="mainTabbedPane" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -163,16 +159,6 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="outputDirectoryBrowseButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="validatedTargetHitsPathTextField" max="32767" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="validatedTargetHitsBrowseButton" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="xpsmsPathTextField" max="32767" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="xpsmsBrowseButton" min="-2" max="-2" attributes="0"/>
-                                  </Group>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="fastaDbPathLabel" min="-2" max="-2" attributes="0"/>
@@ -180,10 +166,8 @@
                                           <Component id="searchDbPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="searchDbPathLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="outputDirectoryPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="validatedTargetHitsPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="xpsmsPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="513" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="426" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -228,21 +212,7 @@
                                   <Component id="outputDirectoryPathTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="outputDirectoryBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="validatedTargetHitsPathLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="validatedTargetHitsPathTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="validatedTargetHitsBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                              <Component id="xpsmsPathLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="xpsmsPathTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="xpsmsBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace pref="136" max="32767" attributes="0"/>
+                              <EmptySpace pref="244" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -300,32 +270,6 @@
                         <Property name="text" type="java.lang.String" value="browse..."/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="validatedTargetHitsPathLabel">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Select the validated list of target hits*:"/>
-                        <Property name="toolTipText" type="java.lang.String" value="provide a location of a file that validated cross-linked peptides-to-spectrum matches list according to validation settings"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JTextField" name="validatedTargetHitsPathTextField">
-                    </Component>
-                    <Component class="javax.swing.JButton" name="validatedTargetHitsBrowseButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="browse..."/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="xpsmsPathLabel">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Select the merged XPSMs*:"/>
-                        <Property name="toolTipText" type="java.lang.String" value="provide a location of a file that holds all cross-linked peptide-to-spectrum matches"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JTextField" name="xpsmsPathTextField">
-                    </Component>
-                    <Component class="javax.swing.JButton" name="xpsmsBrowseButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="browse..."/>
-                      </Properties>
-                    </Component>
                     <Component class="javax.swing.JLabel" name="searchDbPathLabel1">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Select the spectra files directory*:"/>
@@ -370,9 +314,9 @@
                                   <Component id="sideReactionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="serineCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="threonineCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="tyrosineCheckBox" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="intralinkingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -390,7 +334,7 @@
                                   </Group>
                                   <Component id="intraLinkingCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="355" max="32767" attributes="0"/>
+                              <EmptySpace pref="268" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -437,7 +381,7 @@
                               <Component id="intralinkingLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="intraLinkingCheckBox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="123" max="32767" attributes="0"/>
+                              <EmptySpace pref="118" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -622,7 +566,7 @@
                                       </Group>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="470" max="32767" attributes="0"/>
+                              <EmptySpace pref="383" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -648,7 +592,7 @@
                                   <Component id="maximumPeptideMassLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="maximumPeptideMassTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="347" max="32767" attributes="0"/>
+                              <EmptySpace pref="369" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -768,7 +712,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="fixedModificationsDualList" pref="458" max="32767" attributes="0"/>
+                                      <Component id="fixedModificationsDualList" pref="414" max="32767" attributes="0"/>
                                       <Group type="102" attributes="0">
                                           <Component id="fixedModificationsLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -784,7 +728,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="fixedModificationsLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="fixedModificationsDualList" pref="380" max="32767" attributes="0"/>
+                                  <Component id="fixedModificationsDualList" pref="471" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -815,7 +759,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="variableModificationsDualList" pref="474" max="32767" attributes="0"/>
+                                      <Component id="variableModificationsDualList" pref="431" max="32767" attributes="0"/>
                                       <Group type="102" attributes="0">
                                           <Component id="variableModificationsLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -831,7 +775,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="variableModificationsLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="variableModificationsDualList" pref="380" max="32767" attributes="0"/>
+                                  <Component id="variableModificationsDualList" pref="471" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -864,7 +808,7 @@
                                   <Component id="maxModPeptideLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="maxModPeptideTextField" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <EmptySpace pref="578" max="32767" attributes="0"/>
+                                  <EmptySpace pref="455" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -884,7 +828,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="maxModPeptideLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Set the maximum number of variable modifications per peptide*:"/>
+                            <Property name="text" type="java.lang.String" value="Maximum number of variable modifications per peptide*:"/>
                             <Property name="toolTipText" type="java.lang.String" value=""/>
                           </Properties>
                         </Component>
@@ -926,24 +870,17 @@
                                   <Component id="peptideMassToleranceWindowsPanel" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="minNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="minNumberOfPeaksTextField" min="-2" pref="110" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                  <Component id="peakMatchingLabel" max="32767" attributes="0"/>
-                                                  <Component id="ms1ReportingLabel" max="32767" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace min="-2" pref="145" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="peakMatchingComboBox" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="ms1ReportingComboBox" min="-2" pref="65" max="-2" attributes="0"/>
-                                              </Group>
-                                          </Group>
+                                          <Component id="minNumberOfPeaksLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="peakMatchingLabel" alignment="0" min="-2" pref="237" max="-2" attributes="0"/>
+                                          <Component id="ms1ReportingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="186" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="ms1ReportingComboBox" min="-2" pref="65" max="-2" attributes="0"/>
+                                          <Component id="peakMatchingComboBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="minNumberOfPeaksTextField" min="-2" pref="110" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -1037,7 +974,7 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="1" attributes="0">
                                       <Group type="102" attributes="0">
                                           <Component id="peptideToleranceLabel" min="-2" max="-2" attributes="0"/>
@@ -1053,16 +990,16 @@
                                                   <Component id="secondPeptideMassToleranceWindowLabel" pref="323" max="32767" attributes="0"/>
                                                   <Component id="thirdPeptideMassToleranceWindowLabel" alignment="0" max="32767" attributes="0"/>
                                               </Group>
-                                              <Component id="commonPeptideMassToleranceCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="fragmentMassToleranceLabel" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace pref="158" max="32767" attributes="0"/>
+                                          <EmptySpace max="32767" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                               <Group type="102" alignment="1" attributes="0">
-                                                  <Component id="commonPeptideMassToleranceWindowLabel" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="fragmentMassToleranceValueLabel" min="-2" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="commonPeptideMassToleranceWindowTextField" min="-2" pref="90" max="-2" attributes="0"/>
+                                                  <Component id="fragmentMassToleranceValueTextField" min="-2" pref="90" max="-2" attributes="0"/>
                                                   <EmptySpace max="32767" attributes="0"/>
-                                                  <Component id="commonPeptideMassToleranceWindowUnitLabel" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="fragmentMassToleranceUnitLabel" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                               <Group type="102" alignment="1" attributes="0">
                                                   <Component id="thirdPeptideMassToleranceWindowValueLabel" min="-2" max="-2" attributes="0"/>
@@ -1117,8 +1054,23 @@
                                       <Component id="secondPeptideMassToleranceWindowUnitComboBox" min="-2" pref="72" max="-2" attributes="0"/>
                                       <Component id="thirdPeptideMassToleranceWindowUnitComboBox" min="-2" pref="72" max="-2" attributes="0"/>
                                       <Component id="fourthPeptideMassToleranceWindowUnitComboBox" min="-2" pref="72" max="-2" attributes="0"/>
-                                      <Component id="commonPeptideMassToleranceWindowUnitComboBox" min="-2" pref="72" max="-2" attributes="0"/>
+                                      <Component id="fragmentMassToleranceUnitComboBox" min="-2" pref="72" max="-2" attributes="0"/>
                                   </Group>
+                              </Group>
+                              <Group type="102" attributes="0">
+                                  <Component id="fifthPeptideMassToleranceWindowLabel" max="32767" attributes="0"/>
+                                  <EmptySpace pref="206" max="32767" attributes="0"/>
+                                  <Component id="fifthPeptideMassToleranceWindowValueLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="fifthPeptideMassToleranceWindowTextField" min="-2" pref="90" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="fifthPeptideMassToleranceWindowBaseLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="fifthPeptideMassToleranceWindowBaseTextField" min="-2" pref="90" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="fifthPeptideMassToleranceWindowUnitLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                                  <Component id="fifthPeptideMassToleranceWindowUnitComboBox" min="-2" pref="72" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1131,11 +1083,11 @@
                                   </Group>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="commonPeptideMassToleranceWindowUnitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="commonPeptideMassToleranceWindowUnitComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="commonPeptideMassToleranceWindowTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="commonPeptideMassToleranceWindowLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="commonPeptideMassToleranceCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="fragmentMassToleranceUnitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="fragmentMassToleranceUnitComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="fragmentMassToleranceValueTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="fragmentMassToleranceValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="fragmentMassToleranceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
@@ -1179,7 +1131,18 @@
                                           <Component id="fourthPeptideMassToleranceWindowValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="6" max="32767" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="fifthPeptideMassToleranceWindowUnitComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                          <Component id="fifthPeptideMassToleranceWindowLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="fifthPeptideMassToleranceWindowBaseTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="fifthPeptideMassToleranceWindowUnitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="fifthPeptideMassToleranceWindowBaseLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="fifthPeptideMassToleranceWindowTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="fifthPeptideMassToleranceWindowValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1187,7 +1150,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="firstPeptideMassToleranceWindowLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="First peptide mass tolerance window:"/>
+                            <Property name="text" type="java.lang.String" value="Peptide mass tolerance window 1:"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="firstPeptideMassToleranceWindowBaseTextField">
@@ -1212,7 +1175,7 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="secondPeptideMassToleranceWindowLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Second mass peptide tolerance window:"/>
+                            <Property name="text" type="java.lang.String" value="Peptide mass tolerance window 2:"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="secondPeptideMassToleranceWindowBaseTextField">
@@ -1237,7 +1200,7 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="thirdPeptideMassToleranceWindowLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Third peptide mass tolerance window:"/>
+                            <Property name="text" type="java.lang.String" value="Peptide mass tolerance window 3:"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="thirdPeptideMassToleranceWindowBaseTextField">
@@ -1262,7 +1225,7 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="fourthPeptideMassToleranceWindowLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Fourth peptide mass tolerance window:"/>
+                            <Property name="text" type="java.lang.String" value="Peptide mass tolerance window 4:"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="fourthPeptideMassToleranceWindowBaseTextField">
@@ -1285,11 +1248,6 @@
                             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                           </AuxValues>
                         </Component>
-                        <Component class="javax.swing.JCheckBox" name="commonPeptideMassToleranceCheckBox">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="Use one peptide mass tolerance size for all windows"/>
-                          </Properties>
-                        </Component>
                         <Component class="javax.swing.JSpinner" name="peptideToleranceSpinner">
                           <Properties>
                             <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
@@ -1302,19 +1260,19 @@
                             <Property name="text" type="java.lang.String" value="Select the number of peptide tolerance windows*:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JLabel" name="commonPeptideMassToleranceWindowLabel">
+                        <Component class="javax.swing.JLabel" name="fragmentMassToleranceValueLabel">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Value*:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JTextField" name="commonPeptideMassToleranceWindowTextField">
+                        <Component class="javax.swing.JTextField" name="fragmentMassToleranceValueTextField">
                         </Component>
-                        <Component class="javax.swing.JLabel" name="commonPeptideMassToleranceWindowUnitLabel">
+                        <Component class="javax.swing.JLabel" name="fragmentMassToleranceUnitLabel">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Unit*:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JComboBox" name="commonPeptideMassToleranceWindowUnitComboBox">
+                        <Component class="javax.swing.JComboBox" name="fragmentMassToleranceUnitComboBox">
                           <Properties>
                             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                               <StringArray count="2">
@@ -1373,6 +1331,48 @@
                         <Component class="javax.swing.JLabel" name="fourthPeptideMassToleranceWindowValueLabel">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Value*:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="fifthPeptideMassToleranceWindowLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Peptide mass tolerance window 5:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="fifthPeptideMassToleranceWindowValueLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Value*:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="fifthPeptideMassToleranceWindowTextField">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="fifthPeptideMassToleranceWindowBaseLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Base*:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="fifthPeptideMassToleranceWindowBaseTextField">
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="fifthPeptideMassToleranceWindowUnitLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Unit*:"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JComboBox" name="fifthPeptideMassToleranceWindowUnitComboBox">
+                          <Properties>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                              <StringArray count="2">
+                                <StringItem index="0" value="PPM"/>
+                                <StringItem index="1" value="Da"/>
+                              </StringArray>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="fragmentMassToleranceLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Fragment mass tolerance (same value for all windows)*;"/>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -1443,44 +1443,46 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="maximumNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="maximumNumberOfPeaksTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="maximumNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="maximumNumberOfPeaksTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="minimumNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="minimumNumberOfPeaksTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="minimumNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="minimumNumberOfPeaksTextField" min="-2" pref="70" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="spectrumMassWindowValueLabel" min="-2" pref="301" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="spectrumMassWindowValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="lowerPrecursorMassBoundLabel" max="32767" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="lowerPrecursorMassBoundTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                                  <Component id="deisotopeLabel" max="32767" attributes="0"/>
+                                                  <Component id="deconvulatePrecisionLabel" max="32767" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="deconvulatePrecisionTextField" alignment="0" min="-2" pref="70" max="-2" attributes="0"/>
+                                                  <Component id="deisotopePrecisionTextField" alignment="1" min="-2" pref="70" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
                                       </Group>
                                   </Group>
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="lowerPrecursorMassBoundLabel" max="32767" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="lowerPrecursorMassBoundTextField" min="-2" pref="70" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Component id="deisotopeLabel" max="32767" attributes="0"/>
-                                              <Component id="deconvulatePrecisionLabel" max="32767" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="deconvulatePrecisionTextField" alignment="0" min="-2" pref="70" max="-2" attributes="0"/>
-                                              <Component id="deisotopePrecisionTextField" alignment="1" min="-2" pref="70" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="spectrumMassWindowValueLabel" min="-2" pref="301" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="spectrumMassWindowValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="498" max="32767" attributes="0"/>
+                              <EmptySpace pref="306" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1517,7 +1519,7 @@
                                   <Component id="deconvulatePrecisionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="deconvulatePrecisionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="328" max="32767" attributes="0"/>
+                              <EmptySpace pref="310" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1525,7 +1527,6 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="spectrumMassWindowValueLabel">
                       <Properties>
-                        <Property name="horizontalAlignment" type="int" value="4"/>
                         <Property name="text" type="java.lang.String" value="Spectrum scoring mass window value*:"/>
                         <Property name="toolTipText" type="java.lang.String" value=""/>
                       </Properties>
@@ -1600,33 +1601,34 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
+                                      <Component id="numberOfThreadsLabel" min="-2" pref="237" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="numberOfThreadsTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="writePercolatorInputFilesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="fdrCalculationLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
+                                      <Component id="fdrCalcalationComboBox" min="-2" pref="93" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
                                       <Component id="intraProteinFdrValueLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="intraProteinFdrValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="numberOfThreadsLabel" min="-2" pref="237" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="numberOfThreadsTextField" min="-2" pref="70" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                              <Component id="globalFdrValueLabel" max="32767" attributes="0"/>
-                                              <Component id="interProteinFdrValueLabel" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Component id="fdrCalculationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                          <Component id="globalFdrValueLabel" max="32767" attributes="0"/>
+                                          <Component id="interProteinFdrValueLabel" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="fdrCalcalationComboBox" min="-2" max="-2" attributes="0"/>
                                           <Component id="globalFdrValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                           <Component id="interProteinFdrValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Component id="writePercolatorInputFilesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="630" max="32767" attributes="0"/>
+                              <EmptySpace pref="550" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1638,7 +1640,7 @@
                                   <Component id="numberOfThreadsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="numberOfThreadsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="writePercolatorInputFilesCheckBox" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -1660,7 +1662,7 @@
                                   <Component id="intraProteinFdrValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="intraProteinFdrValueTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="310" max="32767" attributes="0"/>
+                              <EmptySpace pref="321" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
