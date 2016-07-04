@@ -3,6 +3,7 @@
 nbactions-getData.xml
 nbactions-release-profile.xml
 nb-configuration.xml
+nbactions.xml
 .gitignore~
 .idea/
 *.iml

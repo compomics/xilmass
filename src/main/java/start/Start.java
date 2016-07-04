@@ -273,7 +273,6 @@ public class Start {
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
                 LOGGER.error(ex.getMessage(), ex);
             }
-            //</editor-fold>
 
             //set background color for JOptionPane and JPanel instances
             UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
@@ -288,6 +287,7 @@ public class Start {
                     g.draw(object.getBounds());
                 }
             });
+            //</editor-fold>
 
             MainController mainController = new MainController();
             mainController.init();
@@ -321,10 +321,9 @@ public class Start {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("System".equals(info.getName())) {
+                if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
-
                 }
             }
         } catch (ClassNotFoundException ex) {
@@ -340,8 +339,23 @@ public class Start {
             java.util.logging.Logger.getLogger(Visualize.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+
+        //set background color for JOptionPane and JPanel instances
+        UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
+        UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
+        UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
+        //set background color for JFileChooser instances
+        UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
+                (Painter<JFileChooser>) new Painter<JFileChooser>() {
+            @Override
+            public void paint(Graphics2D g, JFileChooser object, int width, int height) {
+                g.setColor(Color.WHITE);
+                g.draw(object.getBounds());
+            }
+        });
         //</editor-fold>
-        /* Create and display the form */
+
+        //Create and display the form
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

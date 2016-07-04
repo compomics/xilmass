@@ -4,6 +4,7 @@
  */
 package visualize;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
@@ -28,6 +29,7 @@ public class StartDialog extends javax.swing.JDialog {
     public StartDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        getContentPane().setBackground(Color.WHITE);
         this.setSize(750, 300);
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension screenSize = toolkit.getScreenSize();
@@ -73,9 +75,12 @@ public class StartDialog extends javax.swing.JDialog {
         createjButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Xilmass results viewer graphical user interface");
+        setBackground(new java.awt.Color(255, 255, 255));
         setResizable(false);
 
         specsFolderjPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Spectrum folder"));
+        specsFolderjPanel.setOpaque(false);
 
         pathSpecsFolderjLabel.setText("A path of a spectrum folder");
 
@@ -100,8 +105,8 @@ public class StartDialog extends javax.swing.JDialog {
             .addGroup(specsFolderjPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(pathSpecsFolderjLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(pathSpecsFolderjTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pathSpecsFolderjTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(browseSpecsjButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -121,10 +126,14 @@ public class StartDialog extends javax.swing.JDialog {
         );
 
         resultFilejPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Result file"));
+        resultFilejPanel.setOpaque(false);
 
         pathToResultFilejLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         pathToResultFilejLabel.setText("A path of a result file");
         pathToResultFilejLabel.setFocusable(false);
+        pathToResultFilejLabel.setMaximumSize(new java.awt.Dimension(172, 15));
+        pathToResultFilejLabel.setMinimumSize(new java.awt.Dimension(172, 15));
+        pathToResultFilejLabel.setPreferredSize(new java.awt.Dimension(172, 15));
         pathToResultFilejLabel.setRequestFocusEnabled(false);
 
         browseResultFilejButton.setText("Browse");
@@ -147,21 +156,21 @@ public class StartDialog extends javax.swing.JDialog {
             resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(resultFilejPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pathToResultFilejLabel)
-                    .addComponent(indexjLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pathToResultFilejLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(indexjLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(resultFilejPanelLayout.createSequentialGroup()
-                        .addComponent(indexjTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(137, 137, 137))
-                    .addGroup(resultFilejPanelLayout.createSequentialGroup()
-                        .addComponent(pathToResultFilejTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pathToResultFilejTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseResultFilejButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(clearResultFilejButton)
-                        .addContainerGap())))
+                        .addComponent(clearResultFilejButton))
+                    .addGroup(resultFilejPanelLayout.createSequentialGroup()
+                        .addComponent(indexjTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         resultFilejPanelLayout.setVerticalGroup(
             resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -169,7 +178,7 @@ public class StartDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(resultFilejPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pathToResultFilejTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pathToResultFilejLabel)
+                    .addComponent(pathToResultFilejLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseResultFilejButton)
                     .addComponent(clearResultFilejButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -196,10 +205,10 @@ public class StartDialog extends javax.swing.JDialog {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(createjButton, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(resultFilejPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(specsFolderjPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(specsFolderjPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(resultFilejPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
