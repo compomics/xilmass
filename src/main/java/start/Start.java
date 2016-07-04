@@ -100,278 +100,9 @@ public class Start {
     }
 
     /**
-     * Construct Options.
-     */
-    private static void constructOptions() {
-        options = new Options();
-
-        options.addOption("h", "help", Boolean.FALSE, "Help");
-        options.addOption("u", "usage", Boolean.FALSE, "Usage");
-
-        Option commandLineOption = new Option("c", "command_line", false, "Command-line mode");
-        commandLineOption.setArgName("command_line");
-        Option startupGuiOption = new Option("s", "startup_gui", false, "Startup GUI mode");
-        startupGuiOption.setArgName("startup_gui");
-        Option resultsGuiOption = new Option("r", "results_gui", false, "Results GUI mode");
-        resultsGuiOption.setArgName("results_gui");
-        OptionGroup commandLineModeOptionGroup = new OptionGroup();
-        commandLineModeOptionGroup.addOption(commandLineOption);
-        commandLineModeOptionGroup.addOption(startupGuiOption);
-        commandLineModeOptionGroup.addOption(resultsGuiOption);
-
-        options.addOptionGroup(commandLineModeOptionGroup);
-    }
-
-    /**
-     * Display example application header.
-     *
-     * @out OutputStream to which header should be written.
-     */
-    private static void displayHeader(OutputStream out) {
-        try {
-            out.write(HEADER.getBytes());
-        } catch (IOException ioEx) {
-            System.out.println(HEADER);
-        }
-    }
-
-    /**
-     * Write the provided number of blank lines to the provided OutputStream.
-     *
-     * @param numberBlankLines Number of blank lines to write.
-     * @param out OutputStream to which to write the blank lines.
-     */
-    private static void displayBlankLines(
-            int numberBlankLines,
-            OutputStream out) {
-        try {
-            for (int i = 0; i < numberBlankLines; ++i) {
-                out.write("\n".getBytes());
-            }
-        } catch (IOException ioEx) {
-            for (int i = 0; i < numberBlankLines; ++i) {
-                System.out.println();
-            }
-        }
-    }
-
-    /**
-     * Print usage information to provided OutputStream.
-     *
-     * @param applicationName Name of application to list in usage.
-     * @param options Command-line options to be part of usage.
-     * @param out OutputStream to which to write the usage information.
-     */
-    private static void printUsage(
-            String applicationName,
-            Options options,
-            OutputStream out) {
-        PrintWriter writer = new PrintWriter(out);
-        HelpFormatter usageFormatter = new HelpFormatter();
-        usageFormatter.printUsage(writer, 80, applicationName, options);
-        writer.flush();
-    }
-
-    /**
-     * Write "help" to the provided OutputStream.
-     */
-    private static void printHelp(
-            Options options,
-            int printedRowWidth,
-            String header,
-            String footer,
-            int spacesBeforeOption,
-            int spacesBeforeOptionDescription,
-            boolean displayUsage,
-            final OutputStream out) {
-        PrintWriter writer = new PrintWriter(out);
-        HelpFormatter helpFormatter = new HelpFormatter();
-        helpFormatter.printHelp(
-                writer,
-                printedRowWidth,
-                USAGE,
-                header,
-                options,
-                spacesBeforeOption,
-                spacesBeforeOptionDescription,
-                footer,
-                displayUsage);
-        writer.flush();
-    }
-
-    /**
-     * Apply Apache Commons CLI parser to command-line arguments.
-     *
-     * @param commandLineArguments Command-line arguments to be processed.
-     */
-    private static void parse(String[] commandLineArguments) {
-        CommandLineParser cmdLineParser = new BasicParser();
-        CommandLine commandLine;
-        try {
-            commandLine = cmdLineParser.parse(options, commandLineArguments);
-            if (commandLine.getOptions().length == 0) {
-                //launch startup GUI mode
-                launchStartupGuiMode();
-            }
-            if (commandLine.hasOption('h')) {
-                printHelp(
-                        options, 80, "Help", "End of Help",
-                        5, 3, true, System.out);
-            }
-            if (commandLine.hasOption('u')) {
-                printUsage(USAGE, options, System.out);
-            }
-            if (commandLine.hasOption("c")) {
-                try {
-                    //launch command line mode
-                    launchCommandLineMode();
-                } catch (Exception ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                    printHelp(
-                            options, 80, "Help", "End of Help",
-                            5, 3, true, System.out);
-                }
-            }
-            if (commandLine.hasOption('s')) {
-                //launch startup GUI mode
-                launchStartupGuiMode();
-            }
-            if (commandLine.hasOption('r')) {
-                //launch results GUI mode
-                launchResultsGui();
-            }
-        } catch (ParseException parseException) {
-            System.out.println("Encountered exception while parsing :\n"
-                    + parseException.getMessage());
-            printHelp(
-                    options, 80, "Help", "End of Help",
-                    5, 3, true, System.out);
-        }
-    }
-
-    /**
-     * Run xilmass in startup GUI mode.
-     */
-    private static void launchStartupGuiMode() {
-        try {
-            /**
-             * Set the Nimbus look and feel.
-             */
-            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-            /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the
-         * default look and feel. For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-             */
-            try {
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if ("Nimbus".equals(info.getName())) {
-                        UIManager.setLookAndFeel(info.getClassName());
-                        break;
-                    }
-                }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-                LOGGER.error(ex.getMessage(), ex);
-            }
-
-            //set background color for JOptionPane and JPanel instances
-            UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
-            UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
-            UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
-            //set background color for JFileChooser instances
-            UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
-                    (Painter<JFileChooser>) new Painter<JFileChooser>() {
-                @Override
-                public void paint(Graphics2D g, JFileChooser object, int width, int height) {
-                    g.setColor(Color.WHITE);
-                    g.draw(object.getBounds());
-                }
-            });
-            //</editor-fold>
-
-            MainController mainController = new MainController();
-            mainController.init();
-            mainController.showView();
-        } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            //add message to JTextArea
-            JTextArea textArea = new JTextArea(ERROR_MESSAGE + System.lineSeparator() + System.lineSeparator() + ex.getMessage());
-            //put JTextArea in JScrollPane
-            JScrollPane scrollPane = new JScrollPane(textArea);
-            scrollPane.setPreferredSize(new Dimension(600, 200));
-            textArea.setEditable(false);
-            textArea.setLineWrap(true);
-            textArea.setWrapStyleWord(true);
-
-            JOptionPane.showMessageDialog(null, scrollPane, "Xilmass startup GUI error", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
-        }
-    }
-
-    /**
-     * Run xilmass in results viewer GUI mode.
-     */
-    private static void launchResultsGui() {
-        /**
-         * Set the Nimbus look and feel.
-         */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-
-        //set background color for JOptionPane and JPanel instances
-        UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
-        UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
-        UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
-        //set background color for JFileChooser instances
-        UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
-                (Painter<JFileChooser>) new Painter<JFileChooser>() {
-            @Override
-            public void paint(Graphics2D g, JFileChooser object, int width, int height) {
-                g.setColor(Color.WHITE);
-                g.draw(object.getBounds());
-            }
-        });
-        //</editor-fold>
-
-        //Create and display the form
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    new Visualize().setVisible(true);
-                } catch (MzMLUnmarshallerException | FileNotFoundException | ClassNotFoundException ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                }
-            }
-        });
-    }
-
-    /**
      * Run xilmass in command line mode.
      */
-    private static void launchCommandLineMode() throws Exception {
+    public static void launchCommandLineMode() throws Exception {
         try {
             long startTime = System.currentTimeMillis();
             Date startDate = new Date();
@@ -830,6 +561,275 @@ public class Start {
             fileTitle.append("\t").append("IntroducedIonWeight");
         }
         return fileTitle;
+    }
+
+    /**
+     * Construct Options.
+     */
+    private static void constructOptions() {
+        options = new Options();
+
+        options.addOption("h", "help", Boolean.FALSE, "Help");
+        options.addOption("u", "usage", Boolean.FALSE, "Usage");
+
+        Option commandLineOption = new Option("c", "command_line", false, "Command-line mode");
+        commandLineOption.setArgName("command_line");
+        Option startupGuiOption = new Option("s", "startup_gui", false, "Startup GUI mode");
+        startupGuiOption.setArgName("startup_gui");
+        Option resultsGuiOption = new Option("r", "results_gui", false, "Results GUI mode");
+        resultsGuiOption.setArgName("results_gui");
+        OptionGroup commandLineModeOptionGroup = new OptionGroup();
+        commandLineModeOptionGroup.addOption(commandLineOption);
+        commandLineModeOptionGroup.addOption(startupGuiOption);
+        commandLineModeOptionGroup.addOption(resultsGuiOption);
+
+        options.addOptionGroup(commandLineModeOptionGroup);
+    }
+
+    /**
+     * Display example application header.
+     *
+     * @out OutputStream to which header should be written.
+     */
+    private static void displayHeader(OutputStream out) {
+        try {
+            out.write(HEADER.getBytes());
+        } catch (IOException ioEx) {
+            System.out.println(HEADER);
+        }
+    }
+
+    /**
+     * Write the provided number of blank lines to the provided OutputStream.
+     *
+     * @param numberBlankLines Number of blank lines to write.
+     * @param out OutputStream to which to write the blank lines.
+     */
+    private static void displayBlankLines(
+            int numberBlankLines,
+            OutputStream out) {
+        try {
+            for (int i = 0; i < numberBlankLines; ++i) {
+                out.write("\n".getBytes());
+            }
+        } catch (IOException ioEx) {
+            for (int i = 0; i < numberBlankLines; ++i) {
+                System.out.println();
+            }
+        }
+    }
+
+    /**
+     * Print usage information to provided OutputStream.
+     *
+     * @param applicationName Name of application to list in usage.
+     * @param options Command-line options to be part of usage.
+     * @param out OutputStream to which to write the usage information.
+     */
+    private static void printUsage(
+            String applicationName,
+            Options options,
+            OutputStream out) {
+        PrintWriter writer = new PrintWriter(out);
+        HelpFormatter usageFormatter = new HelpFormatter();
+        usageFormatter.printUsage(writer, 80, applicationName, options);
+        writer.flush();
+    }
+
+    /**
+     * Write "help" to the provided OutputStream.
+     */
+    private static void printHelp(
+            Options options,
+            int printedRowWidth,
+            String header,
+            String footer,
+            int spacesBeforeOption,
+            int spacesBeforeOptionDescription,
+            boolean displayUsage,
+            final OutputStream out) {
+        PrintWriter writer = new PrintWriter(out);
+        HelpFormatter helpFormatter = new HelpFormatter();
+        helpFormatter.printHelp(
+                writer,
+                printedRowWidth,
+                USAGE,
+                header,
+                options,
+                spacesBeforeOption,
+                spacesBeforeOptionDescription,
+                footer,
+                displayUsage);
+        writer.flush();
+    }
+
+    /**
+     * Apply Apache Commons CLI parser to command-line arguments.
+     *
+     * @param commandLineArguments Command-line arguments to be processed.
+     */
+    private static void parse(String[] commandLineArguments) {
+        CommandLineParser cmdLineParser = new BasicParser();
+        CommandLine commandLine;
+        try {
+            commandLine = cmdLineParser.parse(options, commandLineArguments);
+            if (commandLine.getOptions().length == 0) {
+                //launch startup GUI mode
+                launchStartupGuiMode();
+            }
+            if (commandLine.hasOption('h')) {
+                printHelp(
+                        options, 80, "Help", "End of Help",
+                        5, 3, true, System.out);
+            }
+            if (commandLine.hasOption('u')) {
+                printUsage(USAGE, options, System.out);
+            }
+            if (commandLine.hasOption("c")) {
+                try {
+                    //launch command line mode
+                    launchCommandLineMode();
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    printHelp(
+                            options, 80, "Help", "End of Help",
+                            5, 3, true, System.out);
+                }
+            }
+            if (commandLine.hasOption('s')) {
+                //launch startup GUI mode
+                launchStartupGuiMode();
+            }
+            if (commandLine.hasOption('r')) {
+                //launch results GUI mode
+                launchResultsGui();
+            }
+        } catch (ParseException parseException) {
+            System.out.println("Encountered exception while parsing :\n"
+                    + parseException.getMessage());
+            printHelp(
+                    options, 80, "Help", "End of Help",
+                    5, 3, true, System.out);
+        }
+    }
+
+    /**
+     * Run xilmass in startup GUI mode.
+     */
+    private static void launchStartupGuiMode() {
+        try {
+            /**
+             * Set the Nimbus look and feel.
+             */
+            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+            /*
+         * If Nimbus (introduced in Java SE 6) is not available, stay with the
+         * default look and feel. For details see
+         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+             */
+            try {
+                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+
+            //set background color for JOptionPane and JPanel instances
+            UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
+            UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
+            UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
+            //set background color for JFileChooser instances
+            UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
+                    (Painter<JFileChooser>) new Painter<JFileChooser>() {
+                @Override
+                public void paint(Graphics2D g, JFileChooser object, int width, int height) {
+                    g.setColor(Color.WHITE);
+                    g.draw(object.getBounds());
+                }
+            });
+            //</editor-fold>
+
+            MainController mainController = new MainController();
+            mainController.init();
+            mainController.showView();
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            //add message to JTextArea
+            JTextArea textArea = new JTextArea(ERROR_MESSAGE + System.lineSeparator() + System.lineSeparator() + ex.getMessage());
+            //put JTextArea in JScrollPane
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(600, 200));
+            textArea.setEditable(false);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+
+            JOptionPane.showMessageDialog(null, scrollPane, "Xilmass startup GUI error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+    }
+
+    /**
+     * Run xilmass in results viewer GUI mode.
+     */
+    private static void launchResultsGui() {
+        /**
+         * Set the Nimbus look and feel.
+         */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+
+        //set background color for JOptionPane and JPanel instances
+        UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
+        UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
+        UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
+        //set background color for JFileChooser instances
+        UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
+                (Painter<JFileChooser>) new Painter<JFileChooser>() {
+            @Override
+            public void paint(Graphics2D g, JFileChooser object, int width, int height) {
+                g.setColor(Color.WHITE);
+                g.draw(object.getBounds());
+            }
+        });
+        //</editor-fold>
+
+        //Create and display the form
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    new Visualize().setVisible(true);
+                } catch (MzMLUnmarshallerException | FileNotFoundException | ClassNotFoundException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                }
+            }
+        });
     }
 
     /**

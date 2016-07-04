@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import start.Start;
 
 /**
  * This class is main controller for the graphical user interface (GUI).
@@ -904,7 +905,7 @@ public class MainController {
                     }
                 }
             case 2:
-               if (mainFrame.getSecondPeptideMassToleranceWindowTextField().getText().isEmpty()) {
+                if (mainFrame.getSecondPeptideMassToleranceWindowTextField().getText().isEmpty()) {
                     validationMessages.add(SCORING_PANE + "Please provide a second peptide tolerance mass window value.");
                 } else {
                     try {
@@ -1135,9 +1136,9 @@ public class MainController {
 
         @Override
         protected Void doInBackground() throws Exception {
-            LOGGER.info("starting Xilmass run");
+            LOGGER.info("starting xilmass run");
 
-            Thread.sleep(10000);
+            Start.launchCommandLineMode();
 
             return null;
         }
@@ -1146,13 +1147,13 @@ public class MainController {
         protected void done() {
             try {
                 get();
-                LOGGER.info("finished Xilmass run");
-                JOptionPane.showMessageDialog(runDialog, "The Xilmass run has finished.");
+                LOGGER.info("finished xilmass run");
+                JOptionPane.showMessageDialog(runDialog, "The xilmass run has finished.");
             } catch (InterruptedException | ExecutionException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 showMessageDialog("Unexpected error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
             } catch (CancellationException ex) {
-                LOGGER.info("the Xilmass run was cancelled");
+                LOGGER.info("the xilmass run was cancelled");
             } finally {
 
             }
