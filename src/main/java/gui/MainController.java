@@ -825,20 +825,136 @@ public class MainController {
             }
         }
         //scoring params
-        //@TODO validate this
-//        ConfigHolder.getInstance().setProperty(PEP_TOL_WINDOWS, mainFrame.getPeptideToleranceSpinner().getValue());
-//        boolean useCommonMassToleranceWindow = mainFrame.getCommonPeptideMassToleranceCheckBox().isSelected();
-//        if (useCommonMassToleranceWindow) {
-//            ConfigHolder.getInstance().setProperty(COMMON_PEPTIDE_MASS_WINDOW, mainFrame.getFragmentMassToleranceValueTextField().getText());
-//        } else {
-//            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW, mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
-//            ConfigHolder.getInstance().setProperty(FIRST_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
-//            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW, mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
-//            ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
-//            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW, mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
-//            ConfigHolder.getInstance().setProperty(THIRD_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
-//            ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW, mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
-//        }
+        int value = (int) mainFrame.getPeptideToleranceSpinner().getValue();
+
+        switch (value) {
+            case 5:
+                if (mainFrame.getFifthPeptideMassToleranceWindowTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a fifth peptide tolerance mass window value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getFifthPeptideMassToleranceWindowTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive fifth peptide tolerance mass window value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric fifth peptide tolerance mass window value.");
+                    }
+                }
+                if (mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a fifth peptide tolerance mass window base value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive fifth peptide tolerance mass window base value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric fifth peptide tolerance mass window base value.");
+                    }
+                }
+            case 4:
+                if (mainFrame.getFourthPeptideMassToleranceWindowTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a fourth peptide tolerance mass window value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getFourthPeptideMassToleranceWindowTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive fourth peptide tolerance mass window value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric fourth peptide tolerance mass window value.");
+                    }
+                }
+                if (mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a fourth  peptide tolerance mass window base value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive fourth peptide tolerance mass window base value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric fourth peptide tolerance mass window base value.");
+                    }
+                }
+            case 3:
+                if (mainFrame.getThirdPeptideMassToleranceWindowTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a third peptide tolerance mass window value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getThirdPeptideMassToleranceWindowTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive third peptide tolerance mass window value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric third peptide tolerance mass window value.");
+                    }
+                }
+                if (mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a third peptide tolerance mass window base value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive third peptide tolerance mass window base value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric third peptide tolerance mass window base value.");
+                    }
+                }
+            case 2:
+               if (mainFrame.getSecondPeptideMassToleranceWindowTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a second peptide tolerance mass window value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getSecondPeptideMassToleranceWindowTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive second peptide tolerance mass window value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric second peptide tolerance mass window value.");
+                    }
+                }
+                if (mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a second peptide tolerance mass window base value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive second peptide tolerance mass window base value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric second peptide tolerance mass window base value.");
+                    }
+                }
+            case 1:
+                if (mainFrame.getFirstPeptideMassToleranceWindowTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a first peptide tolerance mass window value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getFirstPeptideMassToleranceWindowTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive first peptide tolerance mass window value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric first peptide tolerance mass window value.");
+                    }
+                }
+                if (mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText().isEmpty()) {
+                    validationMessages.add(SCORING_PANE + "Please provide a first peptide tolerance mass window base value.");
+                } else {
+                    try {
+                        Double tolerance = Double.valueOf(mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
+                        if (tolerance < 0.0) {
+                            validationMessages.add(SCORING_PANE + "Please provide a positive first peptide tolerance mass window base value.");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        validationMessages.add(SCORING_PANE + "Please provide a numeric first peptide tolerance mass window base value.");
+                    }
+                }
+                break;
+        }
         if (mainFrame.getMinNumberOfPeaksTextField().getText().isEmpty()) {
             validationMessages.add(SCORING_PANE + "Please provide the minimum number of matched peaks.");
         } else {

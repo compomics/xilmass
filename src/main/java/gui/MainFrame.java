@@ -464,6 +464,7 @@ public class MainFrame extends javax.swing.JFrame {
         jMenu1.setText("jMenu1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Xilmass startup graphical user interface");
 
         mainPanel.setBackground(new java.awt.Color(255, 255, 255));
         mainPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -569,7 +570,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(inputOutputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(outputDirectoryPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(outputDirectoryBrowseButton))
-                .addContainerGap(244, Short.MAX_VALUE))
+                .addContainerGap(264, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Input/Output", inputOutputPanel);
@@ -699,7 +700,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(intralinkingLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(intraLinkingCheckBox)
-                .addContainerGap(118, Short.MAX_VALUE))
+                .addContainerGap(138, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Cross-linking", crossLinkingPanel);
@@ -768,7 +769,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(inSilicoDigestionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(maximumPeptideMassLabel)
                     .addComponent(maximumPeptideMassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(369, Short.MAX_VALUE))
+                .addContainerGap(389, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("In-silico digestion", inSilicoDigestionPanel);
@@ -777,6 +778,9 @@ public class MainFrame extends javax.swing.JFrame {
         modificationsPanel.setLayout(new java.awt.GridBagLayout());
 
         fixedModificationsPanel.setOpaque(false);
+
+        fixedModificationsDualList.setMinimumSize(new java.awt.Dimension(0, 0));
+        fixedModificationsDualList.setPreferredSize(new java.awt.Dimension(0, 0));
 
         fixedModificationsLabel.setText("Select the fixed modifications*:");
 
@@ -787,7 +791,7 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(fixedModificationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(fixedModificationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(fixedModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                    .addComponent(fixedModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(fixedModificationsPanelLayout.createSequentialGroup()
                         .addComponent(fixedModificationsLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -799,7 +803,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(fixedModificationsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fixedModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
+                .addComponent(fixedModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -812,6 +816,9 @@ public class MainFrame extends javax.swing.JFrame {
 
         variableModificationsPanel.setOpaque(false);
 
+        variableModificationsDualList.setMinimumSize(new java.awt.Dimension(0, 0));
+        variableModificationsDualList.setPreferredSize(new java.awt.Dimension(0, 0));
+
         variableModificationsLabel.setText("Select the variable modifications*:");
 
         javax.swing.GroupLayout variableModificationsPanelLayout = new javax.swing.GroupLayout(variableModificationsPanel);
@@ -821,7 +828,7 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(variableModificationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(variableModificationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(variableModificationsPanelLayout.createSequentialGroup()
                         .addComponent(variableModificationsLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -833,7 +840,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(variableModificationsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
+                .addComponent(variableModificationsDualList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -858,7 +865,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(maxModPeptideLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(maxModPeptideTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(455, Short.MAX_VALUE))
+                .addContainerGap(454, Short.MAX_VALUE))
         );
         otherModSettingsPanelLayout.setVerticalGroup(
             otherModSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -876,7 +883,7 @@ public class MainFrame extends javax.swing.JFrame {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.2;
+        gridBagConstraints.weighty = 0.1;
         modificationsPanel.add(otherModSettingsPanel, gridBagConstraints);
 
         mainTabbedPane.addTab("Modifications", modificationsPanel);
@@ -1175,7 +1182,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ms1ReportingLabel)
                     .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Scoring", scoringPanel);
@@ -1266,7 +1273,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(deconvulatePrecisionLabel)
                     .addComponent(deconvulatePrecisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(310, Short.MAX_VALUE))
+                .addContainerGap(330, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Spectrum preprocessing", spectrumPreprocessingPanel);
@@ -1346,7 +1353,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(intraProteinFdrValueLabel)
                     .addComponent(intraProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(321, Short.MAX_VALUE))
+                .addContainerGap(341, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Multithreading and validation", multiThreadingAndValidationPanel);
@@ -1363,8 +1370,8 @@ public class MainFrame extends javax.swing.JFrame {
         topPanelLayout.setVerticalGroup(
             topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(topPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(mainTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap()
+                .addComponent(mainTabbedPane))
         );
 
         bottomPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
@@ -1417,9 +1424,10 @@ public class MainFrame extends javax.swing.JFrame {
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(topPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 593, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 613, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1430,7 +1438,7 @@ public class MainFrame extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 664, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
         );
 
         pack();
