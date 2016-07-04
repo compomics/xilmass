@@ -144,7 +144,7 @@ public class MainController {
     private final Comparator<String> stringComparator = new Comparator<String>() {
         @Override
         public int compare(String o1, String o2) {
-            return o1.compareTo(o2);
+            return o1.compareToIgnoreCase(o2);
         }
     };
     /**

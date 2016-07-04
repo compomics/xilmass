@@ -21,7 +21,6 @@ import database.WriteCXDB;
 import gui.MainController;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.io.*;
 import java.util.*;
@@ -43,7 +42,6 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 import util.ResourceUtils;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -110,11 +108,11 @@ public class Start {
         options.addOption("h", "help", Boolean.FALSE, "Help");
         options.addOption("u", "usage", Boolean.FALSE, "Usage");
 
-        Option commandLineOption = new Option("c", "command_line", true, "Command-line mode");
+        Option commandLineOption = new Option("c", "command_line", false, "Command-line mode");
         commandLineOption.setArgName("command_line");
-        Option startupGuiOption = new Option("s", "startup_gui", true, "Startup GUI mode");
+        Option startupGuiOption = new Option("s", "startup_gui", false, "Startup GUI mode");
         startupGuiOption.setArgName("startup_gui");
-        Option resultsGuiOption = new Option("r", "results_gui", true, "Results GUI mode");
+        Option resultsGuiOption = new Option("r", "results_gui", false, "Results GUI mode");
         resultsGuiOption.setArgName("results_gui");
         OptionGroup commandLineModeOptionGroup = new OptionGroup();
         commandLineModeOptionGroup.addOption(commandLineOption);
@@ -561,7 +559,7 @@ public class Start {
                         }
                     }
                 }
-            } 
+            }
 
             // STEP 3: CREATE A CROSS-LINKED DATABASE!!!
             // Either the same settings but absent CXDB or not the same settings at all..
