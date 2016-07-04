@@ -8,7 +8,6 @@ package analyse.CXPSM.prepareOutcome;
 import analyse.CXPSM.outcome.Outcome;
 import analyse.CXPSM.outcome.XilmassResult;
 import com.google.common.io.Files;
-import config.ConfigHolder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -139,7 +138,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
             // write them all
             writeAllXPSMs(new HashSet<Outcome>(psmsList), hasPredictions);
 
-            // sort filled list        
+            // sort filled list
             Collections.sort(res, XilmassResult.ScoreDSC);
             ArrayList<Outcome> res2 = new ArrayList<Outcome>();
             for (int i = 0; i < res.size(); i++) {
@@ -166,7 +165,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
             // writing down all inputs now...
             writeAllXPSMs(new HashSet<Outcome>(res_interPro), hasPredictions);
         }
-        // sort filled list 
+        // sort filled list
         ArrayList<XilmassResult> validatedPSMSAL = new ArrayList<XilmassResult>(validatedPSMs);
         Collections.sort(validatedPSMSAL, XilmassResult.ScoreDSC);
         writeOutput(validatedPSMSAL, bw, hasPredictions);
@@ -375,7 +374,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
                 subsetPSMs.add(r);
             }
         }
-        // sort filled list     
+        // sort filled list
         Collections.sort(subsetPSMs, XilmassResult.ScoreDSC);
         ArrayList<Outcome> res2 = new ArrayList<Outcome>();
         for (int i = 0; i < subsetPSMs.size(); i++) {
