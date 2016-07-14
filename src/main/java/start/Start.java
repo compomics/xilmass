@@ -20,7 +20,6 @@ import database.FASTACPDBLoader;
 import database.WriteCXDB;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -258,7 +257,7 @@ public class Start {
                         }
                     }
                 }
-            } 
+            }
 
             // STEP 3: CREATE A CROSS-LINKED DATABASE!!!                   
             // Either the same settings but absent CXDB or not the same settings at all..
@@ -333,7 +332,7 @@ public class Start {
 
                 // delete a file containing all mass indexes for cross-linked peptides with possible modification
                 indexFile.delete();
-                LOGGER.info("An index file (including peptides and masses) bas been created!");
+                LOGGER.info("An index file (including peptides and masses) has been created!");
                 // delete in silico DBs
                 File tmp_f = new File(inSilicoPeptideDBName),
                         tmp_cF = new File(insilicoContaminantDBName);
@@ -392,65 +391,64 @@ public class Start {
                         for (String title : fct.getSpectrumTitles(mgf.getName())) {
                             tmp_total_spectra++;
                             MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
-                            // first remove any isotopic peaks derived from precursor peak.
-                            precursorPeakRemove.setExpMSnSpectrum(ms);
-                            ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
-                            // then deisotoping and harge state deconvolution
-                            deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
-                            ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
-                            if (tmp_total_spectra % 500 == 0) {
-                                LOGGER.info("Number of total ID spectra is " + tmp_total_spectra + " in total " + total_spectra + " spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
-                            }
-                            // making sure that a spectrum contains peaks after preprocessing..
-                            if (!ms.getPeakList().isEmpty()) {
-                                try {
-                                    // here comes to check each mgf several mass windows..
-                                    futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
-                                            excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
-                                } catch (XmlPullParserException ex) {
-                                    LOGGER.error(ex);
-                                } catch (Exception ex) {
-                                    LOGGER.error(ex);
+                            // Xilmass can identify spectra with known charges only. pLink and MSAmanda follows this strategy. 
+                            if (ms.getPrecursor().getPossibleCharges().size() == 1 && !ms.getPrecursor().getPossibleChargesAsString().isEmpty()) {                              
+                                // first remove any isotopic peaks derived from precursor peak.
+                                precursorPeakRemove.setExpMSnSpectrum(ms);
+                                ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
+                                // then deisotoping and harge state deconvolution
+                                deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
+                                ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
+                                if (tmp_total_spectra % 500 == 0) {
+                                    LOGGER.info("Number of total ID spectra is " + tmp_total_spectra + " in total " + total_spectra + " spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
                                 }
-                                for (Future<ArrayList<Result>> future : futureList) {
+                                // making sure that a spectrum contains peaks after preprocessing..
+                                if (!ms.getPeakList().isEmpty()) {
                                     try {
+                                        // here comes to check each mgf several mass windows..
+                                        futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
+                                                excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
+                                    } catch (XmlPullParserException ex) {
+                                        LOGGER.error(ex);
+                                    } catch (Exception ex) {
+                                        LOGGER.error(ex);
+                                    }
+                                    for (Future<ArrayList<Result>> future : futureList) {
                                         try {
-                                            results = future.get();
-                                        } catch (ExecutionException ex) {
-                                            LOGGER.error(ex);
-                                        }
-                                        info = new ArrayList<Result>();
-                                        for (Result res : results) {
-                                            double tmpScore = res.getScore();
-                                            if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
-                                                info.add(res);
-                                                bw.write(res.toPrint());
-                                                bw.newLine();
-                                            }
-                                        }
-                                        if (isPercolatorAsked) {
-                                            // write all res and also percolator input
-                                            percolatorInfo = new ArrayList<StringBuilder>();
-                                            percolatorInfoResults = new ArrayList<Result>();
-                                            for (Result r : info) {
-                                                CrossLinkingType linkingType = r.getCp().getLinkingType();
-                                                if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
-                                                    StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
-                                                    if (!percolatorInfo.contains(i)) {
-                                                        percolatorInfo.add(i);
-                                                        percolatorInfoResults.add(r);
-                                                    }
+                                            results = future.get();                                        
+                                            info = new ArrayList<Result>();                                            
+                                            for (Result res : results) {
+                                                double tmpScore = res.getScore();
+                                                if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
+                                                    info.add(res);                                                    
+                                                    bw.write(res.toPrint());
+                                                    bw.newLine();
                                                 }
                                             }
-                                            ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-                                            for (Result r : percolatorInfoResults) {
-                                                write(r, bw_inter, bw_intra, ids, ptmFactory);
+                                            if (isPercolatorAsked) {
+                                                // write all res and also percolator input
+                                                percolatorInfo = new ArrayList<StringBuilder>();
+                                                percolatorInfoResults = new ArrayList<Result>();
+                                                for (Result r : info) {
+                                                    CrossLinkingType linkingType = r.getCp().getLinkingType();
+                                                    if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
+                                                        StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
+                                                        if (!percolatorInfo.contains(i)) {
+                                                            percolatorInfo.add(i);
+                                                            percolatorInfoResults.add(r);
+                                                        }
+                                                    }
+                                                }
+                                                ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                                                for (Result r : percolatorInfoResults) {
+                                                    write(r, bw_inter, bw_intra, ids, ptmFactory);
+                                                }
                                             }
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                            LOGGER.error(e);
                                         }
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                        LOGGER.error(e);
                                     }
                                 }
                             }
@@ -569,8 +567,8 @@ public class Start {
 //                precMass = precMass - pepTol.getPeptide_tol_base();
                 double[] from_to = getRange(precMass, pepTol);
                 double from = from_to[0],
-                        to = from_to[1];
-                ArrayList<CrossLinking> tmpSelectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);
+                        to = from_to[1];                
+                ArrayList<CrossLinking> tmpSelectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);                
                 // making sure that a cross-linked peptides are not already selected
                 for (int s = 0; s < tmpSelectedCPeptides.size(); s++) {
                     CrossLinking tmpS = tmpSelectedCPeptides.get(s);
@@ -600,7 +598,7 @@ public class Start {
                     }
                 }
             }
-        }
+        }       
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
