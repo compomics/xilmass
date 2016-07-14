@@ -813,7 +813,6 @@ public class CreateDatabase {
             String line = "";
             while ((line = br.readLine()) != null) {
                 if (line.startsWith(">")) {
-                    System.out.println(line);
                     if (line.contains("generic")) {
                         if (!line.contains("REVERSED") && !line.contains("SHUFFLED") && !line.contains("reversed") && !line.contains("shuffled")) {
                             // that's a right header for target proteins

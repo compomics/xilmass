@@ -353,133 +353,138 @@ public class Start {
             // Title for percolator-input
             StringBuilder percolatorInputTitle = writePercolatorTitle();
             SpectrumFactory fct = SpectrumFactory.getInstance();
-            for (File mgf : new File(mgfs).listFiles()) {
-                if (mgf.getName().endsWith(".mgf")) {
-                    LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
-                    LOGGER.debug(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-                    File percolatorIntra,
-                            percolatorInter;
-                    BufferedWriter bw_intra = null,
-                            bw_inter = null;
-                    if (isPercolatorAsked) {
-                        percolatorIntra = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-                        percolatorInter = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
-                        bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
-                        bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
-                        bw_intra.write(percolatorInputTitle + "\n");
-                        bw_inter.write(percolatorInputTitle + "\n");
-                    }
+            File mgf_folder;
+            try {
+                mgf_folder = new File(mgfs);
+                for (File mgf : mgf_folder.listFiles()) {
+                    if (mgf.getName().endsWith(".mgf")) {
+                        LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
+                        LOGGER.debug(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                        File percolatorIntra,
+                                percolatorInter;
+                        BufferedWriter bw_intra = null,
+                                bw_inter = null;
+                        if (isPercolatorAsked) {
+                            percolatorIntra = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                            percolatorInter = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
+                            bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
+                            bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
+                            bw_intra.write(percolatorInputTitle + "\n");
+                            bw_inter.write(percolatorInputTitle + "\n");
+                        }
 
-                    // write results on output file for each mgf
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + File.separator + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
-                    bw.write("Xilmass version " + version);
-                    bw.newLine();
-                    StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
-                    bw.write(titleToWrite + "\n");
+                        // write results on output file for each mgf
+                        BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + File.separator + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
+                        bw.write("Xilmass version " + version);
+                        bw.newLine();
+                        StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
+                        bw.write(titleToWrite + "\n");
 
-                    // now check all spectra to collect all required calculations...
-                    List<Future<ArrayList<Result>>> futureList = null;
-                    if (mgf.getName().endsWith("mgf")) {
-                        HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-                        fct.addSpectra(mgf);
-                        ArrayList<Result> results = new ArrayList<Result>(),
-                                info = new ArrayList<Result>(),
-                                percolatorInfoResults = new ArrayList<Result>();
-                        ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
-                        int total_spectra = fct.getSpectrumTitles(mgf.getName()).size(),
-                                tmp_total_spectra = 0;
-                        for (String title : fct.getSpectrumTitles(mgf.getName())) {
-                            tmp_total_spectra++;
-                            MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
-                            // Xilmass can identify spectra with known charges only. pLink and MSAmanda follows this strategy. 
-                            if (ms.getPrecursor().getPossibleCharges().size() == 1 && !ms.getPrecursor().getPossibleChargesAsString().isEmpty()) {                              
-                                // first remove any isotopic peaks derived from precursor peak.
-                                precursorPeakRemove.setExpMSnSpectrum(ms);
-                                ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
-                                // then deisotoping and harge state deconvolution
-                                deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
-                                ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
-                                if (tmp_total_spectra % 500 == 0) {
-                                    LOGGER.info("Number of total ID spectra is " + tmp_total_spectra + " in total " + total_spectra + " spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
-                                }
-                                // making sure that a spectrum contains peaks after preprocessing..
-                                if (!ms.getPeakList().isEmpty()) {
-                                    try {
-                                        // here comes to check each mgf several mass windows..
-                                        futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-                                                massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
-                                                excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
-                                    } catch (XmlPullParserException ex) {
-                                        LOGGER.error(ex);
-                                    } catch (Exception ex) {
-                                        LOGGER.error(ex);
+                        // now check all spectra to collect all required calculations...
+                        List<Future<ArrayList<Result>>> futureList = null;
+                        if (mgf.getName().endsWith("mgf")) {
+                            HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                            fct.addSpectra(mgf);
+                            ArrayList<Result> results = new ArrayList<Result>(),
+                                    info = new ArrayList<Result>(),
+                                    percolatorInfoResults = new ArrayList<Result>();
+                            ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
+                            int total_spectra = fct.getSpectrumTitles(mgf.getName()).size(),
+                                    tmp_total_spectra = 0;
+                            for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                                tmp_total_spectra++;
+                                MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                                // Xilmass can identify spectra with known charges only. pLink and MSAmanda follows this strategy. 
+                                if (ms.getPrecursor().getPossibleCharges().size() == 1 && !ms.getPrecursor().getPossibleChargesAsString().isEmpty()) {
+                                    // first remove any isotopic peaks derived from precursor peak.
+                                    precursorPeakRemove.setExpMSnSpectrum(ms);
+                                    ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
+                                    // then deisotoping and harge state deconvolution
+                                    deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
+                                    ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
+                                    if (tmp_total_spectra % 500 == 0) {
+                                        LOGGER.info("Number of total ID spectra is " + tmp_total_spectra + " in total " + total_spectra + " spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
                                     }
-                                    for (Future<ArrayList<Result>> future : futureList) {
+                                    // making sure that a spectrum contains peaks after preprocessing..
+                                    if (!ms.getPeakList().isEmpty()) {
                                         try {
-                                            results = future.get();                                        
-                                            info = new ArrayList<Result>();                                            
-                                            for (Result res : results) {
-                                                double tmpScore = res.getScore();
-                                                if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
-                                                    info.add(res);                                                    
-                                                    bw.write(res.toPrint());
-                                                    bw.newLine();
-                                                }
-                                            }
-                                            if (isPercolatorAsked) {
-                                                // write all res and also percolator input
-                                                percolatorInfo = new ArrayList<StringBuilder>();
-                                                percolatorInfoResults = new ArrayList<Result>();
-                                                for (Result r : info) {
-                                                    CrossLinkingType linkingType = r.getCp().getLinkingType();
-                                                    if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
-                                                        StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
-                                                        if (!percolatorInfo.contains(i)) {
-                                                            percolatorInfo.add(i);
-                                                            percolatorInfoResults.add(r);
-                                                        }
+                                            // here comes to check each mgf several mass windows..
+                                            futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                                                    massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
+                                                    excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
+                                        } catch (XmlPullParserException ex) {
+                                            LOGGER.error(ex);
+                                        } catch (Exception ex) {
+                                            LOGGER.error(ex);
+                                        }
+                                        for (Future<ArrayList<Result>> future : futureList) {
+                                            try {
+                                                results = future.get();
+                                                info = new ArrayList<Result>();
+                                                for (Result res : results) {
+                                                    double tmpScore = res.getScore();
+                                                    if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
+                                                        info.add(res);
+                                                        bw.write(res.toPrint());
+                                                        bw.newLine();
                                                     }
                                                 }
-                                                ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-                                                for (Result r : percolatorInfoResults) {
-                                                    write(r, bw_inter, bw_intra, ids, ptmFactory);
+                                                if (isPercolatorAsked) {
+                                                    // write all res and also percolator input
+                                                    percolatorInfo = new ArrayList<StringBuilder>();
+                                                    percolatorInfoResults = new ArrayList<Result>();
+                                                    for (Result r : info) {
+                                                        CrossLinkingType linkingType = r.getCp().getLinkingType();
+                                                        if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
+                                                            StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
+                                                            if (!percolatorInfo.contains(i)) {
+                                                                percolatorInfo.add(i);
+                                                                percolatorInfoResults.add(r);
+                                                            }
+                                                        }
+                                                    }
+                                                    ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                                                    for (Result r : percolatorInfoResults) {
+                                                        write(r, bw_inter, bw_intra, ids, ptmFactory);
+                                                    }
                                                 }
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                                LOGGER.error(e);
                                             }
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                            LOGGER.error(e);
                                         }
                                     }
                                 }
                             }
+                            fct.clearFactory();
                         }
-                        fct.clearFactory();
-                    }
-                    bw.close();
-                    if (isPercolatorAsked) {
-                        bw_intra.close();
-                        bw_inter.close();
+                        bw.close();
+                        if (isPercolatorAsked) {
+                            bw_intra.close();
+                            bw_inter.close();
+                        }
                     }
                 }
+                writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
+                LOGGER.info("The settings-file is ready.");
+                long end = System.currentTimeMillis();
+                LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
+                excService.shutdown();
+                // here validate the results!        
+                String analysis = "11",
+                        xilmassResFolder = resultFolder,
+                        scoringFunctionName = "AndromedaDerived",
+                        isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
+                        fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
+                        fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
+                        fdr = ConfigHolder.getInstance().getString("fdr");
+                NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, "validatedXPSMs_list.txt", "allXPSMs_list.txt",
+                    fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
+                // write settings on an output folder
+                writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
+            } catch (Exception e) {
+                LOGGER.error("A given path for mgf folder is not found!");
             }
-            writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
-            LOGGER.info("The settings-file is ready.");
-            long end = System.currentTimeMillis();
-            LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
-            excService.shutdown();
-            // here validate the results!        
-            String analysis = "11",
-                    xilmassResFolder = resultFolder,
-                    scoringFunctionName = "AndromedaDerived",
-                    isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
-                    fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
-                    fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
-                    fdr = ConfigHolder.getInstance().getString("fdr");
-            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, "validatedXPSMs_list.txt", "allXPSMs_list.txt",
-                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
-            // write settings on an output folder
-            writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
-
         } catch (IOException ex) {
             LOGGER.error(ex);
         }
@@ -567,8 +572,8 @@ public class Start {
 //                precMass = precMass - pepTol.getPeptide_tol_base();
                 double[] from_to = getRange(precMass, pepTol);
                 double from = from_to[0],
-                        to = from_to[1];                
-                ArrayList<CrossLinking> tmpSelectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);                
+                        to = from_to[1];
+                ArrayList<CrossLinking> tmpSelectedCPeptides = search.getCPeptidesFromGivenMassRange(from, to);
                 // making sure that a cross-linked peptides are not already selected
                 for (int s = 0; s < tmpSelectedCPeptides.size(); s++) {
                     CrossLinking tmpS = tmpSelectedCPeptides.get(s);
@@ -598,7 +603,7 @@ public class Start {
                     }
                 }
             }
-        }       
+        }
         if (!selectedCPeptides.isEmpty()) {
             ScorePSM score = new ScorePSM(selectedCPeptides, ms, scoreName, fragTol, massWindow,
                     intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow, doesFindAllMatchedPeaks,
@@ -618,13 +623,13 @@ public class Start {
      */
     private static void writeSettings(File file, Date startTime, boolean isSettingRunBefore, String versionInfo) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-        bw.write(new StringBuilder("Settings-file for ").append(versionInfo).append("\n").append("\n").append("\n").toString());
+        bw.write(new StringBuilder("Search settings of ").append(versionInfo).append("\n").append("\n").toString());
         bw.write(new StringBuilder("Running started=").append(startTime.toString()).append("\n").toString());
-        bw.write(new StringBuilder("Running ended=").append(new Date().toString()).append("\n").toString());
+        bw.write(new StringBuilder("Running ended=").append(new Date().toString()).append("\n").append("\n").toString());
         if (isSettingRunBefore) {
-            bw.write(new StringBuilder("A cross-linked peptide database has been previously constructed!").append("\n").append("\n").toString());
+            bw.write(new StringBuilder("A cross-linked peptide database has been previously constructed!").append("\n\n").toString());
         } else {
-            bw.write(new StringBuilder("A cross-linked peptide database was constructed for the first time!").append("\n").append("\n").toString());
+            bw.write(new StringBuilder("A cross-linked peptide database was constructed for the first time!").append("\n\n").toString());
         }
         // write down all input file related parameters..
         bw.write(new StringBuilder("##Input file related parameters").append("\n").toString());
@@ -633,7 +638,8 @@ public class Start {
         bw.write(new StringBuilder("cxDBName=").append(ConfigHolder.getInstance().getString("cxDBName")).append("\n").toString());
         bw.write(new StringBuilder("mgfs=").append(ConfigHolder.getInstance().getString("mgfs")).append("\n").toString());
         bw.write(new StringBuilder("resultFolder=").append(ConfigHolder.getInstance().getString("resultFolder")).append("\n").toString());
-        bw.write(new StringBuilder("index=").append(file.getAbsolutePath()).append(File.separator).append("index").append("\n").append("\n").toString());
+        String  index = new File(ConfigHolder.getInstance().getString("cxDBName")).getParentFile().getAbsolutePath() + (File.separator) + ("index").replace("\\", "/");
+        bw.write(new StringBuilder("index=").append(index).append("\n\n").toString());
         // write down all cross-linking related parameters
         bw.write(new StringBuilder("##Cross-linking related parameters").append("\n").toString());
         bw.write(new StringBuilder("crossLinkerName=").append(ConfigHolder.getInstance().getString("crossLinkerName")).append("\n").toString());
@@ -645,7 +651,7 @@ public class Start {
         bw.write(new StringBuilder("searcForAlsoMonoLink=").append(ConfigHolder.getInstance().getString("searcForAlsoMonoLink")).append("\n").toString());
         bw.write(new StringBuilder("minLen=").append(ConfigHolder.getInstance().getString("minLen")).append("\n").toString());
         bw.write(new StringBuilder("maxLenCombined=").append(ConfigHolder.getInstance().getString("maxLenCombined")).append("\n").toString());
-        bw.write(new StringBuilder("allowIntraPeptide=").append(ConfigHolder.getInstance().getString("allowIntraPeptide")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("allowIntraPeptide=").append(ConfigHolder.getInstance().getString("allowIntraPeptide")).append("\n\n").toString());
 
         // write down all in silico digestion related parameters
         bw.write(new StringBuilder("##In silico digestion related parameters").append("\n").toString());
@@ -658,35 +664,40 @@ public class Start {
         bw.write(new StringBuilder("##Peptide modification related parameters").append("\n").toString());
         bw.write(new StringBuilder("fixedModification=").append(ConfigHolder.getInstance().getString("fixedModification")).append("\n").toString());
         bw.write(new StringBuilder("variableModification=").append(ConfigHolder.getInstance().getString("variableModification")).append("\n").toString());
-        bw.write(new StringBuilder("maxModsPerPeptide=").append(ConfigHolder.getInstance().getString("maxModsPerPeptide")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("maxModsPerPeptide=").append(ConfigHolder.getInstance().getString("maxModsPerPeptide")).append("\n\n").toString());
 
         // write down all scoring related parameters
         bw.write(new StringBuilder("##Scoring related parameters").append("\n").toString());
         bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getString("consider_neutrallosses")).append("\n").toString());
-        bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getString("fragModeName")).append("\n").toString());
+        bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getString("fragMode")).append("\n").toString());
+        bw.write("\n");
         bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getString("peptide_tol_total")).append("\n").toString());
         // write each peptide-tolerance mass window on given setting-parameters
         int pep_tol_nums = Integer.parseInt(ConfigHolder.getInstance().getString("peptide_tol_total"));
-        for (int pep_tol_num = 1; pep_tol_num < pep_tol_nums; pep_tol_num++) {
+        for (int pep_tol_num = 1; pep_tol_num <= pep_tol_nums; pep_tol_num++) {
             String name = "peptide_tol" + pep_tol_num,
-                    is_ppm = "is_peptide_tol" + 1 + "_PPM",
+                    is_ppm = "is_peptide_tol" + pep_tol_num + "_PPM",
                     base = "peptide_tol" + pep_tol_num + "_base";
             bw.write(new StringBuilder(name).append("=").append(ConfigHolder.getInstance().getString(name)).append("\n").toString());
             bw.write(new StringBuilder(is_ppm).append("=").append(ConfigHolder.getInstance().getString(is_ppm)).append("\n").toString());
             bw.write(new StringBuilder(base).append("=").append(ConfigHolder.getInstance().getString(base)).append("\n").toString());
         }
-        bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getString("msms_tol")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getString("report_in_ppm")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getString("minRequiredPeaks")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getString("isAllMatchedPeaks")).append("\n").append("\n").toString());
+        bw.write("\n");
+
+        bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getString("msms_tol")).append("\n").toString());
+        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getString("report_in_ppm")).append("\n").toString());
+        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getString("minRequiredPeaks")).append("\n").toString());
+        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getString("isAllMatchedPeaks")).append("\n\n").toString());
 
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
         bw.write(new StringBuilder("massWindow=").append(ConfigHolder.getInstance().getString("massWindow")).append("\n").toString());
         bw.write(new StringBuilder("minimumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getString("minimumFiltedPeaksNumberForEachWindow")).append("\n").toString());
-        bw.write(new StringBuilder("maximumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getString("maximumFiltedPeaksNumberForEachWindow")).append("\n").toString());
+        bw.write(new StringBuilder("maximumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getString("maximumFiltedPeaksNumberForEachWindow")).append("\n\n").toString());
+        bw.write(new StringBuilder("minPrecMassIsotopicPeakSelected=").append(ConfigHolder.getInstance().getString("minPrecMassIsotopicPeakSelected")).append("\n").toString());
+
         bw.write(new StringBuilder("deisotopePrecision=").append(ConfigHolder.getInstance().getString("deisotopePrecision")).append("\n").toString());
-        bw.write(new StringBuilder("deconvulatePrecision=").append(ConfigHolder.getInstance().getString("deconvulatePrecision")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("deconvulatePrecision=").append(ConfigHolder.getInstance().getString("deconvulatePrecision")).append("\n\n").toString());
 
         // write each Multithreading and validation related parameters
         bw.write(new StringBuilder("##Multithreading and validation related parameters").append("\n").toString());
@@ -704,7 +715,7 @@ public class Start {
      * same as before.
      *
      * @param paramFile a parameter/setting file which contains all input and
-     * output information
+     * output information (settings.txt on the output folder)
      * @return
      * @throws IOException
      */
@@ -730,7 +741,7 @@ public class Start {
                 fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
                 variableModification = ConfigHolder.getInstance().getString("variableModification"),
                 maxModsPerPeptide = ConfigHolder.getInstance().getString("maxModsPerPeptide"),
-                index = paramFile.getAbsolutePath() + File.separator + "index";
+                index = new File(ConfigHolder.getInstance().getString("cxDBName")).getParentFile().getAbsolutePath() + (File.separator) + ("index").replace("\\", "/");
         int control = 0;
         boolean isSame = false;
         BufferedReader br = new BufferedReader(new FileReader(paramFile));
