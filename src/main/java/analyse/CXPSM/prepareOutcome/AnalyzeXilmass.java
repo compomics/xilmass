@@ -94,7 +94,7 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
             double fdr_inter, double fdr_intra, File allXPSMs, String scoringFunctionName) throws IOException {
         super.target_names = target_names;
         super.psms_contaminant = psms_contaminant;
-        super.prediction_file = prediction_file;
+//        super.prediction_file = prediction_file;
         super.isPIT = isConventionalFDR;
         this.doessplit = doessplit;
         this.xilmassFolder = xilmassFolder;
@@ -104,7 +104,6 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         this.isMS1PPM = isMS1PPM;
         this.doesContainsCPeptidePattern = false;
         this.doesContainsIonWeight = false;
-        this.doessplit = true;
         this.fdr_inter = fdr_inter;
         this.fdr_intra = fdr_intra;
         this.allXPSMs = allXPSMs;
