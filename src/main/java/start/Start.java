@@ -179,7 +179,7 @@ public class Start {
                     shownInPPM = ConfigHolder.getInstance().getBoolean("report_in_ppm"), // Relative or absolute precursor tolerance
                     //                    doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
                     doesKeepCPeptideFragmPattern = false,
-                    searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
+                    searchForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searchForAlsoMonoLink"),
                     doesKeepIonWeights = false,
                     // a setting when I tried to merged different fragment ion types but it must be off by setting as false
                     // isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
@@ -288,7 +288,7 @@ public class Start {
                     insilicoContaminantDB.delete();
                 }
                 // add mono-linked peptides to a cross-linked database
-                if (searcForAlsoMonoLink) {
+                if (searchForAlsoMonoLink) {
                     headers_sequences.putAll(instanceToCreateDB.getMonolinkedHeadersAndSequences());
                 }
                 // first write down a cross-linked peptide database
@@ -321,7 +321,7 @@ public class Start {
                             linker, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
                     all_headers.addAll(tmp_headers);
                     // mono-linked peptides
-                    if (searcForAlsoMonoLink) {
+                    if (searchForAlsoMonoLink) {
                         tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw, headers_sequences, ptmFactory,
                                 fixedModifications, variableModifications, maxModsPerPeptide,
                                 linker, fragMode, acc_and_length);
@@ -648,7 +648,7 @@ public class Start {
         bw.write(new StringBuilder("isConsideredSideReactionThreonine=").append(ConfigHolder.getInstance().getString("isConsideredSideReactionThreonine")).append("\n").toString());
         bw.write(new StringBuilder("isConsideredSideReactionTyrosine=").append(ConfigHolder.getInstance().getString("isConsideredSideReactionTyrosine")).append("\n").toString());
         bw.write(new StringBuilder("crossLinkedProteinTypes=").append(ConfigHolder.getInstance().getString("crossLinkedProteinTypes")).append("\n").toString());
-        bw.write(new StringBuilder("searcForAlsoMonoLink=").append(ConfigHolder.getInstance().getString("searcForAlsoMonoLink")).append("\n").toString());
+        bw.write(new StringBuilder("searchForAlsoMonoLink=").append(ConfigHolder.getInstance().getString("searchForAlsoMonoLink")).append("\n").toString());
         bw.write(new StringBuilder("minLen=").append(ConfigHolder.getInstance().getString("minLen")).append("\n").toString());
         bw.write(new StringBuilder("maxLenCombined=").append(ConfigHolder.getInstance().getString("maxLenCombined")).append("\n").toString());
         bw.write(new StringBuilder("allowIntraPeptide=").append(ConfigHolder.getInstance().getString("allowIntraPeptide")).append("\n\n").toString());
@@ -730,7 +730,7 @@ public class Start {
                 isConsideredSideReactionThreonine = ConfigHolder.getInstance().getString("isConsideredSideReactionThreonine"),
                 isConsideredSideReactionTyrosine = ConfigHolder.getInstance().getString("isConsideredSideReactionTyrosine"),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes"),
-                searcForAlsoMonoLink = ConfigHolder.getInstance().getString("searcForAlsoMonoLink"),
+                searchForAlsoMonoLink = ConfigHolder.getInstance().getString("searchForAlsoMonoLink"),
                 minLen = ConfigHolder.getInstance().getString("minLen"),
                 maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
                 allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
@@ -768,7 +768,7 @@ public class Start {
                 control++;
             } else if ((line.startsWith("crossLinkedProteinTypes")) && (line.split("=")[1].equals(crossLinkedProteinTypes))) {
                 control++;
-            } else if ((line.startsWith("searcForAlsoMonoLink")) && (line.split("=")[1].equals(searcForAlsoMonoLink))) {
+            } else if ((line.startsWith("searchForAlsoMonoLink")) && (line.split("=")[1].equals(searchForAlsoMonoLink))) {
                 control++;
             } else if ((line.startsWith("minLen")) && (line.split("=")[1].equals(minLen))) {
                 control++;
