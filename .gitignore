@@ -1,8 +1,14 @@
 /lib/*
 /target/*
+nbactions.xml
+nbactions-db.xml
 nbactions-getData.xml
 nbactions-release-profile.xml
+nbactions-RunAndValidate.xml
+nbactions-validation.xml
+nbactions-visualize.xml
 nb-configuration.xml
+nbactions.xml
 .gitignore~
 .idea/
 *.iml
