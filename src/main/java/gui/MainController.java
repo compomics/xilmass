@@ -43,7 +43,7 @@ public class MainController {
     /**
      * Logger instance.
      */
-    private static final Logger LOGGER = Logger.getLogger(MainController.class);
+    private static final Logger LOGGER = Logger.getRootLogger();
 
     /**
      * The pane names.
@@ -671,9 +671,9 @@ public class MainController {
         //scoring params
         int p = mainFrame.getNeutralLossesComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(NEUTRAL_LOSSES, mainFrame.getNeutralLossesComboBox().getSelectedIndex());
-        
+
         System.out.println("-----------------------" + ConfigHolder.getInstance().getInt("consider_neutrallosses"));
-        
+
         int fragmentationMode = mainFrame.getFragmentationModeComboBox().getSelectedIndex();
         switch (fragmentationMode) {
             case 0:
@@ -741,7 +741,7 @@ public class MainController {
     private List<String> validateInput() {
         List<String> validationMessages = new ArrayList<>();
 
-        // INPUT/OUTPUT PARAMS 
+        // INPUT/OUTPUT PARAMS
         if (mainFrame.getFastaDbPathTextField().getText().isEmpty()) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a FASTA database file.");
         }
@@ -754,7 +754,7 @@ public class MainController {
         if (mainFrame.getOutputDirectoryPathTextField().getText().isEmpty()) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide an output directory.");
         }
-        
+
         // CROSS-LINKING PARAMS
         // minimum peptide lenght for combinations
         if (mainFrame.getMinimumPeptideLengthTextField().getText().isEmpty()) {
@@ -782,7 +782,7 @@ public class MainController {
                 validationMessages.add(CROSS_LINKING_PANE + "Please provide a numeric maximum peptide length.");
             }
         }
-        
+
         // IN-SILICO DIGESTION PARAMS
         // number of missed cleavage control
         if (mainFrame.getMissedCleavagesTextField().getText().isEmpty()) {
@@ -823,7 +823,7 @@ public class MainController {
                 validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric maximum peptide mass.");
             }
         }
-        
+
         // MODIFICATION PARAMS
         if (mainFrame.getMaxModPeptideTextField().getText().isEmpty()) {
             validationMessages.add(MODIFICATIONS_PANE + "Please provide the number of allowed modifications per peptide.");
@@ -837,11 +837,11 @@ public class MainController {
                 validationMessages.add(MODIFICATIONS_PANE + "Please provide a numeric number of allowed modifications per peptide.");
             }
         }
-        
+
         // SCORING PARAMS
         // Number of peptide-mass-windows
         int value = (int) mainFrame.getPeptideToleranceSpinner().getValue();
-        
+
         switch (value) {
             case 5:
                 // peptide_tol_5
@@ -975,7 +975,7 @@ public class MainController {
                 }
                 break;
         }
-        // fragment tolerance in Da 
+        // fragment tolerance in Da
         if (mainFrame.getFragmentMassToleranceValueTextField().getText().isEmpty()) {
             validationMessages.add(SCORING_PANE + "Please provide a value for the fragment tolerance in Da.");
         } else {
@@ -1002,7 +1002,7 @@ public class MainController {
                 validationMessages.add(SCORING_PANE + "Please provide a numeric minimum required number of matched peaks for a peptide.");
             }
         }
-        
+
         // SPECTRUM PREPROCESSING PARAMS
         // mass window value in Dalton
         if (mainFrame.getSpectrumMassWindowValueTextField().getText().isEmpty()) {
@@ -1082,7 +1082,7 @@ public class MainController {
                 validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric deconvulate precision value.");
             }
         }
-        
+
         // MULTITHREADING AND VALIDATION PARAMS
         if (mainFrame.getNumberOfThreadsTextField().getText().isEmpty()) {
             validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide the number of threads.");
@@ -1097,7 +1097,7 @@ public class MainController {
             }
         }
         int improvedFdr = mainFrame.getFdrCalcalationComboBox().getSelectedIndex();
-        // When improvedFDR was selected.. 
+        // When improvedFDR was selected..
         if (improvedFdr == 0) {
             if (mainFrame.getInterProteinFdrValueTextField().getText().isEmpty()) {
                 validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide an inter-protein FDR value.");
@@ -1123,7 +1123,7 @@ public class MainController {
                     validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric intra-protein FDR value.");
                 }
             }
-        // When GlobalFDR was selected 
+        // When GlobalFDR was selected
         } else if (mainFrame.getGlobalFdrValueTextField().getText().isEmpty()) {
             validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a global FDR value.");
         } else {

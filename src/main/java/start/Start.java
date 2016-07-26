@@ -103,435 +103,434 @@ public class Start {
      * Run xilmass in command line mode.
      */
     public static void launchCommandLineMode() throws Exception {
-        LOGGER.info("TTTTTTTTTTTTTTTT");
-//        try {
-//            long startTime = System.currentTimeMillis();
-//            Date startDate = new Date();
-//
-//            // STEP 1: GET ALL XILMASS PARAMETERS!!
-//            String version = ConfigHolder.getInstance().getString("xilmass.version");
-//            LOGGER.info("Xilmass version:" + version + " starts!");
-//            String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
-//                    contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
-//                    inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
-//                    insilicoContaminantDBName = "",
-//                    cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
-//                    //                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
-//                    //                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
-//                    cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
-//                    crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
-//                    crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
-//                    enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
-//                    misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
-//                    lowMass = ConfigHolder.getInstance().getString("lowerMass"),
-//                    highMass = ConfigHolder.getInstance().getString("higherMass"),
-//                    mgfs = ConfigHolder.getInstance().getString("mgfs"),
-//                    resultFolder = ConfigHolder.getInstance().getString("resultFolder"),
-//                    fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
-//                    variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
-//                    fragModeName = ConfigHolder.getInstance().getString("fragMode"),
-//                    // scoring = ConfigHolder.getInstance().getString("scoringFunctionName"), was required for testing
-//                    scoring = "AndromedaD",
-//                    labeledOption = ConfigHolder.getInstance().getString("isLabeled");
-//            // load enzyme and modification files from a resource folder
-//            String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
-//
-//            // checking if paths for given input are avaliable
-//            File f = null;
-//            try {
-//                f = new File(givenDBName);
-//            } catch (Exception e) {
-//                LOGGER.error("A given path for givenDBName is not found!");
-//            }
-//            try {
-//                f = new File(contaminantDBName);
-//            } catch (Exception e) {
-//                LOGGER.error("A given path for contaminantDBName is not found!");
-//            }
-//            try {
-//                f = new File(inSilicoPeptideDBName);
-//            } catch (Exception e) {
-//                LOGGER.error("A given path for inSilicoPeptideDBName is not found!");
-//            }
-//            try {
-//                f = new File(insilicoContaminantDBName);
-//            } catch (Exception e) {
-//                LOGGER.error("A given path for insilicoContaminantDBName is not found!");
-//            }
-//            try {
-//                f = new File(cxDBName);
-//            } catch (Exception e) {
-//                LOGGER.error("A given path for cxDBName is not found!");
-//            }
-//            try {
-//                f = new File(resultFolder);
-//            } catch (Exception e) {
-//                LOGGER.error("A given path for resultFolder is not found!");
-//            }
-//
-//            try {
-//                f = new File(mgfs);
-//            } catch (Exception e) {
-//                LOGGER.error("A given folder path for mgfs is not found!");
-//            }
-//
-//            // get a contaminant database...
-//            if (!contaminantDBName.isEmpty()) {
-//                insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
-//            }
-//            // get Fragmenteation enum...
-//            FragmentationMode fragMode = null;
-//            if (fragModeName.equals("CID")) {
-//                fragMode = FragmentationMode.CID;
-//            } else if (fragModeName.equals("HCD")) {
-//                fragMode = FragmentationMode.HCD;
-//            } else if (fragModeName.equals("ETD")) {
-//                fragMode = FragmentationMode.ETD;
-//            } else if (fragModeName.equals("HCD_all")) {
-//                fragMode = FragmentationMode.HCD_all;
-//            }
-//            // get ScoreName enum..
-//            ScoreName scoreName = ScoreName.AndromedaD;
-//            if (scoring.equals("MSAmandaDerived")) {
-//                scoreName = ScoreName.MSAmandaD;
-//            } else if (scoring.equals("TheoMSAmandaDerived")) {
-//                scoreName = ScoreName.TheoMSAmandaD;
-//            } else if (scoring.equals("AndromedaWeightedDerived")) {
-//                scoreName = ScoreName.AndromedaDWeighted;
-//            } else if (scoring.equals("TheoMSAmandaWeightedDerived")) {
-//                scoreName = ScoreName.TheoMSAmandaDWeighted;
-//            }
-//            // Get fixed modification and variable modification names...
-//            ArrayList<String> fixedModifications = getModificationsName(fixedModificationNames),
-//                    variableModifications = getModificationsName(variableModificationNames);
-//            // Importing PTMs, so getting a PTMFactory object
-//            PTMFactory ptmFactory = PTMFactory.getInstance();
-//            int minLen = ConfigHolder.getInstance().getInt("minLen"),
-//                    maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
-//                    //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
-//                    //intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),-was for testing scoring types.
-//                    intensity_option = 0,
-//                    minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
-//                    maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
-//                    threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
-//                    //Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
-//                    peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("minRequiredPeaks"),
-//                    maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide"),
-//                    neutralLossesCase = ConfigHolder.getInstance().getInt("consider_neutrallosses");
-//            // multithreading
-//            ExecutorService excService = Executors.newFixedThreadPool(threadNum);
-//            // more cross linking option..;
-//            boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("allowIntraPeptide"),
-//                    //Keep scores equal to zero (either probability of matched peak is zero or none matched peaks)
-//                    doesRecordZeroes = false,
-//                    shownInPPM = ConfigHolder.getInstance().getBoolean("report_in_ppm"), // Relative or absolute precursor tolerance
-//                    //                    doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
-//                    doesKeepCPeptideFragmPattern = false,
-//                    searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
-//                    doesKeepIonWeights = false,
-//                    // a setting when I tried to merged different fragment ion types but it must be off by setting as false
-//                    // isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
-//                    isContrastLinkedAttachmentOn = false,
-//                    // settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
-//                    // doesFindAllMatchedPeaks=T
-//                    doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("isAllMatchedPeaks"),
-//                    isSettingRunBefore = true,
-//                    isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
-//                    // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
-//                    hasIonWeights = false;
-//            // Searching against experimental spectrum
-//            double msms_tol = ConfigHolder.getInstance().getDouble("msms_tol"), //Fragment tolerance - mz diff
-//                    massWindow = ConfigHolder.getInstance().getDouble("massWindow"), // mass window to make window on a given MSnSpectrum for FILTERING
-//                    minPrecMassIsotopicPeakSelected = ConfigHolder.getInstance().getDouble("minPrecMassIsotopicPeakSelected"), // min precursor mass that C13 peak is selected over C12 peak on precursor.
-//                    // values for deisotoping and deconvoluting..
-//                    deisotopePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision"),
-//                    deconvulatePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision");
-//            // get all peptide tolerance mass windows
-//            ArrayList<PeptideTol> pep_tols = getPepTols(ConfigHolder.getInstance());
-//            // this object will be set for every new spectra in order to clean precursor peaks and deisotoping-deconvoluting..
-//            MascotAdaptedPrecursorPeakRemoval precursorPeakRemove = new MascotAdaptedPrecursorPeakRemoval(null, msms_tol);
-//            DeisotopingAndDeconvoluting deisotopeAndDeconvolute = new DeisotopingAndDeconvoluting(null, deisotopePrecision, deconvulatePrecision);
-//            // A CrossLinker object, required for constructing theoretical spectra - get required cross linkers together
-//            ArrayList<CrossLinker> linkers = new ArrayList<CrossLinker>();
-//            boolean isLabeled = true;
-//            if (labeledOption.equals("B")) { // both isotope labeled and non-labeled ones
-//                try {
-//                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
-//                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, false));
-//                } catch (Exception ex) {
-//                    LOGGER.error(ex);
-//                }
-//            } else if (labeledOption.equals("F")) { // light labeled
-//                try {
-//                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, false));
-//                } catch (Exception ex) {
-//                    LOGGER.error(ex);
-//                }
-//            } else if (labeledOption.equals("T")) { // heavy labeled
-//                try {
-//                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
-//                } catch (Exception ex) {
-//                    LOGGER.error(ex);
-//                }
-//            }
-//            boolean isSideReactionConsidered_S = checkEnablingSideReactionOption(crossLinkerName, 0),
-//                    isSideReactionConsidered_T = checkEnablingSideReactionOption(crossLinkerName, 1),
-//                    isSideReactionConsidered_Y = checkEnablingSideReactionOption(crossLinkerName, 2);
-//
-//            LOGGER.info("The settings are ready to perform the search!");
-//
-//            // STEP 2: CHECK IF PREVIOUSLY A CXDB WAS CONSTRUCTED!!
-//            LOGGER.info("Checking if a previously constructed CX database exists for the same search settings!");
-//            // This part of the code makes sure that an already generated CXDB is not constructed again..
-//            File cxDB = new File(cxDBName + ".fastacp"),
-//                    settings = new File(cxDB.getAbsoluteFile().getParent() + File.separator + "settings.txt"),
-//                    indexFile = new File(cxDBNameIndexFile);
-//
-//            boolean isSame = false,
-//                    doesCXDBExist = false;
-//            HashMap<String, Integer> acc_and_length = CreateDatabase.getAccession_and_length(givenDBName),
-//                    contaminant_acc_lenght = new HashMap<String, Integer>();
-//            if (!contaminantDBName.isEmpty()) {
-//                contaminant_acc_lenght = CreateDatabase.getAccession_and_length(contaminantDBName);
-//            }
-//            if (settings.exists()) {
-//                isSame = isSameDBSetting(settings); // either the same/different/empty
-//                // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
-//                if (isSame) {
-//                    for (File tmp : cxDB.getParentFile().listFiles()) {
-//                        if (tmp.getName().equals(cxDB.getName())) {
-//                            LOGGER.info("A previously constructed CX database file is found! The name is " + tmp.getName());
-//                            doesCXDBExist = true;
-//                        }
-//                    }
-//                }
-//            }
-//
-//            // STEP 3: CREATE A CROSS-LINKED DATABASE!!!
-//            // Either the same settings but absent CXDB or not the same settings at all..
-//            HashMap<String, StringBuilder> headers_sequences = new HashMap<String, StringBuilder>();
-//            if ((isSame && !doesCXDBExist) || !isSame) {
-//                // Construct a cross linked peptide database and write an index file with masses...
-//                LOGGER.info("Either a CX database is not found or the settings are different! A CX database is going to be constructed..");
-//                CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName,
-//                        cxDBName, // db related parameters
-//                        crossLinkerName, // crossLinker name
-//                        crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
-//                        enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
-//                        lowMass, highMass, // filtering of in silico peptides on peptide masses
-//                        minLen, // minimum length for each in silico digested peptide
-//                        maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
-//                        does_link_to_itself, // if a peptide itself links to itself..
-//                        isLabeled, isSideReactionConsidered_S, isSideReactionConsidered_T, isSideReactionConsidered_Y);
-//                // generate cross-linked peptides database
-//                headers_sequences = instanceToCreateDB.getHeadersAndSequences();
-//                // add in silico digested contaminant database
-//                if (!contaminantDBName.isEmpty()) {
-//                    EnzymeDigest o = new EnzymeDigest();
-//                    o.main(insilicoContaminantDBName, enzymeFileName, enzymeName, contaminantDBName, null, lowMass, highMass, null, misclevaged);
-//                    addContaminants(headers_sequences, insilicoContaminantDBName, 4, 25);
-//                    // delete the contaminant file
-//                    LOGGER.debug(insilicoContaminantDBName);
-//                    File insilicoContaminantDB = new File(insilicoContaminantDBName);
-//                    insilicoContaminantDB.delete();
-//                }
-//                // add mono-linked peptides to a cross-linked database
-//                if (searcForAlsoMonoLink) {
-//                    headers_sequences.putAll(instanceToCreateDB.getMonolinkedHeadersAndSequences());
-//                }
-//                // first write down a cross-linked peptide database
-//                WriteCXDB.writeCXDB(headers_sequences, cxDBName);
-//                LOGGER.info("A CX database is now ready!");
-//                // now write a settings file
-//                isSettingRunBefore = false;
-//            }
-//
-//            // STEP 4: GENERATE INDEXES!! Load db entries to memory for Lucene indexing search
-//            File folder = new File(cxDB.getParentFile().getPath() + File.separator + "index");
-//            // Make sure that an index file also exists...
-//            if (!folder.exists()) {
-//                folder.mkdir();
-//            }
-//            HashSet<StringBuilder> all_headers = new HashSet<StringBuilder>(),
-//                    tmp_headers = new HashSet<StringBuilder>();
-//            if (folder.listFiles().length == 0 || !isSame) {
-//                BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
-//                // add contaminants..
-//                tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw, headers_sequences, ptmFactory,
-//                        fixedModifications, variableModifications, maxModsPerPeptide,
-//                        fragMode, isContrastLinkedAttachmentOn, contaminant_acc_lenght);
-//                all_headers.addAll(tmp_headers);
-//                // accession numbers with protein lengths from a given fasta-protein database
-//                for (CrossLinker linker : linkers) {
-//                    // cross-linked peptides
-//                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index(bw, headers_sequences, ptmFactory,
-//                            fixedModifications, variableModifications, maxModsPerPeptide,
-//                            linker, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
-//                    all_headers.addAll(tmp_headers);
-//                    // mono-linked peptides
-//                    if (searcForAlsoMonoLink) {
-//                        tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw, headers_sequences, ptmFactory,
-//                                fixedModifications, variableModifications, maxModsPerPeptide,
-//                                linker, fragMode, acc_and_length);
-//                        all_headers.addAll(tmp_headers);
-//                    }
-//                }
-//                bw.close();
-//
-//                // delete a file containing all mass indexes for cross-linked peptides with possible modification
-//                indexFile.delete();
-//                LOGGER.info("An index file (including peptides and masses) bas been created!");
-//                // delete in silico DBs
-//                File tmp_f = new File(inSilicoPeptideDBName),
-//                        tmp_cF = new File(insilicoContaminantDBName);
-//                tmp_f.delete();
-//                tmp_cF.delete();
-//            }
-//
-//            // STEP 5: PREPARE LUCENCE INDEXING!
-//            IndexAndSearch search = null;
-//            try {
-//                search = new IndexAndSearch(all_headers, folder, ptmFactory, fragMode, crossLinkerName);
-//            } catch (Exception ex) {
-//                LOGGER.error(ex);
-//            }
-//
-//            // STEP 6: SCORE PEPTIDE-TO-SPECTRUM MATCHES!!!
-//            LOGGER.info("The identification starts and XPSMs are calculated!");
-//            // Title for percolator-input
-//            StringBuilder percolatorInputTitle = writePercolatorTitle();
-//            SpectrumFactory fct = SpectrumFactory.getInstance();
-//            for (File mgf : new File(mgfs).listFiles()) {
-//                if (mgf.getName().endsWith(".mgf")) {
-//                    LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
-//                    LOGGER.debug(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-//                    File percolatorIntra,
-//                            percolatorInter;
-//                    BufferedWriter bw_intra = null,
-//                            bw_inter = null;
-//                    if (isPercolatorAsked) {
-//                        percolatorIntra = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-//                        percolatorInter = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
-//                        bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
-//                        bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
-//                        bw_intra.write(percolatorInputTitle + "\n");
-//                        bw_inter.write(percolatorInputTitle + "\n");
-//                    }
-//
-//                    // write results on output file for each mgf
-//                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + File.separator + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
-//                    bw.write("Xilmass version " + version);
-//                    bw.newLine();
-//                    StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
-//                    bw.write(titleToWrite + "\n");
-//
-//                    // now check all spectra to collect all required calculations...
-//                    List<Future<ArrayList<Result>>> futureList = null;
-//                    if (mgf.getName().endsWith("mgf")) {
-//                        HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-//                        fct.addSpectra(mgf);
-//                        ArrayList<Result> results = new ArrayList<Result>(),
-//                                info = new ArrayList<Result>(),
-//                                percolatorInfoResults = new ArrayList<Result>();
-//                        ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
-//                        int total_spectra = fct.getSpectrumTitles(mgf.getName()).size(),
-//                                tmp_total_spectra = 0;
-//                        for (String title : fct.getSpectrumTitles(mgf.getName())) {
-//                            tmp_total_spectra++;
-//                            MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
-//                            // first remove any isotopic peaks derived from precursor peak.
-//                            precursorPeakRemove.setExpMSnSpectrum(ms);
-//                            ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
-//                            // then deisotoping and harge state deconvolution
-//                            deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
-//                            ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
-//                            if (tmp_total_spectra % 500 == 0) {
-//                                LOGGER.info("Number of total ID spectra is " + tmp_total_spectra + " in total " + total_spectra + " spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
-//                            }
-//                            // making sure that a spectrum contains peaks after preprocessing..
-//                            if (!ms.getPeakList().isEmpty()) {
-//                                try {
-//                                    // here comes to check each mgf several mass windows..
-//                                    futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
-//                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
-//                                            excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
-//                                } catch (XmlPullParserException ex) {
-//                                    LOGGER.error(ex);
-//                                } catch (Exception ex) {
-//                                    LOGGER.error(ex);
-//                                }
-//                                for (Future<ArrayList<Result>> future : futureList) {
-//                                    try {
-//                                        try {
-//                                            results = future.get();
-//                                        } catch (ExecutionException ex) {
-//                                            LOGGER.error(ex);
-//                                        }
-//                                        info = new ArrayList<Result>();
-//                                        for (Result res : results) {
-//                                            double tmpScore = res.getScore();
-//                                            if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
-//                                                info.add(res);
-//                                                bw.write(res.toPrint());
-//                                                bw.newLine();
-//                                            }
-//                                        }
-//                                        if (isPercolatorAsked) {
-//                                            // write all res and also percolator input
-//                                            percolatorInfo = new ArrayList<StringBuilder>();
-//                                            percolatorInfoResults = new ArrayList<Result>();
-//                                            for (Result r : info) {
-//                                                CrossLinkingType linkingType = r.getCp().getLinkingType();
-//                                                if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
-//                                                    StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
-//                                                    if (!percolatorInfo.contains(i)) {
-//                                                        percolatorInfo.add(i);
-//                                                        percolatorInfoResults.add(r);
-//                                                    }
-//                                                }
-//                                            }
-//                                            ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
-//                                            for (Result r : percolatorInfoResults) {
-//                                                write(r, bw_inter, bw_intra, ids, ptmFactory);
-//                                            }
-//                                        }
-//                                    } catch (InterruptedException e) {
-//                                        e.printStackTrace();
-//                                        LOGGER.error(e);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        fct.clearFactory();
-//                    }
-//                    bw.close();
-//                    if (isPercolatorAsked) {
-//                        bw_intra.close();
-//                        bw_inter.close();
-//                    }
-//                }
-//            }
-//            writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
-//            LOGGER.info("The settings-file is ready.");
-//            long end = System.currentTimeMillis();
-//            LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
-//            excService.shutdown();
-//            // here validate the results!
-//            String analysis = "11",
-//                    xilmassResFolder = resultFolder,
-//                    scoringFunctionName = "AndromedaDerived",
-//                    isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
-//                    fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
-//                    fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
-//                    fdr = ConfigHolder.getInstance().getString("fdr");
-//            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, "validatedXPSMs_list.txt", "allXPSMs_list.txt",
-//                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
-//            // write settings on an output folder
-//            writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
-//
-//        } catch (IOException ex) {
-//            LOGGER.error(ex);
-//        }
+        try {
+            long startTime = System.currentTimeMillis();
+            Date startDate = new Date();
+
+            // STEP 1: GET ALL XILMASS PARAMETERS!!
+            String version = ConfigHolder.getInstance().getString("xilmass.version");
+            LOGGER.info("Xilmass version:" + version + " starts!");
+            String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
+                    contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
+                    inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
+                    insilicoContaminantDBName = "",
+                    cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
+                    //                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
+                    //                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
+                    cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
+                    crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
+                    crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
+                    enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
+                    misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
+                    lowMass = ConfigHolder.getInstance().getString("lowerMass"),
+                    highMass = ConfigHolder.getInstance().getString("higherMass"),
+                    mgfs = ConfigHolder.getInstance().getString("mgfs"),
+                    resultFolder = ConfigHolder.getInstance().getString("resultFolder"),
+                    fixedModificationNames = ConfigHolder.getInstance().getString("fixedModification"), // must be sepeared by semicolumn, lowercase, no space
+                    variableModificationNames = ConfigHolder.getInstance().getString("variableModification"),
+                    fragModeName = ConfigHolder.getInstance().getString("fragMode"),
+                    // scoring = ConfigHolder.getInstance().getString("scoringFunctionName"), was required for testing
+                    scoring = "AndromedaD",
+                    labeledOption = ConfigHolder.getInstance().getString("isLabeled");
+            // load enzyme and modification files from a resource folder
+            String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
+
+            // checking if paths for given input are avaliable
+            File f = null;
+            try {
+                f = new File(givenDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for givenDBName is not found!");
+            }
+            try {
+                f = new File(contaminantDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for contaminantDBName is not found!");
+            }
+            try {
+                f = new File(inSilicoPeptideDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for inSilicoPeptideDBName is not found!");
+            }
+            try {
+                f = new File(insilicoContaminantDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for insilicoContaminantDBName is not found!");
+            }
+            try {
+                f = new File(cxDBName);
+            } catch (Exception e) {
+                LOGGER.error("A given path for cxDBName is not found!");
+            }
+            try {
+                f = new File(resultFolder);
+            } catch (Exception e) {
+                LOGGER.error("A given path for resultFolder is not found!");
+            }
+
+            try {
+                f = new File(mgfs);
+            } catch (Exception e) {
+                LOGGER.error("A given folder path for mgfs is not found!");
+            }
+
+            // get a contaminant database...
+            if (!contaminantDBName.isEmpty()) {
+                insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
+            }
+            // get Fragmenteation enum...
+            FragmentationMode fragMode = null;
+            if (fragModeName.equals("CID")) {
+                fragMode = FragmentationMode.CID;
+            } else if (fragModeName.equals("HCD")) {
+                fragMode = FragmentationMode.HCD;
+            } else if (fragModeName.equals("ETD")) {
+                fragMode = FragmentationMode.ETD;
+            } else if (fragModeName.equals("HCD_all")) {
+                fragMode = FragmentationMode.HCD_all;
+            }
+            // get ScoreName enum..
+            ScoreName scoreName = ScoreName.AndromedaD;
+            if (scoring.equals("MSAmandaDerived")) {
+                scoreName = ScoreName.MSAmandaD;
+            } else if (scoring.equals("TheoMSAmandaDerived")) {
+                scoreName = ScoreName.TheoMSAmandaD;
+            } else if (scoring.equals("AndromedaWeightedDerived")) {
+                scoreName = ScoreName.AndromedaDWeighted;
+            } else if (scoring.equals("TheoMSAmandaWeightedDerived")) {
+                scoreName = ScoreName.TheoMSAmandaDWeighted;
+            }
+            // Get fixed modification and variable modification names...
+            ArrayList<String> fixedModifications = getModificationsName(fixedModificationNames),
+                    variableModifications = getModificationsName(variableModificationNames);
+            // Importing PTMs, so getting a PTMFactory object
+            PTMFactory ptmFactory = PTMFactory.getInstance();
+            int minLen = ConfigHolder.getInstance().getInt("minLen"),
+                    maxLen_for_combined = ConfigHolder.getInstance().getInt("maxLenCombined"),
+                    //IntensityPart for MSAmanda derived is 0 for SQRT(IP), 1 for IP, 2 is for original explained intensity function..
+                    //intensity_option = ConfigHolder.getInstance().getInt("intensityOptionMSAmanda"),-was for testing scoring types.
+                    intensity_option = 0,
+                    minFPeakNumPerWindow = ConfigHolder.getInstance().getInt("minimumFiltedPeaksNumberForEachWindow"),
+                    maxFPeakNumPerWindow = ConfigHolder.getInstance().getInt("maximumFiltedPeaksNumberForEachWindow"),
+                    threadNum = ConfigHolder.getInstance().getInt("threadNumbers"),
+                    //Meaning that there is a restriction that there must be at least x theoretical peaks from both peptides to be assigned (0:None, 1:1 for each) ---MP
+                    peakRequiredForImprovedSearch = ConfigHolder.getInstance().getInt("minRequiredPeaks"),
+                    maxModsPerPeptide = ConfigHolder.getInstance().getInt("maxModsPerPeptide"),
+                    neutralLossesCase = ConfigHolder.getInstance().getInt("consider_neutrallosses");
+            // multithreading
+            ExecutorService excService = Executors.newFixedThreadPool(threadNum);
+            // more cross linking option..;
+            boolean does_link_to_itself = ConfigHolder.getInstance().getBoolean("allowIntraPeptide"),
+                    //Keep scores equal to zero (either probability of matched peak is zero or none matched peaks)
+                    doesRecordZeroes = false,
+                    shownInPPM = ConfigHolder.getInstance().getBoolean("report_in_ppm"), // Relative or absolute precursor tolerance
+                    //                    doesKeepCPeptideFragmPattern = ConfigHolder.getInstance().getBoolean("keepCPeptideFragmPattern"),
+                    doesKeepCPeptideFragmPattern = false,
+                    searcForAlsoMonoLink = ConfigHolder.getInstance().getBoolean("searcForAlsoMonoLink"),
+                    doesKeepIonWeights = false,
+                    // a setting when I tried to merged different fragment ion types but it must be off by setting as false
+                    // isContrastLinkedAttachmentOn = ConfigHolder.getInstance().getBoolean("isDifferentIonTypesMayTogether"),
+                    isContrastLinkedAttachmentOn = false,
+                    // settings to count if there an experimental peak is matched to the same theoretical peak and counting these experimental peaks separately
+                    // doesFindAllMatchedPeaks=T
+                    doesFindAllMatchedPeaks = ConfigHolder.getInstance().getBoolean("isAllMatchedPeaks"),
+                    isSettingRunBefore = true,
+                    isPercolatorAsked = ConfigHolder.getInstance().getBoolean("isPercolatorAsked"),
+                    // A parameter introduced to check if percolator input will have a feature on ion-ratio (did not improve the results)
+                    hasIonWeights = false;
+            // Searching against experimental spectrum
+            double msms_tol = ConfigHolder.getInstance().getDouble("msms_tol"), //Fragment tolerance - mz diff
+                    massWindow = ConfigHolder.getInstance().getDouble("massWindow"), // mass window to make window on a given MSnSpectrum for FILTERING
+                    minPrecMassIsotopicPeakSelected = ConfigHolder.getInstance().getDouble("minPrecMassIsotopicPeakSelected"), // min precursor mass that C13 peak is selected over C12 peak on precursor.
+                    // values for deisotoping and deconvoluting..
+                    deisotopePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision"),
+                    deconvulatePrecision = ConfigHolder.getInstance().getDouble("deisotopePrecision");
+            // get all peptide tolerance mass windows
+            ArrayList<PeptideTol> pep_tols = getPepTols(ConfigHolder.getInstance());
+            // this object will be set for every new spectra in order to clean precursor peaks and deisotoping-deconvoluting..
+            MascotAdaptedPrecursorPeakRemoval precursorPeakRemove = new MascotAdaptedPrecursorPeakRemoval(null, msms_tol);
+            DeisotopingAndDeconvoluting deisotopeAndDeconvolute = new DeisotopingAndDeconvoluting(null, deisotopePrecision, deconvulatePrecision);
+            // A CrossLinker object, required for constructing theoretical spectra - get required cross linkers together
+            ArrayList<CrossLinker> linkers = new ArrayList<CrossLinker>();
+            boolean isLabeled = true;
+            if (labeledOption.equals("B")) { // both isotope labeled and non-labeled ones
+                try {
+                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
+                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, false));
+                } catch (Exception ex) {
+                    LOGGER.error(ex);
+                }
+            } else if (labeledOption.equals("F")) { // light labeled
+                try {
+                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, false));
+                } catch (Exception ex) {
+                    LOGGER.error(ex);
+                }
+            } else if (labeledOption.equals("T")) { // heavy labeled
+                try {
+                    linkers.add(GetCrossLinker.getCrossLinker(crossLinkerName, true));
+                } catch (Exception ex) {
+                    LOGGER.error(ex);
+                }
+            }
+            boolean isSideReactionConsidered_S = checkEnablingSideReactionOption(crossLinkerName, 0),
+                    isSideReactionConsidered_T = checkEnablingSideReactionOption(crossLinkerName, 1),
+                    isSideReactionConsidered_Y = checkEnablingSideReactionOption(crossLinkerName, 2);
+
+            LOGGER.info("The settings are ready to perform the search!");
+
+            // STEP 2: CHECK IF PREVIOUSLY A CXDB WAS CONSTRUCTED!!
+            LOGGER.info("Checking if a previously constructed CX database exists for the same search settings!");
+            // This part of the code makes sure that an already generated CXDB is not constructed again..
+            File cxDB = new File(cxDBName + ".fastacp"),
+                    settings = new File(cxDB.getAbsoluteFile().getParent() + File.separator + "settings.txt"),
+                    indexFile = new File(cxDBNameIndexFile);
+
+            boolean isSame = false,
+                    doesCXDBExist = false;
+            HashMap<String, Integer> acc_and_length = CreateDatabase.getAccession_and_length(givenDBName),
+                    contaminant_acc_lenght = new HashMap<String, Integer>();
+            if (!contaminantDBName.isEmpty()) {
+                contaminant_acc_lenght = CreateDatabase.getAccession_and_length(contaminantDBName);
+            }
+            if (settings.exists()) {
+                isSame = isSameDBSetting(settings); // either the same/different/empty
+                // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
+                if (isSame) {
+                    for (File tmp : cxDB.getParentFile().listFiles()) {
+                        if (tmp.getName().equals(cxDB.getName())) {
+                            LOGGER.info("A previously constructed CX database file is found! The name is " + tmp.getName());
+                            doesCXDBExist = true;
+                        }
+                    }
+                }
+            }
+
+            // STEP 3: CREATE A CROSS-LINKED DATABASE!!!
+            // Either the same settings but absent CXDB or not the same settings at all..
+            HashMap<String, StringBuilder> headers_sequences = new HashMap<String, StringBuilder>();
+            if ((isSame && !doesCXDBExist) || !isSame) {
+                // Construct a cross linked peptide database and write an index file with masses...
+                LOGGER.info("Either a CX database is not found or the settings are different! A CX database is going to be constructed..");
+                CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName,
+                        cxDBName, // db related parameters
+                        crossLinkerName, // crossLinker name
+                        crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
+                        enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
+                        lowMass, highMass, // filtering of in silico peptides on peptide masses
+                        minLen, // minimum length for each in silico digested peptide
+                        maxLen_for_combined, // maximum lenght for a length for cross linked peptide (maxLen<len(A)+len(B)
+                        does_link_to_itself, // if a peptide itself links to itself..
+                        isLabeled, isSideReactionConsidered_S, isSideReactionConsidered_T, isSideReactionConsidered_Y);
+                // generate cross-linked peptides database
+                headers_sequences = instanceToCreateDB.getHeadersAndSequences();
+                // add in silico digested contaminant database
+                if (!contaminantDBName.isEmpty()) {
+                    EnzymeDigest o = new EnzymeDigest();
+                    o.main(insilicoContaminantDBName, enzymeFileName, enzymeName, contaminantDBName, null, lowMass, highMass, null, misclevaged);
+                    addContaminants(headers_sequences, insilicoContaminantDBName, 4, 25);
+                    // delete the contaminant file
+                    LOGGER.debug(insilicoContaminantDBName);
+                    File insilicoContaminantDB = new File(insilicoContaminantDBName);
+                    insilicoContaminantDB.delete();
+                }
+                // add mono-linked peptides to a cross-linked database
+                if (searcForAlsoMonoLink) {
+                    headers_sequences.putAll(instanceToCreateDB.getMonolinkedHeadersAndSequences());
+                }
+                // first write down a cross-linked peptide database
+                WriteCXDB.writeCXDB(headers_sequences, cxDBName);
+                LOGGER.info("A CX database is now ready!");
+                // now write a settings file
+                isSettingRunBefore = false;
+            }
+
+            // STEP 4: GENERATE INDEXES!! Load db entries to memory for Lucene indexing search
+            File folder = new File(cxDB.getParentFile().getPath() + File.separator + "index");
+            // Make sure that an index file also exists...
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+            HashSet<StringBuilder> all_headers = new HashSet<StringBuilder>(),
+                    tmp_headers = new HashSet<StringBuilder>();
+            if (folder.listFiles().length == 0 || !isSame) {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
+                // add contaminants..
+                tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw, headers_sequences, ptmFactory,
+                        fixedModifications, variableModifications, maxModsPerPeptide,
+                        fragMode, isContrastLinkedAttachmentOn, contaminant_acc_lenght);
+                all_headers.addAll(tmp_headers);
+                // accession numbers with protein lengths from a given fasta-protein database
+                for (CrossLinker linker : linkers) {
+                    // cross-linked peptides
+                    tmp_headers = FASTACPDBLoader.generate_peptide_mass_index(bw, headers_sequences, ptmFactory,
+                            fixedModifications, variableModifications, maxModsPerPeptide,
+                            linker, fragMode, isContrastLinkedAttachmentOn, acc_and_length);
+                    all_headers.addAll(tmp_headers);
+                    // mono-linked peptides
+                    if (searcForAlsoMonoLink) {
+                        tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_monoLink(bw, headers_sequences, ptmFactory,
+                                fixedModifications, variableModifications, maxModsPerPeptide,
+                                linker, fragMode, acc_and_length);
+                        all_headers.addAll(tmp_headers);
+                    }
+                }
+                bw.close();
+
+                // delete a file containing all mass indexes for cross-linked peptides with possible modification
+                indexFile.delete();
+                LOGGER.info("An index file (including peptides and masses) bas been created!");
+                // delete in silico DBs
+                File tmp_f = new File(inSilicoPeptideDBName),
+                        tmp_cF = new File(insilicoContaminantDBName);
+                tmp_f.delete();
+                tmp_cF.delete();
+            }
+
+            // STEP 5: PREPARE LUCENCE INDEXING!
+            IndexAndSearch search = null;
+            try {
+                search = new IndexAndSearch(all_headers, folder, ptmFactory, fragMode, crossLinkerName);
+            } catch (Exception ex) {
+                LOGGER.error(ex);
+            }
+
+            // STEP 6: SCORE PEPTIDE-TO-SPECTRUM MATCHES!!!
+            LOGGER.info("The identification starts and XPSMs are calculated!");
+            // Title for percolator-input
+            StringBuilder percolatorInputTitle = writePercolatorTitle();
+            SpectrumFactory fct = SpectrumFactory.getInstance();
+            for (File mgf : new File(mgfs).listFiles()) {
+                if (mgf.getName().endsWith(".mgf")) {
+                    LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
+                    LOGGER.debug(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                    File percolatorIntra,
+                            percolatorInter;
+                    BufferedWriter bw_intra = null,
+                            bw_inter = null;
+                    if (isPercolatorAsked) {
+                        percolatorIntra = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                        percolatorInter = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
+                        bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
+                        bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
+                        bw_intra.write(percolatorInputTitle + "\n");
+                        bw_inter.write(percolatorInputTitle + "\n");
+                    }
+
+                    // write results on output file for each mgf
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + File.separator + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
+                    bw.write("Xilmass version " + version);
+                    bw.newLine();
+                    StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
+                    bw.write(titleToWrite + "\n");
+
+                    // now check all spectra to collect all required calculations...
+                    List<Future<ArrayList<Result>>> futureList = null;
+                    if (mgf.getName().endsWith("mgf")) {
+                        HashSet<String> ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                        fct.addSpectra(mgf);
+                        ArrayList<Result> results = new ArrayList<Result>(),
+                                info = new ArrayList<Result>(),
+                                percolatorInfoResults = new ArrayList<Result>();
+                        ArrayList<StringBuilder> percolatorInfo = new ArrayList<StringBuilder>();
+                        int total_spectra = fct.getSpectrumTitles(mgf.getName()).size(),
+                                tmp_total_spectra = 0;
+                        for (String title : fct.getSpectrumTitles(mgf.getName())) {
+                            tmp_total_spectra++;
+                            MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
+                            // first remove any isotopic peaks derived from precursor peak.
+                            precursorPeakRemove.setExpMSnSpectrum(ms);
+                            ms = precursorPeakRemove.getPrecursorPeaksRemovesExpMSnSpectrum();
+                            // then deisotoping and harge state deconvolution
+                            deisotopeAndDeconvolute.setExpMSnSpectrum(ms);
+                            ms = deisotopeAndDeconvolute.getDeisotopedDeconvolutedExpMSnSpectrum();
+                            if (tmp_total_spectra % 500 == 0) {
+                                LOGGER.info("Number of total ID spectra is " + tmp_total_spectra + " in total " + total_spectra + " spectra, and currently ID spectrum is " + ms.getSpectrumTitle());
+                            }
+                            // making sure that a spectrum contains peaks after preprocessing..
+                            if (!ms.getPeakList().isEmpty()) {
+                                try {
+                                    // here comes to check each mgf several mass windows..
+                                    futureList = fillFutures(ms, pep_tols, shownInPPM, scoreName, msms_tol, intensity_option, minFPeakNumPerWindow, maxFPeakNumPerWindow,
+                                            massWindow, doesFindAllMatchedPeaks, doesKeepCPeptideFragmPattern, doesKeepIonWeights,
+                                            excService, search, peakRequiredForImprovedSearch, minPrecMassIsotopicPeakSelected, neutralLossesCase);
+                                } catch (XmlPullParserException ex) {
+                                    LOGGER.error(ex);
+                                } catch (Exception ex) {
+                                    LOGGER.error(ex);
+                                }
+                                for (Future<ArrayList<Result>> future : futureList) {
+                                    try {
+                                        try {
+                                            results = future.get();
+                                        } catch (ExecutionException ex) {
+                                            LOGGER.error(ex);
+                                        }
+                                        info = new ArrayList<Result>();
+                                        for (Result res : results) {
+                                            double tmpScore = res.getScore();
+                                            if ((tmpScore > 0 && !doesRecordZeroes) || doesRecordZeroes) {
+                                                info.add(res);
+                                                bw.write(res.toPrint());
+                                                bw.newLine();
+                                            }
+                                        }
+                                        if (isPercolatorAsked) {
+                                            // write all res and also percolator input
+                                            percolatorInfo = new ArrayList<StringBuilder>();
+                                            percolatorInfoResults = new ArrayList<Result>();
+                                            for (Result r : info) {
+                                                CrossLinkingType linkingType = r.getCp().getLinkingType();
+                                                if (linkingType.equals(CrossLinkingType.CROSSLINK)) {
+                                                    StringBuilder i = getPercolatorInfoNoIDs(r, (CPeptides) r.getCp(), ptmFactory);
+                                                    if (!percolatorInfo.contains(i)) {
+                                                        percolatorInfo.add(i);
+                                                        percolatorInfoResults.add(r);
+                                                    }
+                                                }
+                                            }
+                                            ids = new HashSet<String>(); // to give every time unique ids for each entry on percolator input
+                                            for (Result r : percolatorInfoResults) {
+                                                write(r, bw_inter, bw_intra, ids, ptmFactory);
+                                            }
+                                        }
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                        LOGGER.error(e);
+                                    }
+                                }
+                            }
+                        }
+                        fct.clearFactory();
+                    }
+                    bw.close();
+                    if (isPercolatorAsked) {
+                        bw_intra.close();
+                        bw_inter.close();
+                    }
+                }
+            }
+            writeSettings(settings, startDate, isSettingRunBefore, ("Xilmass version " + version));
+            LOGGER.info("The settings-file is ready.");
+            long end = System.currentTimeMillis();
+            LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
+            excService.shutdown();
+            // here validate the results!
+            String analysis = "11",
+                    xilmassResFolder = resultFolder,
+                    scoringFunctionName = "AndromedaDerived",
+                    isImprovedFDR = ConfigHolder.getInstance().getString("isImprovedFDR"),
+                    fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
+                    fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
+                    fdr = ConfigHolder.getInstance().getString("fdr");
+            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, "validatedXPSMs_list.txt", "allXPSMs_list.txt",
+                fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
+            // write settings on an output folder
+            writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
+
+        } catch (IOException ex) {
+            LOGGER.error(ex);
+        }
     }
 
     private static StringBuilder prepareTitle(boolean isMS1PPM, boolean doesKeepCPeptideFragmPattern, boolean doesKeepWeights) throws IOException {
@@ -980,8 +979,8 @@ public class Start {
 
         // write down all scoring related parameters
         bw.write(new StringBuilder("##Scoring related parameters").append("\n").toString());
-       
-        
+
+
         bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getInt("consider_neutrallosses")).append("\n").toString());
         bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getString("fragModeName")).append("\n").toString());
         bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getString("peptide_tol_total")).append("\n").toString());
