@@ -61,7 +61,7 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="topPanel" pref="901" max="32767" attributes="0"/>
+                      <Component id="topPanel" pref="893" max="32767" attributes="0"/>
                       <Component id="bottomPanel" alignment="1" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -72,7 +72,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="topPanel" pref="613" max="32767" attributes="0"/>
+                  <Component id="topPanel" pref="603" max="32767" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="bottomPanel" min="-2" pref="53" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -888,7 +888,7 @@
                                   <Component id="peptideMassToleranceWindowsPanel" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="minNumberOfPeaksLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="minimumReqNumberOfPeaksLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="peakMatchingLabel" alignment="0" min="-2" pref="237" max="-2" attributes="0"/>
                                           <Component id="ms1ReportingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
@@ -896,7 +896,7 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="ms1ReportingComboBox" min="-2" pref="65" max="-2" attributes="0"/>
                                           <Component id="peakMatchingComboBox" min="-2" max="-2" attributes="0"/>
-                                          <Component id="minNumberOfPeaksTextField" min="-2" pref="110" max="-2" attributes="0"/>
+                                          <Component id="minimumReqNumberOfPeaksTextField" min="-2" pref="110" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
@@ -919,8 +919,8 @@
                               <Component id="peptideMassToleranceWindowsPanel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="minNumberOfPeaksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="minNumberOfPeaksTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="minimumReqNumberOfPeaksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="minimumReqNumberOfPeaksTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -1395,13 +1395,17 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JLabel" name="minNumberOfPeaksLabel">
+                    <Component class="javax.swing.JLabel" name="minimumReqNumberOfPeaksLabel">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Minimum number matched peaks for cross-linked peptides*:"/>
                         <Property name="toolTipText" type="java.lang.String" value="minimum number of matched peaks for each peptide in cross-linked peptides to be reported."/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="minNumberOfPeaksTextField">
+                    <Component class="javax.swing.JTextField" name="minimumReqNumberOfPeaksTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="0"/>
+                        <Property name="toolTipText" type="java.lang.String" value=""/>
+                      </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="peakMatchingLabel">
                       <Properties>
@@ -1465,21 +1469,21 @@
                                   <Group type="103" alignment="1" groupAlignment="0" attributes="0">
                                       <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                                           <Group type="102" alignment="1" attributes="0">
-                                              <Component id="maximumNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
+                                              <Component id="maximumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="maximumNumberOfPeaksTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                              <Component id="maximumNumberOfPeaksSpecProcessTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="1" attributes="0">
-                                              <Component id="minimumNumberOfPeaksLabel" min="-2" max="-2" attributes="0"/>
+                                              <Component id="minimumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="minimumNumberOfPeaksTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                              <Component id="minimumNumberOfPeaksSpecProcessTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                                           <Group type="102" alignment="1" attributes="0">
-                                              <Component id="lowerPrecursorMassBoundLabel" max="32767" attributes="0"/>
+                                              <Component id="lowerPrecursorMassBoundDeIsotopingLabel" max="32767" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="lowerPrecursorMassBoundTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                              <Component id="lowerPrecursorMassBoundDeisotopingTextField" min="-2" pref="70" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="0" attributes="0">
                                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -1514,18 +1518,18 @@
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="minimumNumberOfPeaksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="minimumNumberOfPeaksTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="minimumNumberOfPeaksSpecProcessLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="minimumNumberOfPeaksSpecProcessTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="maximumNumberOfPeaksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="maximumNumberOfPeaksTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="maximumNumberOfPeaksSpecProcessLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="maximumNumberOfPeaksSpecProcessTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="lowerPrecursorMassBoundLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lowerPrecursorMassBoundTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lowerPrecursorMassBoundDeIsotopingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lowerPrecursorMassBoundDeisotopingTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -1554,26 +1558,26 @@
                         <Property name="toolTipText" type="java.lang.String" value="in Da"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="minimumNumberOfPeaksLabel">
+                    <Component class="javax.swing.JLabel" name="minimumNumberOfPeaksSpecProcessLabel">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Minumum number of filtered peaks per window*:"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="minimumNumberOfPeaksTextField">
+                    <Component class="javax.swing.JTextField" name="minimumNumberOfPeaksSpecProcessTextField">
                     </Component>
-                    <Component class="javax.swing.JLabel" name="maximumNumberOfPeaksLabel">
+                    <Component class="javax.swing.JLabel" name="maximumNumberOfPeaksSpecProcessLabel">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Maximum number of filtered peaks per window*:"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="maximumNumberOfPeaksTextField">
+                    <Component class="javax.swing.JTextField" name="maximumNumberOfPeaksSpecProcessTextField">
                     </Component>
-                    <Component class="javax.swing.JLabel" name="lowerPrecursorMassBoundLabel">
+                    <Component class="javax.swing.JLabel" name="lowerPrecursorMassBoundDeIsotopingLabel">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Lower precursor mass bound for selecting the C13 peak over the C12 peak*:"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="lowerPrecursorMassBoundTextField">
+                    <Component class="javax.swing.JTextField" name="lowerPrecursorMassBoundDeisotopingTextField">
                       <Properties>
                         <Property name="toolTipText" type="java.lang.String" value="in Da"/>
                       </Properties>

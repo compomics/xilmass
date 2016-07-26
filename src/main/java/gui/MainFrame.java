@@ -156,16 +156,16 @@ public class MainFrame extends javax.swing.JFrame {
         return labelingComboBox;
     }
 
-    public JTextField getLowerPrecursorMassBoundTextField() {
-        return lowerPrecursorMassBoundTextField;
+    public JTextField getLowerPrecursorMassBoundDeisotopingTextField() {
+        return lowerPrecursorMassBoundDeisotopingTextField;
     }
 
     public JTextField getMaxModPeptideTextField() {
         return maxModPeptideTextField;
     }
 
-    public JTextField getMaximumNumberOfPeaksTextField() {
-        return maximumNumberOfPeaksTextField;
+    public JTextField getMaximumNumberOfPeaksSpecProcessTextField() {
+        return maximumNumberOfPeaksSpecProcessTextField;
     }
 
     public JTextField getMaximumPeptideLengthTextField() {
@@ -176,12 +176,12 @@ public class MainFrame extends javax.swing.JFrame {
         return maximumPeptideMassTextField;
     }
 
-    public JTextField getMinNumberOfPeaksTextField() {
-        return minNumberOfPeaksTextField;
+    public JTextField getMinimumReqNumberOfPeaksTextField() {
+        return minimumReqNumberOfPeaksTextField;
     }
 
-    public JTextField getMinimumNumberOfPeaksTextField() {
-        return minimumNumberOfPeaksTextField;
+    public JTextField getMinimumNumberOfPeaksSpecProcessTextField() {
+        return minimumNumberOfPeaksSpecProcessTextField;
     }
 
     public JTextField getMinimumPeptideLengthTextField() {
@@ -425,8 +425,8 @@ public class MainFrame extends javax.swing.JFrame {
         fifthPeptideMassToleranceWindowUnitLabel = new javax.swing.JLabel();
         fifthPeptideMassToleranceWindowUnitComboBox = new javax.swing.JComboBox<>();
         fragmentMassToleranceLabel = new javax.swing.JLabel();
-        minNumberOfPeaksLabel = new javax.swing.JLabel();
-        minNumberOfPeaksTextField = new javax.swing.JTextField();
+        minimumReqNumberOfPeaksLabel = new javax.swing.JLabel();
+        minimumReqNumberOfPeaksTextField = new javax.swing.JTextField();
         peakMatchingLabel = new javax.swing.JLabel();
         peakMatchingComboBox = new javax.swing.JComboBox<>();
         ms1ReportingLabel = new javax.swing.JLabel();
@@ -434,12 +434,12 @@ public class MainFrame extends javax.swing.JFrame {
         spectrumPreprocessingPanel = new javax.swing.JPanel();
         spectrumMassWindowValueLabel = new javax.swing.JLabel();
         spectrumMassWindowValueTextField = new javax.swing.JTextField();
-        minimumNumberOfPeaksLabel = new javax.swing.JLabel();
-        minimumNumberOfPeaksTextField = new javax.swing.JTextField();
-        maximumNumberOfPeaksLabel = new javax.swing.JLabel();
-        maximumNumberOfPeaksTextField = new javax.swing.JTextField();
-        lowerPrecursorMassBoundLabel = new javax.swing.JLabel();
-        lowerPrecursorMassBoundTextField = new javax.swing.JTextField();
+        minimumNumberOfPeaksSpecProcessLabel = new javax.swing.JLabel();
+        minimumNumberOfPeaksSpecProcessTextField = new javax.swing.JTextField();
+        maximumNumberOfPeaksSpecProcessLabel = new javax.swing.JLabel();
+        maximumNumberOfPeaksSpecProcessTextField = new javax.swing.JTextField();
+        lowerPrecursorMassBoundDeIsotopingLabel = new javax.swing.JLabel();
+        lowerPrecursorMassBoundDeisotopingTextField = new javax.swing.JTextField();
         deisotopeLabel = new javax.swing.JLabel();
         deisotopePrecisionTextField = new javax.swing.JTextField();
         deconvulatePrecisionLabel = new javax.swing.JLabel();
@@ -1117,8 +1117,11 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(fifthPeptideMassToleranceWindowValueLabel))))
         );
 
-        minNumberOfPeaksLabel.setText("Minimum number matched peaks for cross-linked peptides*:");
-        minNumberOfPeaksLabel.setToolTipText("minimum number of matched peaks for each peptide in cross-linked peptides to be reported.");
+        minimumReqNumberOfPeaksLabel.setText("Minimum number matched peaks for cross-linked peptides*:");
+        minimumReqNumberOfPeaksLabel.setToolTipText("minimum number of matched peaks for each peptide in cross-linked peptides to be reported.");
+
+        minimumReqNumberOfPeaksTextField.setText("0");
+        minimumReqNumberOfPeaksTextField.setToolTipText("");
 
         peakMatchingLabel.setText("Peak matching*:");
 
@@ -1147,14 +1150,14 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(peptideMassToleranceWindowsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(scoringPanelLayout.createSequentialGroup()
                         .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(minNumberOfPeaksLabel)
+                            .addComponent(minimumReqNumberOfPeaksLabel)
                             .addComponent(peakMatchingLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ms1ReportingLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(peakMatchingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(minNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(minimumReqNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         scoringPanelLayout.setVerticalGroup(
@@ -1172,8 +1175,8 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(peptideMassToleranceWindowsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(minNumberOfPeaksLabel)
-                    .addComponent(minNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(minimumReqNumberOfPeaksLabel)
+                    .addComponent(minimumReqNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(peakMatchingLabel)
@@ -1194,13 +1197,13 @@ public class MainFrame extends javax.swing.JFrame {
 
         spectrumMassWindowValueTextField.setToolTipText("in Da");
 
-        minimumNumberOfPeaksLabel.setText("Minumum number of filtered peaks per window*:");
+        minimumNumberOfPeaksSpecProcessLabel.setText("Minumum number of filtered peaks per window*:");
 
-        maximumNumberOfPeaksLabel.setText("Maximum number of filtered peaks per window*:");
+        maximumNumberOfPeaksSpecProcessLabel.setText("Maximum number of filtered peaks per window*:");
 
-        lowerPrecursorMassBoundLabel.setText("Lower precursor mass bound for selecting the C13 peak over the C12 peak*:");
+        lowerPrecursorMassBoundDeIsotopingLabel.setText("Lower precursor mass bound for selecting the C13 peak over the C12 peak*:");
 
-        lowerPrecursorMassBoundTextField.setToolTipText("in Da");
+        lowerPrecursorMassBoundDeisotopingTextField.setToolTipText("in Da");
 
         deisotopeLabel.setText("Deisotope precision*:");
 
@@ -1220,18 +1223,18 @@ public class MainFrame extends javax.swing.JFrame {
                     .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                .addComponent(maximumNumberOfPeaksLabel)
+                                .addComponent(maximumNumberOfPeaksSpecProcessLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(maximumNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(maximumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                .addComponent(minimumNumberOfPeaksLabel)
+                                .addComponent(minimumNumberOfPeaksSpecProcessLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(minimumNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(minimumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                .addComponent(lowerPrecursorMassBoundLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lowerPrecursorMassBoundDeIsotopingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lowerPrecursorMassBoundTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(lowerPrecursorMassBoundDeisotopingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, spectrumPreprocessingPanelLayout.createSequentialGroup()
                                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(deisotopeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1255,16 +1258,16 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(spectrumMassWindowValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(minimumNumberOfPeaksLabel)
-                    .addComponent(minimumNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(minimumNumberOfPeaksSpecProcessLabel)
+                    .addComponent(minimumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(maximumNumberOfPeaksLabel)
-                    .addComponent(maximumNumberOfPeaksTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(maximumNumberOfPeaksSpecProcessLabel)
+                    .addComponent(maximumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lowerPrecursorMassBoundLabel)
-                    .addComponent(lowerPrecursorMassBoundTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lowerPrecursorMassBoundDeIsotopingLabel)
+                    .addComponent(lowerPrecursorMassBoundDeisotopingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(deisotopeLabel)
@@ -1416,7 +1419,7 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 901, Short.MAX_VALUE)
+                    .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 893, Short.MAX_VALUE)
                     .addComponent(bottomPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1424,7 +1427,7 @@ public class MainFrame extends javax.swing.JFrame {
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 613, Short.MAX_VALUE)
+                .addComponent(topPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1511,26 +1514,26 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel intralinkingLabel;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JComboBox<String> labelingComboBox;
-    private javax.swing.JLabel lowerPrecursorMassBoundLabel;
-    private javax.swing.JTextField lowerPrecursorMassBoundTextField;
+    private javax.swing.JLabel lowerPrecursorMassBoundDeIsotopingLabel;
+    private javax.swing.JTextField lowerPrecursorMassBoundDeisotopingTextField;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTabbedPane mainTabbedPane;
     private javax.swing.JLabel maxModPeptideLabel;
     private javax.swing.JTextField maxModPeptideTextField;
-    private javax.swing.JLabel maximumNumberOfPeaksLabel;
-    private javax.swing.JTextField maximumNumberOfPeaksTextField;
+    private javax.swing.JLabel maximumNumberOfPeaksSpecProcessLabel;
+    private javax.swing.JTextField maximumNumberOfPeaksSpecProcessTextField;
     private javax.swing.JLabel maximumPeptideLengthLabel;
     private javax.swing.JTextField maximumPeptideLengthTextField;
     private javax.swing.JLabel maximumPeptideMassLabel;
     private javax.swing.JTextField maximumPeptideMassTextField;
-    private javax.swing.JLabel minNumberOfPeaksLabel;
-    private javax.swing.JTextField minNumberOfPeaksTextField;
-    private javax.swing.JLabel minimumNumberOfPeaksLabel;
-    private javax.swing.JTextField minimumNumberOfPeaksTextField;
+    private javax.swing.JLabel minimumNumberOfPeaksSpecProcessLabel;
+    private javax.swing.JTextField minimumNumberOfPeaksSpecProcessTextField;
     private javax.swing.JLabel minimumPeptideLengthLabel;
     private javax.swing.JTextField minimumPeptideLengthTextField;
     private javax.swing.JLabel minimumPeptideMassLabel;
     private javax.swing.JTextField minimumPeptideMassTextField;
+    private javax.swing.JLabel minimumReqNumberOfPeaksLabel;
+    private javax.swing.JTextField minimumReqNumberOfPeaksTextField;
     private javax.swing.JLabel missedCleavagesLabel;
     private javax.swing.JTextField missedCleavagesTextField;
     private javax.swing.JPanel modificationsPanel;

@@ -116,7 +116,7 @@ public class MainController {
     private static final String FIFTH_PEPTIDE_MASS_WINDOW = "peptide_tol5";
     private static final String FIFTH_PEPTIDE_MASS_WINDOW_BASE = "peptide_tol5_base";
     private static final String FIFTH_PEPTIDE_MASS_WINDOW_UNIT = "is_peptide_tol5_PPM";
-    private static final String MIN_NUMBER_OF_PEAKS = "minRequiredPeaks";
+    private static final String MIN_REQ_NUMBER_OF_PEAKS = "minRequiredPeaks";
     private static final String PEAK_MATCHING = "isAllMatchedPeaks";
     private static final String MS1_REPORTING = "report_in_ppm";
     /**
@@ -583,16 +583,16 @@ public class MainController {
         mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().setText(ConfigHolder.getInstance().getString(FIFTH_PEPTIDE_MASS_WINDOW_BASE));
         String fifthToleranceWindowUnit = ConfigHolder.getInstance().getString(FIFTH_PEPTIDE_MASS_WINDOW_UNIT);
         mainFrame.getFifthPeptideMassToleranceWindowUnitComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(fifthToleranceWindowUnit));
-        mainFrame.getMinNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_NUMBER_OF_PEAKS));
+        mainFrame.getMinimumReqNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(MIN_REQ_NUMBER_OF_PEAKS));
         String peakMatch = ConfigHolder.getInstance().getString(PEAK_MATCHING);
         mainFrame.getPeakMatchingComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(peakMatch));
         String ms1ReportingUnit = ConfigHolder.getInstance().getString(MS1_REPORTING);
         mainFrame.getMs1ReportingComboBox().setSelectedIndex(booleanIndexPropertiesToGuiMapping.get(ms1ReportingUnit));
         //Spectrum preprocessing params
         mainFrame.getSpectrumMassWindowValueTextField().setText(ConfigHolder.getInstance().getString(SPECTRUM_MASS_WINDOW));
-        mainFrame.getMinimumNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MIN_NUMBER_OF_PEAKS));
-        mainFrame.getMaximumNumberOfPeaksTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MAX_NUMBER_OF_PEAKS));
-        mainFrame.getLowerPrecursorMassBoundTextField().setText(ConfigHolder.getInstance().getString(LOWER_PREC_MASS_BOUND));
+        mainFrame.getMinimumNumberOfPeaksSpecProcessTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MIN_NUMBER_OF_PEAKS));
+        mainFrame.getMaximumNumberOfPeaksSpecProcessTextField().setText(ConfigHolder.getInstance().getString(WINDOW_MAX_NUMBER_OF_PEAKS));
+        mainFrame.getLowerPrecursorMassBoundDeisotopingTextField().setText(ConfigHolder.getInstance().getString(LOWER_PREC_MASS_BOUND));
         mainFrame.getDeisotopePrecisionTextField().setText(ConfigHolder.getInstance().getString(DEISOTOPE_PRECISION));
         mainFrame.getDeconvulatePrecisionTextField().setText(ConfigHolder.getInstance().getString(DECONVOLUTE_PRECISION));
         //Multithreading and validation params
@@ -669,7 +669,11 @@ public class MainController {
         ConfigHolder.getInstance().setProperty(VARIABLE_MODIFICATIONS, joinedVariableModifications);
         ConfigHolder.getInstance().setProperty(MAX_MOD_PEPTIDE, mainFrame.getMaxModPeptideTextField().getText());
         //scoring params
+        int p = mainFrame.getNeutralLossesComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(NEUTRAL_LOSSES, mainFrame.getNeutralLossesComboBox().getSelectedIndex());
+        
+        System.out.println("-----------------------" + ConfigHolder.getInstance().getInt("consider_neutrallosses"));
+        
         int fragmentationMode = mainFrame.getFragmentationModeComboBox().getSelectedIndex();
         switch (fragmentationMode) {
             case 0:
@@ -702,16 +706,16 @@ public class MainController {
         ConfigHolder.getInstance().setProperty(FOURTH_PEPTIDE_MASS_WINDOW_BASE, mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
         int fourthToleranceWindowUnit = mainFrame.getFourthPeptideMassToleranceWindowUnitComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(SECOND_PEPTIDE_MASS_WINDOW_UNIT, booleanIndexGuiToPropertiesMapping.get(fourthToleranceWindowUnit));
-        ConfigHolder.getInstance().setProperty(MIN_NUMBER_OF_PEAKS, mainFrame.getMinNumberOfPeaksTextField());
+        ConfigHolder.getInstance().setProperty(MIN_REQ_NUMBER_OF_PEAKS, Integer.parseInt(mainFrame.getMinimumReqNumberOfPeaksTextField().getText()));
         int peakMatch = mainFrame.getPeakMatchingComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(PEAK_MATCHING, booleanIndexGuiToPropertiesMapping.get(peakMatch));
         int ms1ReportingUnit = mainFrame.getMs1ReportingComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(MS1_REPORTING, booleanIndexGuiToPropertiesMapping.get(ms1ReportingUnit));
         //Spectrum preprocessing params
         ConfigHolder.getInstance().setProperty(SPECTRUM_MASS_WINDOW, mainFrame.getSpectrumMassWindowValueTextField().getText());
-        ConfigHolder.getInstance().setProperty(WINDOW_MIN_NUMBER_OF_PEAKS, mainFrame.getMinimumNumberOfPeaksTextField().getText());
-        ConfigHolder.getInstance().setProperty(WINDOW_MAX_NUMBER_OF_PEAKS, mainFrame.getMaximumNumberOfPeaksTextField().getText());
-        ConfigHolder.getInstance().setProperty(LOWER_PREC_MASS_BOUND, mainFrame.getLowerPrecursorMassBoundTextField().getText());
+        ConfigHolder.getInstance().setProperty(WINDOW_MIN_NUMBER_OF_PEAKS, mainFrame.getMinimumNumberOfPeaksSpecProcessTextField().getText());
+        ConfigHolder.getInstance().setProperty(WINDOW_MAX_NUMBER_OF_PEAKS, mainFrame.getMaximumNumberOfPeaksSpecProcessTextField().getText());
+        ConfigHolder.getInstance().setProperty(LOWER_PREC_MASS_BOUND, mainFrame.getLowerPrecursorMassBoundDeisotopingTextField().getText());
         ConfigHolder.getInstance().setProperty(DEISOTOPE_PRECISION, mainFrame.getDeisotopePrecisionTextField().getText());
         ConfigHolder.getInstance().setProperty(DEISOTOPE_PRECISION, mainFrame.getDeconvulatePrecisionTextField().getText());
         //Multithreading and validation params
@@ -737,7 +741,7 @@ public class MainController {
     private List<String> validateInput() {
         List<String> validationMessages = new ArrayList<>();
 
-        //Input/Output params
+        // INPUT/OUTPUT PARAMS 
         if (mainFrame.getFastaDbPathTextField().getText().isEmpty()) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a FASTA database file.");
         }
@@ -750,86 +754,97 @@ public class MainController {
         if (mainFrame.getOutputDirectoryPathTextField().getText().isEmpty()) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide an output directory.");
         }
-        //Cross-linking params
+        
+        // CROSS-LINKING PARAMS
+        // minimum peptide lenght for combinations
         if (mainFrame.getMinimumPeptideLengthTextField().getText().isEmpty()) {
             validationMessages.add(CROSS_LINKING_PANE + "Please provide the minimun peptide length.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumPeptideLengthTextField().getText());
-                if (numberOfThreads < 0) {
+                Integer minPeptideLen = Integer.valueOf(mainFrame.getMinimumPeptideLengthTextField().getText());
+                if (minPeptideLen < 0) {
                     validationMessages.add(CROSS_LINKING_PANE + "Please provide a positive minimun peptide length.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add("Please provide a numeric minimun peptide length.");
             }
         }
+        // maximum peptide lenght for combinations
         if (mainFrame.getMaximumPeptideLengthTextField().getText().isEmpty()) {
             validationMessages.add(CROSS_LINKING_PANE + "Please provide the maximum peptide length.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumPeptideLengthTextField().getText());
-                if (numberOfThreads < 0) {
+                Integer maxPeptideLength = Integer.valueOf(mainFrame.getMaximumPeptideLengthTextField().getText());
+                if (maxPeptideLength < 0) {
                     validationMessages.add(CROSS_LINKING_PANE + "Please provide a positive maximum peptide length.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(CROSS_LINKING_PANE + "Please provide a numeric maximum peptide length.");
             }
         }
-        //In-silico digestion params
+        
+        // IN-SILICO DIGESTION PARAMS
+        // number of missed cleavage control
         if (mainFrame.getMissedCleavagesTextField().getText().isEmpty()) {
             validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide the number of allowed missed cleavages.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMissedCleavagesTextField().getText());
-                if (numberOfThreads < 0) {
+                Integer misscleavages = Integer.valueOf(mainFrame.getMissedCleavagesTextField().getText());
+                if (misscleavages < 0) {
                     validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a positive number of allowed missed cleavages.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric number of allowed missed cleavages.");
             }
         }
+        // minimum peptide mass for putative peptides
         if (mainFrame.getMinimumPeptideMassTextField().getText().isEmpty()) {
             validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a minimum peptide mass.");
         } else {
             try {
-                Double tolerance = Double.valueOf(mainFrame.getMinimumPeptideMassTextField().getText());
-                if (tolerance < 0.0) {
+                Double minPeptideMass = Double.valueOf(mainFrame.getMinimumPeptideMassTextField().getText());
+                if (minPeptideMass < 0.0) {
                     validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a positive minimum peptide mass.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric minimum peptide mass.");
             }
         }
+        // maximum peptide mass for putative peptides
         if (mainFrame.getMaximumPeptideMassTextField().getText().isEmpty()) {
             validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a maximum peptide mass.");
         } else {
             try {
-                Double tolerance = Double.valueOf(mainFrame.getMaximumPeptideMassTextField().getText());
-                if (tolerance < 0.0) {
+                Double maxPeptideMass = Double.valueOf(mainFrame.getMaximumPeptideMassTextField().getText());
+                if (maxPeptideMass < 0.0) {
                     validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a positive maximum peptide mass.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(IN_SILICO_DIGESTION_PANE + "Please provide a numeric maximum peptide mass.");
             }
         }
-        //modification params
+        
+        // MODIFICATION PARAMS
         if (mainFrame.getMaxModPeptideTextField().getText().isEmpty()) {
             validationMessages.add(MODIFICATIONS_PANE + "Please provide the number of allowed modifications per peptide.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMaxModPeptideTextField().getText());
-                if (numberOfThreads < 0) {
+                Integer maxModPeptide = Integer.valueOf(mainFrame.getMaxModPeptideTextField().getText());
+                if (maxModPeptide < 0) {
                     validationMessages.add(MODIFICATIONS_PANE + "Please provide a positive number of allowed modifications per peptide.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(MODIFICATIONS_PANE + "Please provide a numeric number of allowed modifications per peptide.");
             }
         }
-        //scoring params
+        
+        // SCORING PARAMS
+        // Number of peptide-mass-windows
         int value = (int) mainFrame.getPeptideToleranceSpinner().getValue();
-
+        
         switch (value) {
             case 5:
+                // peptide_tol_5
                 if (mainFrame.getFifthPeptideMassToleranceWindowTextField().getText().isEmpty()) {
                     validationMessages.add(SCORING_PANE + "Please provide a fifth peptide tolerance mass window value.");
                 } else {
@@ -846,8 +861,8 @@ public class MainController {
                     validationMessages.add(SCORING_PANE + "Please provide a fifth peptide tolerance mass window base value.");
                 } else {
                     try {
-                        Double tolerance = Double.valueOf(mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().getText());
-                        if (tolerance < 0.0) {
+                        Double base = Double.valueOf(mainFrame.getFifthPeptideMassToleranceWindowBaseTextField().getText());
+                        if (base < 0.0) {
                             validationMessages.add(SCORING_PANE + "Please provide a positive fifth peptide tolerance mass window base value.");
                         }
                     } catch (NumberFormatException nfe) {
@@ -855,6 +870,7 @@ public class MainController {
                     }
                 }
             case 4:
+                // peptide_tol_4
                 if (mainFrame.getFourthPeptideMassToleranceWindowTextField().getText().isEmpty()) {
                     validationMessages.add(SCORING_PANE + "Please provide a fourth peptide tolerance mass window value.");
                 } else {
@@ -871,8 +887,8 @@ public class MainController {
                     validationMessages.add(SCORING_PANE + "Please provide a fourth  peptide tolerance mass window base value.");
                 } else {
                     try {
-                        Double tolerance = Double.valueOf(mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
-                        if (tolerance < 0.0) {
+                        Double base = Double.valueOf(mainFrame.getFourthPeptideMassToleranceWindowBaseTextField().getText());
+                        if (base < 0.0) {
                             validationMessages.add(SCORING_PANE + "Please provide a positive fourth peptide tolerance mass window base value.");
                         }
                     } catch (NumberFormatException nfe) {
@@ -880,6 +896,7 @@ public class MainController {
                     }
                 }
             case 3:
+                // peptide_tol_3
                 if (mainFrame.getThirdPeptideMassToleranceWindowTextField().getText().isEmpty()) {
                     validationMessages.add(SCORING_PANE + "Please provide a third peptide tolerance mass window value.");
                 } else {
@@ -896,8 +913,8 @@ public class MainController {
                     validationMessages.add(SCORING_PANE + "Please provide a third peptide tolerance mass window base value.");
                 } else {
                     try {
-                        Double tolerance = Double.valueOf(mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
-                        if (tolerance < 0.0) {
+                        Double base = Double.valueOf(mainFrame.getThirdPeptideMassToleranceWindowBaseTextField().getText());
+                        if (base < 0.0) {
                             validationMessages.add(SCORING_PANE + "Please provide a positive third peptide tolerance mass window base value.");
                         }
                     } catch (NumberFormatException nfe) {
@@ -905,6 +922,7 @@ public class MainController {
                     }
                 }
             case 2:
+                // peptide_tol_2
                 if (mainFrame.getSecondPeptideMassToleranceWindowTextField().getText().isEmpty()) {
                     validationMessages.add(SCORING_PANE + "Please provide a second peptide tolerance mass window value.");
                 } else {
@@ -921,8 +939,8 @@ public class MainController {
                     validationMessages.add(SCORING_PANE + "Please provide a second peptide tolerance mass window base value.");
                 } else {
                     try {
-                        Double tolerance = Double.valueOf(mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
-                        if (tolerance < 0.0) {
+                        Double base = Double.valueOf(mainFrame.getSecondPeptideMassToleranceWindowBaseTextField().getText());
+                        if (base < 0.0) {
                             validationMessages.add(SCORING_PANE + "Please provide a positive second peptide tolerance mass window base value.");
                         }
                     } catch (NumberFormatException nfe) {
@@ -930,6 +948,7 @@ public class MainController {
                     }
                 }
             case 1:
+                // peptide_tol_1
                 if (mainFrame.getFirstPeptideMassToleranceWindowTextField().getText().isEmpty()) {
                     validationMessages.add(SCORING_PANE + "Please provide a first peptide tolerance mass window value.");
                 } else {
@@ -946,8 +965,8 @@ public class MainController {
                     validationMessages.add(SCORING_PANE + "Please provide a first peptide tolerance mass window base value.");
                 } else {
                     try {
-                        Double tolerance = Double.valueOf(mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
-                        if (tolerance < 0.0) {
+                        Double base = Double.valueOf(mainFrame.getFirstPeptideMassToleranceWindowBaseTextField().getText());
+                        if (base < 0.0) {
                             validationMessages.add(SCORING_PANE + "Please provide a positive first peptide tolerance mass window base value.");
                         }
                     } catch (NumberFormatException nfe) {
@@ -956,80 +975,115 @@ public class MainController {
                 }
                 break;
         }
-        if (mainFrame.getMinNumberOfPeaksTextField().getText().isEmpty()) {
-            validationMessages.add(SCORING_PANE + "Please provide the minimum number of matched peaks.");
+        // fragment tolerance in Da 
+        if (mainFrame.getFragmentMassToleranceValueTextField().getText().isEmpty()) {
+            validationMessages.add(SCORING_PANE + "Please provide a value for the fragment tolerance in Da.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumNumberOfPeaksTextField().getText());
-                if (numberOfThreads < 0) {
-                    validationMessages.add(SCORING_PANE + "Please provide a positive minimum number of matched peaks.");
+                Double fragmentTolerance = Double.valueOf(mainFrame.getFragmentMassToleranceValueTextField().getText());
+                if (fragmentTolerance < 0) {
+                    validationMessages.add(SCORING_PANE + "Please provide a positive fragment tolerance.");
                 }
             } catch (NumberFormatException nfe) {
-                validationMessages.add(SCORING_PANE + "Please provide a numeric minimum number of matched peaks.");
+                validationMessages.add(SCORING_PANE + "Please provide a double fragment tolerance.");
             }
         }
-        //Spectrum preprocessing params
+        // select a minimum number of required peaks for each peptide
+        if (mainFrame.getMinimumReqNumberOfPeaksTextField().getText().isEmpty()) {
+            System.out.println("I guesss herer....");
+            validationMessages.add(SCORING_PANE + "Please provide the minimum required number of matched peaks for a peptide.");
+        } else {
+            try {
+                Integer minReqPeaks = Integer.valueOf(mainFrame.getMinimumReqNumberOfPeaksTextField().getText());
+                if (minReqPeaks < 0) {
+                    validationMessages.add(SCORING_PANE + "Please provide a positive minimum required number of matched peaks for a peptide.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SCORING_PANE + "Please provide a numeric minimum required number of matched peaks for a peptide.");
+            }
+        }
+        
+        // SPECTRUM PREPROCESSING PARAMS
+        // mass window value in Dalton
         if (mainFrame.getSpectrumMassWindowValueTextField().getText().isEmpty()) {
             validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a spectrum scoring mass window value.");
         } else {
             try {
-                Double tolerance = Double.valueOf(mainFrame.getSpectrumMassWindowValueTextField().getText());
-                if (tolerance < 0.0) {
+                Double massWindow = Double.valueOf(mainFrame.getSpectrumMassWindowValueTextField().getText());
+                if (massWindow < 0.0) {
                     validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive spectrum scoring mass window value.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric spectrum scoring mass window value.");
             }
         }
-        if (mainFrame.getMinimumNumberOfPeaksTextField().getText().isEmpty()) {
+        // minimum number of peaks for each window during spectrum processing
+        if (mainFrame.getMinimumNumberOfPeaksSpecProcessTextField().getText().isEmpty()) {
             validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide the minimum number of filtered peaks per window.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMinimumNumberOfPeaksTextField().getText());
-                if (numberOfThreads < 0) {
+                Integer minPeakSpecProcess = Integer.valueOf(mainFrame.getMinimumNumberOfPeaksSpecProcessTextField().getText());
+                if (minPeakSpecProcess < 0) {
                     validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive minimum number of filtered peaks per window.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric minimum number of filtered peaks per window.");
             }
         }
-        if (mainFrame.getMaximumNumberOfPeaksTextField().getText().isEmpty()) {
+        // maximum number of peaks for each window during spectrum processing
+        if (mainFrame.getMaximumNumberOfPeaksSpecProcessTextField().getText().isEmpty()) {
             validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide the maximum number of filtered peaks per window.");
         } else {
             try {
-                Integer numberOfThreads = Integer.valueOf(mainFrame.getMaximumNumberOfPeaksTextField().getText());
-                if (numberOfThreads < 0) {
+                Integer maxPeakSpecProcess = Integer.valueOf(mainFrame.getMaximumNumberOfPeaksSpecProcessTextField().getText());
+                if (maxPeakSpecProcess < 0) {
                     validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive maximum number of filtered peaks per window.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric maximum number of filtered peaks per window.");
             }
         }
-        if (mainFrame.getLowerPrecursorMassBoundTextField().getText().isEmpty()) {
-            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a lower precursor mass bound value.");
+        // lower precursor mass bound for selecting C13-peaks over the C-12 peak..
+        if (mainFrame.getLowerPrecursorMassBoundDeisotopingTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a lower precursor mass bound value for to select C13-peak over C-12.");
         } else {
             try {
-                Double tolerance = Double.valueOf(mainFrame.getLowerPrecursorMassBoundTextField().getText());
-                if (tolerance < 0.0) {
-                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive lower precursor mass bound value.");
+                Double lowBondtoSelectPrecursorWithC13Peak = Double.valueOf(mainFrame.getLowerPrecursorMassBoundDeisotopingTextField().getText());
+                if (lowBondtoSelectPrecursorWithC13Peak < 0.0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive lower precursor mass bound value for to select C13-peak over C-12.");
                 }
             } catch (NumberFormatException nfe) {
-                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric lower precursor mass bound value.");
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric lower precursor mass bound value for to select C13-peak over C-12.");
             }
         }
+        // deisotope precision
         if (mainFrame.getDeisotopePrecisionTextField().getText().isEmpty()) {
             validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a deisotope precision value.");
         } else {
             try {
-                Double tolerance = Double.valueOf(mainFrame.getDeisotopePrecisionTextField().getText());
-                if (tolerance < 0.0) {
+                Double deisotopePrecision = Double.valueOf(mainFrame.getDeisotopePrecisionTextField().getText());
+                if (deisotopePrecision < 0.0) {
                     validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive deisotope precision value.");
                 }
             } catch (NumberFormatException nfe) {
                 validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric deisotope precision value.");
             }
         }
-        //Multithreading and validation params
+        // deconvulate precision value
+        if (mainFrame.getDeconvulatePrecisionTextField().getText().isEmpty()) {
+            validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a deconvulate precision value.");
+        } else {
+            try {
+                Double deconvulatePrecision = Double.valueOf(mainFrame.getDeconvulatePrecisionTextField().getText());
+                if (deconvulatePrecision < 0.0) {
+                    validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a positive deconvulate precision value.");
+                }
+            } catch (NumberFormatException nfe) {
+                validationMessages.add(SPECTRUM_PRE_PROCESSING_PANE + "Please provide a numeric deconvulate precision value.");
+            }
+        }
+        
+        // MULTITHREADING AND VALIDATION PARAMS
         if (mainFrame.getNumberOfThreadsTextField().getText().isEmpty()) {
             validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide the number of threads.");
         } else {
@@ -1043,13 +1097,14 @@ public class MainController {
             }
         }
         int improvedFdr = mainFrame.getFdrCalcalationComboBox().getSelectedIndex();
+        // When improvedFDR was selected.. 
         if (improvedFdr == 0) {
             if (mainFrame.getInterProteinFdrValueTextField().getText().isEmpty()) {
                 validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide an inter-protein FDR value.");
             } else {
                 try {
-                    Double tolerance = Double.valueOf(mainFrame.getInterProteinFdrValueTextField().getText());
-                    if (tolerance < 0.0) {
+                    Double interProteinFDR = Double.valueOf(mainFrame.getInterProteinFdrValueTextField().getText());
+                    if (interProteinFDR < 0.0) {
                         validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a positive inter-protein FDR value.");
                     }
                 } catch (NumberFormatException nfe) {
@@ -1060,14 +1115,15 @@ public class MainController {
                 validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide an intra-protein FDR value.");
             } else {
                 try {
-                    Double tolerance = Double.valueOf(mainFrame.getIntraProteinFdrValueTextField().getText());
-                    if (tolerance < 0.0) {
+                    Double intraProteinFDR = Double.valueOf(mainFrame.getIntraProteinFdrValueTextField().getText());
+                    if (intraProteinFDR < 0.0) {
                         validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a positive intra-protein FDR value.");
                     }
                 } catch (NumberFormatException nfe) {
                     validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric intra-protein FDR value.");
                 }
             }
+        // When GlobalFDR was selected 
         } else if (mainFrame.getGlobalFdrValueTextField().getText().isEmpty()) {
             validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a global FDR value.");
         } else {
