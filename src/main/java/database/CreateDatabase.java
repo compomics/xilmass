@@ -464,14 +464,12 @@ public class CreateDatabase {
                                 }
                                 if (constr == null) {
                                     flagError("The '" + filter + "' filter does not support the " + ((filterParam != null) ? "presence" : "absence") + " of a" + (((filterParam != null) && (filterParam.startsWith("!"))) ? "n inverted " : " ") + "parameter!");
+                                } else if (type == 1) {
+                                    f = (Filter) constr.newInstance(new Object[]{});
+                                } else if (type == 2) {
+                                    f = (Filter) constr.newInstance(new Object[]{filterParam.substring(1), new Boolean(true)});
                                 } else {
-                                    if (type == 1) {
-                                        f = (Filter) constr.newInstance(new Object[]{});
-                                    } else if (type == 2) {
-                                        f = (Filter) constr.newInstance(new Object[]{filterParam.substring(1), new Boolean(true)});
-                                    } else {
-                                        f = (Filter) constr.newInstance(new Object[]{filterParam});
-                                    }
+                                    f = (Filter) constr.newInstance(new Object[]{filterParam});
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -533,6 +531,7 @@ public class CreateDatabase {
                     nextHeader = "",
                     nextAccession = "";
             int startLen = startProtein.getSequence().getSequence().length();
+//            System.out.println(startHeader+"\t"+nextHeader+"\t"+startLen);
             // check if a header comes from a generic! 
             if (startHeader.matches(".*[^0-9].*-.*[^0-9].*")) {
                 doesStartProContainProteinNtermini = FASTACPDBLoader.checkProteinContainsProteinTermini(startHeader, true, accession_and_length);
@@ -741,9 +740,9 @@ public class CreateDatabase {
                 if (len != 0 && acc != null) {
                     acc_and_length.put(acc, len);
                 }
-                String[] sp = line.split("\\|");
-                acc = sp[1];
-                len = 0;
+                    String[] sp = line.split("\\|");
+                    acc = sp[1];
+                    len = 0;
                 // this line is only sequence
             } else {
                 len += line.length();

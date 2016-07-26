@@ -14,7 +14,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.image.BufferedImage;
@@ -71,7 +70,9 @@ public final class Visualize extends javax.swing.JFrame {
         startDialog = new StartDialog(this, true);
         if (!startDialog.getSpecFolder().isEmpty()) {
             initComponents();
-            indexOfAnnotatedPeaks = startDialog.getIndexOfAnnotatedPeaks()+1;
+            getContentPane().setBackground(Color.WHITE);
+            resultFilejScrollPane.getViewport().setOpaque(false);
+            indexOfAnnotatedPeaks = startDialog.getIndexOfAnnotatedPeaks() + 1;
             setSpecsFolder(startDialog.getSpecFolder());
             start_visualization();
             this.setVisible(true);
@@ -141,7 +142,7 @@ public final class Visualize extends javax.swing.JFrame {
         fillResultFileJTable(dataStrArr);
         // now adjust table columns
         resultFilejTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        int totalWidth = 0; // to set a size of a scrol pane 
+        int totalWidth = 0; // to set a size of a scrol pane
         for (int column = 0; column < resultFilejTable.getColumnCount(); column++) {
             TableColumn tableColumn = resultFilejTable.getColumnModel().getColumn(column);
             int maxWidth = tableColumn.getMaxWidth();
@@ -156,7 +157,7 @@ public final class Visualize extends javax.swing.JFrame {
                 // intercellspacing is bit bigger to allow slightly more space on the cell
                 int width = c.getPreferredSize().width + (10 * resultFilejTable.getIntercellSpacing().width);
                 preferedWidth = Math.max(preferedWidth, width);
-                // some cells are super big, setting to maximum 800 will make the table virtually nicer. 
+                // some cells are super big, setting to maximum 800 will make the table virtually nicer.
                 if (preferedWidth >= maxWidth && preferedWidth < 800) {
                     preferedWidth = maxWidth;
                     break;
@@ -250,7 +251,7 @@ public final class Visualize extends javax.swing.JFrame {
             int row_number = dataStrArr.size();
             // construct a 2D array for TableModel
             Object[][] data = new Object[row_number][columnNames.length];
-            // Prepare similarity table model 
+            // Prepare similarity table model
             SimilarityTableModel similarityTableModel = new SimilarityTableModel(columnNames, data);
             resultFilejTable.setModel(similarityTableModel);
             // prepare a tableRowSorter
@@ -547,11 +548,11 @@ public final class Visualize extends javax.swing.JFrame {
         String charge = original_spec.getPrecursor().getPossibleChargesAsString(),
                 name = original_spec.getSpectrumTitle();
         spectrumPanel = new SpectrumPanel(
-                mzs, // double [] of mz values 
+                mzs, // double [] of mz values
                 ints, // double [] of intensity values
-                precursor, // double with precursor mz 
+                precursor, // double with precursor mz
                 charge, // String precursor charge
-                name); // String spectrum file name  
+                name); // String spectrum file name
         // set up the peak annotations!!!
         List<SpectrumAnnotation> peakAnnotation = getAnnotatedPeaks();
         LOGGER.info("Annotated peaks=" + peakAnnotation.size());
@@ -569,57 +570,6 @@ public final class Visualize extends javax.swing.JFrame {
         visualizeSpectrumjPanel.revalidate();
         visualizeSpectrumjPanel.repaint();
 
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("System".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Visualize.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    new Visualize().setVisible(true);
-                } catch (MzMLUnmarshallerException ex) {
-                    Logger.getLogger(Visualize.class
-                            .getName()).log(Level.SEVERE, null, ex);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(Visualize.class
-                            .getName()).log(Level.SEVERE, null, ex);
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Visualize.class
-                            .getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

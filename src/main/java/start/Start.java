@@ -18,6 +18,10 @@ import crossLinker.GetCrossLinker;
 import database.CreateDatabase;
 import database.FASTACPDBLoader;
 import database.WriteCXDB;
+import gui.MainController;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -38,11 +42,26 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 import util.ResourceUtils;
 
 import java.io.IOException;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.Painter;
+import javax.swing.UIManager;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import visualize.Visualize;
 
 /**
  *
@@ -50,13 +69,40 @@ import org.springframework.web.client.RestTemplate;
  */
 public class Start {
 
+    /**
+     * Logger instance.
+     */
     private static final Logger LOGGER = Logger.getLogger(Start.class);
+    private static final String HEADER = "[Xilmass - an algorithm to identify cross-linked peptides]\n";
+    private static final String USAGE = "java -jar <jar file name>";
+    private static Options options;
 
     /**
-     * @param args the command line arguments
+     * The startup error message.
      */
-    public static void main(String[] args) throws Exception {
+    private static final String ERROR_MESSAGE = "An error occured during startup, please try again."
+            + System.lineSeparator() + "If the problem persists, contact your administrator or post an issue on the google code page.";
+
+    /**
+     * Main executable.
+     *
+     * @param commandLineArguments Command-line arguments.
+     */
+    public static void main(String[] commandLineArguments) {
         sendAnalyticsEvent();
+
+        constructOptions();
+
+        displayBlankLines(1, System.out);
+        displayHeader(System.out);
+        displayBlankLines(2, System.out);
+        parse(commandLineArguments);
+    }
+
+    /**
+     * Run xilmass in command line mode.
+     */
+    public static void launchCommandLineMode() throws Exception {
         try {
             long startTime = System.currentTimeMillis();
             Date startDate = new Date();
@@ -69,8 +115,8 @@ public class Start {
                     inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                     insilicoContaminantDBName = "",
                     cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
-                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
-                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
+                    //                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
+                    //                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
                     cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
                     crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                     crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
@@ -121,21 +167,7 @@ public class Start {
             } catch (Exception e) {
                 LOGGER.error("A given path for resultFolder is not found!");
             }
-            try {
-                f = new File(resultFolder);
-            } catch (Exception e) {
-                LOGGER.error("A given path for resultFolder is not found!");
-            }
-            try {
-                f = new File(output);
-            } catch (Exception e) {
-                LOGGER.error("A given path for output is not found!");
-            }
-            try {
-                f = new File(allXPSMsName);
-            } catch (Exception e) {
-                LOGGER.error("A given path for allXPSMsName is not found!");
-            }
+
             try {
                 f = new File(mgfs);
             } catch (Exception e) {
@@ -272,8 +304,6 @@ public class Start {
                         }
                     }
                 }
-            } else {
-
             }
 
             // STEP 3: CREATE A CROSS-LINKED DATABASE!!!
@@ -373,14 +403,14 @@ public class Start {
             for (File mgf : new File(mgfs).listFiles()) {
                 if (mgf.getName().endsWith(".mgf")) {
                     LOGGER.info("The MS/MS spectra currently searched are from " + mgf.getName());
-                    LOGGER.debug(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                    LOGGER.debug(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
                     File percolatorIntra,
                             percolatorInter;
                     BufferedWriter bw_intra = null,
                             bw_inter = null;
                     if (isPercolatorAsked) {
-                        percolatorIntra = new File(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
-                        percolatorInter = new File(resultFolder + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
+                        percolatorIntra = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_intra_percolator" + ".txt");
+                        percolatorInter = new File(resultFolder + File.separator + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass_inter_percolator" + ".txt");
                         bw_intra = new BufferedWriter(new FileWriter(percolatorIntra));
                         bw_inter = new BufferedWriter(new FileWriter(percolatorInter));
                         bw_intra.write(percolatorInputTitle + "\n");
@@ -388,7 +418,7 @@ public class Start {
                     }
 
                     // write results on output file for each mgf
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(resultFolder + File.separator + "" + mgf.getName().substring(0, mgf.getName().indexOf(".mgf")) + "_xilmass" + ".txt"));
                     bw.write("Xilmass version " + version);
                     bw.newLine();
                     StringBuilder titleToWrite = prepareTitle(shownInPPM, doesKeepCPeptideFragmPattern, doesKeepIonWeights);
@@ -493,8 +523,11 @@ public class Start {
                     fdrInterPro = ConfigHolder.getInstance().getString("fdrInterPro"),
                     fdrIntraPro = ConfigHolder.getInstance().getString("fdrIntraPro"),
                     fdr = ConfigHolder.getInstance().getString("fdr");
-            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, output, allXPSMsName,
+            NameTargetDecoy.main(new String[]{analysis, xilmassResFolder, scoringFunctionName, "validatedXPSMs_list.txt", "allXPSMs_list.txt",
                 fdrInterPro, fdrIntraPro, fdr, isImprovedFDR, ConfigHolder.getInstance().getString("report_in_ppm")});
+            // write settings on an output folder
+            writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
+
         } catch (IOException ex) {
             LOGGER.error(ex);
         }
@@ -528,6 +561,275 @@ public class Start {
             fileTitle.append("\t").append("IntroducedIonWeight");
         }
         return fileTitle;
+    }
+
+    /**
+     * Construct Options.
+     */
+    private static void constructOptions() {
+        options = new Options();
+
+        options.addOption("h", "help", Boolean.FALSE, "Help");
+        options.addOption("u", "usage", Boolean.FALSE, "Usage");
+
+        Option commandLineOption = new Option("c", "command_line", false, "Command-line mode");
+        commandLineOption.setArgName("command_line");
+        Option startupGuiOption = new Option("s", "startup_gui", false, "Startup GUI mode");
+        startupGuiOption.setArgName("startup_gui");
+        Option resultsGuiOption = new Option("r", "results_gui", false, "Results GUI mode");
+        resultsGuiOption.setArgName("results_gui");
+        OptionGroup commandLineModeOptionGroup = new OptionGroup();
+        commandLineModeOptionGroup.addOption(commandLineOption);
+        commandLineModeOptionGroup.addOption(startupGuiOption);
+        commandLineModeOptionGroup.addOption(resultsGuiOption);
+
+        options.addOptionGroup(commandLineModeOptionGroup);
+    }
+
+    /**
+     * Display example application header.
+     *
+     * @out OutputStream to which header should be written.
+     */
+    private static void displayHeader(OutputStream out) {
+        try {
+            out.write(HEADER.getBytes());
+        } catch (IOException ioEx) {
+            System.out.println(HEADER);
+        }
+    }
+
+    /**
+     * Write the provided number of blank lines to the provided OutputStream.
+     *
+     * @param numberBlankLines Number of blank lines to write.
+     * @param out OutputStream to which to write the blank lines.
+     */
+    private static void displayBlankLines(
+            int numberBlankLines,
+            OutputStream out) {
+        try {
+            for (int i = 0; i < numberBlankLines; ++i) {
+                out.write("\n".getBytes());
+            }
+        } catch (IOException ioEx) {
+            for (int i = 0; i < numberBlankLines; ++i) {
+                System.out.println();
+            }
+        }
+    }
+
+    /**
+     * Print usage information to provided OutputStream.
+     *
+     * @param applicationName Name of application to list in usage.
+     * @param options Command-line options to be part of usage.
+     * @param out OutputStream to which to write the usage information.
+     */
+    private static void printUsage(
+            String applicationName,
+            Options options,
+            OutputStream out) {
+        PrintWriter writer = new PrintWriter(out);
+        HelpFormatter usageFormatter = new HelpFormatter();
+        usageFormatter.printUsage(writer, 80, applicationName, options);
+        writer.flush();
+    }
+
+    /**
+     * Write "help" to the provided OutputStream.
+     */
+    private static void printHelp(
+            Options options,
+            int printedRowWidth,
+            String header,
+            String footer,
+            int spacesBeforeOption,
+            int spacesBeforeOptionDescription,
+            boolean displayUsage,
+            final OutputStream out) {
+        PrintWriter writer = new PrintWriter(out);
+        HelpFormatter helpFormatter = new HelpFormatter();
+        helpFormatter.printHelp(
+                writer,
+                printedRowWidth,
+                USAGE,
+                header,
+                options,
+                spacesBeforeOption,
+                spacesBeforeOptionDescription,
+                footer,
+                displayUsage);
+        writer.flush();
+    }
+
+    /**
+     * Apply Apache Commons CLI parser to command-line arguments.
+     *
+     * @param commandLineArguments Command-line arguments to be processed.
+     */
+    private static void parse(String[] commandLineArguments) {
+        CommandLineParser cmdLineParser = new BasicParser();
+        CommandLine commandLine;
+        try {
+            commandLine = cmdLineParser.parse(options, commandLineArguments);
+            if (commandLine.getOptions().length == 0) {
+                //launch startup GUI mode
+                launchStartupGuiMode();
+            }
+            if (commandLine.hasOption('h')) {
+                printHelp(
+                        options, 80, "Help", "End of Help",
+                        5, 3, true, System.out);
+            }
+            if (commandLine.hasOption('u')) {
+                printUsage(USAGE, options, System.out);
+            }
+            if (commandLine.hasOption("c")) {
+                try {
+                    //launch command line mode
+                    launchCommandLineMode();
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    printHelp(
+                            options, 80, "Help", "End of Help",
+                            5, 3, true, System.out);
+                }
+            }
+            if (commandLine.hasOption('s')) {
+                //launch startup GUI mode
+                launchStartupGuiMode();
+            }
+            if (commandLine.hasOption('r')) {
+                //launch results GUI mode
+                launchResultsGui();
+            }
+        } catch (ParseException parseException) {
+            System.out.println("Encountered exception while parsing :\n"
+                    + parseException.getMessage());
+            printHelp(
+                    options, 80, "Help", "End of Help",
+                    5, 3, true, System.out);
+        }
+    }
+
+    /**
+     * Run xilmass in startup GUI mode.
+     */
+    private static void launchStartupGuiMode() {
+        try {
+            /**
+             * Set the Nimbus look and feel.
+             */
+            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+            /*
+         * If Nimbus (introduced in Java SE 6) is not available, stay with the
+         * default look and feel. For details see
+         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+             */
+            try {
+                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+
+            //set background color for JOptionPane and JPanel instances
+            UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
+            UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
+            UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
+            //set background color for JFileChooser instances
+            UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
+                    (Painter<JFileChooser>) new Painter<JFileChooser>() {
+                @Override
+                public void paint(Graphics2D g, JFileChooser object, int width, int height) {
+                    g.setColor(Color.WHITE);
+                    g.draw(object.getBounds());
+                }
+            });
+            //</editor-fold>
+
+            MainController mainController = new MainController();
+            mainController.init();
+            mainController.showView();
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            //add message to JTextArea
+            JTextArea textArea = new JTextArea(ERROR_MESSAGE + System.lineSeparator() + System.lineSeparator() + ex.getMessage());
+            //put JTextArea in JScrollPane
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(600, 200));
+            textArea.setEditable(false);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+
+            JOptionPane.showMessageDialog(null, scrollPane, "Xilmass startup GUI error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+    }
+
+    /**
+     * Run xilmass in results viewer GUI mode.
+     */
+    private static void launchResultsGui() {
+        /**
+         * Set the Nimbus look and feel.
+         */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Visualize.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+
+        //set background color for JOptionPane and JPanel instances
+        UIManager.getLookAndFeelDefaults().put("OptionPane.background", Color.WHITE);
+        UIManager.getLookAndFeelDefaults().put("Panel.background", Color.WHITE);
+        UIManager.getLookAndFeelDefaults().put("FileChooser.background", Color.WHITE);
+        //set background color for JFileChooser instances
+        UIManager.getLookAndFeelDefaults().put("FileChooser[Enabled].backgroundPainter",
+                (Painter<JFileChooser>) new Painter<JFileChooser>() {
+            @Override
+            public void paint(Graphics2D g, JFileChooser object, int width, int height) {
+                g.setColor(Color.WHITE);
+                g.draw(object.getBounds());
+            }
+        });
+        //</editor-fold>
+
+        //Create and display the form
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    new Visualize().setVisible(true);
+                } catch (MzMLUnmarshallerException | FileNotFoundException | ClassNotFoundException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                }
+            }
+        });
     }
 
     /**
@@ -648,8 +950,6 @@ public class Start {
         bw.write(new StringBuilder("cxDBName=").append(ConfigHolder.getInstance().getString("cxDBName")).append("\n").toString());
         bw.write(new StringBuilder("mgfs=").append(ConfigHolder.getInstance().getString("mgfs")).append("\n").toString());
         bw.write(new StringBuilder("resultFolder=").append(ConfigHolder.getInstance().getString("resultFolder")).append("\n").toString());
-        bw.write(new StringBuilder("tdfile=").append(ConfigHolder.getInstance().getString("tdfile")).append("\n").toString());
-        bw.write(new StringBuilder("allXPSMoutput=").append(ConfigHolder.getInstance().getString("allXPSMoutput")).append("\n").toString());
         bw.write(new StringBuilder("index=").append(file.getAbsolutePath()).append(File.separator).append("index").append("\n").append("\n").toString());
         // write down all cross-linking related parameters
         bw.write(new StringBuilder("##Cross-linking related parameters").append("\n").toString());

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-//import java.util.stream.Collectors;
 
 /**
  * @param <T> the object class that is used in a DualList instance.
@@ -89,6 +88,10 @@ public class DualList<T> extends javax.swing.JPanel {
 
         addedItemBindingList.clear();
         addedItemBindingList.addAll(addedItems);
+
+        //sort the available and added items
+        sort(availableItemBindingList);
+        sort(addedItemBindingList);
 
         checkButtonStates();
     }
@@ -211,6 +214,7 @@ public class DualList<T> extends javax.swing.JPanel {
                         //remove from addedItemBindingList
                         addedItemBindingList.remove(selectedItem);
                     }
+
                     //sort
                     sort(availableItemBindingList);
 
