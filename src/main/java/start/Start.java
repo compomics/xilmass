@@ -114,10 +114,10 @@ public class Start {
                     contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
                     inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
                     insilicoContaminantDBName = "",
-                    cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
+                    cxDBFolder = ConfigHolder.getInstance().getString("cxDBName"),
                     //                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
                     //                    allXPSMsName = ConfigHolder.getInstance().getString("allXPSMoutput"), // all XPSMs
-                    cxDBNameIndexFile = cxDBName + ".index", // An index file from already generated cross linked protein database
+                    cxDBNameIndexFile = cxDBFolder + ".index", // An index file from already generated cross linked protein database
                     crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
                     crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes").toLowerCase(),
                     enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
@@ -131,7 +131,9 @@ public class Start {
                     fragModeName = ConfigHolder.getInstance().getString("fragMode"),
                     // scoring = ConfigHolder.getInstance().getString("scoringFunctionName"), was required for testing
                     scoring = "AndromedaD",
-                    labeledOption = ConfigHolder.getInstance().getString("isLabeled");
+                    labeledOption = ConfigHolder.getInstance().getString("isLabeled"),
+                    givenDBFileName = new File(givenDBName).getName(),
+                    cxDBName = new File(cxDBFolder) + File.separator + "cx_" + givenDBFileName.substring(0, givenDBFileName.indexOf(".fasta"));
             // load enzyme and modification files from a resource folder
             String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
 
@@ -158,9 +160,9 @@ public class Start {
                 LOGGER.error("A given path for insilicoContaminantDBName is not found!");
             }
             try {
-                f = new File(cxDBName);
+                f = new File(cxDBFolder);
             } catch (Exception e) {
-                LOGGER.error("A given path for cxDBName is not found!");
+                LOGGER.error("A given path for cxDBFolder is not found!");
             }
             try {
                 f = new File(resultFolder);
@@ -282,7 +284,7 @@ public class Start {
             // STEP 2: CHECK IF PREVIOUSLY A CXDB WAS CONSTRUCTED!!
             LOGGER.info("Checking if a previously constructed CX database exists for the same search settings!");
             // This part of the code makes sure that an already generated CXDB is not constructed again..
-            File cxDB = new File(cxDBName + ".fastacp"),
+            File cxDB = new File(cxDBName),
                     settings = new File(cxDB.getAbsoluteFile().getParent() + File.separator + "settings.txt"),
                     indexFile = new File(cxDBNameIndexFile);
 
@@ -298,7 +300,7 @@ public class Start {
                 // Seems the database setting is the same, so check if there is now constructed crosslinked peptide database exists...
                 if (isSame) {
                     for (File tmp : cxDB.getParentFile().listFiles()) {
-                        if (tmp.getName().equals(cxDB.getName())) {
+                        if (tmp.getName().endsWith(".fastacp")) {
                             LOGGER.info("A previously constructed CX database file is found! The name is " + tmp.getName());
                             doesCXDBExist = true;
                         }
@@ -313,7 +315,7 @@ public class Start {
                 // Construct a cross linked peptide database and write an index file with masses...
                 LOGGER.info("Either a CX database is not found or the settings are different! A CX database is going to be constructed..");
                 CreateDatabase instanceToCreateDB = new CreateDatabase(givenDBName, inSilicoPeptideDBName,
-                        cxDBName, // db related parameters
+                        cxDBFolder, // db related parameters
                         crossLinkerName, // crossLinker name
                         crossLinkedProteinTypes, // crossLinking type: Both/Inter/Intra
                         enzymeName, enzymeFileName, misclevaged, // enzyme related parameters
@@ -945,76 +947,75 @@ public class Start {
         }
         // write down all input file related parameters..
         bw.write(new StringBuilder("##Input file related parameters").append("\n").toString());
-        bw.write(new StringBuilder("givenDBName=").append(ConfigHolder.getInstance().getString("givenDBName")).append("\n").toString());
-        bw.write(new StringBuilder("contaminantDBName=").append(ConfigHolder.getInstance().getString("contaminantDBName")).append("\n").toString());
-        bw.write(new StringBuilder("cxDBName=").append(ConfigHolder.getInstance().getString("cxDBName")).append("\n").toString());
-        bw.write(new StringBuilder("mgfs=").append(ConfigHolder.getInstance().getString("mgfs")).append("\n").toString());
-        bw.write(new StringBuilder("resultFolder=").append(ConfigHolder.getInstance().getString("resultFolder")).append("\n").toString());
+        bw.write(new StringBuilder("givenDBName=").append(ConfigHolder.getInstance().getProperty("givenDBName")).append("\n").toString());
+        bw.write(new StringBuilder("contaminantDBName=").append(ConfigHolder.getInstance().getProperty("contaminantDBName")).append("\n").toString());
+        bw.write(new StringBuilder("cxDBFolderName=").append(ConfigHolder.getInstance().getProperty("cxDBName")).append("\n").toString());
+        bw.write(new StringBuilder("mgfs=").append(ConfigHolder.getInstance().getProperty("mgfs")).append("\n").toString());
+        bw.write(new StringBuilder("resultFolder=").append(ConfigHolder.getInstance().getProperty("resultFolder")).append("\n").toString());
         bw.write(new StringBuilder("index=").append(file.getAbsolutePath()).append(File.separator).append("index").append("\n").append("\n").toString());
         // write down all cross-linking related parameters
         bw.write(new StringBuilder("##Cross-linking related parameters").append("\n").toString());
-        bw.write(new StringBuilder("crossLinkerName=").append(ConfigHolder.getInstance().getString("crossLinkerName")).append("\n").toString());
-        bw.write(new StringBuilder("isLabeled=").append(ConfigHolder.getInstance().getString("isLabeled")).append("\n").toString());
-        bw.write(new StringBuilder("isConsideredSideReactionSerine=").append(ConfigHolder.getInstance().getString("isConsideredSideReactionSerine")).append("\n").toString());
-        bw.write(new StringBuilder("isConsideredSideReactionThreonine=").append(ConfigHolder.getInstance().getString("isConsideredSideReactionThreonine")).append("\n").toString());
-        bw.write(new StringBuilder("isConsideredSideReactionTyrosine=").append(ConfigHolder.getInstance().getString("isConsideredSideReactionTyrosine")).append("\n").toString());
-        bw.write(new StringBuilder("crossLinkedProteinTypes=").append(ConfigHolder.getInstance().getString("crossLinkedProteinTypes")).append("\n").toString());
-        bw.write(new StringBuilder("searcForAlsoMonoLink=").append(ConfigHolder.getInstance().getString("searcForAlsoMonoLink")).append("\n").toString());
-        bw.write(new StringBuilder("minLen=").append(ConfigHolder.getInstance().getString("minLen")).append("\n").toString());
-        bw.write(new StringBuilder("maxLenCombined=").append(ConfigHolder.getInstance().getString("maxLenCombined")).append("\n").toString());
-        bw.write(new StringBuilder("allowIntraPeptide=").append(ConfigHolder.getInstance().getString("allowIntraPeptide")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("crossLinkerName=").append(ConfigHolder.getInstance().getProperty("crossLinkerName")).append("\n").toString());
+        bw.write(new StringBuilder("isLabeled=").append(ConfigHolder.getInstance().getProperty("isLabeled")).append("\n").toString());
+        bw.write(new StringBuilder("isConsideredSideReactionSerine=").append(ConfigHolder.getInstance().getProperty("isConsideredSideReactionSerine")).append("\n").toString());
+        bw.write(new StringBuilder("isConsideredSideReactionThreonine=").append(ConfigHolder.getInstance().getProperty("isConsideredSideReactionThreonine")).append("\n").toString());
+        bw.write(new StringBuilder("isConsideredSideReactionTyrosine=").append(ConfigHolder.getInstance().getProperty("isConsideredSideReactionTyrosine")).append("\n").toString());
+        bw.write(new StringBuilder("crossLinkedProteinTypes=").append(ConfigHolder.getInstance().getProperty("crossLinkedProteinTypes")).append("\n").toString());
+        bw.write(new StringBuilder("searcForAlsoMonoLink=").append(ConfigHolder.getInstance().getProperty("searcForAlsoMonoLink")).append("\n").toString());
+        bw.write(new StringBuilder("minLen=").append(ConfigHolder.getInstance().getProperty("minLen")).append("\n").toString());
+        bw.write(new StringBuilder("maxLenCombined=").append(ConfigHolder.getInstance().getProperty("maxLenCombined")).append("\n").toString());
+        bw.write(new StringBuilder("allowIntraPeptide=").append(ConfigHolder.getInstance().getProperty("allowIntraPeptide")).append("\n").append("\n").toString());
 
         // write down all in silico digestion related parameters
         bw.write(new StringBuilder("##In silico digestion related parameters").append("\n").toString());
-        bw.write(new StringBuilder("enzymeName=").append(ConfigHolder.getInstance().getString("enzymeName")).append("\n").toString());
-        bw.write(new StringBuilder("miscleavaged=").append(ConfigHolder.getInstance().getString("miscleavaged")).append("\n").toString());
-        bw.write(new StringBuilder("lowerMass=").append(ConfigHolder.getInstance().getString("lowerMass")).append("\n").toString());
-        bw.write(new StringBuilder("higherMass=").append(ConfigHolder.getInstance().getString("higherMass")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("enzymeName=").append(ConfigHolder.getInstance().getProperty("enzymeName")).append("\n").toString());
+        bw.write(new StringBuilder("miscleavaged=").append(ConfigHolder.getInstance().getProperty("miscleavaged")).append("\n").toString());
+        bw.write(new StringBuilder("lowerMass=").append(ConfigHolder.getInstance().getProperty("lowerMass")).append("\n").toString());
+        bw.write(new StringBuilder("higherMass=").append(ConfigHolder.getInstance().getProperty("higherMass")).append("\n").append("\n").toString());
 
         // write down all peptide modification related parameters
         bw.write(new StringBuilder("##Peptide modification related parameters").append("\n").toString());
-        bw.write(new StringBuilder("fixedModification=").append(ConfigHolder.getInstance().getString("fixedModification")).append("\n").toString());
-        bw.write(new StringBuilder("variableModification=").append(ConfigHolder.getInstance().getString("variableModification")).append("\n").toString());
-        bw.write(new StringBuilder("maxModsPerPeptide=").append(ConfigHolder.getInstance().getString("maxModsPerPeptide")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("fixedModification=").append(ConfigHolder.getInstance().getProperty("fixedModification")).append("\n").toString());
+        bw.write(new StringBuilder("variableModification=").append(ConfigHolder.getInstance().getProperty("variableModification")).append("\n").toString());
+        bw.write(new StringBuilder("maxModsPerPeptide=").append(ConfigHolder.getInstance().getProperty("maxModsPerPeptide")).append("\n").append("\n").toString());
 
         // write down all scoring related parameters
         bw.write(new StringBuilder("##Scoring related parameters").append("\n").toString());
 
-
-        bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getInt("consider_neutrallosses")).append("\n").toString());
-        bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getString("fragModeName")).append("\n").toString());
-        bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getString("peptide_tol_total")).append("\n").toString());
+        bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getProperty("consider_neutrallosses")).append("\n").toString());
+        bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getProperty("fragModeName")).append("\n").toString());
+        bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getProperty("peptide_tol_total")).append("\n").toString());
         // write each peptide-tolerance mass window on given setting-parameters
-        int pep_tol_nums = Integer.parseInt(ConfigHolder.getInstance().getString("peptide_tol_total"));
+        int pep_tol_nums = ConfigHolder.getInstance().getInt("peptide_tol_total");
         for (int pep_tol_num = 1; pep_tol_num < pep_tol_nums; pep_tol_num++) {
             String name = "peptide_tol" + pep_tol_num,
                     is_ppm = "is_peptide_tol" + 1 + "_PPM",
                     base = "peptide_tol" + pep_tol_num + "_base";
-            bw.write(new StringBuilder(name).append("=").append(ConfigHolder.getInstance().getString(name)).append("\n").toString());
-            bw.write(new StringBuilder(is_ppm).append("=").append(ConfigHolder.getInstance().getString(is_ppm)).append("\n").toString());
-            bw.write(new StringBuilder(base).append("=").append(ConfigHolder.getInstance().getString(base)).append("\n").toString());
+            bw.write(new StringBuilder(name).append("=").append(ConfigHolder.getInstance().getProperty(name)).append("\n").toString());
+            bw.write(new StringBuilder(is_ppm).append("=").append(ConfigHolder.getInstance().getProperty(is_ppm)).append("\n").toString());
+            bw.write(new StringBuilder(base).append("=").append(ConfigHolder.getInstance().getProperty(base)).append("\n").toString());
         }
-        bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getString("msms_tol")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getString("report_in_ppm")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getString("minRequiredPeaks")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getString("isAllMatchedPeaks")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getProperty("msms_tol")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getProperty("report_in_ppm")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getProperty("minRequiredPeaks")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getProperty("isAllMatchedPeaks")).append("\n").append("\n").toString());
 
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
-        bw.write(new StringBuilder("massWindow=").append(ConfigHolder.getInstance().getString("massWindow")).append("\n").toString());
-        bw.write(new StringBuilder("minimumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getString("minimumFiltedPeaksNumberForEachWindow")).append("\n").toString());
-        bw.write(new StringBuilder("maximumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getString("maximumFiltedPeaksNumberForEachWindow")).append("\n").toString());
-        bw.write(new StringBuilder("deisotopePrecision=").append(ConfigHolder.getInstance().getString("deisotopePrecision")).append("\n").toString());
-        bw.write(new StringBuilder("deconvulatePrecision=").append(ConfigHolder.getInstance().getString("deconvulatePrecision")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("massWindow=").append(ConfigHolder.getInstance().getProperty("massWindow")).append("\n").toString());
+        bw.write(new StringBuilder("minimumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getProperty("minimumFiltedPeaksNumberForEachWindow")).append("\n").toString());
+        bw.write(new StringBuilder("maximumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getProperty("maximumFiltedPeaksNumberForEachWindow")).append("\n").toString());
+        bw.write(new StringBuilder("deisotopePrecision=").append(ConfigHolder.getInstance().getProperty("deisotopePrecision")).append("\n").toString());
+        bw.write(new StringBuilder("deconvulatePrecision=").append(ConfigHolder.getInstance().getProperty("deconvulatePrecision")).append("\n").append("\n").toString());
 
         // write each Multithreading and validation related parameters
         bw.write(new StringBuilder("##Multithreading and validation related parameters").append("\n").toString());
-        bw.write(new StringBuilder("threadNumbers=").append(ConfigHolder.getInstance().getString("threadNumbers")).append("\n").toString());
-        bw.write(new StringBuilder("isPercolatorAsked=").append(ConfigHolder.getInstance().getString("isPercolatorAsked")).append("\n").toString());
-        bw.write(new StringBuilder("isImprovedFDR=").append(ConfigHolder.getInstance().getString("isImprovedFDR")).append("\n").toString());
-        bw.write(new StringBuilder("fdrInterPro=").append(ConfigHolder.getInstance().getString("fdrInterPro")).append("\n").toString());
-        bw.write(new StringBuilder("fdrIntraPro=").append(ConfigHolder.getInstance().getString("fdrIntraPro")).append("\n").toString());
-        bw.write(new StringBuilder("fdr=").append(ConfigHolder.getInstance().getString("fdr")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("threadNumbers=").append(ConfigHolder.getInstance().getProperty("threadNumbers")).append("\n").toString());
+        bw.write(new StringBuilder("isPercolatorAsked=").append(ConfigHolder.getInstance().getProperty("isPercolatorAsked")).append("\n").toString());
+        bw.write(new StringBuilder("isImprovedFDR=").append(ConfigHolder.getInstance().getProperty("isImprovedFDR")).append("\n").toString());
+        bw.write(new StringBuilder("fdrInterPro=").append(ConfigHolder.getInstance().getProperty("fdrInterPro")).append("\n").toString());
+        bw.write(new StringBuilder("fdrIntraPro=").append(ConfigHolder.getInstance().getProperty("fdrIntraPro")).append("\n").toString());
+        bw.write(new StringBuilder("fdr=").append(ConfigHolder.getInstance().getProperty("fdr")).append("\n").append("\n").toString());
         bw.close();
     }
 
@@ -1028,27 +1029,27 @@ public class Start {
      * @throws IOException
      */
     public static boolean isSameDBSetting(File paramFile) throws IOException {
-        String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
-                contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
-                cxDBName = ConfigHolder.getInstance().getString("cxDBName"),
+        String givenDBName = ConfigHolder.getInstance().getProperty("givenDBName").toString(),
+                contaminantDBName = ConfigHolder.getInstance().getProperty("contaminantDBName").toString(),
+                cxDBName = ConfigHolder.getInstance().getProperty("cxDBName").toString(),
                 //indexFolder = ConfigHolder.getInstance().getString("indexFolder"),
-                crossLinkerName = ConfigHolder.getInstance().getString("crossLinkerName"),
-                isLabeled = ConfigHolder.getInstance().getString("isLabeled"),
-                isConsideredSideReactionSerine = ConfigHolder.getInstance().getString("isConsideredSideReactionSerine"),
-                isConsideredSideReactionThreonine = ConfigHolder.getInstance().getString("isConsideredSideReactionThreonine"),
-                isConsideredSideReactionTyrosine = ConfigHolder.getInstance().getString("isConsideredSideReactionTyrosine"),
-                crossLinkedProteinTypes = ConfigHolder.getInstance().getString("crossLinkedProteinTypes"),
-                searcForAlsoMonoLink = ConfigHolder.getInstance().getString("searcForAlsoMonoLink"),
-                minLen = ConfigHolder.getInstance().getString("minLen"),
-                maxLenCombined = ConfigHolder.getInstance().getString("maxLenCombined"),
-                allowIntraPeptide = ConfigHolder.getInstance().getString("allowIntraPeptide"),
-                enzymeName = ConfigHolder.getInstance().getString("enzymeName"),
-                misclevaged = ConfigHolder.getInstance().getString("miscleavaged"),
-                lowerMass = ConfigHolder.getInstance().getString("lowerMass"),
-                higherMass = ConfigHolder.getInstance().getString("higherMass"),
-                fixedModification = ConfigHolder.getInstance().getString("fixedModification"),
-                variableModification = ConfigHolder.getInstance().getString("variableModification"),
-                maxModsPerPeptide = ConfigHolder.getInstance().getString("maxModsPerPeptide"),
+                crossLinkerName = ConfigHolder.getInstance().getProperty("crossLinkerName").toString(),
+                isLabeled = ConfigHolder.getInstance().getProperty("isLabeled").toString(),
+                isConsideredSideReactionSerine = ConfigHolder.getInstance().getProperty("isConsideredSideReactionSerine").toString(),
+                isConsideredSideReactionThreonine = ConfigHolder.getInstance().getProperty("isConsideredSideReactionThreonine").toString(),
+                isConsideredSideReactionTyrosine = ConfigHolder.getInstance().getProperty("isConsideredSideReactionTyrosine").toString(),
+                crossLinkedProteinTypes = ConfigHolder.getInstance().getProperty("crossLinkedProteinTypes").toString(),
+                searcForAlsoMonoLink = ConfigHolder.getInstance().getProperty("searcForAlsoMonoLink").toString(),
+                minLen = ConfigHolder.getInstance().getProperty("minLen").toString(),
+                maxLenCombined = ConfigHolder.getInstance().getProperty("maxLenCombined").toString(),
+                allowIntraPeptide = ConfigHolder.getInstance().getProperty("allowIntraPeptide").toString(),
+                enzymeName = ConfigHolder.getInstance().getProperty("enzymeName").toString(),
+                misclevaged = ConfigHolder.getInstance().getProperty("miscleavaged").toString(),
+                lowerMass = ConfigHolder.getInstance().getProperty("lowerMass").toString(),
+                higherMass = ConfigHolder.getInstance().getProperty("higherMass").toString(),
+                fixedModification = ConfigHolder.getInstance().getProperty("fixedModification").toString(),
+                variableModification = ConfigHolder.getInstance().getProperty("variableModification").toString(),
+                maxModsPerPeptide = ConfigHolder.getInstance().getProperty("maxModsPerPeptide").toString(),
                 index = paramFile.getAbsolutePath() + File.separator + "index";
         int control = 0;
         boolean isSame = false;
@@ -1060,7 +1061,7 @@ public class Start {
             } else if (((line.startsWith("contaminantDBName")) && (line.split("=").length == 2) && (line.split("\t")[1].equals(contaminantDBName)))
                     || (line.startsWith("contaminantDBName")) && (line.split("=").length == 1)) {
                 control++;
-            } else if ((line.startsWith("cxDBName")) && (line.split("=")[1].equals(cxDBName))) {
+            } else if ((line.startsWith("cxDBFolderNam")) && (line.split("=")[1].equals(cxDBName))) {
                 control++;
             } else if ((line.startsWith("index")) && (line.split("=")[1].equals(index))) {
                 control++;

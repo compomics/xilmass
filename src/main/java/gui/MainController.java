@@ -233,7 +233,6 @@ public class MainController {
         //init file choosers
         //disable select multiple files
         mainFrame.getFastaDbChooser().setMultiSelectionEnabled(false);
-        mainFrame.getSearchDbChooser().setMultiSelectionEnabled(false);
         mainFrame.getDirectoryChooser().setMultiSelectionEnabled(false);
         mainFrame.getFileChooser().setMultiSelectionEnabled(false);
         //set select directories only
@@ -286,10 +285,10 @@ public class MainController {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //in response to the button click, show open dialog
-                int returnVal = mainFrame.getFileChooser().showOpenDialog(mainFrame);
+                int returnVal = mainFrame.getDirectoryChooser().showOpenDialog(mainFrame);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     //show path in text field
-                    mainFrame.getSearchDbPathTextField().setText(mainFrame.getFileChooser().getSelectedFile().getAbsolutePath());
+                    mainFrame.getSearchDbPathTextField().setText(mainFrame.getDirectoryChooser().getSelectedFile().getAbsolutePath());
                 }
             }
         });
@@ -671,8 +670,6 @@ public class MainController {
         //scoring params
         int p = mainFrame.getNeutralLossesComboBox().getSelectedIndex();
         ConfigHolder.getInstance().setProperty(NEUTRAL_LOSSES, mainFrame.getNeutralLossesComboBox().getSelectedIndex());
-
-        System.out.println("-----------------------" + ConfigHolder.getInstance().getInt("consider_neutrallosses"));
 
         int fragmentationMode = mainFrame.getFragmentationModeComboBox().getSelectedIndex();
         switch (fragmentationMode) {
