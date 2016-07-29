@@ -495,8 +495,8 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="maximumPeptideLengthLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Maximum peptide length*:"/>
-                        <Property name="toolTipText" type="java.lang.String" value="give a maximum length for one peptide in cross-linked peptides"/>
+                        <Property name="text" type="java.lang.String" value="Maximum total lenght of cross-linked peptides*:"/>
+                        <Property name="toolTipText" type="java.lang.String" value="give a maximum length for total peptide length for cross-linked peptide"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="minimumPeptideLengthTextField">
@@ -748,6 +748,9 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="fixedModificationsLabel">
                           <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Tahoma" size="12" style="1"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Select the fixed modifications*:"/>
                           </Properties>
                         </Component>
@@ -803,6 +806,9 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="variableModificationsLabel">
                           <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Tahoma" size="12" style="1"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Select the variable modifications*:"/>
                           </Properties>
                         </Component>
@@ -1494,16 +1500,10 @@
                                       <Group type="103" groupAlignment="1" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
                                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                  <Group type="102" alignment="1" attributes="0">
-                                                      <Component id="maximumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Group type="102" alignment="1" attributes="0">
-                                                      <Component id="minimumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
-                                                  </Group>
+                                                  <Component id="maximumNumberOfPeaksSpecProcessLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="minimumNumberOfPeaksSpecProcessLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                               </Group>
-                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                              <EmptySpace min="0" pref="74" max="32767" attributes="0"/>
                                           </Group>
                                           <Component id="lowerPrecursorMassBoundDeIsotopingLabel" pref="376" max="32767" attributes="0"/>
                                       </Group>

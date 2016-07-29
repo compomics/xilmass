@@ -606,8 +606,8 @@ public class MainFrame extends javax.swing.JFrame {
         minimumPeptideLengthLabel.setText("Minimum peptide length*:");
         minimumPeptideLengthLabel.setToolTipText("give a minimum length for one peptide in cross-linked peptides");
 
-        maximumPeptideLengthLabel.setText("Maximum peptide length*:");
-        maximumPeptideLengthLabel.setToolTipText("give a maximum length for one peptide in cross-linked peptides");
+        maximumPeptideLengthLabel.setText("Maximum total lenght of cross-linked peptides*:");
+        maximumPeptideLengthLabel.setToolTipText("give a maximum length for total peptide length for cross-linked peptide");
 
         minimumPeptideLengthTextField.setMinimumSize(new java.awt.Dimension(62, 27));
         minimumPeptideLengthTextField.setPreferredSize(new java.awt.Dimension(62, 27));
@@ -777,6 +777,7 @@ public class MainFrame extends javax.swing.JFrame {
         fixedModificationsDualList.setMinimumSize(new java.awt.Dimension(0, 0));
         fixedModificationsDualList.setPreferredSize(new java.awt.Dimension(0, 0));
 
+        fixedModificationsLabel.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         fixedModificationsLabel.setText("Select the fixed modifications*:");
 
         javax.swing.GroupLayout fixedModificationsPanelLayout = new javax.swing.GroupLayout(fixedModificationsPanel);
@@ -814,6 +815,7 @@ public class MainFrame extends javax.swing.JFrame {
         variableModificationsDualList.setMinimumSize(new java.awt.Dimension(0, 0));
         variableModificationsDualList.setPreferredSize(new java.awt.Dimension(0, 0));
 
+        variableModificationsLabel.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         variableModificationsLabel.setText("Select the variable modifications*:");
 
         javax.swing.GroupLayout variableModificationsPanelLayout = new javax.swing.GroupLayout(variableModificationsPanel);
@@ -1241,13 +1243,9 @@ public class MainFrame extends javax.swing.JFrame {
                         .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, spectrumPreprocessingPanelLayout.createSequentialGroup()
                                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                        .addComponent(maximumNumberOfPeaksSpecProcessLabel)
-                                        .addGap(74, 74, 74))
-                                    .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                        .addComponent(minimumNumberOfPeaksSpecProcessLabel)
-                                        .addGap(74, 74, 74)))
-                                .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(maximumNumberOfPeaksSpecProcessLabel)
+                                    .addComponent(minimumNumberOfPeaksSpecProcessLabel))
+                                .addGap(0, 74, Short.MAX_VALUE))
                             .addComponent(lowerPrecursorMassBoundDeIsotopingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lowerPrecursorMassBoundDeisotopingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)

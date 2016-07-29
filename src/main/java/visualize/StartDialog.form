@@ -113,6 +113,7 @@
         <Component class="javax.swing.JLabel" name="pathSpecsFolderjLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="A path of a spectrum folder"/>
+            <Property name="toolTipText" type="java.lang.String" value="Provide a folder for spectra that were searched"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="pathSpecsFolderjTextField">
@@ -202,6 +203,7 @@
           <Properties>
             <Property name="horizontalAlignment" type="int" value="2"/>
             <Property name="text" type="java.lang.String" value="A path of a result file"/>
+            <Property name="toolTipText" type="java.lang.String" value="Provide one Xilmass result file"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[172, 15]"/>
@@ -231,12 +233,13 @@
         <Component class="javax.swing.JLabel" name="indexjLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Index of annotated peaks"/>
+            <Property name="toolTipText" type="java.lang.String" value="Counting starts from 1, this value equals to 27 on the original output for each mgf files at Xilmass 0.3, and Xilmass 0.4"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="indexjTextField">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="4"/>
-            <Property name="text" type="java.lang.String" value="24"/>
+            <Property name="text" type="java.lang.String" value="27"/>
           </Properties>
         </Component>
       </SubComponents>

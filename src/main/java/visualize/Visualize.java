@@ -592,7 +592,7 @@ public final class Visualize extends javax.swing.JFrame {
         List<SpectrumAnnotation> annotations = new ArrayList<SpectrumAnnotation>();
         int selectedRow = resultFilejTable.getSelectedRow();
         String annotatedPeaksStr = (String) resultFilejTable.getValueAt(selectedRow, indexOfAnnotatedPeaks);
-        String[] splittedAnnotatedPeaksStr = annotatedPeaksStr.split(" ");
+        String[] splittedAnnotatedPeaksStr = annotatedPeaksStr.split(",");
         Color lightBlue = Color.getHSBColor(0.56f, 0.3f, 1f),
                 lightPink = Color.getHSBColor(0.92f, 0.3f, 1f),
                 lightYellow = Color.getHSBColor(0.16f, 0.4f, 1f),
@@ -608,29 +608,27 @@ public final class Visualize extends javax.swing.JFrame {
         for (String splittedAnnotatedPeak : splittedAnnotatedPeaksStr) {
             System.out.println(splittedAnnotatedPeak);
             if (!splittedAnnotatedPeak.isEmpty()) {
-                String[] annotationInfo = splittedAnnotatedPeak.split("_");
-                String chargeState = annotationInfo[0],
-                        ionNameAndIndex = splittedAnnotatedPeak.substring(splittedAnnotatedPeak.indexOf("_") + 1, splittedAnnotatedPeak.lastIndexOf("_")),
-                        mz = ((splittedAnnotatedPeak.substring(splittedAnnotatedPeak.lastIndexOf("_")).split("="))[1]).replace(",", "").replace("[", "").replace("]", "");
-                String chInfo = "1+";
-                if (chargeState.equals("doublyCharged")) {
-                    chInfo = "2+";
+                if(splittedAnnotatedPeak.contains("[")){
+                    splittedAnnotatedPeak=splittedAnnotatedPeak.replace("[","");
                 }
-                ionNameAndIndex = "(" + ionNameAndIndex + ")" + chInfo;
-                if (ionNameAndIndex.contains("lepA")) {
+                if(splittedAnnotatedPeak.contains("]")){
+                    splittedAnnotatedPeak=splittedAnnotatedPeak.replace("]","");
+                }
+                // one splitted annotate peak can be [(By5Ay9)++_mz=738.3853 OR (Ay1_By1)+_mz=145 OR [(Ay2)+_mz=248.1604
+                String[] annotationInfo = splittedAnnotatedPeak.split("_mz=");
+                String ionNames = annotationInfo[0],
+                        mz=annotationInfo[1];               
+                
+                if (ionNames.contains("A")) {
                     selectedColor = navy_blue;
-                } else if (ionNameAndIndex.contains("lepB")) {
+                } else if (ionNames.contains("B")) {
                     selectedColor = forest_green;
-                } else if (ionNameAndIndex.contains("pepA")) {
-                    selectedColor = midnight_blue;
-                } else if (ionNameAndIndex.contains("pepB")) {
-                    selectedColor = kashmir_green;
-                }
+                } 
                 DefaultSpectrumAnnotation defaultSpecAn = new DefaultSpectrumAnnotation(
                         new Double(mz), // the mz value to annotate
                         0.5, // the mz error margin
                         selectedColor, // the annotation color
-                        ionNameAndIndex); // the annotation label-like y1+
+                        ionNames); // the annotation label-like y1+
                 annotations.add(defaultSpecAn);
             }
         }
