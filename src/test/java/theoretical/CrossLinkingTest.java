@@ -152,8 +152,6 @@ public class CrossLinkingTest {
     @Test
     public void testIsCPeptideIonWithSameMassPresent() throws XmlPullParserException, IOException {
         System.out.println("isCPeptideIonWithSameMassPresent");
-
-        System.out.println("prepare_theoretical_spectrum");
         String peptideA_str = "VQKKTFTKWVNK",
                 peptideB_str = "VQKK";
         ArrayList<String> parent_proteins_test = new ArrayList<String>();
@@ -170,7 +168,7 @@ public class CrossLinkingTest {
             System.out.println(c.getName() + "\t" + c.getMass());
         }
         boolean cPeptideIonWithSameMassPresent = o.isCPeptideIonWithSameMassPresent(592.3584479050801, "Bb1Ab3");
-        assertFalse(cPeptideIonWithSameMassPresent);
+        assertTrue(cPeptideIonWithSameMassPresent);
     }
 
     public class CrossLinkedPeptidesImpl extends CrossLinking {

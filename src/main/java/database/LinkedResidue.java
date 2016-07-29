@@ -8,7 +8,7 @@ package database;
 import com.compomics.util.protein.Protein;
 
 /**
- * This class contains all information for linked residue.
+ * This class contains all information for a linked residue.
  *
  * @author Sule
  */
@@ -17,10 +17,12 @@ public class LinkedResidue {
     private Protein protein; // protein (indeed this is part of a protein that putative peptide is obtained)
     private LinkedResidueType resType; // linked residue information (for example N-termini or M resiude)
     private String sequence; // sequence of given protein
-    private int position; // position number of a given sequence that a linked residue is attached
+    private int position, // position number of a given sequence that a linked residue is attached
+            seqLen; // a length of this linkedResidue sequence
     private boolean doesContainProteinNTerminus = false, // true: this sequence still has a protein N-terminus; false: this sequence does not have a protein N-terminus 
             doesContainProteinCTerminus = false, // true: this sequence still has a protein C-terminus; false: this sequence does not have a protein C-terminus 
             isMethionineFirstResidue = false; // true: Methionine is the first residue, false: a sequence starts with any other residue than methionine
+    private double seqMass; // mass of this linkedResidue sequence
 
     public LinkedResidue(Protein protein, int position, LinkedResidueType resType, boolean doesContainProteinNterminus, boolean doesContainProteinCTerminus) {
         this.protein = protein;
@@ -30,13 +32,16 @@ public class LinkedResidue {
         this.doesContainProteinNTerminus = doesContainProteinNterminus;
         this.doesContainProteinCTerminus = doesContainProteinCTerminus;
         if (sequence.startsWith("M")) {
-            isMethionineFirstResidue = true;  
+            isMethionineFirstResidue = true;
         }
-        if(resType.equals(LinkedResidueType.NTerminiIncludesM) && position==1){
-            this.position=position-1;
+        if (resType.equals(LinkedResidueType.NTerminiIncludesM) && position == 1) {
+            this.position = position - 1;
         }
+        seqMass = protein.getSequence().getMass();// prepare a mass of given protein-sequence
+        seqLen = sequence.length();// prepare a length of given protein-sequence
     }
 
+    /* getter and setter methods */
     public Protein getProtein() {
         return protein;
     }
@@ -67,6 +72,22 @@ public class LinkedResidue {
 
     public void setPosition(int position) {
         this.position = position;
+    }
+
+    public int getSeqLen() {
+        return seqLen;
+    }
+
+    public void setSeqLen(int seqLen) {
+        this.seqLen = seqLen;
+    }
+
+    public double getSeqMass() {
+        return seqMass;
+    }
+
+    public void setSeqMass(double seqMass) {
+        this.seqMass = seqMass;
     }
 
     public boolean isDoesContainProteinNtermini() {

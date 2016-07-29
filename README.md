@@ -22,7 +22,7 @@ Chemical cross-linking coupled with mass spectrometry (XL-MS) plays an important
 ----
 ## Downloads
 
-Download the Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.2.1/xilmass-0.2.1.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.2.1/xilmass-0.2.1.zip'); return false;">here</a>.  
+Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.3-SNAPSHOT/xilmass-0.3-20160714.081542-1.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.3-SNAPSHOT/xilmass-0.3-20160714.081542-1.zip'); return false;">here</a>.  
 
 Download [a simple Xilmass-visualization tool] (http://genesis.ugent.be/maven2/com/compomics/xilmass-visualize/0.1/xilmass-visualize-0.1.zip).
 
