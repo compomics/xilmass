@@ -1465,25 +1465,8 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="maximumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="maximumNumberOfPeaksSpecProcessTextField" min="-2" pref="70" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="minimumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="minimumNumberOfPeaksSpecProcessTextField" min="-2" pref="70" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="lowerPrecursorMassBoundDeIsotopingLabel" max="32767" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="lowerPrecursorMassBoundDeisotopingTextField" min="-2" pref="70" max="-2" attributes="0"/>
-                                          </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Group type="103" groupAlignment="1" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
                                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                                   <Component id="deisotopeLabel" max="32767" attributes="0"/>
@@ -1495,15 +1478,40 @@
                                                   <Component id="deisotopePrecisionTextField" alignment="1" min="-2" pref="70" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="spectrumMassWindowValueLabel" min="-2" pref="301" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="minimumNumberOfPeaksSpecProcessTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                                  <Component id="spectrumMassWindowValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                                  <Component id="maximumNumberOfPeaksSpecProcessTextField" alignment="0" min="-2" pref="70" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
                                       </Group>
+                                      <EmptySpace pref="431" max="32767" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="spectrumMassWindowValueLabel" min="-2" pref="301" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                                  <Group type="102" alignment="1" attributes="0">
+                                                      <Component id="maximumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <Group type="102" alignment="1" attributes="0">
+                                                      <Component id="minimumNumberOfPeaksSpecProcessLabel" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
+                                                  </Group>
+                                              </Group>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Component id="lowerPrecursorMassBoundDeIsotopingLabel" pref="376" max="32767" attributes="0"/>
+                                      </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="spectrumMassWindowValueTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                      <Component id="lowerPrecursorMassBoundDeisotopingTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                      <EmptySpace pref="404" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="411" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1515,7 +1523,7 @@
                                   <Component id="spectrumMassWindowValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="spectrumMassWindowValueTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="minimumNumberOfPeaksSpecProcessLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="minimumNumberOfPeaksSpecProcessTextField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1525,7 +1533,7 @@
                                   <Component id="maximumNumberOfPeaksSpecProcessLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="maximumNumberOfPeaksSpecProcessTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="lowerPrecursorMassBoundDeIsotopingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="lowerPrecursorMassBoundDeisotopingTextField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1540,7 +1548,7 @@
                                   <Component id="deconvulatePrecisionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="deconvulatePrecisionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="330" max="32767" attributes="0"/>
+                              <EmptySpace pref="380" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

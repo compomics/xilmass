@@ -532,6 +532,7 @@ public class Start {
                 writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
             } catch (Exception e) {
                 LOGGER.error("A given path for mgf folder is not found!");
+                System.exist(1);
             }
         } catch (IOException ex) {
             LOGGER.error(ex);
@@ -1003,12 +1004,6 @@ public class Start {
         bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getProperty("report_in_ppm")).append("\n").append("\n").toString());
         bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getProperty("minRequiredPeaks")).append("\n").append("\n").toString());
         bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getProperty("isAllMatchedPeaks")).append("\n").append("\n").toString());
-
-        bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getString("msms_tol")).append("\n").toString());
-        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getString("report_in_ppm")).append("\n").toString());
-        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getString("minRequiredPeaks")).append("\n").toString());
-        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getString("isAllMatchedPeaks")).append("\n\n").toString());
-
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
         bw.write(new StringBuilder("massWindow=").append(ConfigHolder.getInstance().getProperty("massWindow")).append("\n").toString());
