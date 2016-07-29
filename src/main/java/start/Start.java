@@ -532,7 +532,7 @@ public class Start {
                 writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
             } catch (Exception e) {
                 LOGGER.error("A given path for mgf folder is not found!");
-                System.exist(1);
+                System.exit(1);
             }
         } catch (IOException ex) {
             LOGGER.error(ex);
