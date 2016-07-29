@@ -76,7 +76,7 @@ public class MainController {
     private static final String SIDE_REACTION_THREONINE = "isConsideredSideReactionThreonine";
     private static final String SIDE_REACTION_TYROSINE = "isConsideredSideReactionTyrosine";
     private static final String CROSS_LINKING_TYPE = "crossLinkedProteinTypes";
-    private static final String SEARCH_MONOLINK = "searcForAlsoMonoLink";
+    private static final String SEARCH_MONOLINK = "searchForAlsoMonoLink";
     private static final String MIN_PEPTIDE_LENGTH = "minLen";
     private static final String MAX_PEPTIDE_LENGTH = "maxLenCombined";
     private static final String INTRA_LINKING = "allowIntraPeptide";
