@@ -1048,7 +1048,7 @@ public class Start {
                 isConsideredSideReactionThreonine = ConfigHolder.getInstance().getProperty("isConsideredSideReactionThreonine").toString(),
                 isConsideredSideReactionTyrosine = ConfigHolder.getInstance().getProperty("isConsideredSideReactionTyrosine").toString(),
                 crossLinkedProteinTypes = ConfigHolder.getInstance().getProperty("crossLinkedProteinTypes").toString(),
-                searcForAlsoMonoLink = ConfigHolder.getInstance().getProperty("searcForAlsoMonoLink").toString(),
+                searchForAlsoMonoLink = ConfigHolder.getInstance().getProperty("searchForAlsoMonoLink").toString(),
                 minLen = ConfigHolder.getInstance().getProperty("minLen").toString(),
                 maxLenCombined = ConfigHolder.getInstance().getProperty("maxLenCombined").toString(),
                 allowIntraPeptide = ConfigHolder.getInstance().getProperty("allowIntraPeptide").toString(),
