@@ -27,9 +27,9 @@ If you have any question or suggestion about Xilmass, please contact us immediat
 ----
 ## Downloads
 
-Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.1/xilmass-0.4.1.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.1/xilmass-0.4.1.zip'); return false;">here</a>.  
+Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.2/xilmass-0.4.2.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.2/xilmass-0.4.2.zip'); return false;">here</a>.  
 
-You can run Xilmass as user-friendly GUI or CLI. 
+You can run Xilmass as CLI or our user-friendly GUI. 
 
 ----
 
