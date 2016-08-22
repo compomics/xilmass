@@ -75,6 +75,7 @@ public class Start {
     private static final String HEADER = "[Xilmass - an algorithm to identify cross-linked peptides]\n";
     private static final String USAGE = "java -jar <jar file name>";
     private static Options options;
+    private static String selected_option = "c"; // keep the previously parsed commandline option to control System.exit() during program run 
 
     /**
      * The startup error message.
@@ -111,7 +112,7 @@ public class Start {
             LOGGER.info("Xilmass version:" + version + " starts!");
             String givenDBName = ConfigHolder.getInstance().getString("givenDBName"),
                     contaminantDBName = ConfigHolder.getInstance().getString("contaminantDBName"),
-                    inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta",
+                    inSilicoPeptideDBName = "",
                     insilicoContaminantDBName = "",
                     cxDBFolder = ConfigHolder.getInstance().getString("cxDBName"),
                     //                    output = ConfigHolder.getInstance().getString("tdfile"), // td file
@@ -132,51 +133,100 @@ public class Start {
                     scoring = "AndromedaD",
                     labeledOption = ConfigHolder.getInstance().getString("isLabeled"),
                     givenDBFileName = new File(givenDBName).getName(),
-                    cxDBName = new File(cxDBFolder) + File.separator + "cx_" + givenDBFileName.substring(0, givenDBFileName.indexOf(".fasta"));
+                    cxDBName = "";
+
+            if (givenDBName.contains(".fasta")) {
+                inSilicoPeptideDBName = givenDBName.substring(0, givenDBName.indexOf(".fasta")) + "_in_silico.fasta";
+                cxDBName = new File(cxDBFolder) + File.separator + "cx_" + givenDBFileName.substring(0, givenDBFileName.indexOf(".fasta"));
+            } else {
+                LOGGER.error("Your database is not a FASTA file!");
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
+            }
+
             // load enzyme and modification files from a resource folder
             String enzymeFileName = ResourceUtils.getResourceByRelativePath("enzymes.txt").getFile().toString();
 
             // checking if paths for given input are avaliable
             File f = null;
             try {
-                f = new File(givenDBName);
+                if (!givenDBName.equals("C:/path-to-database")) {
+                    f = new File(givenDBName);
+                }
             } catch (Exception e) {
                 LOGGER.error("A given path for givenDBName is not found!");
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
             }
             try {
-                f = new File(contaminantDBName);
+                // make sure to run if a user forgets to delete given default contaminant database entry
+                if (!contaminantDBName.equals("C:/path-to-contaminant-database") && !contaminantDBName.isEmpty()) {
+                    f = new File(contaminantDBName);
+                } else if (contaminantDBName.equals("C:/path-to-contaminant-database")) {
+                    contaminantDBName = "";
+                }
             } catch (Exception e) {
                 LOGGER.error("A given path for contaminantDBName is not found!");
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
             }
             try {
-                f = new File(inSilicoPeptideDBName);
+                if (!inSilicoPeptideDBName.isEmpty()) {
+                    f = new File(inSilicoPeptideDBName);
+                }
             } catch (Exception e) {
                 LOGGER.error("A given path for inSilicoPeptideDBName is not found!");
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
             }
             try {
-                f = new File(insilicoContaminantDBName);
+                if (!insilicoContaminantDBName.isEmpty()) {
+                    f = new File(insilicoContaminantDBName);
+                }
             } catch (Exception e) {
                 LOGGER.error("A given path for insilicoContaminantDBName is not found!");
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
             }
             try {
-                f = new File(cxDBFolder);
+                if (!cxDBFolder.equals("C:/path-to-crosslinked-search-database-and-name")) {
+                    f = new File(cxDBFolder);
+                }
             } catch (Exception e) {
                 LOGGER.error("A given path for cxDBFolder is not found!");
+                if (selected_option.equals("c")) {
+                    System.exit(0);
+                }
             }
             try {
-                f = new File(resultFolder);
+                if (!resultFolder.equals("C:/path-to-result-folder")) {
+                    f = new File(resultFolder);
+                }
             } catch (Exception e) {
                 LOGGER.error("A given path for resultFolder is not found!");
-            }
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
 
+            }
             try {
-                f = new File(mgfs);
+                if (!mgfs.equals("C:/path-to-mgfs-folder")) {
+                    f = new File(mgfs);
+                }
             } catch (Exception e) {
                 LOGGER.error("A given folder path for mgfs is not found!");
+                if (selected_option.equals("c")) {
+//                    System.exit(0);
+                }
             }
 
             // get a contaminant database...
-            if (!contaminantDBName.isEmpty()) {
+            if (!contaminantDBName.isEmpty() && !contaminantDBName.equals("C:/path-to-contaminant-database")) {
                 insilicoContaminantDBName = contaminantDBName.substring(0, contaminantDBName.indexOf(".fasta")) + "_in_silico.fasta";
             }
             // get Fragmenteation enum...
@@ -531,8 +581,11 @@ public class Start {
                 // write settings on an output folder
                 writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
             } catch (Exception e) {
-                LOGGER.error("A given path for mgf folder is not found!");
-                System.exit(1);
+                LOGGER.error("Check given paths for Input/Outputs: your FASTA file, your spectra folder, and your result folder!");
+                if (selected_option.equals("c")) {
+//                    System.exit(1);
+                }
+
             }
         } catch (IOException ex) {
             LOGGER.error(ex);
@@ -684,14 +737,17 @@ public class Start {
                 launchStartupGuiMode();
             }
             if (commandLine.hasOption('h')) {
+                selected_option = "h";
                 printHelp(
                         options, 80, "Help", "End of Help",
                         5, 3, true, System.out);
             }
             if (commandLine.hasOption('u')) {
+                selected_option = "u";
                 printUsage(USAGE, options, System.out);
             }
             if (commandLine.hasOption("c")) {
+
                 try {
                     //launch command line mode
                     launchCommandLineMode();
@@ -703,10 +759,12 @@ public class Start {
                 }
             }
             if (commandLine.hasOption('s')) {
+                selected_option = "s";
                 //launch startup GUI mode
                 launchStartupGuiMode();
             }
             if (commandLine.hasOption('r')) {
+                selected_option = "r";
                 //launch results GUI mode
                 launchResultsGui();
             }
@@ -956,7 +1014,7 @@ public class Start {
         bw.write(new StringBuilder("cxDBFolderName=").append(ConfigHolder.getInstance().getProperty("cxDBName")).append("\n").toString());
         bw.write(new StringBuilder("mgfs=").append(ConfigHolder.getInstance().getProperty("mgfs")).append("\n").toString());
         bw.write(new StringBuilder("resultFolder=").append(ConfigHolder.getInstance().getProperty("resultFolder")).append("\n").toString());
-        String  index = new File(ConfigHolder.getInstance().getString("cxDBName")).getParentFile().getAbsolutePath() + (File.separator) + ("index").replace("\\", "/");
+        String index = new File(ConfigHolder.getInstance().getString("cxDBName")).getParentFile().getAbsolutePath() + (File.separator) + ("index").replace("\\", "/");
         bw.write(new StringBuilder("index=").append(index).append("\n\n").toString());
         // write down all cross-linking related parameters
         bw.write(new StringBuilder("##Cross-linking related parameters").append("\n").toString());
@@ -1349,7 +1407,9 @@ public class Start {
         int num_pep_tols = instance.getInt("peptide_tol_total");
         if (num_pep_tols > 5 && num_pep_tols < 1) {
             LOGGER.error("Xilmass cannot be executed! Invalid peptide_tol_total! Must be between 1 and 5!");
-            System.exit(1);
+            if (selected_option.equals("c")) {
+                System.exit(1);
+            }
         } else {
             LOGGER.info("There are currently " + num_pep_tols + " mass windows!");
             // now feel all peptide mass tolerance mass windows..

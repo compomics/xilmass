@@ -702,7 +702,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         inSilicoDigestionPanel.setOpaque(false);
 
-        enzymeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Trypsin", "Trypsin_Mod", "Lys-C", "Lys-N", "Lys-C/P", "Arg-C", "Asp-N", "V8-E", "V8-DE", "Chymotrypsin", "Trypsin/P", "TrypChymo", "None", "NoCleavage", "dualArgC_Cathep", "dualArgC_Cathep/P", "Arg-C/P", "", "" }));
+        enzymeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Arg-C", "Arg-C/P", "Asp-N", "Chymotrypsin", "dualArgC_Cathep", "dualArgC_Cathep/P", "Glu-C", "Lys-C", "Lys-C/P", "Lys-N", "None", "NoCleavage", "PepsinA", "Trypsin", "Trypsin/P", "TrypChymo", "V8-E", "V8-DE" }));
+        enzymeComboBox.setSelectedIndex(13);
 
         missedCleavagesLabel.setText("Allowed number of miscleavages*:");
 

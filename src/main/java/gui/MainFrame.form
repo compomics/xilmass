@@ -603,28 +603,28 @@
                     <Component class="javax.swing.JComboBox" name="enzymeComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="19">
-                            <StringItem index="0" value="Trypsin"/>
-                            <StringItem index="1" value="Trypsin_Mod"/>
-                            <StringItem index="2" value="Lys-C"/>
-                            <StringItem index="3" value="Lys-N"/>
-                            <StringItem index="4" value="Lys-C/P"/>
-                            <StringItem index="5" value="Arg-C"/>
-                            <StringItem index="6" value="Asp-N"/>
-                            <StringItem index="7" value="V8-E"/>
-                            <StringItem index="8" value="V8-DE"/>
-                            <StringItem index="9" value="Chymotrypsin"/>
-                            <StringItem index="10" value="Trypsin/P"/>
-                            <StringItem index="11" value="TrypChymo"/>
-                            <StringItem index="12" value="None"/>
-                            <StringItem index="13" value="NoCleavage"/>
-                            <StringItem index="14" value="dualArgC_Cathep"/>
-                            <StringItem index="15" value="dualArgC_Cathep/P"/>
-                            <StringItem index="16" value="Arg-C/P"/>
-                            <StringItem index="17" value=""/>
-                            <StringItem index="18" value=""/>
+                          <StringArray count="18">
+                            <StringItem index="0" value="Arg-C"/>
+                            <StringItem index="1" value="Arg-C/P"/>
+                            <StringItem index="2" value="Asp-N"/>
+                            <StringItem index="3" value="Chymotrypsin"/>
+                            <StringItem index="4" value="dualArgC_Cathep"/>
+                            <StringItem index="5" value="dualArgC_Cathep/P"/>
+                            <StringItem index="6" value="Glu-C"/>
+                            <StringItem index="7" value="Lys-C"/>
+                            <StringItem index="8" value="Lys-C/P"/>
+                            <StringItem index="9" value="Lys-N"/>
+                            <StringItem index="10" value="None"/>
+                            <StringItem index="11" value="NoCleavage"/>
+                            <StringItem index="12" value="PepsinA"/>
+                            <StringItem index="13" value="Trypsin"/>
+                            <StringItem index="14" value="Trypsin/P"/>
+                            <StringItem index="15" value="TrypChymo"/>
+                            <StringItem index="16" value="V8-E"/>
+                            <StringItem index="17" value="V8-DE"/>
                           </StringArray>
                         </Property>
+                        <Property name="selectedIndex" type="int" value="13"/>
                       </Properties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>

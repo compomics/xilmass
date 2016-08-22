@@ -737,18 +737,25 @@ public class MainController {
      */
     private List<String> validateInput() {
         List<String> validationMessages = new ArrayList<>();
-
+        if(mainFrame.getContaminantsFastaDbPathTextField().getText().equals("C:\\path-to-contaminant-database")){
+            mainFrame.getContaminantsFastaDbPathTextField().setText("");
+        }
+        
         // INPUT/OUTPUT PARAMS
-        if (mainFrame.getFastaDbPathTextField().getText().isEmpty()) {
+        if (mainFrame.getFastaDbPathTextField().getText().isEmpty() &&
+               mainFrame.getFastaDbPathTextField().getText().equals("C:\\path-to-database") ) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a FASTA database file.");
         }
-        if (mainFrame.getSearchDbPathTextField().getText().isEmpty()) {
+        if (mainFrame.getSearchDbPathTextField().getText().isEmpty() &&
+                mainFrame.getSearchDbPathTextField().getText().equals("C:\\path-to-crosslinked-search-database-and-name")) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a search database file.");
         }
-        if (mainFrame.getMgfDirectoryPathTextField().getText().isEmpty()) {
+        if (mainFrame.getMgfDirectoryPathTextField().getText().isEmpty() &&
+                mainFrame.getMgfDirectoryPathTextField().getText().equals("C:\\path-to-mgfs-folder")) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide a directory with MGF files.");
         }
-        if (mainFrame.getOutputDirectoryPathTextField().getText().isEmpty()) {
+        if (mainFrame.getOutputDirectoryPathTextField().getText().isEmpty() &&
+                mainFrame.getOutputDirectoryPathTextField().getText().equals("C:\\path-to-result-folder")) {
             validationMessages.add(INPUT_OUTPUT_PANE + "Please provide an output directory.");
         }
 
@@ -1120,7 +1127,7 @@ public class MainController {
                     validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a numeric intra-protein FDR value.");
                 }
             }
-        // When GlobalFDR was selected
+            // When GlobalFDR was selected
         } else if (mainFrame.getGlobalFdrValueTextField().getText().isEmpty()) {
             validationMessages.add(MULTITHREADING_AND_VALIDATION_PANE + "Please provide a global FDR value.");
         } else {
@@ -1203,8 +1210,9 @@ public class MainController {
                 LOGGER.info("finished xilmass run");
                 JOptionPane.showMessageDialog(runDialog, "The xilmass run has finished.");
             } catch (InterruptedException | ExecutionException ex) {
+                LOGGER.error("Check if you provide right Input/Output information! ");
                 LOGGER.error(ex.getMessage(), ex);
-                showMessageDialog("Unexpected error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                showMessageDialog("Check your parameters!", "Check your parameters, for example your Input/Outputs.", JOptionPane.ERROR_MESSAGE);
             } catch (CancellationException ex) {
                 LOGGER.info("the xilmass run was cancelled");
             } finally {
