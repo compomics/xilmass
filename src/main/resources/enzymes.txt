@@ -81,3 +81,8 @@ Title:Arg-C/P
 Cleavage:R
 Cterm
 *
+Title:Glu-C
+Cleavage:DE
+Restrict:none
+Cterm
+*
