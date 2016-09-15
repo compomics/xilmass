@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -103,6 +104,12 @@ public class CreateDatabase {
         this.isSideReactionConsidered_for_S = isSideReactionConsidered_for_S;
         this.isSideReactionConsidered_for_T = isSideReactionConsidered_for_T;
         this.isSideReactionConsidered_for_Y = isSideReactionConsidered_for_Y;
+        boolean isRightDBFormat = isDBFormatRight(inputProteinDBName);
+        if (isRightDBFormat) {
+            LOGGER.info("A given database format is right.");
+        } else {
+            System.exit(0);
+        }
     }
 
     // getter and setter methods    
@@ -645,7 +652,11 @@ public class CreateDatabase {
         int positionToStartStartSeq = 0,
                 positionToStartNextSeq = 0,
                 positionLinkedResStartSeq = start.getPosition(),
-                positionLinkedResNextSeq = next.getPosition();
+                positionLinkedResNextSeq = next.getPosition(),
+                startSeqLen = start.getSeqLen(),
+                nextSeqLen = next.getSeqLen();
+        double startSeqMass = start.getSeqMass(),
+                nextSeqMass = next.getSeqMass();
         // making sure that a sequence starts from the second residue, right after M! 
         if (start.getResType().equals(LinkedResidueType.NTerminiIncludesM)) {
             startHeader = startHeader.replace("(1-", "(2-");
@@ -665,13 +676,14 @@ public class CreateDatabase {
         StringBuilder tmp_sequence = new StringBuilder(),
                 tmp_header = new StringBuilder();
         StringBuilder[] header_and_sequence = new StringBuilder[2];
-        if (mod_startSeq.length() >= mod_nextSeq.length()) {
+
+        if ((startSeqLen > nextSeqLen)
+                || (startSeqLen == nextSeqLen && startSeqMass >= nextSeqMass)) {
             tmp_sequence = new StringBuilder(mod_startSeq).append("|").append(mod_nextSeq);
             tmp_header = new StringBuilder(startHeader.replace(" ", ""))
                     .append("_").append(positionLinkedResStartSeq + 1).append("_")
                     .append(nextHeader.replace(" ", ""))
                     .append("_").append(positionLinkedResNextSeq + 1);
-
         } else {
             tmp_sequence = new StringBuilder(mod_nextSeq).append("|").append(mod_startSeq);
             tmp_header = new StringBuilder(nextHeader.replace(" ", ""))
@@ -740,9 +752,9 @@ public class CreateDatabase {
                 if (len != 0 && acc != null) {
                     acc_and_length.put(acc, len);
                 }
-                    String[] sp = line.split("\\|");
-                    acc = sp[1];
-                    len = 0;
+                String[] sp = line.split("\\|");
+                acc = sp[1];
+                len = 0;
                 // this line is only sequence
             } else {
                 len += line.length();
@@ -784,4 +796,75 @@ public class CreateDatabase {
 
     }
 
+    /**
+     * This method assures that a given protein database is in the right format
+     * for Xilmass identifications
+     *
+     *
+     * @param inputProteinDBName an absolute path of input protein database
+     * @return true: if headers are in the right format, false: if headers are
+     * not in the right format
+     * @throws IOException
+     */
+    public static boolean isDBFormatRight(String inputProteinDBName) throws IOException {
+        boolean isProper = false;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(inputProteinDBName));
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(">")) {
+                    if (line.contains("generic")) {
+                        if (!line.contains("REVERSED") && !line.contains("SHUFFLED") && !line.contains("reversed") && !line.contains("shuffled")) {
+                            // that's a right header for target proteins
+                            isProper = true;
+                        } else if ((line.contains("_REVERSED") || line.contains("_SHUFFLED") && !line.contains("reversed") && !line.contains("shuffled"))) {
+                            // that's a right header for decoy proteins
+                            isProper = true;
+                        } else {
+                            isProper = false;
+                            LOGGER.info("Given database header is not in the right format!\n"
+                                    + "A header must contain only \"generic\", instead of \"sw or \"sp\" or any other. \n"
+                                    + "An example for target proteins: '>generic|P17156|Protein info' is required instead of '>sp|P17156|Protein info' \n"
+                                    + "An example for decoy  proteins: '>generic|P17156_REVERSED|Protein info' is required instead of '>sp|P17156_REVERSED|Protein info' \n"
+                                    + "                                                                                               '>sw|P17156_REVERSED|Protein info' \n"
+                                    + "                                                                                               '>sp|P17156REVERSED|Protein info' \n"
+                                    + "                                                                                               '>sw|P17156REVERSED|Protein info' \n"
+                                    + "                                                                                               '>generic|P17156REVERSED|Protein info' \n"
+                                    + "                                                                                               '>generic|P17156_reversed|Protein info' \n"
+                                    + "                                                                                               '>generic|P17156reversed|Protein info' \n"
+                                    + "                                '>generic|P17156_SHUFFLED|Protein info' is required instead of '>sp|P17156_SHUFFLED|Protein info' \n"
+                                    + "                                                                                               '>sw|P17156_SHUFFLED|Protein info' \n"
+                                    + "                                                                                               '>sp|P17156SHUFFLED|Protein info' \n"
+                                    + "                                                                                               '>sw|P17156SHUFFLED|Protein info' \n"
+                                    + "                                                                                               '>generic|P17156SHUFFLED|Protein info' \n"
+                                    + "                                                                                               '>generic|P17156_shuffled|Protein info'\n "
+                                    + "                                                                                               '>generic|P17156shuffled|Protein info' \n"
+                                    + "See more in https://github.com/compomics/xilmass/wiki");
+                            break;
+                        }
+                    } else {
+                        isProper = false;
+                        LOGGER.info("Given database header format is not right! A header must contain only \"generic\", instead of \"sw or \"sp\" or any other."
+                                + "An example for target proteins: '>generic|P17156|Protein info' is required instead of '>sp|P17156|Protein info' \n"
+                                + "An example for decoy  proteins: '>generic|P17156_REVERSED|Protein info' is required instead of '>sp|P17156_REVERSED|Protein info'\n"
+                                + "                                                                                               '>sw|P17156_REVERSED|Protein info'\n"
+                                + "                                                                                               '>sp|P17156REVERSED|Protein info' \n"
+                                + "                                                                                               '>sw|P17156REVERSED|Protein info' \n"
+                                + "                                                                                               '>generic|P17156REVERSED|Protein info' \n"
+                                + "An example for decoy  proteins: '>generic|P17156_SHUFFLED|Protein info' is required instead of '>sp|P17156_SHUFFLED|Protein info' \n"
+                                + "                                                                                               '>sw|P17156_SHUFFLED|Protein info' \n"
+                                + "                                                                                               '>sp|P17156SHUFFLED|Protein info' \n"
+                                + "                                                                                               '>sw|P17156SHUFFLED|Protein info' \n"
+                                + "                                                                                               '>generic|P17156SHUFFLED|Protein info' \n"
+                                + "See more in https://github.com/compomics/xilmass/wiki");
+                        break;
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            java.util.logging.Logger.getLogger(CreateDatabase.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.info("Cannot find the given input-protein database!");
+        }
+        return isProper;
+    }
 }

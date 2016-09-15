@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import org.apache.log4j.Logger;
 
 /**
  * This abstract class holds information on cross-linker, fragmentation mode,
@@ -41,7 +40,6 @@ public abstract class CrossLinking {
     protected int neutralLossesCase; // 0: No neutral losses 1: Special cases (a water loss for D/E/S/T and an ammonia loss for K/N/Q/R with the presence of a parent ion) 2: All water and ammonia losses 
     protected CrossLinkingType linkingType;
     protected PTMFactory ptmFactory = PTMFactory.getInstance();
-    private static final Logger LOGGER = Logger.getLogger(CrossLinking.class);
 
     /* getter and setter methods */
     public CrossLinker getLinker() {
@@ -193,7 +191,7 @@ public abstract class CrossLinking {
                         int split_index = part.indexOf('A');
                         if (split_index == 0) {
                             // do nothing..because theoretical ions are calculated after getting ions from PeptideA, then comes PeptideB
-                        } else {
+                        } else if (split_index > 1) {// possible that this might be -1
                             String reversed = ionName.substring(split_index) + ionName.substring(0, split_index);
                             if (reversed.equals(part)) {
                                 isSameName = true;

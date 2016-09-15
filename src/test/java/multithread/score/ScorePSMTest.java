@@ -77,10 +77,10 @@ public class ScorePSMTest {
         rs.add(r3);
 
         double lnNumSp = 1.38;
-        ScorePSM.updateResults(rs, lnNumSp);
+        rs = ScorePSM.updateResults(rs, lnNumSp);
         assertEquals(1, rs.size());
         assertEquals(10, rs.get(0).getScore(), 0);
-        assertEquals(2.0/ 10.0, rs.get(0).getDeltaScore(), 0);
+        assertEquals(2.0 / 10.0, rs.get(0).getDeltaScore(), 0);
         assertEquals(1.38, rs.get(0).getLnNumSpec(), 0);
 
         r = new Result(ms, cp, ScoreName.TheoMSAmandaDWeighted, 10, 0, new HashSet<Peak>(), new HashSet<CPeptidePeak>(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, false, false);
@@ -94,7 +94,7 @@ public class ScorePSMTest {
         rs.add(r3);
 
         lnNumSp = 1.38;
-        ScorePSM.updateResults(rs, lnNumSp);
+        rs = ScorePSM.updateResults(rs, lnNumSp);
         assertEquals(2, rs.size());
         assertEquals(10, rs.get(0).getScore(), 0);
         assertEquals(10, rs.get(1).getScore(), 0);
@@ -108,12 +108,11 @@ public class ScorePSMTest {
         rs.add(r);
 
         lnNumSp = 1.38;
-        ScorePSM.updateResults(rs, lnNumSp);
+        rs = ScorePSM.updateResults(rs, lnNumSp);
         assertEquals(1, rs.size());
         assertEquals(10, rs.get(0).getScore(), 0);
         assertEquals(10.0 / 10.0, rs.get(0).getDeltaScore(), 0);
         assertEquals(1.38, rs.get(0).getLnNumSpec(), 0);
-
     }
 
     /**
@@ -157,5 +156,4 @@ public class ScorePSMTest {
         assertEquals(Math.log(2), lnNumSp, 0.001);
 
     }
-
 }

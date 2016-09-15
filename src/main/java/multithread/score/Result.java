@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Objects;
 import naming.DefineIdCPeptideFragmentationPattern;
 import naming.IdCPeptideFragmentationPatternName;
 import scoringFunction.ScoreName;
@@ -348,4 +349,38 @@ public class Result {
                 }
             };
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + Objects.hashCode(this.msms);
+        hash = 97 * hash + Objects.hashCode(this.cp);
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.score) ^ (Double.doubleToLongBits(this.score) >>> 32));
+        hash = 97 * hash + Objects.hashCode(this.matchedPeaks);
+        hash = 97 * hash + Objects.hashCode(this.matchedCTheoPeaks);
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.lnNumSpec) ^ (Double.doubleToLongBits(this.lnNumSpec) >>> 32));
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.lnNumXSpec) ^ (Double.doubleToLongBits(this.lnNumXSpec) >>> 32));
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.observedMass) ^ (Double.doubleToLongBits(this.observedMass) >>> 32));
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.deltaMass) ^ (Double.doubleToLongBits(this.deltaMass) >>> 32));
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.absDeltaMass) ^ (Double.doubleToLongBits(this.absDeltaMass) >>> 32));
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.calculatedMass) ^ (Double.doubleToLongBits(this.calculatedMass) >>> 32));
+        hash = 97 * hash + Objects.hashCode(this.scanNum);
+        hash = 97 * hash + Objects.hashCode(this.charge);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Result other = (Result) obj;
+        return true;
+    }   
+    
 }
