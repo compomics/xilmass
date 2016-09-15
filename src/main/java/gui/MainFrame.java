@@ -17,7 +17,6 @@ import javax.swing.JTextField;
 public class MainFrame extends javax.swing.JFrame {
 
     private final JFileChooser fastaDbChooser = new JFileChooser();
-    private final JFileChooser searchDbChooser = new JFileChooser();
     private final JFileChooser directoryChooser = new JFileChooser();
     private final JFileChooser fileChooser = new JFileChooser();
 
@@ -30,10 +29,6 @@ public class MainFrame extends javax.swing.JFrame {
 
     public JFileChooser getFastaDbChooser() {
         return fastaDbChooser;
-    }
-
-    public JFileChooser getSearchDbChooser() {
-        return searchDbChooser;
     }
 
     public JFileChooser getDirectoryChooser() {
@@ -475,18 +470,18 @@ public class MainFrame extends javax.swing.JFrame {
 
         inputOutputPanel.setOpaque(false);
 
-        fastaDbPathLabel.setText("Select the FASTA database (target-decoy, decoys must plit by \"_\")*:");
+        fastaDbPathLabel.setText("Select the FASTA database (must contain target-decoy, decoys must split by \"_\")*:");
         fastaDbPathLabel.setToolTipText("give a FASTA file contains protein sequences. A concatenated target-decoy database must be provided and decoy-type must be split by \"_\"");
 
         contaminantsFastaDbBrowseButton.setText("browse...");
 
-        contaminantsFastaDbFilePathLabel.setText("Select an optional contaminants FASTA database:");
+        contaminantsFastaDbFilePathLabel.setText("Select the contaminants FASTA database (OPTIONAL):");
         contaminantsFastaDbFilePathLabel.setToolTipText("give a FASTA file that contains contaminant proteins (OPTIONAL)");
 
         fastaDbBrowseButton.setText("browse...");
 
         searchDbPathLabel.setText("Select the cross-linked and mono-linked peptides search database*:");
-        searchDbPathLabel.setToolTipText("give a path of the search database that contains cross-linked and mono-linked peptides. Only a name is required, no need for file extension ");
+        searchDbPathLabel.setToolTipText("give a path of the folder for the search database that contains cross-linked and mono-linked peptides.");
 
         searchDbBrowseButton.setText("browse...");
 
@@ -534,7 +529,7 @@ public class MainFrame extends javax.swing.JFrame {
                             .addComponent(searchDbPathLabel)
                             .addComponent(searchDbPathLabel1)
                             .addComponent(outputDirectoryPathLabel))
-                        .addGap(0, 426, Short.MAX_VALUE)))
+                        .addGap(0, 444, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         inputOutputPanelLayout.setVerticalGroup(
@@ -611,8 +606,8 @@ public class MainFrame extends javax.swing.JFrame {
         minimumPeptideLengthLabel.setText("Minimum peptide length*:");
         minimumPeptideLengthLabel.setToolTipText("give a minimum length for one peptide in cross-linked peptides");
 
-        maximumPeptideLengthLabel.setText("Maximum peptide length*:");
-        maximumPeptideLengthLabel.setToolTipText("give a maximum length for one peptide in cross-linked peptides");
+        maximumPeptideLengthLabel.setText("Maximum total lenght of cross-linked peptides*:");
+        maximumPeptideLengthLabel.setToolTipText("give a maximum length for total peptide length for cross-linked peptide");
 
         minimumPeptideLengthTextField.setMinimumSize(new java.awt.Dimension(62, 27));
         minimumPeptideLengthTextField.setPreferredSize(new java.awt.Dimension(62, 27));
@@ -658,7 +653,7 @@ public class MainFrame extends javax.swing.JFrame {
                             .addComponent(minimumPeptideLengthTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(maximumPeptideLengthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(intraLinkingCheckBox))
-                .addContainerGap(268, Short.MAX_VALUE))
+                .addContainerGap(398, Short.MAX_VALUE))
         );
         crossLinkingPanelLayout.setVerticalGroup(
             crossLinkingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -748,7 +743,7 @@ public class MainFrame extends javax.swing.JFrame {
                         .addGroup(inSilicoDigestionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(minimumPeptideMassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(maximumPeptideMassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(383, Short.MAX_VALUE))
+                .addContainerGap(482, Short.MAX_VALUE))
         );
         inSilicoDigestionPanelLayout.setVerticalGroup(
             inSilicoDigestionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -782,6 +777,7 @@ public class MainFrame extends javax.swing.JFrame {
         fixedModificationsDualList.setMinimumSize(new java.awt.Dimension(0, 0));
         fixedModificationsDualList.setPreferredSize(new java.awt.Dimension(0, 0));
 
+        fixedModificationsLabel.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         fixedModificationsLabel.setText("Select the fixed modifications*:");
 
         javax.swing.GroupLayout fixedModificationsPanelLayout = new javax.swing.GroupLayout(fixedModificationsPanel);
@@ -819,6 +815,7 @@ public class MainFrame extends javax.swing.JFrame {
         variableModificationsDualList.setMinimumSize(new java.awt.Dimension(0, 0));
         variableModificationsDualList.setPreferredSize(new java.awt.Dimension(0, 0));
 
+        variableModificationsLabel.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         variableModificationsLabel.setText("Select the variable modifications*:");
 
         javax.swing.GroupLayout variableModificationsPanelLayout = new javax.swing.GroupLayout(variableModificationsPanel);
@@ -865,7 +862,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(maxModPeptideLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(maxModPeptideTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(454, Short.MAX_VALUE))
+                .addContainerGap(530, Short.MAX_VALUE))
         );
         otherModSettingsPanelLayout.setVerticalGroup(
             otherModSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -964,7 +961,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         fifthPeptideMassToleranceWindowUnitComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PPM", "Da" }));
 
-        fragmentMassToleranceLabel.setText("Fragment mass tolerance (same value for all windows)*;");
+        fragmentMassToleranceLabel.setText("Fragment mass tolerance*:");
+        fragmentMassToleranceLabel.setToolTipText("same value for all peptide mass tolerance windows");
 
         javax.swing.GroupLayout peptideMassToleranceWindowsPanelLayout = new javax.swing.GroupLayout(peptideMassToleranceWindowsPanel);
         peptideMassToleranceWindowsPanel.setLayout(peptideMassToleranceWindowsPanelLayout);
@@ -978,71 +976,18 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(peptideToleranceSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
-                        .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(fourthPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(firstPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(secondPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
-                                .addComponent(thirdPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(fragmentMassToleranceLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
-                                .addComponent(fragmentMassToleranceValueLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(fragmentMassToleranceValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(fragmentMassToleranceUnitLabel))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
-                                .addComponent(thirdPeptideMassToleranceWindowValueLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(thirdPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(thirdPeptideMassToleranceWindowBaseLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(thirdPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(thirdPeptideMassToleranceWindowUnitLabel))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
-                                .addComponent(fourthPeptideMassToleranceWindowValueLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(fourthPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(fourthPeptideMassToleranceWindowBaseLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(fourthPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(fourthPeptideMassToleranceWindowUnitLabel))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
-                                .addComponent(secondPeptideMassToleranceWindowValueLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(secondPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(secondPeptideMassToleranceWindowBaseLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(secondPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(secondPeptideMassToleranceWindowUnitLabel))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
-                                .addComponent(firstPeptideMassToleranceWindowValueLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(firstPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(firstPeptideMassToleranceWindowBaseLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(firstPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(firstPeptideMassToleranceWindowUnitLabel)))
+                        .addComponent(fragmentMassToleranceLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 327, Short.MAX_VALUE)
+                        .addComponent(fragmentMassToleranceValueLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fragmentMassToleranceValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(147, 147, 147)
+                        .addComponent(fragmentMassToleranceUnitLabel)
                         .addGap(6, 6, 6)))
-                .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(firstPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(secondPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(thirdPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fourthPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fragmentMassToleranceUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(fragmentMassToleranceUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
                 .addComponent(fifthPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 206, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 294, Short.MAX_VALUE)
                 .addComponent(fifthPeptideMassToleranceWindowValueLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(fifthPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1054,6 +999,62 @@ public class MainFrame extends javax.swing.JFrame {
                 .addComponent(fifthPeptideMassToleranceWindowUnitLabel)
                 .addGap(6, 6, 6)
                 .addComponent(fifthPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
+                .addComponent(firstPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(firstPeptideMassToleranceWindowValueLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(firstPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(firstPeptideMassToleranceWindowBaseLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(firstPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(firstPeptideMassToleranceWindowUnitLabel)
+                .addGap(6, 6, 6)
+                .addComponent(firstPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
+                .addComponent(secondPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
+                .addComponent(secondPeptideMassToleranceWindowValueLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(secondPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(secondPeptideMassToleranceWindowBaseLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(secondPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(secondPeptideMassToleranceWindowUnitLabel)
+                .addGap(6, 6, 6)
+                .addComponent(secondPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
+                .addComponent(thirdPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 294, Short.MAX_VALUE)
+                .addComponent(thirdPeptideMassToleranceWindowValueLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(thirdPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(thirdPeptideMassToleranceWindowBaseLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(thirdPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(thirdPeptideMassToleranceWindowUnitLabel)
+                .addGap(6, 6, 6)
+                .addComponent(thirdPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, peptideMassToleranceWindowsPanelLayout.createSequentialGroup()
+                .addComponent(fourthPeptideMassToleranceWindowLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 323, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
+                .addComponent(fourthPeptideMassToleranceWindowValueLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fourthPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(fourthPeptideMassToleranceWindowBaseLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fourthPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(fourthPeptideMassToleranceWindowUnitLabel)
+                .addGap(6, 6, 6)
+                .addComponent(fourthPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         peptideMassToleranceWindowsPanelLayout.setVerticalGroup(
             peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1061,14 +1062,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(peptideToleranceLabel)
                     .addComponent(peptideToleranceSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(fragmentMassToleranceUnitLabel)
-                    .addComponent(fragmentMassToleranceUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fragmentMassToleranceValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fragmentMassToleranceValueLabel)
-                    .addComponent(fragmentMassToleranceLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(firstPeptideMassToleranceWindowLabel)
                     .addComponent(firstPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1077,7 +1071,7 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(firstPeptideMassToleranceWindowBaseLabel)
                     .addComponent(firstPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(firstPeptideMassToleranceWindowValueLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(secondPeptideMassToleranceWindowLabel)
                     .addComponent(secondPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1086,7 +1080,7 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(secondPeptideMassToleranceWindowBaseLabel)
                     .addComponent(secondPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(secondPeptideMassToleranceWindowValueLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(thirdPeptideMassToleranceWindowBaseTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(thirdPeptideMassToleranceWindowUnitLabel)
@@ -1095,7 +1089,7 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(thirdPeptideMassToleranceWindowBaseLabel)
                     .addComponent(thirdPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(thirdPeptideMassToleranceWindowValueLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(fourthPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1105,7 +1099,7 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(fourthPeptideMassToleranceWindowBaseLabel)
                         .addComponent(fourthPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(fourthPeptideMassToleranceWindowValueLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(fifthPeptideMassToleranceWindowUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1114,7 +1108,14 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(fifthPeptideMassToleranceWindowUnitLabel)
                         .addComponent(fifthPeptideMassToleranceWindowBaseLabel)
                         .addComponent(fifthPeptideMassToleranceWindowTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(fifthPeptideMassToleranceWindowValueLabel))))
+                        .addComponent(fifthPeptideMassToleranceWindowValueLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(peptideMassToleranceWindowsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fragmentMassToleranceUnitLabel)
+                    .addComponent(fragmentMassToleranceUnitComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fragmentMassToleranceValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fragmentMassToleranceValueLabel)
+                    .addComponent(fragmentMassToleranceLabel)))
         );
 
         minimumReqNumberOfPeaksLabel.setText("Minimum number matched peaks for cross-linked peptides*:");
@@ -1185,7 +1186,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(scoringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ms1ReportingLabel)
                     .addComponent(ms1ReportingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(151, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Scoring", scoringPanel);
@@ -1220,21 +1221,8 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                .addComponent(maximumNumberOfPeaksSpecProcessLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(maximumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                .addComponent(minimumNumberOfPeaksSpecProcessLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(minimumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
-                                .addComponent(lowerPrecursorMassBoundDeIsotopingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lowerPrecursorMassBoundDeisotopingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
+                        .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, spectrumPreprocessingPanelLayout.createSequentialGroup()
                                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(deisotopeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1242,12 +1230,26 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(deconvulatePrecisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(deisotopePrecisionTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, spectrumPreprocessingPanelLayout.createSequentialGroup()
-                        .addComponent(spectrumMassWindowValueLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(deisotopePrecisionTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, spectrumPreprocessingPanelLayout.createSequentialGroup()
+                                .addComponent(spectrumMassWindowValueLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(52, 52, 52)
+                                .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(minimumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(spectrumMassWindowValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(maximumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(431, Short.MAX_VALUE))
+                    .addGroup(spectrumPreprocessingPanelLayout.createSequentialGroup()
+                        .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, spectrumPreprocessingPanelLayout.createSequentialGroup()
+                                .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(maximumNumberOfPeaksSpecProcessLabel)
+                                    .addComponent(minimumNumberOfPeaksSpecProcessLabel))
+                                .addGap(0, 74, Short.MAX_VALUE))
+                            .addComponent(lowerPrecursorMassBoundDeIsotopingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spectrumMassWindowValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(306, Short.MAX_VALUE))
+                        .addComponent(lowerPrecursorMassBoundDeisotopingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(404, Short.MAX_VALUE))))
         );
         spectrumPreprocessingPanelLayout.setVerticalGroup(
             spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1256,7 +1258,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(spectrumMassWindowValueLabel)
                     .addComponent(spectrumMassWindowValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(minimumNumberOfPeaksSpecProcessLabel)
                     .addComponent(minimumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1264,7 +1266,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(maximumNumberOfPeaksSpecProcessLabel)
                     .addComponent(maximumNumberOfPeaksSpecProcessTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(9, 9, 9)
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lowerPrecursorMassBoundDeIsotopingLabel)
                     .addComponent(lowerPrecursorMassBoundDeisotopingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1276,7 +1278,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(spectrumPreprocessingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(deconvulatePrecisionLabel)
                     .addComponent(deconvulatePrecisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(330, Short.MAX_VALUE))
+                .addContainerGap(380, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Spectrum preprocessing", spectrumPreprocessingPanel);
@@ -1313,23 +1315,23 @@ public class MainFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(numberOfThreadsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(writePercolatorInputFilesCheckBox)
-                    .addGroup(multiThreadingAndValidationPanelLayout.createSequentialGroup()
-                        .addComponent(fdrCalculationLabel)
-                        .addGap(112, 112, 112)
-                        .addComponent(fdrCalcalationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(multiThreadingAndValidationPanelLayout.createSequentialGroup()
-                        .addComponent(intraProteinFdrValueLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(intraProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(multiThreadingAndValidationPanelLayout.createSequentialGroup()
-                        .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(globalFdrValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(interProteinFdrValueLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(globalFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(interProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(550, Short.MAX_VALUE))
+                    .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(multiThreadingAndValidationPanelLayout.createSequentialGroup()
+                            .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(intraProteinFdrValueLabel)
+                                .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(globalFdrValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(interProteinFdrValueLabel)))
+                            .addGap(64, 64, 64)
+                            .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(intraProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(globalFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(interProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(multiThreadingAndValidationPanelLayout.createSequentialGroup()
+                            .addComponent(fdrCalculationLabel)
+                            .addGap(112, 112, 112)
+                            .addComponent(fdrCalcalationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(543, Short.MAX_VALUE))
         );
         multiThreadingAndValidationPanelLayout.setVerticalGroup(
             multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1356,7 +1358,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(multiThreadingAndValidationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(intraProteinFdrValueLabel)
                     .addComponent(intraProteinFdrValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(341, Short.MAX_VALUE))
+                .addContainerGap(378, Short.MAX_VALUE))
         );
 
         mainTabbedPane.addTab("Multithreading and validation", multiThreadingAndValidationPanel);

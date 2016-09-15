@@ -83,6 +83,7 @@ public class StartDialog extends javax.swing.JDialog {
         specsFolderjPanel.setOpaque(false);
 
         pathSpecsFolderjLabel.setText("A path of a spectrum folder");
+        pathSpecsFolderjLabel.setToolTipText("Provide a folder for spectra that were searched");
 
         browseSpecsjButton.setText("Browse");
         browseSpecsjButton.addActionListener(new java.awt.event.ActionListener() {
@@ -130,6 +131,7 @@ public class StartDialog extends javax.swing.JDialog {
 
         pathToResultFilejLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         pathToResultFilejLabel.setText("A path of a result file");
+        pathToResultFilejLabel.setToolTipText("Provide one Xilmass result file");
         pathToResultFilejLabel.setFocusable(false);
         pathToResultFilejLabel.setMaximumSize(new java.awt.Dimension(172, 15));
         pathToResultFilejLabel.setMinimumSize(new java.awt.Dimension(172, 15));
@@ -146,9 +148,10 @@ public class StartDialog extends javax.swing.JDialog {
         clearResultFilejButton.setText("Clear");
 
         indexjLabel.setText("Index of annotated peaks");
+        indexjLabel.setToolTipText("Counting starts from 1, this value equals to 27 on the original output for each mgf files at Xilmass 0.3, and Xilmass 0.4");
 
         indexjTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        indexjTextField.setText("24");
+        indexjTextField.setText("27");
 
         javax.swing.GroupLayout resultFilejPanelLayout = new javax.swing.GroupLayout(resultFilejPanel);
         resultFilejPanel.setLayout(resultFilejPanelLayout);
