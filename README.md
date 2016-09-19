@@ -31,7 +31,7 @@ If you have any question or suggestion about Xilmass, please contact us immediat
 
 We are happy to annouce that Xilmass has been recently accepted! 
 
-[Yılmaz et al., Anal. Chem., publication date (Web): September 19, 2016 (DOI: 10.1021/acs.analchem.6b01585)](http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b01585)
+[Yılmaz et al.: Anal. Chem., publication date (Web): September 19, 2016 (DOI: 10.1021/acs.analchem.6b01585)](http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b01585)
 
 If you perform your search to identify cross-linked peptides by Xilmass, please include the reference above. 
 
