@@ -22,8 +22,8 @@ public class RunDialog extends javax.swing.JDialog {
         org.apache.log4j.lf5.viewer.LF5SwingUtils.makeVerticalScrollBarTrack(jScrollPane1);
     }
 
-    public JButton getCancelButton() {
-        return cancelButton;
+    public JButton getExitButton() {
+        return exitButton;
     }
 
     public JButton getClearButton() {
@@ -32,6 +32,10 @@ public class RunDialog extends javax.swing.JDialog {
 
     public JTextArea getLogTextArea() {
         return logTextArea;
+    }
+
+    public JButton getOkButton() {
+        return okButton;
     }
 
     /**
@@ -45,8 +49,9 @@ public class RunDialog extends javax.swing.JDialog {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         logTextArea = new javax.swing.JTextArea();
-        cancelButton = new javax.swing.JButton();
+        exitButton = new javax.swing.JButton();
         clearButton = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Xilmass run progress");
@@ -57,17 +62,23 @@ public class RunDialog extends javax.swing.JDialog {
         logTextArea.setRows(5);
         jScrollPane1.setViewportView(logTextArea);
 
-        cancelButton.setText("cancel");
-        cancelButton.setToolTipText("cancel the pipeline execution");
-        cancelButton.setMaximumSize(new java.awt.Dimension(85, 27));
-        cancelButton.setMinimumSize(new java.awt.Dimension(85, 27));
-        cancelButton.setPreferredSize(new java.awt.Dimension(85, 27));
+        exitButton.setText("exit");
+        exitButton.setToolTipText("exit the entire Xilmass identification process");
+        exitButton.setMaximumSize(new java.awt.Dimension(85, 27));
+        exitButton.setMinimumSize(new java.awt.Dimension(85, 27));
+        exitButton.setPreferredSize(new java.awt.Dimension(85, 27));
 
         clearButton.setText("clear");
-        clearButton.setToolTipText("clear the log output");
+        clearButton.setToolTipText("clear only the log output");
         clearButton.setMaximumSize(new java.awt.Dimension(85, 27));
         clearButton.setMinimumSize(new java.awt.Dimension(85, 27));
         clearButton.setPreferredSize(new java.awt.Dimension(85, 27));
+
+        okButton.setText("OK");
+        okButton.setToolTipText("to close the current dialog box.\nclicking on \"OK\" does not halt Xilmass identifications, and identification process still continues on the background ");
+        okButton.setMaximumSize(new java.awt.Dimension(85, 27));
+        okButton.setMinimumSize(new java.awt.Dimension(85, 27));
+        okButton.setPreferredSize(new java.awt.Dimension(85, 27));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -78,10 +89,11 @@ public class RunDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(clearButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -91,8 +103,9 @@ public class RunDialog extends javax.swing.JDialog {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(clearButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(clearButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -101,9 +114,10 @@ public class RunDialog extends javax.swing.JDialog {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cancelButton;
     private javax.swing.JButton clearButton;
+    private javax.swing.JButton exitButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea logTextArea;
+    private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 }
