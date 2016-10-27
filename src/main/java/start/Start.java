@@ -55,6 +55,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -397,14 +401,23 @@ public class Start {
             }
 
             // STEP 4: GENERATE INDEXES!! Load db entries to memory for Lucene indexing search
-            File folder = new File(cxDB.getParentFile().getPath() + File.separator + "index");
-            // Make sure that an index file also exists...
-            if (!folder.exists()) {
-                folder.mkdir();
+            File indexFolder = new File(cxDB.getParentFile().getPath() + File.separator + "index");
+            // Make sure if the settings have been changed, an index folder must be removed! 
+            if (indexFolder.exists() && !isSame) {
+                // Make sure to unlock index files that are previously opened
+                Directory directory = FSDirectory.open(indexFolder);
+                directory.clearLock(IndexWriter.WRITE_LOCK_NAME);
+                LOGGER.warn("Cleaning an existing write.lock at [" + indexFolder.getAbsolutePath() + ".");
+                directory.close();
+                FileUtils.forceDelete(indexFolder);
+                indexFolder.mkdir();
+                // Now assure to have an index file...
+            } else if (!indexFolder.exists() && !isSame) {
+                indexFolder.mkdir();
             }
             HashSet<StringBuilder> all_headers = new HashSet<StringBuilder>(),
                     tmp_headers = new HashSet<StringBuilder>();
-            if (folder.listFiles().length == 0 || !isSame) {
+            if (indexFolder.listFiles().length == 0 || !isSame) {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
                 // add contaminants..
                 tmp_headers = FASTACPDBLoader.generate_peptide_mass_index_for_contaminants(bw, headers_sequences, ptmFactory,
@@ -441,7 +454,7 @@ public class Start {
             // STEP 5: PREPARE LUCENCE INDEXING!
             IndexAndSearch search = null;
             try {
-                search = new IndexAndSearch(all_headers, folder, ptmFactory, fragMode, crossLinkerName);
+                search = new IndexAndSearch(all_headers, indexFolder, ptmFactory, fragMode, crossLinkerName);
             } catch (Exception ex) {
                 LOGGER.error(ex);
             }
@@ -582,10 +595,6 @@ public class Start {
                 writeSettings(new File(xilmassResFolder + File.separator + "settings.txt"), startDate, isSettingRunBefore, ("Xilmass version " + version));
             } catch (Exception e) {
                 LOGGER.error("Check given paths for Input/Outputs: your FASTA file, your spectra folder, and your result folder!");
-                if (selected_option.equals("c")) {
-//                    System.exit(1);
-                }
-
             }
         } catch (IOException ex) {
             LOGGER.error(ex);
@@ -738,24 +747,19 @@ public class Start {
             }
             if (commandLine.hasOption('h')) {
                 selected_option = "h";
-                printHelp(
-                        options, 80, "Help", "End of Help",
-                        5, 3, true, System.out);
+                printHelp(options, 80, "Help", "End of Help", 5, 3, true, System.out);
             }
             if (commandLine.hasOption('u')) {
                 selected_option = "u";
                 printUsage(USAGE, options, System.out);
             }
             if (commandLine.hasOption("c")) {
-
                 try {
                     //launch command line mode
                     launchCommandLineMode();
                 } catch (Exception ex) {
                     LOGGER.error(ex.getMessage(), ex);
-                    printHelp(
-                            options, 80, "Help", "End of Help",
-                            5, 3, true, System.out);
+                    printHelp(options, 80, "Help", "End of Help", 5, 3, true, System.out);
                 }
             }
             if (commandLine.hasOption('s')) {
@@ -769,11 +773,8 @@ public class Start {
                 launchResultsGui();
             }
         } catch (ParseException parseException) {
-            System.out.println("Encountered exception while parsing :\n"
-                    + parseException.getMessage());
-            printHelp(
-                    options, 80, "Help", "End of Help",
-                    5, 3, true, System.out);
+            System.out.println("Encountered exception while parsing :\n" + parseException.getMessage());
+            printHelp(options, 80, "Help", "End of Help", 5, 3, true, System.out);
         }
     }
 
@@ -1046,7 +1047,7 @@ public class Start {
         bw.write(new StringBuilder("##Scoring related parameters").append("\n").toString());
 
         bw.write(new StringBuilder("consider_neutrallosses=").append(ConfigHolder.getInstance().getProperty("consider_neutrallosses")).append("\n").toString());
-        bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getProperty("fragModeName")).append("\n").toString());
+        bw.write(new StringBuilder("fragModeName=").append(ConfigHolder.getInstance().getProperty("fragMode")).append("\n").toString());
         bw.write(new StringBuilder("peptide_tol_total=").append(ConfigHolder.getInstance().getProperty("peptide_tol_total")).append("\n").toString());
         // write each peptide-tolerance mass window on given setting-parameters
         int pep_tol_nums = ConfigHolder.getInstance().getInt("peptide_tol_total");
@@ -1059,14 +1060,15 @@ public class Start {
             bw.write(new StringBuilder(base).append("=").append(ConfigHolder.getInstance().getProperty(base)).append("\n").toString());
         }
         bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getProperty("msms_tol")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getProperty("report_in_ppm")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getProperty("minRequiredPeaks")).append("\n").append("\n").toString());
-        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getProperty("isAllMatchedPeaks")).append("\n").append("\n").toString());
+        bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getProperty("report_in_ppm")).append("\n").toString());
+        bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getProperty("minRequiredPeaks")).append("\n").toString());
+        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getProperty("isAllMatchedPeaks")).append("\n").toString());
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
         bw.write(new StringBuilder("massWindow=").append(ConfigHolder.getInstance().getProperty("massWindow")).append("\n").toString());
         bw.write(new StringBuilder("minimumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getProperty("minimumFiltedPeaksNumberForEachWindow")).append("\n").toString());
         bw.write(new StringBuilder("maximumFiltedPeaksNumberForEachWindow=").append(ConfigHolder.getInstance().getProperty("maximumFiltedPeaksNumberForEachWindow")).append("\n").toString());
+        bw.write(new StringBuilder("minPrecMassIsotopicPeakSelected=").append(ConfigHolder.getInstance().getProperty("minPrecMassIsotopicPeakSelected")).append("\n").toString());
         bw.write(new StringBuilder("deisotopePrecision=").append(ConfigHolder.getInstance().getProperty("deisotopePrecision")).append("\n").toString());
         bw.write(new StringBuilder("deconvulatePrecision=").append(ConfigHolder.getInstance().getProperty("deconvulatePrecision")).append("\n").append("\n").toString());
 
@@ -1120,8 +1122,7 @@ public class Start {
         while ((line = br.readLine()) != null) {
             if ((line.startsWith("givenDBName")) && (line.split("=")[1].equals(givenDBName))) {
                 control++;
-            } else if (((line.startsWith("contaminantDBName")) && (line.split("=").length == 2) && (line.split("\t")[1].equals(contaminantDBName)))
-                    || (line.startsWith("contaminantDBName")) && (line.split("=").length == 1)) {
+            } else if ((line.startsWith("contaminantDBName")) && (line.split("=").length == 2) && (line.split("=")[1].equals(contaminantDBName))) {
                 control++;
             } else if ((line.startsWith("cxDBFolderNam")) && (line.split("=")[1].equals(cxDBName))) {
                 control++;
