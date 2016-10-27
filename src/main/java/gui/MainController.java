@@ -398,6 +398,7 @@ public class MainController {
             }
         });
 
+        // The action that happens when clicking on Run-Button        
         mainFrame.getRunButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -456,10 +457,18 @@ public class MainController {
             }
         });
 
-        runDialog.getCancelButton().addActionListener(new ActionListener() {
+        runDialog.getExitButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
+            }
+        });
+
+        runDialog.getOkButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {  
+                // to only close the dialog box
+                runDialog.dispose();
             }
         });
 
@@ -737,10 +746,9 @@ public class MainController {
      */
     private List<String> validateInput() {
         List<String> validationMessages = new ArrayList<>();
-        if(mainFrame.getContaminantsFastaDbPathTextField().getText().equals("C:\\path-to-contaminant-database")){
+        if (mainFrame.getContaminantsFastaDbPathTextField().getText().equals("C:\\path-to-contaminant-database")) {
             mainFrame.getContaminantsFastaDbPathTextField().setText("");
         }
-        
         // INPUT/OUTPUT PARAMS
         if (mainFrame.getFastaDbPathTextField().getText().isEmpty() &&
                mainFrame.getFastaDbPathTextField().getText().equals("C:\\path-to-database") ) {
@@ -1197,7 +1205,7 @@ public class MainController {
         @Override
         protected Void doInBackground() throws Exception {
             LOGGER.info("starting xilmass run");
-
+            
             Start.launchCommandLineMode();
 
             return null;
