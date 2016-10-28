@@ -31,7 +31,7 @@ If you have any question or suggestion about Xilmass, please contact us immediat
 
 We are happy to annouce that Xilmass has been recently accepted! 
 
-[Yılmaz et al.: Anal. Chem., publication date (Web): September 19, 2016 (DOI: 10.1021/acs.analchem.6b01585)](http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b01585)
+[Yılmaz et al.: Analytical Chemistry, 2016, 88 (20), pp 9949–9957 (DOI: 10.1021/acs.analchem.6b01585)](http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b01585)
 
 The original data set that was used for the Xilmass publication is avaliable at PRIDE with the accession number of [PXD003880](https://www.ebi.ac.uk/pride/archive/projects/PXD003880).
 
@@ -44,7 +44,7 @@ If you perform your search to identify cross-linked peptides by Xilmass, please 
 ----
 ## Downloads
 
-Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.2/xilmass-0.4.2.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.2/xilmass-0.4.2.zip'); return false;">here</a>.  
+Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/1.0/xilmass-1.0.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/1.0/xilmass-1.0.zip'); return false;">here</a>.  
 
 You can run Xilmass as CLI or our user-friendly GUI. 
 
