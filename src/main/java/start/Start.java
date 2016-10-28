@@ -404,10 +404,17 @@ public class Start {
             File indexFolder = new File(cxDB.getParentFile().getPath() + File.separator + "index");
             // Make sure if the settings have been changed, an index folder must be removed! 
             if (indexFolder.exists() && !isSame) {
+
                 // Make sure to unlock index files that are previously opened
                 Directory directory = FSDirectory.open(indexFolder);
+
+                // is locked now?
+                boolean isDirectoryLocked = IndexWriter.isLocked(directory);
+                LOGGER.debug("isDirectoryLocked   " + isDirectoryLocked);
+
                 directory.clearLock(IndexWriter.WRITE_LOCK_NAME);
                 LOGGER.warn("Cleaning an existing write.lock at [" + indexFolder.getAbsolutePath() + ".");
+                // close it and then force to delete this index folder
                 directory.close();
                 FileUtils.forceDelete(indexFolder);
                 indexFolder.mkdir();
@@ -505,7 +512,7 @@ public class Start {
                             for (String title : fct.getSpectrumTitles(mgf.getName())) {
                                 tmp_total_spectra++;
                                 MSnSpectrum ms = (MSnSpectrum) fct.getSpectrum(mgf.getName(), title);
-                                // Xilmass can identify spectra with known charges only. pLink and MSAmanda follows this strategy. 
+                                // Xilmass can identify spectra with known charges only. pLink and MSAmanda follows this strategy.
                                 if (ms.getPrecursor().getPossibleCharges().size() == 1 && !ms.getPrecursor().getPossibleChargesAsString().isEmpty()) {
                                     // first remove any isotopic peaks derived from precursor peak.
                                     precursorPeakRemove.setExpMSnSpectrum(ms);
@@ -581,7 +588,7 @@ public class Start {
                 long end = System.currentTimeMillis();
                 LOGGER.info("The cross linked peptide database search lasted in " + +((end - startTime) / 1000) + " seconds.");
                 excService.shutdown();
-                // here validate the results!        
+                // here validate the results!
                 String analysis = "11",
                         xilmassResFolder = resultFolder,
                         scoringFunctionName = "AndromedaDerived",
@@ -1062,7 +1069,7 @@ public class Start {
         bw.write(new StringBuilder("msms_tol=").append(ConfigHolder.getInstance().getProperty("msms_tol")).append("\n").append("\n").toString());
         bw.write(new StringBuilder("report_in_ppm=").append(ConfigHolder.getInstance().getProperty("report_in_ppm")).append("\n").toString());
         bw.write(new StringBuilder("minRequiredPeaks=").append(ConfigHolder.getInstance().getProperty("minRequiredPeaks")).append("\n").toString());
-        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getProperty("isAllMatchedPeaks")).append("\n").toString());
+        bw.write(new StringBuilder("isAllMatchedPeaks=").append(ConfigHolder.getInstance().getProperty("isAllMatchedPeaks")).append("\n\n").toString());
         // write down all spectrum preprocessing-parameters
         bw.write(new StringBuilder("##Spectrum preprocessing related parameters").append("\n").toString());
         bw.write(new StringBuilder("massWindow=").append(ConfigHolder.getInstance().getProperty("massWindow")).append("\n").toString());
@@ -1122,7 +1129,8 @@ public class Start {
         while ((line = br.readLine()) != null) {
             if ((line.startsWith("givenDBName")) && (line.split("=")[1].equals(givenDBName))) {
                 control++;
-            } else if ((line.startsWith("contaminantDBName")) && (line.split("=").length == 2) && (line.split("=")[1].equals(contaminantDBName))) {
+            } else if ((line.startsWith("contaminantDBName")) && (line.split("=").length == 2) && (line.split("=")[1].equals(contaminantDBName))
+                     || (line.startsWith("contaminantDBName")) && (line.split("=").length == 1)) {
                 control++;
             } else if ((line.startsWith("cxDBFolderNam")) && (line.split("=")[1].equals(cxDBName))) {
                 control++;

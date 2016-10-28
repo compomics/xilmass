@@ -14,7 +14,12 @@ Xilmass is a novel algorithm to identify cross-linked peptides. Xilmass uses a n
 ----
 ## Project description
 
-Chemical cross-linking coupled with mass spectrometry (XL-MS) plays an important role in unravelling protein interactions and supports the determination of protein structure. This technique enables the study of proteins that are non-crystallizable or have a protein size above 50 kDa. The identification of the resulting MS/MS spectra from XL-MS experimennt is a computationally challenging task. Firstly, the search space is tremendously increased due to considering all peptide-to-peptide combinations. Secondly, these experimental MS/MS spectra are more complex than a MS/MS spectrum derived from a single peptide; because these spectra contain fragment ions from two peptides. Thirdly, the peptide mixture contains only few cross-linked peptides compared to single peptides in the mixture. In addition, there is a high dynamic range of cross-linked products due to the fact that cross-linking can occur between residues of the same protein (intra-protein cross-linked peptides), between residues of different proteins (inter-protein cross-linked peptides), or even between two cross-linked peptides (higher order cross-liked peptides). Although several computational approaches are available for the identification of spectra from cross-linked peptides, there still remains a room for improvement. Some of the available approaches are based on the linearization of cross-linked peptide-pairs and the usage of peptide labeling to facilitate cross-linked peptide identification. Here, we introduce Xilmass, a novel algorithm to identify cross-linked peptides that uses a new way to construct the search database and scores each experimental spectrum against each of the complete theoretical spectra. 
+Chemical cross-linking coupled with mass spectrometry (XL-MS) plays an important role in unravelling protein interactions and supports the determination of protein structure. This technique enables the study of proteins that are non-crystallizable or have a protein size above 50 kDa. The identification of the resulting MS/MS spectra from XL-MS experimennt is a computationally challenging task. First, the search space is tremendously increased due to considering all peptide-to-peptide combinations. Second, these experimental MS/MS spectra are more complex than a MS/MS spectrum derived from a single peptide; because these spectra contain fragment ions from two peptides. Third, the peptide mixture contains only few cross-linked peptides compared to single peptides in the mixture. In addition, there is a high dynamic range of cross-linked products due to the fact that cross-linking can occur between residues of the same protein (intra-protein cross-linked peptides), between residues of different proteins (inter-protein cross-linked peptides), or even between two cross-linked peptides (higher order cross-liked peptides). Although several computational approaches are available for the identification of spectra from cross-linked peptides, there still remains a room for improvement. Some of the available approaches are based on the linearization of cross-linked peptide-pairs or the usage of peptide labeling to facilitate cross-linked peptide identification. Here, we introduce Xilmass, a novel algorithm to identify cross-linked peptides that uses a new way to construct the search database and scores each experimental spectrum against each of the complete theoretical spectra. 
+
+Xilmass provides a user-friendly a graphical user interface (GUI) to run cross-linked peptides identifications. Additionally, it also offers the command line (CLI) version for the automation.
+
+
+If you have any question or suggestion about Xilmass, please contact us immediately!
 
 
 [Go to top of page](#xilmass)
@@ -22,9 +27,9 @@ Chemical cross-linking coupled with mass spectrometry (XL-MS) plays an important
 ----
 ## Downloads
 
-Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.3-SNAPSHOT/xilmass-0.3-20160714.081542-1.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.3-SNAPSHOT/xilmass-0.3-20160714.081542-1.zip'); return false;">here</a>.  
+Download the latest version of Xilmass algorithm <a href="http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.2/xilmass-0.4.2.zip" onclick="trackOutboundLink('usage','download','xilmass','http://genesis.ugent.be/maven2/com/compomics/xilmass/0.4.2/xilmass-0.4.2.zip'); return false;">here</a>.  
 
-Download [a simple Xilmass-visualization tool] (http://genesis.ugent.be/maven2/com/compomics/xilmass-visualize/0.1/xilmass-visualize-0.1.zip).
+You can run Xilmass as CLI or our user-friendly GUI. 
 
 ----
 

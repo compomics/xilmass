@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import org.bouncycastle.util.Strings;
 import start.Start;
 
 /**
@@ -498,7 +499,7 @@ public class MainController {
         //Cross-linking params
         String crossLinker = ConfigHolder.getInstance().getString(CROSS_LINKER);
         mainFrame.getCrossLinkerComboBox().getModel().setSelectedItem(crossLinker);
-        String isLabeled = ConfigHolder.getInstance().getString(LABELING);
+        String isLabeled = Strings.toUpperCase(ConfigHolder.getInstance().getString(LABELING)); 
         switch (isLabeled) {
             case "T":
                 mainFrame.getLabelingComboBox().setSelectedIndex(1);
@@ -518,7 +519,7 @@ public class MainController {
         mainFrame.getThreonineCheckBox().setSelected(threonine);
         boolean tyrosine = ConfigHolder.getInstance().getBoolean(SIDE_REACTION_TYROSINE);
         mainFrame.getTyrosineCheckBox().setSelected(tyrosine);
-        String linkingType = ConfigHolder.getInstance().getString(CROSS_LINKING_TYPE);
+        String linkingType = Strings.toLowerCase(ConfigHolder.getInstance().getString(CROSS_LINKING_TYPE));
         switch (linkingType) {
             case "intra":
                 mainFrame.getCrosslinkingTypeComboBox().setSelectedIndex(0);
@@ -554,7 +555,7 @@ public class MainController {
         //scoring params
         int neutralLosses = ConfigHolder.getInstance().getInt(NEUTRAL_LOSSES);
         mainFrame.getNeutralLossesComboBox().setSelectedIndex(neutralLosses);
-        String fragmentationMode = ConfigHolder.getInstance().getString(FRAGMENTATION_MODE);
+        String fragmentationMode = Strings.toUpperCase(ConfigHolder.getInstance().getString(FRAGMENTATION_MODE));
         switch (fragmentationMode) {
             case "HCD":
                 mainFrame.getFragmentationModeComboBox().setSelectedIndex(0);
