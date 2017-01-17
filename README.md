@@ -1,4 +1,8 @@
 # Xilmass
+
+![logo](http://genesis.ugent.be/uvpublicdata/xilmass/xilmass_logo_small.png) 
+
+
  * [Tool Description](#tool-description)
  * [Project Description](#project-description)
  * [Citation](#citation)
