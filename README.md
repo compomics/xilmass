@@ -1,5 +1,3 @@
-# Xilmass
-
 ![logo](http://genesis.ugent.be/uvpublicdata/xilmass/xilmass_logo_small.png) 
 
 
