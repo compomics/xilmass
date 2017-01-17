@@ -1,4 +1,4 @@
-![logo](http://genesis.ugent.be/uvpublicdata/xilmass/xilmass_logo_small.png) 
+![logo](http://genesis.ugent.be/uvpublicdata/xilmass/xilmass_logo_mini.png) 
 
 
  * [Tool Description](#tool-description)
