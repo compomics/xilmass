@@ -246,6 +246,8 @@ public class CreateDatabase {
         long start = System.currentTimeMillis();
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
+            char[] startp = startProtein.getSequence().getSequence().toCharArray();
+            char[] secondp = startProtein.getSequence().getSequence().toCharArray();
             boolean doesStartProContainProteinNtermini = false,
                     doesStartProContainProteinCtermini = false;
             String startHeader = startProtein.getHeader().getAccession();
@@ -258,9 +260,9 @@ public class CreateDatabase {
             // a start sequence must be at least #minLen amino acids
             if (startLen >= minLen) {
                 // find if there is a possible linker locations.                
-                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
+                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, startp, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
                         isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y),
-                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
+                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, startp, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
                                 isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y);
                 for (LinkedResidue first : linkedStartResiduesOnFirstPart) {
                     StringBuilder[] header_and_sequence = construct_header_and_monolinkedsequence(first);
@@ -531,6 +533,8 @@ public class CreateDatabase {
         long start = System.currentTimeMillis();
         // get a crossLinkerName object        
         while ((startProtein = loader.nextProtein()) != null) {
+            char[] sp = startProtein.getSequence().getSequence().toCharArray(),
+                    np = startProtein.getSequence().getSequence().toCharArray();
             boolean doesStartProContainProteinNtermini = false,
                     doesStartProContainProteinCtermini = false;
             String startHeader = startProtein.getHeader().getAccession(),
@@ -548,14 +552,15 @@ public class CreateDatabase {
             // a start sequence must be at least #minLen amino acids
             if (startLen >= minLen) {
                 // find if there is a possible linker locations.                
-                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
+                ArrayList<LinkedResidue> linkedStartResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, sp, true, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
                         isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y),
-                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
+                        linkedStartResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(startProtein, sp, false, linker, doesStartProContainProteinNtermini, doesStartProContainProteinCtermini,
                                 isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y),
                         linkedNextResiduesOnFirstPart = new ArrayList<LinkedResidue>(),
                         linkedNextResiduesOnSecondPart = new ArrayList<LinkedResidue>();
                 loader_next = DBLoaderLoader.loadDB(inSilicoPeptideDB);
                 while ((nextProtein = loader_next.nextProtein()) != null) {
+                    np = nextProtein.getSequence().getSequence().toCharArray();
                     boolean doesNextProContainProteinNtermini = false,
                             doesNextProContainProteinCtermini = false,
                             toConjugate = false;
@@ -578,9 +583,9 @@ public class CreateDatabase {
                             || (!nextProtein.getSequence().equals(startProtein.getSequence()))))) {
 
                         toConjugate = true;
-                        linkedNextResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, true, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini,
+                        linkedNextResiduesOnFirstPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, np, true, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini,
                                 isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y);
-                        linkedNextResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, false, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini,
+                        linkedNextResiduesOnSecondPart = Find_LinkerPosition.find_cross_linking_sites(nextProtein, np, false, linker, doesNextProContainProteinNtermini, doesNextProContainProteinCtermini,
                                 isSideReactionConsidered_for_S, isSideReactionConsidered_for_T, isSideReactionConsidered_for_Y);
                     }
                     if (toConjugate) {
@@ -722,7 +727,7 @@ public class CreateDatabase {
                 .append("*")
                 .append(inputSequence.substring(positionLinkedResStartSeq + 1)),
                 header = new StringBuilder(inputHeader.replace(" ", ""))
-                .append("_").append(positionLinkedResStartSeq + 1);
+                        .append("_").append(positionLinkedResStartSeq + 1);
         StringBuilder[] header_and_sequence = new StringBuilder[2];
         header_and_sequence[0] = header;
         header_and_sequence[1] = sequence;
