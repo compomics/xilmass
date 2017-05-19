@@ -40,12 +40,7 @@ public class SDA extends CrossLinker {
 //            double moleculeMass = (5 * Atom.C.getMonoisotopicMass()) + (1 * Atom.O.getMonoisotopicMass()) + (6 * Atom.H.getMonoisotopicMass());
 //            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
 //            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
-//        } else {
-//            this.name = CrossLinkerName.BS3d0;
-//            double moleculeMass = (8 * Atom.C.getMonoisotopicMass()) + (2 * Atom.O.getMonoisotopicMass()) + (12 * hydrogen_mass);
-//            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
-//            super.massShift_Type2 = moleculeMass - (2 * hydrogen_mass);
-//        }
+//        } 
 //    }
 
     @Override
