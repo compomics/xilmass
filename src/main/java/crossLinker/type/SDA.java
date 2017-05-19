@@ -46,7 +46,7 @@ public class SDA extends CrossLinker {
     @Override
     protected void calculateMassShifts(boolean isLabeled) {
         this.name = CrossLinkerName.SDA;
-        this.type = CrossLinkerType.AMINE_TO_AMINE; // primary amines (K or n-termini)     
+        this.type = CrossLinkerType.AMINE_TO_AMINE; // primary amines (n-termini)     
         double moleculeMass = (5 * Atom.C.getMonoisotopicMass()) + (1 * Atom.O.getMonoisotopicMass()) + (6 * Atom.H.getMonoisotopicMass());
         super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
         super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass());
