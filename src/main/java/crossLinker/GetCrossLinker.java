@@ -25,6 +25,8 @@ public class GetCrossLinker {
             }
         } else if (crossLinkerName.equals("BS3")) {
             linker = new BS3(isLabeled);
+        } else if (crossLinkerName.equals("SDA")) {
+            linker = new SDA();
         } else if (crossLinkerName.equals("GA")) {
             linker = new GA();
             if (isLabeled) {
