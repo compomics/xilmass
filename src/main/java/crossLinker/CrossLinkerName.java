@@ -16,5 +16,6 @@ public enum CrossLinkerName {
     BS3d0, // light labeled..
     BS3d4, // heavy labeled..
     EDC, // This is not supported yet
-    GA // This is not supported yet
+    GA, // This is not supported yet
+    SDA //Supported
 }
