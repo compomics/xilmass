@@ -7,15 +7,19 @@ package analyse.CXPSM.prepareOutcome;
 
 import analyse.CXPSM.outcome.Outcome;
 import analyse.CXPSM.outcome.XilmassResult;
-import com.google.common.io.Files;
+//import com.google.common.io.Files;
 import config.ConfigHolder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -172,10 +176,22 @@ public class AnalyzeXilmass extends AnalyzeOutcomes {
         bw.close();
 
         // move validated and allxpsms to a given folder
-        Files.copy(output, new File(xilmassFolder.getAbsolutePath() + File.separator + output.getName()));
+        OutputStream os = new FileOutputStream(xilmassFolder.getAbsolutePath() + File.separator + output.getName());
+        Files.copy(Paths.get(output.getName()), os);
+        os.close();
         output.delete();
-        Files.copy(allXPSMs, new File(xilmassFolder.getAbsolutePath() + File.separator + allXPSMs.getName()));
+        
+        os = new FileOutputStream(xilmassFolder.getAbsolutePath() + File.separator + allXPSMs.getName());
+        Files.copy(Paths.get(allXPSMs.getName()), os);
+        os.close();
         allXPSMs.delete();
+        
+        
+        
+//        Files.copy(output, new File(xilmassFolder.getAbsolutePath() + File.separator + output.getName()));
+//        output.delete();
+//        Files.copy(allXPSMs, new File(xilmassFolder.getAbsolutePath() + File.separator + allXPSMs.getName()));
+//        allXPSMs.delete();
     }
 
     public void writeAllXPSMs(HashSet<Outcome> currentXPSMs, boolean hasPredictions) throws IOException {
