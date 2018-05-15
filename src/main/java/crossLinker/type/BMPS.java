@@ -26,16 +26,13 @@ public class BMPS extends CrossLinker {
     @Override
     protected void calculateMassShifts(boolean isLabeled) {
         
-        if (isLabeled) {
+        if (!isLabeled) {
             this.name = CrossLinkerName.BMPS;
             double moleculeMass = (7 * Atom.C.getMonoisotopicMass()) + Atom.N.getMonoisotopicMass () + (4 * Atom.O.getMonoisotopicMass()) + (7 * Atom.H.getMonoisotopicMass());
-            super.massShift_Type0 = moleculeMass;
-            super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass()+Atom.O.getMonoisotopicMass());
-        } else {
-            this.name = CrossLinkerName.BMPS;
-            double moleculeMass = (7 * Atom.C.getMonoisotopicMass()) + Atom.N.getMonoisotopicMass () + (4 * Atom.O.getMonoisotopicMass()) + (7 * Atom.H.getMonoisotopicMass());
-            super.massShift_Type0 = moleculeMass + (Atom.O.getMonoisotopicMass());
+            super.massShift_Type0 = moleculeMass ;
             super.massShift_Type2 = moleculeMass - (2 * Atom.H.getMonoisotopicMass()+ Atom.O.getMonoisotopicMass());
+        } else {
+            throw new UnsupportedOperationException("Labling should be false, no labeling feature provided."); 
         }
     }
 }
