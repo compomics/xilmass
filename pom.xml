@@ -275,6 +275,13 @@
             <type>jar</type>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk16</artifactId>
+            <version>1.45</version>
+        </dependency>
+        
     </dependencies>
     
     <!-- a remote repository for the deploy -->

@@ -575,7 +575,7 @@ public class MainFrame extends javax.swing.JFrame {
         crossLinkerLabel.setText("Select the cross-linker*:");
         crossLinkerLabel.setToolTipText("only supports conventional cross-linkers including DSS, BS3, EDC, and GA ");
 
-        crossLinkerComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DSS", "BS3", "EDC", "GA" }));
+        crossLinkerComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DSS", "BS3", "EDC", "GA", "BMPS" }));
 
         crossLinkerLabel1.setText("Select the labeling type of a cross-linker*:");
         crossLinkerLabel1.setToolTipText("information on labeling type of cross-linker");

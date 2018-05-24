@@ -398,11 +398,12 @@
                     <Component class="javax.swing.JComboBox" name="crossLinkerComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="4">
+                          <StringArray count="5">
                             <StringItem index="0" value="DSS"/>
                             <StringItem index="1" value="BS3"/>
                             <StringItem index="2" value="EDC"/>
                             <StringItem index="3" value="GA"/>
+                            <StringItem index="4" value="BMPS"/>
                           </StringArray>
                         </Property>
                       </Properties>

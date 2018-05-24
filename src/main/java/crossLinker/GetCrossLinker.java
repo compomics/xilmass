@@ -9,6 +9,7 @@ import crossLinker.type.BS3;
 import crossLinker.type.DSS;
 import crossLinker.type.EDC;
 import crossLinker.type.GA;
+import crossLinker.type.BMPS;
 
 /**
  *
@@ -21,14 +22,19 @@ public class GetCrossLinker {
         if (crossLinkerName.equals("EDC")) {
             linker = new EDC();
             if (isLabeled) {
-                throw (new Exception("Using leabeled EDC is not supported, yet!"));
+                throw (new Exception("Using labeled EDC is not supported, yet!"));
             }
         } else if (crossLinkerName.equals("BS3")) {
             linker = new BS3(isLabeled);
+        }else if (crossLinkerName.equals("BMPS")) {
+            linker = new BMPS();
+//            if (isLabeled) {
+//                throw (new Exception("Using labeled BMPS is not supported."));
+//            }
         } else if (crossLinkerName.equals("GA")) {
             linker = new GA();
             if (isLabeled) {
-                throw (new Exception("Using leabeled EDC is not supported, yet!"));
+                throw (new Exception("Using labeled GA is not supported, yet!"));
             }
         } else if (crossLinkerName.equals("DSS")) {
             linker = new DSS(isLabeled);
